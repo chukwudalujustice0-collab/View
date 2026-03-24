@@ -3,137 +3,287 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login | View</title>
+  <title>Sign In | View</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{
-      --primary:#0b5ed7;
-      --primary-dark:#083b8a;
+      --primary:#1d4ed8;
+      --primary-dark:#143fb3;
+      --bg:#f4f7fc;
       --card:#ffffff;
-      --text:#1f1f1f;
+      --text:#111827;
       --soft:#6b7280;
       --border:#e5e7eb;
-      --danger:#dc2626;
-      --success:#16a34a;
+      --danger:#b91c1c;
+      --success:#15803d;
+      --info:#1d4ed8;
+      --shadow:0 16px 40px rgba(15,23,42,.08);
+      --radius:24px;
     }
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
     body{
       min-height:100vh;
-      background:linear-gradient(180deg,#eef5ff 0%, #ffffff 100%);
+      background:linear-gradient(180deg,#eef4ff 0%, #ffffff 100%);
+      color:var(--text);
       display:flex;
       align-items:center;
       justify-content:center;
       padding:20px;
-      color:var(--text);
     }
-    .wrap{width:100%;max-width:430px}
+
+    .wrap{
+      width:100%;
+      max-width:440px;
+    }
+
     .card{
       background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:24px;
-      box-shadow:0 10px 30px rgba(0,0,0,.06);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:28px 22px;
+      border:1px solid #edf2f7;
     }
-    .brand{text-align:center;margin-bottom:18px}
-    .brand h1{color:var(--primary);font-size:30px;margin-bottom:4px}
-    .brand p{font-size:12px;color:var(--soft)}
-    .head{text-align:center;margin-bottom:18px}
-    .head h2{font-size:24px;margin-bottom:6px}
-    .head p{font-size:13px;color:var(--soft);line-height:1.5}
-    .group{margin-bottom:14px}
-    .group label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+
+    .brand{
+      text-align:center;
+      margin-bottom:22px;
+    }
+
+    .brand-badge{
+      width:70px;
+      height:70px;
+      margin:0 auto 12px;
+      border-radius:20px;
+      background:linear-gradient(135deg,#1d4ed8,#2563eb);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:32px;
+      font-weight:800;
+      box-shadow:0 16px 30px rgba(29,78,216,.22);
+    }
+
+    .brand h1{
+      font-size:30px;
+      color:var(--primary);
+      margin-bottom:4px;
+      font-weight:800;
+    }
+
+    .brand p{
+      font-size:13px;
+      color:var(--soft);
+    }
+
+    .head{
+      text-align:center;
+      margin-bottom:22px;
+    }
+
+    .head h2{
+      font-size:26px;
+      margin-bottom:8px;
+      font-weight:800;
+    }
+
+    .head p{
+      font-size:14px;
+      color:var(--soft);
+      line-height:1.6;
+    }
+
+    .group{
+      margin-bottom:14px;
+    }
+
+    .group label{
+      display:block;
+      font-size:14px;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
     .group input{
       width:100%;
-      height:48px;
+      height:52px;
       border:1px solid var(--border);
-      border-radius:10px;
+      border-radius:14px;
       padding:0 14px;
-      font-size:14px;
+      font-size:15px;
       background:#fff;
     }
-    .group input:focus{outline:none;border-color:var(--primary)}
-    .password-wrap{position:relative}
-    .password-wrap input{padding-right:58px}
+
+    .group input:focus{
+      outline:none;
+      border-color:var(--primary);
+      box-shadow:0 0 0 3px rgba(29,78,216,.08);
+    }
+
+    .password-wrap{
+      position:relative;
+    }
+
+    .password-wrap input{
+      padding-right:62px;
+    }
+
     .toggle{
       position:absolute;
-      right:12px;
+      right:14px;
       top:50%;
       transform:translateY(-50%);
-      font-size:12px;
+      font-size:13px;
       color:var(--primary);
       font-weight:700;
       cursor:pointer;
       user-select:none;
     }
+
     .extras{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      margin:8px 0 14px;
+      margin:8px 0 18px;
       flex-wrap:wrap;
       font-size:13px;
       color:var(--soft);
     }
-    .extras a{color:var(--primary);text-decoration:none;font-weight:700}
+
+    .extras a{
+      color:var(--primary);
+      text-decoration:none;
+      font-weight:700;
+    }
+
     .btn{
       width:100%;
-      height:48px;
+      min-height:52px;
       border:none;
-      border-radius:10px;
-      font-size:15px;
-      font-weight:700;
+      border-radius:14px;
+      font-size:16px;
+      font-weight:800;
       cursor:pointer;
     }
-    .btn-primary{background:var(--primary);color:#fff}
-    .btn-primary:hover{background:var(--primary-dark)}
+
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .btn-primary:hover{
+      background:var(--primary-dark);
+    }
+
     .message{
       display:none;
-      margin-top:12px;
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.6;
       text-align:center;
-      font-size:13px;
-      line-height:1.5;
-      padding:10px;
-      border-radius:10px;
     }
-    .message.error{display:block;color:var(--danger);background:#fff5f5;border:1px solid #fecaca}
-    .message.success{display:block;color:var(--success);background:#f0fdf4;border:1px solid #bbf7d0}
-    .message.info{display:block;color:#0b5ed7;background:#eff6ff;border:1px solid #bfdbfe}
+
+    .message.show{
+      display:block;
+    }
+
+    .message.error{
+      background:#fee2e2;
+      color:var(--danger);
+    }
+
+    .message.success{
+      background:#dcfce7;
+      color:var(--success);
+    }
+
+    .message.info{
+      background:#dbeafe;
+      color:var(--info);
+    }
+
+    .bottom{
+      text-align:center;
+      margin-top:18px;
+      color:var(--soft);
+      font-size:14px;
+    }
+
+    .bottom a{
+      color:var(--primary);
+      font-weight:700;
+      text-decoration:none;
+    }
+
+    .helper{
+      margin-top:16px;
+      font-size:12px;
+      color:#6b7280;
+      line-height:1.6;
+      text-align:center;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <div class="brand">
+        <div class="brand-badge">V</div>
         <h1>View</h1>
         <p>Your world, your view</p>
       </div>
 
       <div class="head">
-        <h2>Welcome Back</h2>
-        <p>Login to continue.</p>
+        <h2>Sign In</h2>
+        <p>Login to continue to your account and manage your content.</p>
       </div>
 
       <form id="loginForm" novalidate>
         <div class="group">
           <label for="email">Email</label>
-          <input type="email" id="email" required />
+          <input type="email" id="email" placeholder="Enter your email" required />
         </div>
 
         <div class="group">
           <label for="password">Password</label>
           <div class="password-wrap">
-            <input type="password" id="password" required />
-            <span class="toggle" onclick="togglePassword()">Show</span>
+            <input type="password" id="password" placeholder="Enter your password" required />
+            <span class="toggle" id="togglePassword">Show</span>
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary" id="loginBtn">Login</button>
+        <div class="extras">
+          <label>
+            <input type="checkbox" id="rememberMe" checked />
+            Remember me
+          </label>
+          <a href="forgot-password.html">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="loginBtn">Sign In</button>
         <div id="loginMessage" class="message"></div>
       </form>
+
+      <div class="bottom">
+        Don’t have an account? <a href="signup.html">Sign up</a>
+      </div>
+
+      <div class="helper">
+        After login, you will be redirected to your profile.
+      </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
@@ -146,18 +296,20 @@
       }
     });
 
-    function togglePassword() {
-      const input = document.getElementById("password");
-      const toggle = document.querySelector(".toggle");
-      const show = input.type === "password";
-      input.type = show ? "text" : "password";
-      toggle.textContent = show ? "Hide" : "Show";
-    }
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const messageBox = document.getElementById("loginMessage");
+    const togglePassword = document.getElementById("togglePassword");
 
     function showMessage(message, type = "error") {
-      const box = document.getElementById("loginMessage");
-      box.className = "message " + type;
-      box.textContent = message;
+      messageBox.className = `message show ${type}`;
+      messageBox.textContent = message;
+    }
+
+    function clearMessage() {
+      messageBox.className = "message";
+      messageBox.textContent = "";
     }
 
     function getNextPage() {
@@ -167,21 +319,37 @@
 
     async function waitForSession(maxWaitMs = 4000) {
       const start = Date.now();
+
       while (Date.now() - start < maxWaitMs) {
         const { data, error } = await supabaseClient.auth.getSession();
         if (error) throw error;
         if (data.session?.user) return data.session;
         await new Promise(resolve => setTimeout(resolve, 200));
       }
+
       return null;
     }
 
-    document.getElementById("loginForm").addEventListener("submit", async function(event) {
-      event.preventDefault();
+    async function redirectIfLoggedIn() {
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) return;
+      if (data.session?.user) {
+        window.location.href = getNextPage();
+      }
+    }
 
-      const loginBtn = document.getElementById("loginBtn");
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+    togglePassword.addEventListener("click", () => {
+      const isPassword = passwordInput.type === "password";
+      passwordInput.type = isPassword ? "text" : "password";
+      togglePassword.textContent = isPassword ? "Hide" : "Show";
+    });
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearMessage();
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
 
       if (!email || !password) {
         showMessage("Enter your email and password.");
@@ -189,17 +357,25 @@
       }
 
       loginBtn.disabled = true;
-      loginBtn.textContent = "Logging in...";
+      loginBtn.textContent = "Signing in...";
       showMessage("Signing in...", "info");
 
       try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
+
         if (error) throw error;
 
         const session = data.session || await waitForSession();
-        if (!session?.user) throw new Error("Login completed but no active session was found.");
+
+        if (!session?.user) {
+          throw new Error("Login completed but no active session was found.");
+        }
 
         showMessage("Login successful. Redirecting...", "success");
+
         setTimeout(() => {
           window.location.href = getNextPage();
         }, 700);
@@ -207,9 +383,11 @@
         showMessage(error.message || "Login failed.");
       } finally {
         loginBtn.disabled = false;
-        loginBtn.textContent = "Login";
+        loginBtn.textContent = "Sign In";
       }
     });
+
+    redirectIfLoggedIn();
   </script>
 </body>
 </html>
