@@ -6,57 +6,236 @@
   <title>Profile | View</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    *{box-sizing:border-box;font-family:Arial,sans-serif}
-    body{margin:0;background:#f4f7fc;color:#111827;padding:20px}
-    .wrap{max-width:520px;margin:0 auto}
-    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-    .topbar h1{margin:0;font-size:34px;font-weight:800}
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
+    body{
+      background:#f4f7fc;
+      color:#111827;
+      min-height:100vh;
+      padding:20px 16px 40px;
+    }
+
+    .wrap{
+      max-width:560px;
+      margin:0 auto;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .topbar h1{
+      font-size:32px;
+      font-weight:800;
+    }
+
     .icon-btn{
-      width:46px;height:46px;border:none;border-radius:14px;background:#fff;
-      box-shadow:0 8px 24px rgba(15,23,42,.08);font-size:22px;cursor:pointer
+      width:46px;
+      height:46px;
+      border:none;
+      border-radius:14px;
+      background:#fff;
+      box-shadow:0 8px 24px rgba(15,23,42,.08);
+      font-size:20px;
+      cursor:pointer;
     }
-    .card{
-      background:#fff;border-radius:24px;padding:24px 20px;
-      box-shadow:0 10px 30px rgba(15,23,42,.08);margin-bottom:18px
+
+    .notice{
+      display:none;
+      padding:12px 14px;
+      border-radius:14px;
+      margin-bottom:16px;
+      font-size:14px;
+      line-height:1.5;
     }
+
+    .notice.show{
+      display:block;
+    }
+
+    .notice.error{
+      background:#fee2e2;
+      color:#b91c1c;
+    }
+
+    .notice.success{
+      background:#dcfce7;
+      color:#15803d;
+    }
+
     .hero{
       background:linear-gradient(135deg,#1d4ed8,#2563eb);
-      color:#fff;border-radius:26px;padding:24px 20px 20px;
-      box-shadow:0 14px 36px rgba(29,78,216,.22);margin-bottom:18px
+      color:#fff;
+      border-radius:28px;
+      padding:24px 20px 22px;
+      box-shadow:0 14px 36px rgba(29,78,216,.22);
+      margin-bottom:18px;
     }
+
     .avatar{
-      width:86px;height:86px;border-radius:50%;
-      display:flex;align-items:center;justify-content:center;
-      background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.28);
-      font-size:34px;font-weight:800;margin-bottom:14px
+      width:88px;
+      height:88px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.18);
+      border:2px solid rgba(255,255,255,.28);
+      font-size:34px;
+      font-weight:800;
+      margin-bottom:14px;
+      overflow:hidden;
     }
-    .name{font-size:28px;font-weight:800;margin:0 0 4px}
-    .handle{margin:0 0 10px;color:#dbeafe;font-size:15px}
-    .sub{margin:0;color:#eff6ff;font-size:14px;line-height:1.6}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .name{
+      font-size:28px;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+
+    .handle{
+      color:#dbeafe;
+      font-size:15px;
+      margin-bottom:10px;
+    }
+
+    .meta{
+      color:#eff6ff;
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-top:18px;
+    }
+
     .stat{
-      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);
-      border-radius:18px;padding:14px 10px;text-align:center
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:18px;
+      padding:14px 10px;
+      text-align:center;
     }
-    .stat b{display:block;font-size:24px;margin-bottom:4px}
-    .section-title{font-size:20px;font-weight:800;margin:0 0 14px}
-    .menu{display:grid;gap:12px}
-    .menu a,.menu button{
-      text-decoration:none;background:#fff;border:1px solid #e5e7eb;color:#111827;
-      min-height:58px;border-radius:18px;padding:0 16px;display:flex;align-items:center;
-      justify-content:space-between;font-size:17px;font-weight:700;cursor:pointer;
-      box-shadow:0 6px 18px rgba(15,23,42,.04)
+
+    .stat b{
+      display:block;
+      font-size:24px;
+      margin-bottom:4px;
     }
-    .menu .danger{color:#b91c1c;background:#fef2f2;border-color:#fecaca}
-    .left{display:flex;align-items:center;gap:12px}
-    .left .emoji{font-size:20px}
-    .notice{
-      display:none;padding:12px 14px;border-radius:14px;margin-bottom:16px;
-      font-size:14px;line-height:1.5
+
+    .card{
+      background:#fff;
+      border-radius:24px;
+      padding:22px 18px;
+      box-shadow:0 10px 30px rgba(15,23,42,.08);
+      margin-bottom:18px;
     }
-    .notice.show{display:block}
-    .notice.error{background:#fee2e2;color:#b91c1c}
-    .notice.success{background:#dcfce7;color:#15803d}
+
+    .card h2{
+      font-size:20px;
+      font-weight:800;
+      margin-bottom:14px;
+    }
+
+    .menu{
+      display:grid;
+      gap:12px;
+    }
+
+    .menu a,
+    .menu button{
+      width:100%;
+      text-decoration:none;
+      background:#fff;
+      border:1px solid #e5e7eb;
+      color:#111827;
+      min-height:60px;
+      border-radius:18px;
+      padding:0 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      font-size:17px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(15,23,42,.04);
+    }
+
+    .menu .danger{
+      color:#b91c1c;
+      background:#fef2f2;
+      border-color:#fecaca;
+    }
+
+    .left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .emoji{
+      font-size:20px;
+    }
+
+    .sub{
+      font-size:13px;
+      color:#6b7280;
+      font-weight:500;
+      margin-top:2px;
+    }
+
+    .mini-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .mini-item{
+      padding:14px;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      background:#fff;
+    }
+
+    .mini-item b{
+      display:block;
+      margin-bottom:4px;
+      font-size:15px;
+    }
+
+    .mini-item span{
+      color:#6b7280;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    @media(max-width:520px){
+      .topbar h1{
+        font-size:28px;
+      }
+
+      .stats{
+        grid-template-columns:1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -68,11 +247,11 @@
 
     <div id="notice" class="notice"></div>
 
-    <div class="hero">
-      <div class="avatar" id="avatarText">V</div>
-      <h2 class="name" id="profileName">Loading...</h2>
-      <p class="handle" id="profileHandle">@loading</p>
-      <p class="sub" id="profileMeta">Loading profile information...</p>
+    <section class="hero">
+      <div class="avatar" id="profileAvatar">V</div>
+      <div class="name" id="profileName">Loading...</div>
+      <div class="handle" id="profileHandle">@loading</div>
+      <div class="meta" id="profileMeta">Loading profile information...</div>
 
       <div class="stats">
         <div class="stat">
@@ -81,42 +260,79 @@
         </div>
         <div class="stat">
           <b id="statPlatforms">0</b>
-          <span>Platforms</span>
+          <span>Connected</span>
         </div>
         <div class="stat">
           <b id="statDrafts">0</b>
           <span>Drafts</span>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="card">
-      <h3 class="section-title">Quick Actions</h3>
+    <section class="card">
+      <h2>Quick Actions</h2>
       <div class="menu">
-        <a href="settings.html">
-          <span class="left"><span class="emoji">⚙️</span><span>Settings</span></span>
-          <span>›</span>
-        </a>
-        <a href="connected-accounts.html">
-          <span class="left"><span class="emoji">🔗</span><span>Connected Accounts</span></span>
-          <span>›</span>
-        </a>
         <a href="create-post.html">
-          <span class="left"><span class="emoji">➕</span><span>Create Post</span></span>
+          <span>
+            <span class="left"><span class="emoji">➕</span><span>Create Post</span></span>
+            <div class="sub">Write and publish to View or Facebook</div>
+          </span>
           <span>›</span>
         </a>
+
+        <a href="settings.html">
+          <span>
+            <span class="left"><span class="emoji">⚙️</span><span>Settings</span></span>
+            <div class="sub">Manage account settings and integrations</div>
+          </span>
+          <span>›</span>
+        </a>
+
+        <a href="connected-accounts.html">
+          <span>
+            <span class="left"><span class="emoji">🔗</span><span>Connected Accounts</span></span>
+            <div class="sub">Connect Facebook for cross-posting</div>
+          </span>
+          <span>›</span>
+        </a>
+
         <button class="danger" onclick="logoutUser()">
-          <span class="left"><span class="emoji">⇦</span><span>Logout</span></span>
+          <span>
+            <span class="left"><span class="emoji">⇦</span><span>Logout</span></span>
+            <div class="sub">Sign out of your account</div>
+          </span>
           <span>›</span>
         </button>
       </div>
-    </div>
+    </section>
+
+    <section class="card">
+      <h2>Account Summary</h2>
+      <div class="mini-list">
+        <div class="mini-item">
+          <b id="summaryEmail">Email: Loading...</b>
+          <span>Your signed-in email address</span>
+        </div>
+
+        <div class="mini-item">
+          <b id="summaryFacebook">Facebook: Checking...</b>
+          <span>Shows whether Facebook cross-posting is connected</span>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9".replace("eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9","eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI");
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
 
     function showNotice(message, type = "error") {
       const box = document.getElementById("notice");
@@ -124,14 +340,26 @@
       box.textContent = message;
     }
 
+    async function getSessionWithRetry(maxWaitMs = 3000) {
+      const start = Date.now();
+
+      while (Date.now() - start < maxWaitMs) {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (data.session?.user) return data.session;
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      return null;
+    }
+
     async function requireSession() {
-      const { data, error } = await supabaseClient.auth.getSession();
-      if (error) throw error;
-      if (!data.session) {
-        window.location.href = "login.html";
+      const session = await getSessionWithRetry();
+      if (!session?.user) {
+        window.location.href = "login.html?next=profile.html";
         return null;
       }
-      return data.session;
+      return session;
     }
 
     async function loadProfile() {
@@ -139,10 +367,12 @@
       if (!session) return;
 
       const user = session.user;
+
+      const email = user.email || "No email found";
       const fullName =
         user.user_metadata?.full_name ||
         user.user_metadata?.name ||
-        user.email?.split("@")[0] ||
+        email.split("@")[0] ||
         "View User";
 
       const username =
@@ -152,18 +382,38 @@
 
       document.getElementById("profileName").textContent = fullName;
       document.getElementById("profileHandle").textContent = "@" + username;
-      document.getElementById("profileMeta").textContent = user.email || "No email found";
-      document.getElementById("avatarText").textContent = fullName.charAt(0).toUpperCase();
+      document.getElementById("profileMeta").textContent = "Manage your posts, connected accounts, and settings.";
+      document.getElementById("summaryEmail").textContent = "Email: " + email;
 
-      const [{ count: postsCount }, { count: connectedCount }, { count: draftsCount }] = await Promise.all([
+      const avatar = document.getElementById("profileAvatar");
+      if (user.user_metadata?.avatar_url) {
+        avatar.innerHTML = `<img src="${user.user_metadata.avatar_url}" alt="Avatar">`;
+      } else {
+        avatar.textContent = fullName.charAt(0).toUpperCase();
+      }
+
+      const [
+        postsResult,
+        connectedResult,
+        draftsResult,
+        fbResult
+      ] = await Promise.all([
         supabaseClient.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id),
         supabaseClient.from("connected_accounts").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "connected"),
-        supabaseClient.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "draft")
+        supabaseClient.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "draft"),
+        supabaseClient.from("connected_accounts").select("status, account_name").eq("user_id", user.id).eq("platform", "facebook").maybeSingle()
       ]);
 
-      document.getElementById("statPosts").textContent = postsCount || 0;
-      document.getElementById("statPlatforms").textContent = connectedCount || 0;
-      document.getElementById("statDrafts").textContent = draftsCount || 0;
+      document.getElementById("statPosts").textContent = postsResult.count || 0;
+      document.getElementById("statPlatforms").textContent = connectedResult.count || 0;
+      document.getElementById("statDrafts").textContent = draftsResult.count || 0;
+
+      if (fbResult.data && fbResult.data.status === "connected") {
+        document.getElementById("summaryFacebook").textContent =
+          "Facebook: Connected" + (fbResult.data.account_name ? " (" + fbResult.data.account_name + ")" : "");
+      } else {
+        document.getElementById("summaryFacebook").textContent = "Facebook: Not connected";
+      }
     }
 
     async function logoutUser() {
@@ -175,7 +425,9 @@
       window.location.href = "login.html";
     }
 
-    loadProfile().catch(err => showNotice(err.message || "Could not load profile."));
+    loadProfile().catch(err => {
+      showNotice(err.message || "Could not load profile.");
+    });
   </script>
 </body>
 </html>
