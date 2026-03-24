@@ -234,8 +234,11 @@
     <div id="notice" class="notice"></div>
 
     <section class="hero">
-      <h2>Cross-posting Setup</h2>
-      <p>Connect your Facebook Page here. Once connected, posts from View can also be sent to Facebook.</p>
+      <h2>Connect Facebook</h2>
+      <p>
+        Connect your Facebook account first. After this basic connection is stable,
+        we can safely upgrade it to full Facebook Page cross-posting.
+      </p>
     </section>
 
     <section class="card">
@@ -244,7 +247,10 @@
         <div id="fbStatus" class="status">Not connected</div>
       </div>
 
-      <p class="desc">This connection stores your Facebook Page information and page token so publishing can work correctly.</p>
+      <p class="desc">
+        This step connects your Facebook identity to your View account and stores the
+        connection safely in your database.
+      </p>
 
       <div class="meta-list">
         <div class="meta-item">
@@ -253,8 +259,8 @@
         </div>
 
         <div class="meta-item">
-          <b>Facebook Page ID</b>
-          <span id="fbPageId">No page selected yet.</span>
+          <b>Facebook User ID</b>
+          <span id="fbUserId">No user connected yet.</span>
         </div>
 
         <div class="meta-item">
@@ -271,10 +277,10 @@
 
     <section class="card">
       <div class="subcard">
-        <h4>How it works</h4>
+        <h4>Important</h4>
         <p>
-          After you connect Facebook successfully, this app saves your default Facebook Page and its page token.
-          That token is what lets View publish real posts to Facebook.
+          This version uses only the safe basic Facebook login scope. It avoids the
+          invalid-scope issue that was breaking your current connection flow.
         </p>
       </div>
     </section>
@@ -300,7 +306,7 @@
     const noticeBox = document.getElementById("notice");
     const fbStatus = document.getElementById("fbStatus");
     const fbAccountName = document.getElementById("fbAccountName");
-    const fbPageId = document.getElementById("fbPageId");
+    const fbUserId = document.getElementById("fbUserId");
     const fbConnectionMeta = document.getElementById("fbConnectionMeta");
     const connectBtn = document.getElementById("connectBtn");
     const disconnectBtn = document.getElementById("disconnectBtn");
@@ -319,16 +325,16 @@
       fbStatus.textContent = "Not connected";
       fbStatus.classList.remove("connected");
       fbAccountName.textContent = "No account connected yet.";
-      fbPageId.textContent = "No page selected yet.";
+      fbUserId.textContent = "No user connected yet.";
       fbConnectionMeta.textContent = "Waiting for connection.";
     }
 
-    function setConnectedState(accountName, pageId) {
+    function setConnectedState(accountName, userId) {
       fbStatus.textContent = "Connected";
       fbStatus.classList.add("connected");
       fbAccountName.textContent = accountName || "Facebook connected";
-      fbPageId.textContent = pageId || "Page ID unavailable";
-      fbConnectionMeta.textContent = "Ready for Facebook cross-posting.";
+      fbUserId.textContent = userId || "User ID unavailable";
+      fbConnectionMeta.textContent = "Basic Facebook connection is active.";
     }
 
     async function getSessionWithRetry(maxWaitMs = 3000) {
@@ -362,7 +368,7 @@
         `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
         `&state=${encodeURIComponent("view_facebook_connect")}` +
         `&response_type=code` +
-        `&scope=${encodeURIComponent("public_profile,pages_show_list,pages_manage_posts")}`;
+        `&scope=${encodeURIComponent("public_profile")}`;
 
       window.location.href = oauthUrl;
     }
@@ -373,26 +379,14 @@
 
       const user = session.user;
       const facebookUser = payload.facebook_user || {};
-      const facebookPages = Array.isArray(payload.facebook_pages) ? payload.facebook_pages : [];
-      const firstPage = facebookPages[0] || null;
-
-      if (!firstPage?.id || !firstPage?.access_token) {
-        showNotice("Facebook connected, but no publishable Facebook Page was returned.", "error");
-        return false;
-      }
 
       const connectionRow = {
         user_id: user.id,
         platform: "facebook",
-        account_name: firstPage.name || facebookUser.name || "Facebook",
-        account_handle: firstPage.id || facebookUser.id || "",
+        account_name: facebookUser.name || "Facebook",
+        account_handle: facebookUser.id || "",
         status: "connected",
         external_user_id: facebookUser.id || null,
-        external_page_id: firstPage.id,
-        page_id: firstPage.id,
-        page_name: firstPage.name || null,
-        access_token: payload.access_token || null,
-        page_token: firstPage.access_token,
         updated_at: new Date().toISOString()
       };
 
@@ -405,7 +399,7 @@
         return false;
       }
 
-      setConnectedState(connectionRow.account_name, connectionRow.page_id);
+      setConnectedState(connectionRow.account_name, connectionRow.external_user_id);
       showNotice("Facebook connected successfully.", "success");
       return true;
     }
@@ -450,7 +444,7 @@
 
       const { data, error } = await supabaseClient
         .from("connected_accounts")
-        .select("status, account_name, page_id")
+        .select("status, account_name, external_user_id")
         .eq("user_id", user.id)
         .eq("platform", "facebook")
         .maybeSingle();
@@ -460,7 +454,7 @@
         return;
       }
 
-      setConnectedState(data.account_name, data.page_id);
+      setConnectedState(data.account_name, data.external_user_id);
     }
 
     async function disconnectFacebook() {
