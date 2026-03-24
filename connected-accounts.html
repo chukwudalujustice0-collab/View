@@ -6,29 +6,22 @@
   <title>Connected Accounts | View</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
-
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
     body {
       margin: 0;
       background: #f4f7fc;
       color: #111827;
       padding: 24px 16px 40px;
     }
-
     .wrap {
       max-width: 520px;
       margin: 0 auto;
     }
-
     .title {
       font-size: 32px;
       font-weight: 800;
       margin: 0 0 20px;
     }
-
     .notice {
       display: none;
       padding: 12px 14px;
@@ -37,25 +30,10 @@
       font-size: 14px;
       line-height: 1.5;
     }
-
-    .notice.show {
-      display: block;
-    }
-
-    .notice.error {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-
-    .notice.success {
-      background: #dcfce7;
-      color: #15803d;
-    }
-
-    .notice.info {
-      background: #dbeafe;
-      color: #1d4ed8;
-    }
+    .notice.show { display: block; }
+    .notice.error { background: #fee2e2; color: #b91c1c; }
+    .notice.success { background: #dcfce7; color: #15803d; }
+    .notice.info { background: #dbeafe; color: #1d4ed8; }
 
     .card {
       background: #ffffff;
@@ -63,7 +41,6 @@
       padding: 24px 20px;
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     }
-
     .card-head {
       display: flex;
       justify-content: space-between;
@@ -71,13 +48,11 @@
       gap: 12px;
       margin-bottom: 14px;
     }
-
     .card-head h2 {
       margin: 0;
       font-size: 22px;
       font-weight: 800;
     }
-
     .status {
       display: inline-flex;
       align-items: center;
@@ -90,32 +65,27 @@
       background: #fee2e2;
       color: #b91c1c;
     }
-
     .status.connected {
       background: #dcfce7;
       color: #15803d;
     }
-
     .desc {
       margin: 0 0 20px;
       font-size: 15px;
       color: #4b5563;
       line-height: 1.6;
     }
-
     .meta {
       margin: 0 0 20px;
       font-size: 15px;
       color: #374151;
       line-height: 1.6;
     }
-
     .btns {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
-
     button {
       border: none;
       border-radius: 14px;
@@ -124,32 +94,23 @@
       font-weight: 800;
       cursor: pointer;
     }
-
     .btn-connect {
       background: #1d4ed8;
       color: #fff;
     }
-
     .btn-disconnect {
       background: #fee2e2;
       color: #b91c1c;
     }
-
     .small {
       margin-top: 16px;
       font-size: 13px;
       color: #6b7280;
       line-height: 1.5;
     }
-
     @media (max-width: 520px) {
-      .btns {
-        grid-template-columns: 1fr;
-      }
-
-      .title {
-        font-size: 28px;
-      }
+      .btns { grid-template-columns: 1fr; }
+      .title { font-size: 28px; }
     }
   </style>
 </head>
@@ -182,6 +143,8 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    // Replace the line above with your full anon key if it got cut during paste.
+    // Use the exact anon key you sent earlier.
 
     const APP_ID = "921040053900296";
     const VERCEL_BASE_URL = "https://view-psi-lac.vercel.app";
@@ -196,29 +159,19 @@
       box.textContent = message;
     }
 
-    function clearNotice() {
-      const box = document.getElementById("notice");
-      box.className = "notice";
-      box.textContent = "";
-    }
-
     function setStatusConnected(name, handle = "") {
       const status = document.getElementById("status");
       const meta = document.getElementById("meta");
-
       status.textContent = "Connected";
       status.classList.add("connected");
-
       meta.textContent = handle ? `Connected as ${name} (${handle})` : `Connected as ${name}`;
     }
 
     function setStatusDisconnected() {
       const status = document.getElementById("status");
       const meta = document.getElementById("meta");
-
       status.textContent = "Not connected";
       status.classList.remove("connected");
-
       meta.textContent = "No Facebook account connected yet.";
     }
 
@@ -229,16 +182,13 @@
     }
 
     function connectFacebook() {
-      clearNotice();
-
-      const scope = "public_profile,email";
       const oauthUrl =
         "https://www.facebook.com/v20.0/dialog/oauth" +
         `?client_id=${encodeURIComponent(APP_ID)}` +
         `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
         `&state=${encodeURIComponent("view_facebook_connect")}` +
         `&response_type=code` +
-        `&scope=${encodeURIComponent(scope)}`;
+        `&scope=${encodeURIComponent("public_profile")}`;
 
       window.location.href = oauthUrl;
     }
@@ -284,10 +234,8 @@
     async function handleFacebookRedirect() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
-
       if (!code) return;
 
-      clearNotice();
       showNotice("Completing Facebook connection...", "info");
 
       try {
@@ -308,7 +256,6 @@
         }
 
         await saveConnectionToSupabase(result);
-
         window.history.replaceState({}, document.title, window.location.pathname);
       } catch (error) {
         showNotice(error.message || "Facebook connection failed.", "error");
