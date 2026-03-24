@@ -8,7 +8,6 @@
     :root{
       --primary:#0b5ed7;
       --primary-dark:#083b8a;
-      --bg:#f5f8ff;
       --card:#ffffff;
       --text:#1f1f1f;
       --soft:#6b7280;
@@ -51,10 +50,7 @@
       font-size:14px;
       background:#fff;
     }
-    .group input:focus{
-      outline:none;
-      border-color:var(--primary);
-    }
+    .group input:focus{outline:none;border-color:var(--primary)}
     .password-wrap{position:relative}
     .password-wrap input{padding-right:58px}
     .toggle{
@@ -78,11 +74,7 @@
       font-size:13px;
       color:var(--soft);
     }
-    .extras a{
-      color:var(--primary);
-      text-decoration:none;
-      font-weight:700;
-    }
+    .extras a{color:var(--primary);text-decoration:none;font-weight:700}
     .btn{
       width:100%;
       height:48px;
@@ -94,17 +86,6 @@
     }
     .btn-primary{background:var(--primary);color:#fff}
     .btn-primary:hover{background:var(--primary-dark)}
-    .btn-google{
-      background:#fff;
-      color:var(--text);
-      border:1px solid var(--border);
-    }
-    .divider{
-      text-align:center;
-      color:var(--soft);
-      font-size:12px;
-      margin:12px 0;
-    }
     .message{
       display:none;
       margin-top:12px;
@@ -114,46 +95,9 @@
       padding:10px;
       border-radius:10px;
     }
-    .message.error{
-      display:block;
-      color:var(--danger);
-      background:#fff5f5;
-      border:1px solid #fecaca;
-    }
-    .message.success{
-      display:block;
-      color:var(--success);
-      background:#f0fdf4;
-      border:1px solid #bbf7d0;
-    }
-    .message.info{
-      display:block;
-      color:#0b5ed7;
-      background:#eff6ff;
-      border:1px solid #bfdbfe;
-    }
-    .debug{
-      margin-top:14px;
-      font-size:12px;
-      color:#374151;
-      background:#f9fafb;
-      border:1px solid #e5e7eb;
-      border-radius:10px;
-      padding:10px;
-      white-space:pre-wrap;
-      display:none;
-    }
-    .bottom{
-      text-align:center;
-      margin-top:16px;
-      color:var(--soft);
-      font-size:14px;
-    }
-    .bottom a{
-      color:var(--primary);
-      font-weight:700;
-      text-decoration:none;
-    }
+    .message.error{display:block;color:var(--danger);background:#fff5f5;border:1px solid #fecaca}
+    .message.success{display:block;color:var(--success);background:#f0fdf4;border:1px solid #bbf7d0}
+    .message.info{display:block;color:#0b5ed7;background:#eff6ff;border:1px solid #bfdbfe}
   </style>
 </head>
 <body>
@@ -166,44 +110,26 @@
 
       <div class="head">
         <h2>Welcome Back</h2>
-        <p>Login with your email or username.</p>
+        <p>Login to continue.</p>
       </div>
 
       <form id="loginForm" novalidate>
         <div class="group">
-          <label for="loginValue">Email or Username</label>
-          <input type="text" id="loginValue" required />
+          <label for="email">Email</label>
+          <input type="email" id="email" required />
         </div>
 
         <div class="group">
           <label for="password">Password</label>
           <div class="password-wrap">
             <input type="password" id="password" required />
-            <span class="toggle" onclick="togglePassword('password', this)">Show</span>
+            <span class="toggle" onclick="togglePassword()">Show</span>
           </div>
         </div>
 
-        <div class="extras">
-          <label>
-            <input type="checkbox" id="rememberMe" />
-            Remember me
-          </label>
-          <a href="forgot-password.html">Forgot password?</a>
-        </div>
-
         <button type="submit" class="btn btn-primary" id="loginBtn">Login</button>
-
-        <div class="divider">OR</div>
-
-        <button type="button" class="btn btn-google" id="googleLoginBtn">Continue with Google</button>
-
         <div id="loginMessage" class="message"></div>
-        <div id="debugBox" class="debug"></div>
       </form>
-
-      <div class="bottom">
-        Don’t have an account? <a href="signup.html">Sign up</a>
-      </div>
     </div>
   </div>
 
@@ -212,14 +138,20 @@
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
 
-    function togglePassword(inputId, toggleElement){
-      const input = document.getElementById(inputId);
-      if (!input) return;
+    function togglePassword() {
+      const input = document.getElementById("password");
+      const toggle = document.querySelector(".toggle");
       const show = input.type === "password";
       input.type = show ? "text" : "password";
-      toggleElement.textContent = show ? "Hide" : "Show";
+      toggle.textContent = show ? "Hide" : "Show";
     }
 
     function showMessage(message, type = "error") {
@@ -228,120 +160,54 @@
       box.textContent = message;
     }
 
-    function showDebug(message) {
-      const box = document.getElementById("debugBox");
-      box.style.display = "block";
-      box.textContent = message;
+    function getNextPage() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("next") || "profile.html";
     }
 
-    async function findEmailFromUsername(username) {
-      const cleanUsername = String(username || "").trim().toLowerCase();
-
-      const { data, error } = await supabaseClient
-        .from("profiles")
-        .select("email")
-        .eq("username", cleanUsername)
-        .maybeSingle();
-
-      if (error) throw error;
-      if (!data?.email) throw new Error("Username not found.");
-
-      return data.email;
-    }
-
-    async function redirectIfAlreadyLoggedIn() {
-      const { data, error } = await supabaseClient.auth.getSession();
-      if (error) {
-        console.error("Session check error:", error.message);
-        return;
+    async function waitForSession(maxWaitMs = 4000) {
+      const start = Date.now();
+      while (Date.now() - start < maxWaitMs) {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (data.session?.user) return data.session;
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
-
-      if (data.session?.user) {
-        window.location.href = "dashboard.html";
-      }
+      return null;
     }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      await redirectIfAlreadyLoggedIn();
-    });
 
     document.getElementById("loginForm").addEventListener("submit", async function(event) {
       event.preventDefault();
-      event.stopPropagation();
 
       const loginBtn = document.getElementById("loginBtn");
-      const loginValue = document.getElementById("loginValue").value.trim();
+      const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      if (!loginValue || !password) {
-        showMessage("Enter your email or username and password.");
+      if (!email || !password) {
+        showMessage("Enter your email and password.");
         return;
       }
 
       loginBtn.disabled = true;
       loginBtn.textContent = "Logging in...";
-      showMessage("Checking account...", "info");
-      showDebug("");
+      showMessage("Signing in...", "info");
 
       try {
-        let emailToUse = loginValue;
-
-        if (!loginValue.includes("@")) {
-          showMessage("Checking username...", "info");
-          emailToUse = await findEmailFromUsername(loginValue);
-        }
-
-        showMessage("Signing in...", "info");
-
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email: emailToUse,
-          password
-        });
-
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        showMessage("Login successful. Redirecting...", "success");
-        showDebug(
-          "Login finished.\n" +
-          "User ID: " + (data?.user?.id || "none") + "\n" +
-          "Email: " + (data?.user?.email || emailToUse)
-        );
+        const session = data.session || await waitForSession();
+        if (!session?.user) throw new Error("Login completed but no active session was found.");
 
+        showMessage("Login successful. Redirecting...", "success");
         setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 1000);
+          window.location.href = getNextPage();
+        }, 700);
       } catch (error) {
-        console.error("Login error:", error);
         showMessage(error.message || "Login failed.");
-        showDebug(
-          "Exact error:\n" +
-          (error && error.message ? error.message : JSON.stringify(error, null, 2))
-        );
       } finally {
         loginBtn.disabled = false;
         loginBtn.textContent = "Login";
-      }
-    });
-
-    document.getElementById("googleLoginBtn").addEventListener("click", async function() {
-      try {
-        showMessage("Starting Google login...", "info");
-
-        const { error } = await supabaseClient.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: window.location.origin + "/dashboard.html"
-          }
-        });
-
-        if (error) throw error;
-      } catch (error) {
-        console.error("Google login error:", error);
-        showMessage(error.message || "Google login failed.");
-        showDebug(
-          "Google error:\n" +
-          (error && error.message ? error.message : JSON.stringify(error, null, 2))
-        );
       }
     });
   </script>
