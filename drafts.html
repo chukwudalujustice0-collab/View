@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Drafts | View</title>
+
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b5ed7" />
+
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+      --warning:#f59e0b;
+      --success:#16a34a;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
+    body{
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      padding-bottom:92px;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    button,input{
+      font:inherit;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .topbar-left,
+    .topbar-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .page-title h1{
+      font-size:22px;
+      color:var(--primary);
+      margin-bottom:2px;
+      line-height:1;
+    }
+
+    .page-title p{
+      font-size:12px;
+      color:var(--soft);
+    }
+
+    .icon-btn,
+    .primary-btn,
+    .outline-btn,
+    .chip,
+    .mini-btn{
+      border:none;
+      border-radius:12px;
+      min-height:42px;
+      padding:0 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .icon-btn{
+      width:42px;
+      padding:0;
+      background:#fff;
+      border:1px solid var(--border);
+      flex-shrink:0;
+    }
+
+    .primary-btn{
+      background:var(--primary);
+      color:#fff;
+      font-weight:700;
+    }
+
+    .primary-btn:hover{
+      background:var(--primary-dark);
+    }
+
+    .outline-btn,
+    .chip,
+    .mini-btn{
+      background:#fff;
+      color:var(--primary);
+      border:1px solid var(--border);
+      font-weight:700;
+    }
+
+    .chip{
+      min-height:38px;
+      border-radius:999px;
+      font-size:13px;
+    }
+
+    .chip.active{
+      background:rgba(11,94,215,.08);
+      border-color:rgba(11,94,215,.18);
+    }
+
+    .mini-btn{
+      min-height:36px;
+      border-radius:999px;
+      font-size:12px;
+      padding:0 12px;
+    }
+
+    .container{
+      max-width:1120px;
+      margin:0 auto;
+      padding:18px 16px 0;
+      display:grid;
+      grid-template-columns:1.05fr .85fr;
+      gap:20px;
+    }
+
+    .left-column,
+    .right-column{
+      display:grid;
+      gap:18px;
+      align-content:start;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:20px;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+
+    .section-head h2,
+    .section-head h3{
+      font-size:20px;
+      margin-bottom:4px;
+    }
+
+    .section-head p{
+      font-size:13px;
+      color:var(--soft);
+      line-height:1.5;
+    }
+
+    .small-link{
+      color:var(--primary);
+      font-size:13px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .search-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .search-row input{
+      flex:1;
+      min-width:220px;
+      height:46px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:0 14px;
+      background:#fff;
+      font-size:14px;
+    }
+
+    .search-row input:focus{
+      outline:none;
+      border-color:var(--primary);
+    }
+
+    .filters{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .drafts-list{
+      display:grid;
+      gap:14px;
+    }
+
+    .draft-card{
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .draft-top{
+      padding:16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+      border-bottom:1px solid var(--border);
+    }
+
+    .draft-title-wrap h4{
+      font-size:17px;
+      margin-bottom:5px;
+    }
+
+    .draft-title-wrap p{
+      font-size:13px;
+      color:var(--soft);
+      line-height:1.5;
+    }
+
+    .status{
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .status.warning{
+      background:rgba(245,158,11,.14);
+      color:var(--warning);
+    }
+
+    .status.success{
+      background:rgba(22,163,74,.1);
+      color:var(--success);
+    }
+
+    .draft-body{
+      padding:16px;
+      display:grid;
+      grid-template-columns:180px 1fr;
+      gap:16px;
+    }
+
+    .draft-preview{
+      height:140px;
+      border-radius:16px;
+      background:
+        linear-gradient(135deg, rgba(11,94,215,.14), rgba(255,255,255,.22)),
+        linear-gradient(135deg, #dbeafe, #f8fbff);
+      border:1px solid rgba(11,94,215,.1);
+      display:grid;
+      place-items:center;
+      color:var(--soft);
+      text-align:center;
+      font-size:13px;
+      font-weight:700;
+      padding:12px;
+    }
+
+    .draft-content h5{
+      font-size:14px;
+      margin-bottom:8px;
+      color:var(--primary);
+    }
+
+    .draft-content p{
+      font-size:14px;
+      line-height:1.6;
+      margin-bottom:12px;
+    }
+
+    .meta-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .meta-pill{
+      min-height:32px;
+      padding:0 10px;
+      border-radius:999px;
+      background:#f8fbff;
+      border:1px solid rgba(11,94,215,.12);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      color:var(--soft);
+      font-weight:700;
+    }
+
+    .action-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .summary-grid{
+      display:grid;
+      gap:12px;
+    }
+
+    .summary-item{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 0;
+      border-top:1px solid var(--border);
+      font-size:14px;
+    }
+
+    .summary-item:first-child{
+      border-top:none;
+      padding-top:0;
+    }
+
+    .summary-item span{
+      color:var(--soft);
+    }
+
+    .tip-box{
+      border:1px dashed rgba(11,94,215,.18);
+      border-radius:16px;
+      background:#f8fbff;
+      padding:16px;
+    }
+
+    .tip-box h4{
+      font-size:15px;
+      margin-bottom:6px;
+    }
+
+    .tip-box p{
+      font-size:13px;
+      color:var(--soft);
+      line-height:1.6;
+      margin-bottom:12px;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      background:#fff;
+      border-top:1px solid var(--border);
+      display:none;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      z-index:30;
+    }
+
+    .bottom-link{
+      min-height:54px;
+      border-radius:12px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:11px;
+      color:var(--soft);
+    }
+
+    .bottom-link.active{
+      color:var(--primary);
+      background:rgba(11,94,215,.08);
+      font-weight:700;
+    }
+
+    @media(max-width:960px){
+      .container{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media(max-width:760px){
+      .bottom-nav{
+        display:grid;
+      }
+
+      .draft-body{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media(max-width:640px){
+      .container{
+        padding:14px 12px 0;
+      }
+
+      .search-row{
+        flex-direction:column;
+      }
+
+      .search-row input{
+        min-width:100%;
+      }
+
+      .topbar-right .outline-btn{
+        display:none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='dashboard.html'">←</button>
+      <div class="page-title">
+        <h1>Drafts</h1>
+        <p>Continue unfinished posts and keep your ideas organized</p>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="outline-btn" onclick="window.location.href='create-post.html'">New Draft</button>
+      <button class="primary-btn" onclick="window.location.href='scheduled-posts.html'">Scheduled</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="left-column">
+      <section class="card">
+        <div class="search-row">
+          <input type="text" id="draftsSearch" placeholder="Search drafts by title, content, or tag..." />
+          <button class="primary-btn" id="draftsSearchBtn">Search</button>
+        </div>
+
+        <div class="filters">
+          <button class="chip active" data-draft-filter>All Drafts</button>
+          <button class="chip" data-draft-filter>Text</button>
+          <button class="chip" data-draft-filter>Image</button>
+          <button class="chip" data-draft-filter>Video</button>
+          <button class="chip" data-draft-filter>Scheduled Next</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Saved Drafts</h2>
+            <p>Your unfinished ideas, promos, and creator posts.</p>
+          </div>
+          <a href="create-post.html" class="small-link">Create fresh</a>
+        </div>
+
+        <div class="drafts-list">
+          <article class="draft-card" data-draft-card>
+            <div class="draft-top">
+              <div class="draft-title-wrap">
+                <h4>Promo Flyer Launch</h4>
+                <p>Last edited 2 hours ago • Ready for review and publish</p>
+              </div>
+              <span class="status warning">Needs review</span>
+            </div>
+
+            <div class="draft-body">
+              <div class="draft-preview">
+                Flyer preview<br />
+                Draft image area
+              </div>
+
+              <div class="draft-content">
+                <h5>Caption Preview</h5>
+                <p>
+                  We’re launching something fresh and premium on View. Create once,
+                  cross-post smarter, and grow your audience with less stress.
+                </p>
+
+                <div class="meta-row">
+                  <span class="meta-pill">Text + Image</span>
+                  <span class="meta-pill">Facebook</span>
+                  <span class="meta-pill">Instagram</span>
+                  <span class="meta-pill">#promo</span>
+                </div>
+
+                <div class="action-row">
+                  <button class="outline-btn" data-open-draft="draft_001">Open Draft</button>
+                  <button class="outline-btn" data-duplicate-draft="Promo Flyer Launch">Duplicate</button>
+                  <button class="outline-btn" data-delete-draft>Delete</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="draft-card" data-draft-card>
+            <div class="draft-top">
+              <div class="draft-title-wrap">
+                <h4>Business Update Video</h4>
+                <p>Last edited yesterday • Video post draft with creator tags</p>
+              </div>
+              <span class="status success">Almost ready</span>
+            </div>
+
+            <div class="draft-body">
+              <div class="draft-preview">
+                Video preview<br />
+                Draft media area
+              </div>
+
+              <div class="draft-content">
+                <h5>Caption Preview</h5>
+                <p>
+                  We’ve improved the creator dashboard experience. Better analytics,
+                  cleaner structure, and easier multi-platform publishing.
+                </p>
+
+                <div class="meta-row">
+                  <span class="meta-pill">Video</span>
+                  <span class="meta-pill">View</span>
+                  <span class="meta-pill">TikTok</span>
+                  <span class="meta-pill">#dashboard</span>
+                </div>
+
+                <div class="action-row">
+                  <button class="outline-btn" data-open-draft="draft_002">Open Draft</button>
+                  <button class="outline-btn" data-duplicate-draft="Business Update Video">Duplicate</button>
+                  <button class="outline-btn" data-delete-draft>Delete</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="draft-card" data-draft-card>
+            <div class="draft-top">
+              <div class="draft-title-wrap">
+                <h4>Weekend Sales Caption</h4>
+                <p>Saved 3 days ago • Text-only campaign draft</p>
+              </div>
+              <span class="status warning">Draft only</span>
+            </div>
+
+            <div class="draft-body">
+              <div class="draft-preview">
+                Text draft<br />
+                No media attached
+              </div>
+
+              <div class="draft-content">
+                <h5>Caption Preview</h5>
+                <p>
+                  Weekend sales are here. Get your audience’s attention with a bold
+                  promo, strong design, and fast posting across your linked platforms.
+                </p>
+
+                <div class="meta-row">
+                  <span class="meta-pill">Text</span>
+                  <span class="meta-pill">WhatsApp</span>
+                  <span class="meta-pill">View</span>
+                  <span class="meta-pill">#sales</span>
+                </div>
+
+                <div class="action-row">
+                  <button class="outline-btn" data-open-draft="draft_003">Open Draft</button>
+                  <button class="outline-btn" data-duplicate-draft="Weekend Sales Caption">Duplicate</button>
+                  <button class="outline-btn" data-delete-draft>Delete</button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <aside class="right-column">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Draft Summary</h3>
+            <p>Quick overview of saved content.</p>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span>Total Drafts</span>
+            <strong>6</strong>
+          </div>
+          <div class="summary-item">
+            <span>Image Drafts</span>
+            <strong>2</strong>
+          </div>
+          <div class="summary-item">
+            <span>Video Drafts</span>
+            <strong>1</strong>
+          </div>
+          <div class="summary-item">
+            <span>Ready to Publish</span>
+            <strong>3</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Quick Actions</h3>
+            <p>Move faster from drafts to publishing.</p>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="outline-btn" onclick="window.location.href='create-post.html'">Create New</button>
+          <button class="outline-btn" onclick="window.location.href='scheduled-posts.html'">Schedule Queue</button>
+          <button class="outline-btn" onclick="window.location.href='publish-history.html'">Publish History</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="tip-box">
+          <h4>Smart drafting tip</h4>
+          <p>
+            Save rough ideas early, then use View AI later to improve captions,
+            suggest hashtags, and prepare versions for each platform.
+          </p>
+          <button class="primary-btn" onclick="window.location.href='ai-help.html'">Open AI Help</button>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link">
+      <span>🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="explore.html" class="bottom-link">
+      <span>🔍</span>
+      <span>Explore</span>
+    </a>
+    <a href="create-post.html" class="bottom-link active">
+      <span>➕</span>
+      <span>Create</span>
+    </a>
+    <a href="messages.html" class="bottom-link">
+      <span>💬</span>
+      <span>Chat</span>
+    </a>
+    <a href="profile.html" class="bottom-link">
+      <span>👤</span>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="drafts.js"></script>
+</body>
+</html>

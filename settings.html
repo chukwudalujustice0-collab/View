@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Settings | View</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b5ed7" />
+
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+      --danger:#dc2626;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
+    button{font:inherit}
+    .topbar{
+      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;
+      align-items:center;gap:12px;flex-wrap:wrap
+    }
+    .topbar-left{display:flex;align-items:center;gap:10px}
+    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
+    .page-title p{font-size:12px;color:var(--soft)}
+    .icon-btn,.primary-btn,.outline-btn,.toggle-pill{
+      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+    }
+    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
+    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
+    .outline-btn,.toggle-pill{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
+    .container{
+      max-width:980px;margin:0 auto;padding:18px 16px 0;display:grid;gap:18px
+    }
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px
+    }
+    .section-head{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap
+    }
+    .section-head h2{font-size:20px;margin-bottom:4px}
+    .section-head p{font-size:13px;color:var(--soft);line-height:1.5}
+    .setting-list{display:grid;gap:12px}
+    .setting-item{
+      border:1px solid var(--border);border-radius:16px;padding:14px;background:#fff;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap
+    }
+    .setting-info h4{font-size:15px;margin-bottom:4px}
+    .setting-info p{font-size:12px;color:var(--soft);line-height:1.5}
+    .toggle-pill.active{
+      background:rgba(11,94,215,.08);
+      border-color:rgba(11,94,215,.18)
+    }
+    .action-row{display:flex;gap:10px;flex-wrap:wrap}
+    .danger-btn{
+      background:#fff;color:var(--danger);border:1px solid rgba(220,38,38,.18);font-weight:700
+    }
+    .bottom-nav{
+      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
+      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
+    }
+    .bottom-link{
+      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:4px;font-size:11px;color:var(--soft)
+    }
+    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
+    @media(max-width:760px){.bottom-nav{display:grid}}
+    @media(max-width:640px){.container{padding:14px 12px 0}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='profile.html'">←</button>
+      <div class="page-title">
+        <h1>Settings</h1>
+        <p>Control notifications, privacy, appearance, and account actions</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Preferences</h2>
+          <p>Turn app options on or off.</p>
+        </div>
+      </div>
+
+      <div class="setting-list">
+        <article class="setting-item">
+          <div class="setting-info">
+            <h4>Notifications</h4>
+            <p>Receive alerts for messages, publishing results, and account activity.</p>
+          </div>
+          <button class="toggle-pill active" data-setting-toggle data-enabled="true">On</button>
+        </article>
+
+        <article class="setting-item">
+          <div class="setting-info">
+            <h4>Dark Mode</h4>
+            <p>Enable darker appearance when available in your app theme system.</p>
+          </div>
+          <button class="toggle-pill" data-setting-toggle data-enabled="false">Off</button>
+        </article>
+
+        <article class="setting-item">
+          <div class="setting-info">
+            <h4>Private Account</h4>
+            <p>Require approval before new followers can see your private content.</p>
+          </div>
+          <button class="toggle-pill" data-setting-toggle data-enabled="false">Off</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Actions</h2>
+          <p>Save your changes or leave your account safely.</p>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="primary-btn" id="saveSettingsBtn">Save Settings</button>
+        <button class="outline-btn" onclick="window.location.href='support.html'">Support</button>
+        <button class="outline-btn danger-btn" id="logoutBtn">Logout</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
+    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
+    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
+    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
+    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>

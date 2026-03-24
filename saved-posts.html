@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Saved Posts | View</title>
+  <meta name="theme-color" content="#0b5ed7" />
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --danger:#dc2626;
+      --success:#16a34a;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
+    body{
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      padding-bottom:92px;
+    }
+
+    button{
+      font:inherit;
+      cursor:pointer;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--border);
+      padding:14px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .topbar-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .page-title h1{
+      font-size:22px;
+      color:var(--primary);
+      margin-bottom:2px;
+      line-height:1;
+    }
+
+    .page-title p{
+      font-size:12px;
+      color:var(--soft);
+    }
+
+    .icon-btn,
+    .primary-btn,
+    .outline-btn,
+    .mini-btn{
+      border:none;
+      border-radius:12px;
+      min-height:42px;
+      padding:0 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .icon-btn{
+      width:42px;
+      padding:0;
+      background:#fff;
+      border:1px solid var(--border);
+    }
+
+    .primary-btn{
+      background:var(--primary);
+      color:#fff;
+      font-weight:700;
+    }
+
+    .outline-btn,
+    .mini-btn{
+      background:#fff;
+      color:var(--primary);
+      border:1px solid var(--border);
+      font-weight:700;
+    }
+
+    .mini-btn{
+      min-height:36px;
+      padding:0 12px;
+      border-radius:999px;
+      font-size:12px;
+    }
+
+    .container{
+      max-width:760px;
+      margin:0 auto;
+      padding:18px 16px 0;
+      display:grid;
+      gap:18px;
+    }
+
+    .post-card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .post-head{
+      padding:16px 16px 10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+    }
+
+    .post-user{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .avatar{
+      width:48px;
+      height:48px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#dbeafe,#f8fbff);
+      border:1px solid rgba(11,94,215,.12);
+      display:grid;
+      place-items:center;
+      color:var(--primary);
+      font-weight:700;
+      overflow:hidden;
+      flex-shrink:0;
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .post-user-meta h3{
+      font-size:15px;
+      margin-bottom:2px;
+      word-break:break-word;
+    }
+
+    .post-user-meta p{
+      font-size:12px;
+      color:var(--soft);
+      word-break:break-word;
+    }
+
+    .post-content{
+      padding:0 16px 14px;
+      font-size:14px;
+      line-height:1.7;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .post-media{
+      margin:0 16px 14px;
+      min-height:180px;
+      border-radius:16px;
+      background:linear-gradient(135deg, rgba(11,94,215,.14), rgba(255,255,255,.2)), linear-gradient(135deg,#dbeafe,#f8fbff);
+      border:1px solid rgba(11,94,215,.12);
+      display:grid;
+      place-items:center;
+      color:var(--soft);
+      font-weight:700;
+      padding:14px;
+      text-align:center;
+      overflow:hidden;
+    }
+
+    .post-media img,
+    .post-media video{
+      width:100%;
+      max-height:420px;
+      object-fit:cover;
+      display:block;
+      border-radius:14px;
+    }
+
+    .post-actions{
+      padding:12px 16px 16px;
+      border-top:1px solid var(--border);
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .notice{
+      display:none;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .notice.error{
+      display:block;
+      background:#fff5f5;
+      color:var(--danger);
+      border:1px solid #fecaca;
+    }
+
+    .empty-state{
+      background:#fff;
+      border:1px dashed rgba(11,94,215,.18);
+      border-radius:16px;
+      padding:28px 18px;
+      text-align:center;
+    }
+
+    .empty-state h3{
+      font-size:18px;
+      margin-bottom:6px;
+    }
+
+    .empty-state p{
+      color:var(--soft);
+      font-size:14px;
+      line-height:1.6;
+      margin-bottom:14px;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      background:#fff;
+      border-top:1px solid var(--border);
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      z-index:60;
+    }
+
+    .bottom-link{
+      min-height:54px;
+      border-radius:12px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:11px;
+      color:var(--soft);
+    }
+
+    .bottom-link.active{
+      color:var(--primary);
+      background:rgba(11,94,215,.08);
+      font-weight:700;
+    }
+
+    @media(max-width:640px){
+      .container{
+        padding:14px 12px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='home.html'">←</button>
+      <div class="page-title">
+        <h1>Saved Posts</h1>
+        <p>Your bookmarked posts will appear here</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="savedNotice" class="notice"></div>
+    <section id="savedContainer"></section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
+    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
+    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
+    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
+    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const savedNotice = document.getElementById("savedNotice");
+    const savedContainer = document.getElementById("savedContainer");
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showNotice(message, type = "error") {
+      savedNotice.className = "notice " + type;
+      savedNotice.textContent = message;
+    }
+
+    function formatDate(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (isNaN(date.getTime())) return "";
+      return date.toLocaleString();
+    }
+
+    function buildMedia(post) {
+      if (!post.media_url) return "";
+
+      if (post.media_type === "image") {
+        return `<div class="post-media"><img src="${escapeHtml(post.media_url)}" alt="Post image"></div>`;
+      }
+
+      if (post.media_type === "video") {
+        return `<div class="post-media"><video controls src="${escapeHtml(post.media_url)}"></video></div>`;
+      }
+
+      return `<div class="post-media">Media attached</div>`;
+    }
+
+    async function getSessionUser() {
+      const { data } = await supabaseClient.auth.getSession();
+      return data?.session?.user || null;
+    }
+
+    async function loadSavedPosts() {
+      const user = await getSessionUser();
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const { data: savedRows, error: savedError } = await supabaseClient
+        .from("saved_posts")
+        .select("post_id, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (savedError) throw savedError;
+
+      if (!savedRows || !savedRows.length) {
+        savedContainer.innerHTML = `
+          <div class="empty-state">
+            <h3>No saved posts yet</h3>
+            <p>When you save posts from the feed, they will appear here.</p>
+            <button class="primary-btn" onclick="window.location.href='home.html'">Open Feed</button>
+          </div>
+        `;
+        return;
+      }
+
+      const postIds = savedRows.map(item => item.post_id);
+
+      const { data: posts, error: postError } = await supabaseClient
+        .from("posts")
+        .select("id,user_id,content,media_url,media_type,created_at,published_at")
+        .in("id", postIds);
+
+      if (postError) throw postError;
+
+      const userIds = [...new Set((posts || []).map(item => item.user_id).filter(Boolean))];
+
+      let profiles = [];
+      if (userIds.length) {
+        const { data: profileRows, error: profileError } = await supabaseClient
+          .from("profiles")
+          .select("id,full_name,username,avatar_url")
+          .in("id", userIds);
+
+        if (profileError) throw profileError;
+        profiles = profileRows || [];
+      }
+
+      const profileMap = new Map(profiles.map(item => [item.id, item]));
+      const postMap = new Map((posts || []).map(item => [item.id, item]));
+
+      savedContainer.innerHTML = savedRows.map(item => {
+        const post = postMap.get(item.post_id);
+        if (!post) return "";
+
+        const profile = profileMap.get(post.user_id) || {};
+        const displayName = profile.full_name || profile.username || "View User";
+        const username = profile.username ? "@" + profile.username : "@view_user";
+        const avatarLetter = displayName.charAt(0).toUpperCase();
+
+        return `
+          <article class="post-card">
+            <div class="post-head">
+              <div class="post-user">
+                <div class="avatar">
+                  ${profile.avatar_url ? `<img src="${escapeHtml(profile.avatar_url)}" alt="Avatar">` : avatarLetter}
+                </div>
+                <div class="post-user-meta">
+                  <h3>${escapeHtml(displayName)}</h3>
+                  <p>${escapeHtml(username)} • ${escapeHtml(formatDate(post.published_at || post.created_at))}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="post-content">${escapeHtml(post.content || "")}</div>
+
+            ${buildMedia(post)}
+
+            <div class="post-actions">
+              <button class="mini-btn" onclick="window.location.href='home.html'">Open Feed</button>
+              <button class="mini-btn" onclick="window.location.href='create-post.html'">Create</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    loadSavedPosts().catch((error) => {
+      console.error(error);
+      showNotice(error.message || "Could not load saved posts.");
+    });
+  </script>
+</body>
+</html>

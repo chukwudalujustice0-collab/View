@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connected Accounts | View</title>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .status {
+      float: right;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: #ffe5e5;
+      color: red;
+      font-size: 12px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 15px;
+      margin-right: 10px;
+    }
+
+    .primary {
+      background: #1e5eff;
+      color: white;
+    }
+
+    .danger {
+      background: #ffe5e5;
+      color: red;
+    }
+
+    .success {
+      background: #d4ffe0;
+      color: green;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<h2>Connected Accounts</h2>
+
+<div class="card">
+  <h3>
+    Facebook
+    <span id="status" class="status">disconnected</span>
+  </h3>
+
+  <p>Connect your Facebook for cross-posting</p>
+
+  <button class="btn primary" onclick="connectFacebook()">
+    Connect Facebook
+  </button>
+
+  <button class="btn danger" onclick="disconnectFacebook()">
+    Disconnect
+  </button>
+</div>
+
+<script>
+
+  // 🔥 INSERT YOUR REAL VALUES HERE
+  const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+  // Initialize Supabase (ONLY ONCE)
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  // Edge function URL
+  const FUNCTION_URL = SUPABASE_URL + "/functions/v1/facebook-connect";
+
+  // ✅ CONNECT FACEBOOK
+  function connectFacebook() {
+    window.location.href = FUNCTION_URL;
+  }
+
+  // ❌ DISCONNECT
+  function disconnectFacebook() {
+    localStorage.removeItem("fb_connected");
+    updateUI(false);
+  }
+
+  // 🔄 HANDLE REDIRECT FROM FACEBOOK
+  async function handleRedirect() {
+    const params = new URLSearchParams(window.location.search);
+
+    if (!params.get("code")) return;
+
+    try {
+      const res = await fetch(FUNCTION_URL + window.location.search);
+      const data = await res.json();
+
+      console.log("Facebook response:", data);
+
+      if (data.error) {
+        alert("Error: " + JSON.stringify(data));
+        return;
+      }
+
+      // Save connection locally (temporary)
+      localStorage.setItem("fb_connected", "true");
+
+      updateUI(true);
+
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    }
+  }
+
+  // 🎨 UPDATE UI
+  function updateUI(connected) {
+    const status = document.getElementById("status");
+
+    if (connected) {
+      status.innerText = "connected";
+      status.classList.remove("status");
+      status.classList.add("status", "success");
+    } else {
+      status.innerText = "disconnected";
+      status.classList.remove("success");
+      status.classList.add("status");
+    }
+  }
+
+  // 🚀 INIT
+  window.onload = function () {
+    handleRedirect();
+
+    const connected = localStorage.getItem("fb_connected");
+    updateUI(!!connected);
+  };
+
+</script>
+
+</body>
+</html>

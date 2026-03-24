@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comments | View</title>
+
+  <style>
+    :root {
+      --primary: #0b5ed7;
+      --primary-dark: #083b8a;
+      --accent: #ff3b3b;
+      --bg: #f5f8ff;
+      --card: #ffffff;
+      --text: #1f1f1f;
+      --soft-text: #6b7280;
+      --border: #e5e7eb;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      --radius: 18px;
+      --reply-bg: #f8fbff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 92px;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button,
+    textarea,
+    input {
+      font: inherit;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .topbar-left,
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn,
+    .primary-btn,
+    .outline-btn,
+    .mini-btn {
+      border: none;
+      border-radius: 12px;
+      min-height: 42px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .icon-btn {
+      width: 42px;
+      padding: 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .primary-btn {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .primary-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .outline-btn,
+    .mini-btn {
+      background: #fff;
+      color: var(--primary);
+      border: 1px solid var(--border);
+      font-weight: 700;
+    }
+
+    .page-title h1 {
+      font-size: 22px;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .page-title p {
+      font-size: 12px;
+      color: var(--soft-text);
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px 16px 0;
+      display: grid;
+      grid-template-columns: 1fr 0.82fr;
+      gap: 20px;
+    }
+
+    .left-column,
+    .right-column {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .post-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dbeafe, #f8fbff);
+      border: 1px solid rgba(11, 94, 215, 0.12);
+      flex-shrink: 0;
+    }
+
+    .post-head h3 {
+      font-size: 16px;
+      margin-bottom: 2px;
+    }
+
+    .post-head p {
+      color: var(--soft-text);
+      font-size: 12px;
+    }
+
+    .post-caption {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+
+    .post-media {
+      height: 220px;
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, rgba(11,94,215,0.12), rgba(255,255,255,0.2)),
+        linear-gradient(135deg, #dbeafe, #f8fbff);
+      border: 1px solid rgba(11, 94, 215, 0.1);
+      display: grid;
+      place-items: center;
+      color: var(--soft-text);
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .post-stats {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--soft-text);
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+
+    .post-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .section-head h2,
+    .section-head h3 {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .section-head p {
+      color: var(--soft-text);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .small-link {
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .replying-box {
+      border: 1px solid rgba(11, 94, 215, 0.14);
+      background: var(--reply-bg);
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .replying-box strong {
+      display: block;
+      color: var(--primary);
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+
+    .replying-box p {
+      font-size: 13px;
+      color: var(--soft-text);
+      line-height: 1.5;
+    }
+
+    .comment-composer {
+      display: grid;
+      gap: 12px;
+    }
+
+    .composer-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .composer-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #fff;
+      padding: 10px 12px;
+    }
+
+    .composer-input textarea {
+      width: 100%;
+      min-height: 58px;
+      border: none;
+      resize: vertical;
+      background: transparent;
+      outline: none;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .composer-tools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tool-btn {
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .comments-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .comment-card {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .comment-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .comment-user {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .comment-user .avatar {
+      width: 42px;
+      height: 42px;
+    }
+
+    .comment-user h4 {
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .comment-user span {
+      color: var(--soft-text);
+      font-size: 12px;
+    }
+
+    .comment-text {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 10px;
+      padding-left: 52px;
+    }
+
+    .comment-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-left: 52px;
+      margin-bottom: 10px;
+    }
+
+    .comment-actions .mini-btn {
+      min-height: 34px;
+      border-radius: 999px;
+      font-size: 12px;
+      padding: 0 10px;
+    }
+
+    .reply-block {
+      margin-left: 52px;
+      border-left: 2px solid rgba(11, 94, 215, 0.12);
+      padding-left: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .reply-card {
+      background: var(--reply-bg);
+      border: 1px solid rgba(11, 94, 215, 0.1);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .reply-card h5 {
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .reply-card span {
+      color: var(--soft-text);
+      font-size: 11px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .reply-card p {
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .side-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .side-item {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #fff;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .side-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .side-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(11, 94, 215, 0.08);
+      color: var(--primary);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .side-info h4 {
+      font-size: 15px;
+      margin-bottom: 3px;
+    }
+
+    .side-info p {
+      font-size: 12px;
+      color: var(--soft-text);
+      line-height: 1.5;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: none;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+      z-index: 30;
+    }
+
+    .bottom-link {
+      min-height: 54px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--soft-text);
+    }
+
+    .bottom-link.active {
+      color: var(--primary);
+      background: rgba(11, 94, 215, 0.08);
+      font-weight: 700;
+    }
+
+    @media (max-width: 980px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .bottom-nav {
+        display: grid;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        padding: 12px;
+      }
+
+      .page-title h1 {
+        font-size: 20px;
+      }
+
+      .container {
+        padding: 14px 12px 0;
+      }
+
+      .composer-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .comment-text,
+      .comment-actions,
+      .reply-block {
+        padding-left: 0;
+        margin-left: 0;
+        border-left: none;
+      }
+
+      .topbar-right .outline-btn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='home.html'">←</button>
+      <div class="page-title">
+        <h1>Comments</h1>
+        <p>Join the conversation on this post</p>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="outline-btn" onclick="window.location.href='saved-posts.html'">Saved</button>
+      <button class="primary-btn" onclick="window.location.href='create-post.html'">Create</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="left-column">
+      <section class="card">
+        <div class="post-head">
+          <div class="avatar"></div>
+          <div>
+            <h3>Ceetify Media</h3>
+            <p>2 hours ago • Business page</p>
+          </div>
+        </div>
+
+        <div class="post-caption">
+          We just updated the premium dashboard experience for View. Cross-posting,
+          wallet, analytics, AI support, and creator tools are now clearer and more powerful.
+        </div>
+
+        <div class="post-media">
+          Post image / design preview area
+        </div>
+
+        <div class="post-stats">
+          <span>❤️ 2.4K likes</span>
+          <span>💬 186 comments</span>
+          <span>🔁 94 shares</span>
+          <span>🔖 310 saves</span>
+        </div>
+
+        <div class="post-actions">
+          <button class="mini-btn">❤️ Like</button>
+          <button class="mini-btn">🔁 Share</button>
+          <button class="mini-btn">🔖 Save</button>
+          <button class="mini-btn">🔗 Copy Link</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Write a Comment</h2>
+            <p>Add your thoughts, reply to others, or continue the discussion.</p>
+          </div>
+        </div>
+
+        <div class="replying-box">
+          <div>
+            <strong>Replying to @praiseng</strong>
+            <p>This dashboard layout looks clean. I like the wallet and analytics sections.</p>
+          </div>
+          <button class="icon-btn" type="button">✕</button>
+        </div>
+
+        <div class="comment-composer">
+          <div class="composer-tools">
+            <button class="tool-btn" type="button">😊 Emoji</button>
+            <button class="tool-btn" type="button">GIF</button>
+            <button class="tool-btn" type="button">🧩 Sticker</button>
+            <button class="tool-btn" type="button"># Hashtag</button>
+            <button class="tool-btn" type="button">@ Mention</button>
+          </div>
+
+          <div class="composer-row">
+            <div class="composer-input">
+              <textarea placeholder="Write a comment..."></textarea>
+            </div>
+            <button class="primary-btn" type="button">Post Comment</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>All Comments</h2>
+            <p>Replies, reactions, and comment actions for this post.</p>
+          </div>
+          <a href="#" class="small-link">Newest first</a>
+        </div>
+
+        <div class="comments-list">
+          <article class="comment-card">
+            <div class="comment-top">
+              <div class="comment-user">
+                <div class="avatar"></div>
+                <div>
+                  <h4>Praise Ngozi</h4>
+                  <span>1 hour ago</span>
+                </div>
+              </div>
+              <button class="mini-btn">⋯</button>
+            </div>
+
+            <div class="comment-text">
+              This dashboard layout looks clean. I like the wallet and analytics sections.
+            </div>
+
+            <div class="comment-actions">
+              <button class="mini-btn">❤️ Like</button>
+              <button class="mini-btn">↩ Reply</button>
+              <button class="mini-btn">🔗 Copy</button>
+              <button class="mini-btn">⚠ Report</button>
+            </div>
+
+            <div class="reply-block">
+              <div class="reply-card">
+                <h5>Justice</h5>
+                <span>45 mins ago</span>
+                <p>Exactly. That’s the premium direction we’re locking for View.</p>
+                <div class="comment-actions" style="padding-left:0; margin-bottom:0;">
+                  <button class="mini-btn">❤️ Like</button>
+                  <button class="mini-btn">↩ Reply</button>
+                  <button class="mini-btn">🗑 Delete</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="comment-card">
+            <div class="comment-top">
+              <div class="comment-user">
+                <div class="avatar"></div>
+                <div>
+                  <h4>Ceetify Media</h4>
+                  <span>38 mins ago</span>
+                </div>
+              </div>
+              <button class="mini-btn">⋯</button>
+            </div>
+
+            <div class="comment-text">
+              Don’t forget to include followers, following, stickers, story highlights,
+              voice and video calls, and better comment replies before moving to JS.
+            </div>
+
+            <div class="comment-actions">
+              <button class="mini-btn">❤️ 12</button>
+              <button class="mini-btn">↩ Reply</button>
+              <button class="mini-btn">🔗 Copy</button>
+              <button class="mini-btn">⚠ Report</button>
+            </div>
+          </article>
+
+          <article class="comment-card">
+            <div class="comment-top">
+              <div class="comment-user">
+                <div class="avatar"></div>
+                <div>
+                  <h4>Stock Flow Hub</h4>
+                  <span>20 mins ago</span>
+                </div>
+              </div>
+              <button class="mini-btn">⋯</button>
+            </div>
+
+            <div class="comment-text">
+              This is shaping up nicely. A clean content flow plus creator tools will make it stand out.
+            </div>
+
+            <div class="comment-actions">
+              <button class="mini-btn">❤️ Like</button>
+              <button class="mini-btn">↩ Reply</button>
+              <button class="mini-btn">🔗 Copy</button>
+              <button class="mini-btn">⚠ Report</button>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <aside class="right-column">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Comment Actions</h3>
+            <p>Important actions supported in this discussion flow.</p>
+          </div>
+        </div>
+
+        <div class="side-list">
+          <article class="side-item">
+            <div class="side-left">
+              <div class="side-icon">↩</div>
+              <div class="side-info">
+                <h4>Reply to Comment</h4>
+                <p>Respond directly to a specific comment thread.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="side-item">
+            <div class="side-left">
+              <div class="side-icon">❤️</div>
+              <div class="side-info">
+                <h4>Like Comment</h4>
+                <p>Show appreciation and highlight useful responses.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="side-item">
+            <div class="side-left">
+              <div class="side-icon">⚠</div>
+              <div class="side-info">
+                <h4>Report or Delete</h4>
+                <p>Keep discussions clean, safe, and manageable.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Engagement Summary</h3>
+            <p>Quick view of how this post is performing.</p>
+          </div>
+        </div>
+
+        <div class="side-list">
+          <article class="side-item">
+            <div class="side-left">
+              <div class="side-icon">📈</div>
+              <div class="side-info">
+                <h4>Top Engaged Post</h4>
+                <p>This post is currently one of your strongest conversations.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="side-item">
+            <div class="side-left">
+              <div class="side-icon">🤖</div>
+              <div class="side-info">
+                <h4>Ask View AI</h4>
+                <p>Get help drafting a better reply or summary of the comments.</p>
+              </div>
+            </div>
+            <button class="mini-btn" onclick="window.location.href='ai-help.html'">Open</button>
+          </article>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link">
+      <span>🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="explore.html" class="bottom-link">
+      <span>🔍</span>
+      <span>Explore</span>
+    </a>
+    <a href="create-post.html" class="bottom-link">
+      <span>➕</span>
+      <span>Create</span>
+    </a>
+    <a href="messages.html" class="bottom-link">
+      <span>💬</span>
+      <span>Chat</span>
+    </a>
+    <a href="profile.html" class="bottom-link active">
+      <span>👤</span>
+      <span>Profile</span>
+    </a>
+  </nav>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FAQ | View</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b5ed7" />
+
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
+    .topbar{
+      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:10px
+    }
+    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
+    .page-title p{font-size:12px;color:var(--soft)}
+    .icon-btn{
+      width:42px;height:42px;border:none;border-radius:12px;background:#fff;border:1px solid var(--border);cursor:pointer
+    }
+    .container{max-width:980px;margin:0 auto;padding:18px 16px 0}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px
+    }
+    .faq-list{display:grid;gap:12px}
+    .faq-item{
+      border:1px solid var(--border);border-radius:16px;background:#fff;overflow:hidden
+    }
+    .faq-question{
+      width:100%;background:#fff;border:none;padding:16px;text-align:left;font-size:15px;font-weight:700;cursor:pointer
+    }
+    .faq-answer{
+      display:none;padding:0 16px 16px;font-size:13px;color:var(--soft);line-height:1.6
+    }
+    .faq-answer.open{display:block}
+    .bottom-nav{
+      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
+      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
+    }
+    .bottom-link{
+      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:4px;font-size:11px;color:var(--soft)
+    }
+    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
+    @media(max-width:760px){.bottom-nav{display:grid}}
+    @media(max-width:640px){.container{padding:14px 12px 0}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <button class="icon-btn" onclick="window.location.href='support.html'">←</button>
+    <div class="page-title">
+      <h1>FAQ</h1>
+      <p>Answers to common questions about View</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="faq-list">
+        <article class="faq-item">
+          <button class="faq-question" data-faq-question>How does cross-posting work?</button>
+          <div class="faq-answer">You create once in View, choose connected destinations, and the system prepares the post for selected platforms.</div>
+        </article>
+
+        <article class="faq-item">
+          <button class="faq-question" data-faq-question>Why did my publish fail?</button>
+          <div class="faq-answer">Common reasons include expired connected accounts, platform restrictions, media format issues, or insufficient wallet balance.</div>
+        </article>
+
+        <article class="faq-item">
+          <button class="faq-question" data-faq-question>What is the wallet used for?</button>
+          <div class="faq-answer">Your wallet is used for publish charges, subscriptions, and premium creator tools inside View.</div>
+        </article>
+
+        <article class="faq-item">
+          <button class="faq-question" data-faq-question>Can AI rewrite my captions?</button>
+          <div class="faq-answer">Yes. View AI is designed to help with captions, hashtags, analytics explanations, and publishing support.</div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
+    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
+    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
+    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
+    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
+  </nav>
+
+  <script src="faq.js"></script>
+</body>
+</html>

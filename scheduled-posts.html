@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Scheduled Posts | View</title>
+
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b5ed7" />
+
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --accent:#ff3b3b;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+      --warning:#f59e0b;
+      --success:#16a34a;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
+    body{
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      padding-bottom:92px;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    button,input{
+      font:inherit;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .topbar-left,
+    .topbar-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .page-title h1{
+      font-size:22px;
+      color:var(--primary);
+      margin-bottom:2px;
+      line-height:1;
+    }
+
+    .page-title p{
+      font-size:12px;
+      color:var(--soft);
+    }
+
+    .icon-btn,
+    .primary-btn,
+    .outline-btn,
+    .chip,
+    .mini-btn{
+      border:none;
+      border-radius:12px;
+      min-height:42px;
+      padding:0 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .icon-btn{
+      width:42px;
+      padding:0;
+      background:#fff;
+      border:1px solid var(--border);
+      flex-shrink:0;
+    }
+
+    .primary-btn{
+      background:var(--primary);
+      color:#fff;
+      font-weight:700;
+    }
+
+    .primary-btn:hover{
+      background:var(--primary-dark);
+    }
+
+    .outline-btn,
+    .chip,
+    .mini-btn{
+      background:#fff;
+      color:var(--primary);
+      border:1px solid var(--border);
+      font-weight:700;
+    }
+
+    .chip{
+      min-height:38px;
+      border-radius:999px;
+      font-size:13px;
+    }
+
+    .chip.active{
+      background:rgba(11,94,215,.08);
+      border-color:rgba(11,94,215,.18);
+    }
+
+    .mini-btn{
+      min-height:36px;
+      border-radius:999px;
+      font-size:12px;
+      padding:0 12px;
+    }
+
+    .container{
+      max-width:1120px;
+      margin:0 auto;
+      padding:18px 16px 0;
+      display:grid;
+      grid-template-columns:1.05fr .85fr;
+      gap:20px;
+    }
+
+    .left-column,
+    .right-column{
+      display:grid;
+      gap:18px;
+      align-content:start;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:20px;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+
+    .section-head h2,
+    .section-head h3{
+      font-size:20px;
+      margin-bottom:4px;
+    }
+
+    .section-head p{
+      font-size:13px;
+      color:var(--soft);
+      line-height:1.5;
+    }
+
+    .small-link{
+      color:var(--primary);
+      font-size:13px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .search-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .search-row input{
+      flex:1;
+      min-width:220px;
+      height:46px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:0 14px;
+      background:#fff;
+      font-size:14px;
+    }
+
+    .search-row input:focus{
+      outline:none;
+      border-color:var(--primary);
+    }
+
+    .filters{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .scheduled-list{
+      display:grid;
+      gap:14px;
+    }
+
+    .scheduled-card{
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .scheduled-top{
+      padding:16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+      border-bottom:1px solid var(--border);
+    }
+
+    .scheduled-title-wrap h4{
+      font-size:17px;
+      margin-bottom:5px;
+    }
+
+    .scheduled-title-wrap p{
+      font-size:13px;
+      color:var(--soft);
+      line-height:1.5;
+    }
+
+    .status{
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .status.warning{
+      background:rgba(245,158,11,.14);
+      color:var(--warning);
+    }
+
+    .status.success{
+      background:rgba(22,163,74,.1);
+      color:var(--success);
+    }
+
+    .scheduled-body{
+      padding:16px;
+      display:grid;
+      grid-template-columns:180px 1fr;
+      gap:16px;
+    }
+
+    .scheduled-preview{
+      height:140px;
+      border-radius:16px;
+      background:
+        linear-gradient(135deg, rgba(11,94,215,.14), rgba(255,255,255,.22)),
+        linear-gradient(135deg, #dbeafe, #f8fbff);
+      border:1px solid rgba(11,94,215,.1);
+      display:grid;
+      place-items:center;
+      color:var(--soft);
+      text-align:center;
+      font-size:13px;
+      font-weight:700;
+      padding:12px;
+    }
+
+    .scheduled-content h5{
+      font-size:14px;
+      margin-bottom:8px;
+      color:var(--primary);
+    }
+
+    .scheduled-content p{
+      font-size:14px;
+      line-height:1.6;
+      margin-bottom:12px;
+    }
+
+    .meta-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .meta-pill{
+      min-height:32px;
+      padding:0 10px;
+      border-radius:999px;
+      background:#f8fbff;
+      border:1px solid rgba(11,94,215,.12);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      color:var(--soft);
+      font-weight:700;
+    }
+
+    .action-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .summary-grid{
+      display:grid;
+      gap:12px;
+    }
+
+    .summary-item{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 0;
+      border-top:1px solid var(--border);
+      font-size:14px;
+    }
+
+    .summary-item:first-child{
+      border-top:none;
+      padding-top:0;
+    }
+
+    .summary-item span{
+      color:var(--soft);
+    }
+
+    .tip-box{
+      border:1px dashed rgba(11,94,215,.18);
+      border-radius:16px;
+      background:#f8fbff;
+      padding:16px;
+    }
+
+    .tip-box h4{
+      font-size:15px;
+      margin-bottom:6px;
+    }
+
+    .tip-box p{
+      font-size:13px;
+      color:var(--soft);
+      line-height:1.6;
+      margin-bottom:12px;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      background:#fff;
+      border-top:1px solid var(--border);
+      display:none;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      z-index:30;
+    }
+
+    .bottom-link{
+      min-height:54px;
+      border-radius:12px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:11px;
+      color:var(--soft);
+    }
+
+    .bottom-link.active{
+      color:var(--primary);
+      background:rgba(11,94,215,.08);
+      font-weight:700;
+    }
+
+    @media(max-width:960px){
+      .container{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media(max-width:760px){
+      .bottom-nav{
+        display:grid;
+      }
+
+      .scheduled-body{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media(max-width:640px){
+      .container{
+        padding:14px 12px 0;
+      }
+
+      .search-row{
+        flex-direction:column;
+      }
+
+      .search-row input{
+        min-width:100%;
+      }
+
+      .topbar-right .outline-btn{
+        display:none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='dashboard.html'">←</button>
+      <div class="page-title">
+        <h1>Scheduled Posts</h1>
+        <p>Manage your queued content and publishing timeline</p>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="outline-btn" onclick="window.location.href='drafts.html'">Drafts</button>
+      <button class="primary-btn" onclick="window.location.href='create-post.html'">New Schedule</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="left-column">
+      <section class="card">
+        <div class="search-row">
+          <input type="text" id="scheduledSearch" placeholder="Search scheduled posts by title, caption, or platform..." />
+          <button class="primary-btn" id="scheduledSearchBtn">Search</button>
+        </div>
+
+        <div class="filters">
+          <button class="chip active" data-scheduled-filter>All Queue</button>
+          <button class="chip" data-scheduled-filter>Today</button>
+          <button class="chip" data-scheduled-filter>This Week</button>
+          <button class="chip" data-scheduled-filter>Facebook</button>
+          <button class="chip" data-scheduled-filter>Instagram</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Scheduled Queue</h2>
+            <p>Posts arranged for future publishing across connected platforms.</p>
+          </div>
+          <a href="publish-history.html" class="small-link">View history</a>
+        </div>
+
+        <div class="scheduled-list">
+          <article class="scheduled-card" data-scheduled-card>
+            <div class="scheduled-top">
+              <div class="scheduled-title-wrap">
+                <h4>Weekend Sales Promo</h4>
+                <p>Scheduled for tomorrow • 10:30 AM • Facebook + Instagram + View</p>
+              </div>
+              <span class="status warning">Upcoming</span>
+            </div>
+
+            <div class="scheduled-body">
+              <div class="scheduled-preview">
+                Promo poster<br />
+                Scheduled preview
+              </div>
+
+              <div class="scheduled-content">
+                <h5>Caption Preview</h5>
+                <p>
+                  Weekend sales start tomorrow. Get ready for premium offers,
+                  clear updates, and stronger brand reach through View.
+                </p>
+
+                <div class="meta-row">
+                  <span class="meta-pill">Image Post</span>
+                  <span class="meta-pill">10:30 AM</span>
+                  <span class="meta-pill">Facebook</span>
+                  <span class="meta-pill">Instagram</span>
+                </div>
+
+                <div class="action-row">
+                  <button class="outline-btn" data-edit-scheduled="schedule_001">Edit</button>
+                  <button class="outline-btn" data-publish-now="Weekend Sales Promo">Publish Now</button>
+                  <button class="outline-btn" data-cancel-scheduled>Cancel</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="scheduled-card" data-scheduled-card>
+            <div class="scheduled-top">
+              <div class="scheduled-title-wrap">
+                <h4>Creator Dashboard Update</h4>
+                <p>Scheduled for Friday • 6:00 PM • View + TikTok</p>
+              </div>
+              <span class="status success">Ready</span>
+            </div>
+
+            <div class="scheduled-body">
+              <div class="scheduled-preview">
+                Video preview<br />
+                Dashboard clip
+              </div>
+
+              <div class="scheduled-content">
+                <h5>Caption Preview</h5>
+                <p>
+                  The View dashboard keeps getting better. Better layout,
+                  stronger monetization flow, and smarter creator tools.
+                </p>
+
+                <div class="meta-row">
+                  <span class="meta-pill">Video</span>
+                  <span class="meta-pill">6:00 PM</span>
+                  <span class="meta-pill">View</span>
+                  <span class="meta-pill">TikTok</span>
+                </div>
+
+                <div class="action-row">
+                  <button class="outline-btn" data-edit-scheduled="schedule_002">Edit</button>
+                  <button class="outline-btn" data-publish-now="Creator Dashboard Update">Publish Now</button>
+                  <button class="outline-btn" data-cancel-scheduled>Cancel</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="scheduled-card" data-scheduled-card>
+            <div class="scheduled-top">
+              <div class="scheduled-title-wrap">
+                <h4>Business Service Announcement</h4>
+                <p>Scheduled for next week • 8:15 AM • WhatsApp + View</p>
+              </div>
+              <span class="status warning">Queued</span>
+            </div>
+
+            <div class="scheduled-body">
+              <div class="scheduled-preview">
+                Service card<br />
+                Scheduled design
+              </div>
+
+              <div class="scheduled-content">
+                <h5>Caption Preview</h5>
+                <p>
+                  We’re expanding our services and making publishing easier for brands,
+                  creators, and business owners using View.
+                </p>
+
+                <div class="meta-row">
+                  <span class="meta-pill">Text + Image</span>
+                  <span class="meta-pill">8:15 AM</span>
+                  <span class="meta-pill">WhatsApp</span>
+                  <span class="meta-pill">View</span>
+                </div>
+
+                <div class="action-row">
+                  <button class="outline-btn" data-edit-scheduled="schedule_003">Edit</button>
+                  <button class="outline-btn" data-publish-now="Business Service Announcement">Publish Now</button>
+                  <button class="outline-btn" data-cancel-scheduled>Cancel</button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <aside class="right-column">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Queue Summary</h3>
+            <p>How your publishing calendar is looking.</p>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span>Total Scheduled</span>
+            <strong>4</strong>
+          </div>
+          <div class="summary-item">
+            <span>Today</span>
+            <strong>1</strong>
+          </div>
+          <div class="summary-item">
+            <span>This Week</span>
+            <strong>3</strong>
+          </div>
+          <div class="summary-item">
+            <span>Highest Traffic Time</span>
+            <strong>6:00 PM</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Quick Actions</h3>
+            <p>Move fast between scheduling tools.</p>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="outline-btn" onclick="window.location.href='create-post.html'">Create Post</button>
+          <button class="outline-btn" onclick="window.location.href='drafts.html'">Open Drafts</button>
+          <button class="outline-btn" onclick="window.location.href='connected-accounts.html'">Accounts</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="tip-box">
+          <h4>Scheduling tip</h4>
+          <p>
+            Use View AI to rewrite captions for each platform before scheduling,
+            so one post performs better across all connected destinations.
+          </p>
+          <button class="primary-btn" onclick="window.location.href='ai-help.html'">Open AI Help</button>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link">
+      <span>🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="explore.html" class="bottom-link">
+      <span>🔍</span>
+      <span>Explore</span>
+    </a>
+    <a href="create-post.html" class="bottom-link active">
+      <span>➕</span>
+      <span>Create</span>
+    </a>
+    <a href="messages.html" class="bottom-link">
+      <span>💬</span>
+      <span>Chat</span>
+    </a>
+    <a href="profile.html" class="bottom-link">
+      <span>👤</span>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="scheduled-posts.js"></script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Notifications | View</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b5ed7" />
+
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
+    a{text-decoration:none;color:inherit}
+    button,input{font:inherit}
+    .topbar{
+      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;
+      align-items:center;gap:12px;flex-wrap:wrap
+    }
+    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
+    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
+    .page-title p{font-size:12px;color:var(--soft)}
+    .icon-btn,.primary-btn,.outline-btn,.chip,.mini-btn{
+      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+    }
+    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
+    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
+    .outline-btn,.chip,.mini-btn{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
+    .chip{min-height:38px;border-radius:999px;font-size:13px}
+    .chip.active{background:rgba(11,94,215,.08);border-color:rgba(11,94,215,.18)}
+    .mini-btn{min-height:36px;border-radius:999px;font-size:12px;padding:0 12px}
+    .container{max-width:980px;margin:0 auto;padding:18px 16px 0}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+    .section-head{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap
+    }
+    .section-head h2{font-size:20px;margin-bottom:4px}
+    .section-head p{font-size:13px;color:var(--soft)}
+    .filters{display:flex;gap:10px;flex-wrap:wrap}
+    .notifications-list{display:grid;gap:12px}
+    .notification-card{
+      border:1px solid var(--border);border-radius:16px;background:#fff;padding:14px;display:flex;
+      justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap
+    }
+    .notification-card.unread{background:#f8fbff;border-color:rgba(11,94,215,.18)}
+    .notification-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+    .icon-box{
+      width:46px;height:46px;border-radius:14px;background:rgba(11,94,215,.08);color:var(--primary);
+      display:grid;place-items:center;font-weight:700;flex-shrink:0
+    }
+    .notification-info h4{font-size:15px;margin-bottom:3px}
+    .notification-info p{font-size:12px;color:var(--soft);line-height:1.5}
+    .notification-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .bottom-nav{
+      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
+      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
+    }
+    .bottom-link{
+      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:4px;font-size:11px;color:var(--soft)
+    }
+    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
+    @media(max-width:760px){.bottom-nav{display:grid}}
+    @media(max-width:640px){
+      .container{padding:14px 12px 0}
+      .topbar-right .outline-btn{display:none}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='dashboard.html'">←</button>
+      <div class="page-title">
+        <h1>Notifications</h1>
+        <p>Activity alerts from posts, wallet, chat, and publishing</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="outline-btn" id="markAllReadBtn">Mark all read</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card" style="margin-bottom:18px;">
+      <div class="filters">
+        <button class="chip active" data-notification-filter>All</button>
+        <button class="chip" data-notification-filter>Unread</button>
+        <button class="chip" data-notification-filter>Messages</button>
+        <button class="chip" data-notification-filter>Publishing</button>
+        <button class="chip" data-notification-filter>Payments</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>Recent Notifications</h2>
+          <p>Your latest activity and system updates.</p>
+        </div>
+      </div>
+
+      <div class="notifications-list">
+        <article class="notification-card unread" data-notification-card data-read="false">
+          <div class="notification-left">
+            <div class="icon-box">💬</div>
+            <div class="notification-info">
+              <h4>New message from Ceetify Media</h4>
+              <p>Your dashboard structure looks strong. Continue the conversation.</p>
+            </div>
+          </div>
+          <div class="notification-actions">
+            <button class="mini-btn" data-notification-action="open-chat">Open</button>
+            <button class="mini-btn" data-notification-action="dismiss">Dismiss</button>
+          </div>
+        </article>
+
+        <article class="notification-card unread" data-notification-card data-read="false">
+          <div class="notification-left">
+            <div class="icon-box">📤</div>
+            <div class="notification-info">
+              <h4>Post published successfully</h4>
+              <p>Your post was sent to View, Facebook, and Instagram.</p>
+            </div>
+          </div>
+          <div class="notification-actions">
+            <button class="mini-btn" data-notification-action="open-post">View</button>
+            <button class="mini-btn" data-notification-action="dismiss">Dismiss</button>
+          </div>
+        </article>
+
+        <article class="notification-card" data-notification-card data-read="true">
+          <div class="notification-left">
+            <div class="icon-box">💳</div>
+            <div class="notification-info">
+              <h4>Wallet funded</h4>
+              <p>Your wallet has been credited successfully.</p>
+            </div>
+          </div>
+          <div class="notification-actions">
+            <button class="mini-btn" data-notification-action="open-wallet">Open Wallet</button>
+            <button class="mini-btn" data-notification-action="dismiss">Dismiss</button>
+          </div>
+        </article>
+
+        <article class="notification-card" data-notification-card data-read="true">
+          <div class="notification-left">
+            <div class="icon-box">📞</div>
+            <div class="notification-info">
+              <h4>Missed call from Praise Ngozi</h4>
+              <p>You missed a video call 20 minutes ago.</p>
+            </div>
+          </div>
+          <div class="notification-actions">
+            <button class="mini-btn" data-notification-action="open-call">Call Back</button>
+            <button class="mini-btn" data-notification-action="dismiss">Dismiss</button>
+          </div>
+        </article>
+
+        <article class="notification-card" data-notification-card data-read="true">
+          <div class="notification-left">
+            <div class="icon-box">👤</div>
+            <div class="notification-info">
+              <h4>New follower</h4>
+              <p>Stock Flow Hub started following your profile.</p>
+            </div>
+          </div>
+          <div class="notification-actions">
+            <button class="mini-btn" data-notification-action="open-profile">Profile</button>
+            <button class="mini-btn" data-notification-action="dismiss">Dismiss</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
+    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
+    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
+    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
+    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="notifications.js"></script>
+</body>
+</html>

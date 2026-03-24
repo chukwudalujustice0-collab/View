@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Call | View</title>
+  <meta name="theme-color" content="#0b5ed7" />
+  <style>
+    :root{
+      --primary:#0b5ed7;--danger:#ff3b3b;--success:#16a34a;--text:#fff
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{
+      min-height:100vh;color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(11,94,215,.34), transparent 28%),
+        radial-gradient(circle at top right, rgba(255,59,59,.16), transparent 22%),
+        linear-gradient(135deg, #08111f 0%, #10213f 46%, #0a1424 100%);
+      display:flex;align-items:center;justify-content:center;padding:20px
+    }
+    .shell{width:100%;max-width:420px;text-align:center}
+    .avatar{width:120px;height:120px;border-radius:50%;margin:0 auto 16px;background:linear-gradient(135deg,#dbeafe,#f8fbff);border:4px solid rgba(255,255,255,.16)}
+    h1{font-size:28px;margin-bottom:6px}
+    p{opacity:.82;margin-bottom:10px}
+    .timer{font-size:32px;font-weight:700;margin:16px 0}
+    .status{font-size:14px;opacity:.88;margin-bottom:22px}
+    .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+    .btn{min-height:52px;border:none;border-radius:16px;cursor:pointer;font:inherit;font-weight:700}
+    .ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.14)}
+    .accept{background:var(--success);color:#fff}
+    .end{background:var(--danger);color:#fff}
+    .bottom{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="avatar"></div>
+    <h1>Ceetify Media</h1>
+    <p>Video call</p>
+    <div id="callTimer" class="timer">02:18</div>
+    <div id="callStatusText" class="status">Call connected</div>
+
+    <div class="controls">
+      <button class="btn ghost" id="holdCallBtn" data-hold="false">⏳ Hold</button>
+      <button class="btn ghost" data-call-control data-active="false">🎤 Mute</button>
+      <button class="btn ghost" data-call-control data-active="false">📹 Camera</button>
+    </div>
+
+    <div class="bottom">
+      <button class="btn accept" id="acceptCallBtn">Accept</button>
+      <button class="btn ghost" id="declineCallBtn">Decline</button>
+      <button class="btn end" id="endCallBtn">End Call</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="call.js"></script>
+</body>
+</html>

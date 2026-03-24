@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Feed | View</title>
+
+  <style>
+    :root {
+      --primary: #0b5ed7;
+      --accent: #ff3b3b;
+      --text: #ffffff;
+      --soft-text: rgba(255, 255, 255, 0.82);
+      --card: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.14);
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: #08111f;
+      overflow: hidden;
+    }
+
+    body {
+      color: var(--text);
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button {
+      font: inherit;
+      border: none;
+      cursor: pointer;
+      background: none;
+      color: inherit;
+    }
+
+    .feed-shell {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+    }
+
+    .video-slide {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      scroll-snap-align: start;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(4, 10, 20, 0.18), rgba(4, 10, 20, 0.72)),
+        linear-gradient(135deg, #0d1d38, #183d78 48%, #08111f 100%);
+    }
+
+    .video-slide.alt-one {
+      background:
+        linear-gradient(180deg, rgba(4, 10, 20, 0.18), rgba(4, 10, 20, 0.72)),
+        linear-gradient(135deg, #12162f, #0b5ed7 46%, #08111f 100%);
+    }
+
+    .video-slide.alt-two {
+      background:
+        linear-gradient(180deg, rgba(4, 10, 20, 0.18), rgba(4, 10, 20, 0.72)),
+        linear-gradient(135deg, #25122b, #6d2dd8 46%, #08111f 100%);
+    }
+
+    .video-glow {
+      position: absolute;
+      inset: auto auto 18% -10%;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: rgba(11, 94, 215, 0.16);
+      filter: blur(40px);
+      pointer-events: none;
+    }
+
+    .video-glow.two {
+      inset: 8% -8% auto auto;
+      background: rgba(255, 59, 59, 0.12);
+    }
+
+    .topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 16px 8px;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.34), transparent);
+    }
+
+    .topbar-left,
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      font-size: 16px;
+    }
+
+    .feed-title {
+      text-align: center;
+    }
+
+    .feed-title h1 {
+      font-size: 20px;
+      margin-bottom: 2px;
+    }
+
+    .feed-title p {
+      font-size: 12px;
+      color: var(--soft-text);
+    }
+
+    .feed-tabs {
+      position: absolute;
+      top: 74px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      display: flex;
+      gap: 8px;
+      padding: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+    }
+
+    .feed-tab {
+      min-height: 34px;
+      padding: 0 14px;
+      border-radius: 999px;
+      color: var(--soft-text);
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .feed-tab.active {
+      background: #ffffff;
+      color: #0f172a;
+    }
+
+    .video-center {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 110px 80px 120px 80px;
+    }
+
+    .video-frame {
+      width: min(100%, 420px);
+      height: min(76vh, 760px);
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+        linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+      box-shadow: 0 26px 70px rgba(0, 0, 0, 0.34);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: end;
+      justify-content: center;
+    }
+
+    .video-frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.3)),
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.16), transparent 30%);
+    }
+
+    .video-placeholder {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 0.01em;
+    }
+
+    .play-badge {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      backdrop-filter: blur(10px);
+    }
+
+    .video-bottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 22px 18px 22px;
+      background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.58));
+      z-index: 2;
+    }
+
+    .creator-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dbeafe, #f8fbff);
+      border: 2px solid rgba(255, 255, 255, 0.16);
+      flex-shrink: 0;
+    }
+
+    .creator-meta h3 {
+      font-size: 15px;
+      margin-bottom: 2px;
+    }
+
+    .creator-meta p {
+      font-size: 12px;
+      color: var(--soft-text);
+    }
+
+    .follow-btn {
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #0f172a;
+      font-weight: 700;
+      margin-left: auto;
+    }
+
+    .caption {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    .caption span {
+      color: #9fd0ff;
+      font-weight: 700;
+    }
+
+    .audio-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--soft-text);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .side-actions {
+      position: absolute;
+      right: 14px;
+      bottom: 118px;
+      z-index: 12;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .action-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: #ffffff;
+      text-shadow: 0 8px 18px rgba(0, 0, 0, 0.26);
+    }
+
+    .action-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(10px);
+      font-size: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .action-item span {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--soft-text);
+    }
+
+    .left-floating {
+      position: absolute;
+      left: 14px;
+      top: 126px;
+      z-index: 12;
+      display: grid;
+      gap: 10px;
+    }
+
+    .floating-chip {
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(10px);
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      width: fit-content;
+    }
+
+    .progress-rail {
+      position: absolute;
+      top: 124px;
+      right: 74px;
+      bottom: 126px;
+      width: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      overflow: hidden;
+      z-index: 11;
+    }
+
+    .progress-fill {
+      width: 100%;
+      height: 34%;
+      border-radius: 999px;
+      background: #ffffff;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 25;
+      background: rgba(9, 14, 24, 0.82);
+      backdrop-filter: blur(18px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    }
+
+    .bottom-link {
+      min-height: 54px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--soft-text);
+    }
+
+    .bottom-link.active {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+      font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      .video-center {
+        padding: 108px 66px 110px 14px;
+      }
+
+      .video-frame {
+        width: min(100%, 390px);
+      }
+
+      .progress-rail {
+        right: 68px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .topbar {
+        padding: 12px 12px 8px;
+      }
+
+      .feed-title h1 {
+        font-size: 18px;
+      }
+
+      .feed-tabs {
+        top: 68px;
+      }
+
+      .left-floating {
+        left: 10px;
+        top: 116px;
+      }
+
+      .video-center {
+        padding: 104px 64px 106px 10px;
+      }
+
+      .video-frame {
+        width: 100%;
+        height: 72vh;
+        border-radius: 22px;
+      }
+
+      .side-actions {
+        right: 10px;
+        bottom: 112px;
+      }
+
+      .action-circle {
+        width: 48px;
+        height: 48px;
+      }
+
+      .progress-rail {
+        right: 60px;
+        top: 116px;
+        bottom: 118px;
+      }
+
+      .follow-btn {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="feed-shell">
+    <section class="video-slide">
+      <div class="video-glow"></div>
+      <div class="video-glow two"></div>
+
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-btn" onclick="window.location.href='explore.html'">←</button>
+        </div>
+
+        <div class="feed-title">
+          <h1>View Videos</h1>
+          <p>Your world, your view</p>
+        </div>
+
+        <div class="topbar-right">
+          <button class="icon-btn" onclick="window.location.href='notifications.html'">🔔</button>
+        </div>
+      </header>
+
+      <div class="feed-tabs">
+        <button class="feed-tab active">For You</button>
+        <button class="feed-tab">Following</button>
+      </div>
+
+      <div class="left-floating">
+        <div class="floating-chip">🔥 Trending</div>
+        <div class="floating-chip">📈 24K Views</div>
+      </div>
+
+      <div class="progress-rail">
+        <div class="progress-fill"></div>
+      </div>
+
+      <div class="video-center">
+        <div class="video-frame">
+          <div class="play-badge">▶ Playing</div>
+          <div class="video-placeholder">
+            Cross-post walkthrough video
+          </div>
+
+          <div class="video-bottom">
+            <div class="creator-row">
+              <div class="avatar"></div>
+              <div class="creator-meta">
+                <h3>@ceetifymedia</h3>
+                <p>Business tools • Creator tips</p>
+              </div>
+              <button class="follow-btn">Follow</button>
+            </div>
+
+            <div class="caption">
+              Post once and manage your content smarter with <span>#ViewApp</span> and
+              <span>#CeetifyEcosystem</span>. This is how creators save time and grow faster.
+            </div>
+
+            <div class="audio-row">🎵 Original audio • View Creator Studio</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-actions">
+        <div class="action-item">
+          <div class="action-circle">❤️</div>
+          <span>18.4K</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">💬</div>
+          <span>620</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">🔁</div>
+          <span>312</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">🔖</div>
+          <span>Save</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">🚩</div>
+          <span>Report</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="video-slide alt-one">
+      <div class="video-glow"></div>
+      <div class="video-glow two"></div>
+
+      <div class="left-floating">
+        <div class="floating-chip">💼 Business</div>
+        <div class="floating-chip">🚀 Promo Tips</div>
+      </div>
+
+      <div class="progress-rail">
+        <div class="progress-fill" style="height: 62%;"></div>
+      </div>
+
+      <div class="video-center">
+        <div class="video-frame">
+          <div class="play-badge">▶ Playing</div>
+          <div class="video-placeholder">
+            Small business promo ideas
+          </div>
+
+          <div class="video-bottom">
+            <div class="creator-row">
+              <div class="avatar"></div>
+              <div class="creator-meta">
+                <h3>@viewgrowthlab</h3>
+                <p>Growth strategy • Business pages</p>
+              </div>
+              <button class="follow-btn">Follow</button>
+            </div>
+
+            <div class="caption">
+              3 quick ways to make your next promo stand out on View.
+              Use strong visuals, short captions, and smart platform selection.
+            </div>
+
+            <div class="audio-row">🎵 Promo beat • Business growth lab</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-actions">
+        <div class="action-item">
+          <div class="action-circle">❤️</div>
+          <span>9.8K</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">💬</div>
+          <span>248</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">🔁</div>
+          <span>146</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">🔖</div>
+          <span>Save</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">🚩</div>
+          <span>Report</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="video-slide alt-two">
+      <div class="video-glow"></div>
+      <div class="video-glow two"></div>
+
+      <div class="left-floating">
+        <div class="floating-chip">🤖 AI Help</div>
+        <div class="floating-chip">📊 Analytics</div>
+      </div>
+
+      <div class="progress-rail">
+        <div class="progress-fill" style="height: 86%;"></div>
+      </div>
+
+      <div class="video-center">
+        <div class="video-frame">
+          <div class="play-badge">▶ Playing</div>
+          <div class="video-placeholder">
+            Analytics explained simply
+          </div>
+
+          <div class="video-bottom">
+            <div class="creator-row">
+              <div class="avatar"></div>
+              <div class="creator-meta">
+                <h3>@viewai</h3>
+                <p>AI support • Performance insights</p>
+              </div>
+              <button class="follow-btn">Follow</button>
+            </div>
+
+            <div class="caption">
+              Your reach is rising because your audience is responding to short, direct content.
+              Use analytics and AI together to improve your next post.
+            </div>
+
+            <div class="audio-row">🎵 AI explainer • View Support</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-actions">
+        <div class="action-item">
+          <div class="action-circle">❤️</div>
+          <span>6.1K</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">💬</div>
+          <span>190</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">🔁</div>
+          <span>88</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">🔖</div>
+          <span>Save</span>
+        </div>
+
+        <div class="action-item">
+          <div class="action-circle">🚩</div>
+          <span>Report</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link">
+      <span>🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="explore.html" class="bottom-link">
+      <span>🔍</span>
+      <span>Explore</span>
+    </a>
+    <a href="create-post.html" class="bottom-link">
+      <span>➕</span>
+      <span>Create</span>
+    </a>
+    <a href="messages.html" class="bottom-link">
+      <span>💬</span>
+      <span>Chat</span>
+    </a>
+    <a href="profile.html" class="bottom-link active">
+      <span>🎥</span>
+      <span>Videos</span>
+    </a>
+  </nav>
+</body>
+</html>

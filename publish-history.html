@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Publish History | View</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b5ed7" />
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+      --success:#16a34a;
+      --warning:#f59e0b;
+      --danger:#ff3b3b;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
+    a{text-decoration:none;color:inherit}
+    button,input{font:inherit}
+    .topbar{
+      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;
+      align-items:center;gap:12px;flex-wrap:wrap
+    }
+    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
+    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
+    .page-title p{font-size:12px;color:var(--soft)}
+    .icon-btn,.primary-btn,.outline-btn,.chip,.mini-btn{
+      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;
+      align-items:center;justify-content:center;cursor:pointer
+    }
+    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
+    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
+    .primary-btn:hover{background:var(--primary-dark)}
+    .outline-btn,.chip,.mini-btn{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
+    .chip{min-height:38px;border-radius:999px;font-size:13px}
+    .chip.active{background:rgba(11,94,215,.08);border-color:rgba(11,94,215,.18)}
+    .mini-btn{min-height:36px;border-radius:999px;font-size:12px;padding:0 12px}
+    .container{
+      max-width:1120px;margin:0 auto;padding:18px 16px 0;display:grid;grid-template-columns:1.05fr .85fr;gap:20px
+    }
+    .left-column,.right-column{display:grid;gap:18px;align-content:start}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px
+    }
+    .section-head{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap
+    }
+    .section-head h2,.section-head h3{font-size:20px;margin-bottom:4px}
+    .section-head p{font-size:13px;color:var(--soft);line-height:1.5}
+    .filters,.action-row{display:flex;gap:10px;flex-wrap:wrap}
+    .search-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .search-row input{
+      flex:1;min-width:220px;height:46px;border:1px solid var(--border);border-radius:14px;padding:0 14px;background:#fff
+    }
+    .search-row input:focus{outline:none;border-color:var(--primary)}
+    .history-list{display:grid;gap:14px}
+    .history-card{
+      border:1px solid var(--border);border-radius:18px;background:#fff;overflow:hidden
+    }
+    .history-top{
+      padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start
+    }
+    .history-title h4{font-size:17px;margin-bottom:4px}
+    .history-title p{font-size:13px;color:var(--soft);line-height:1.5}
+    .history-body{
+      padding:16px;display:grid;grid-template-columns:180px 1fr;gap:16px
+    }
+    .history-preview{
+      height:140px;border-radius:16px;background:
+      linear-gradient(135deg, rgba(11,94,215,.14), rgba(255,255,255,.22)),
+      linear-gradient(135deg, #dbeafe, #f8fbff);
+      border:1px solid rgba(11,94,215,.1);display:grid;place-items:center;color:var(--soft);
+      font-size:13px;font-weight:700;text-align:center;padding:12px
+    }
+    .history-content p{font-size:14px;line-height:1.6;margin-bottom:12px}
+    .meta-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .meta-pill{
+      min-height:32px;padding:0 10px;border-radius:999px;background:#f8fbff;border:1px solid rgba(11,94,215,.12);
+      display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:var(--soft);font-weight:700
+    }
+    .status{
+      min-height:30px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
+      font-size:12px;font-weight:700;white-space:nowrap
+    }
+    .status.success{background:rgba(22,163,74,.1);color:var(--success)}
+    .status.pending{background:rgba(245,158,11,.14);color:var(--warning)}
+    .status.failed{background:rgba(255,59,59,.1);color:var(--danger)}
+    .summary-grid{display:grid;gap:12px}
+    .summary-item{
+      display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border);font-size:14px
+    }
+    .summary-item:first-child{border-top:none;padding-top:0}
+    .summary-item span{color:var(--soft)}
+    .tip-box{
+      border:1px dashed rgba(11,94,215,.18);border-radius:16px;background:#f8fbff;padding:16px
+    }
+    .tip-box h4{font-size:15px;margin-bottom:6px}
+    .tip-box p{font-size:13px;color:var(--soft);line-height:1.6;margin-bottom:12px}
+    .bottom-nav{
+      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
+      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
+    }
+    .bottom-link{
+      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:4px;font-size:11px;color:var(--soft)
+    }
+    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
+    @media(max-width:960px){.container{grid-template-columns:1fr}}
+    @media(max-width:760px){
+      .bottom-nav{display:grid}
+      .history-body{grid-template-columns:1fr}
+    }
+    @media(max-width:640px){
+      .container{padding:14px 12px 0}
+      .search-row{flex-direction:column}
+      .topbar-right .outline-btn{display:none}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='dashboard.html'">←</button>
+      <div class="page-title">
+        <h1>Publish History</h1>
+        <p>Review successful, pending, and failed publishing jobs</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="outline-btn" onclick="window.location.href='create-post.html'">New Post</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="left-column">
+      <section class="card">
+        <div class="search-row">
+          <input type="text" id="publishHistorySearch" placeholder="Search publish history..." />
+          <button class="primary-btn" id="publishHistorySearchBtn">Search</button>
+        </div>
+
+        <div class="filters">
+          <button class="chip active" data-publish-filter>All</button>
+          <button class="chip" data-publish-filter>Success</button>
+          <button class="chip" data-publish-filter>Pending</button>
+          <button class="chip" data-publish-filter>Failed</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Recent Publish Jobs</h2>
+            <p>Each post shows its result across selected platforms.</p>
+          </div>
+        </div>
+
+        <div class="history-list">
+          <article class="history-card">
+            <div class="history-top">
+              <div class="history-title">
+                <h4>Promo Flyer Post</h4>
+                <p>Published to View, Facebook, and Instagram • Today</p>
+              </div>
+              <span class="status success">Success</span>
+            </div>
+            <div class="history-body">
+              <div class="history-preview">Flyer preview</div>
+              <div class="history-content">
+                <p>Campaign flyer post successfully delivered to selected platforms with complete media and caption formatting.</p>
+                <div class="meta-row">
+                  <span class="meta-pill">Image Post</span>
+                  <span class="meta-pill">₦45 Charge</span>
+                  <span class="meta-pill">3 Platforms</span>
+                </div>
+                <div class="action-row">
+                  <button class="outline-btn" data-publish-details="Promo Flyer Post">Details</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="history-card">
+            <div class="history-top">
+              <div class="history-title">
+                <h4>Creator Update Post</h4>
+                <p>One linked platform still processing • Today</p>
+              </div>
+              <span class="status pending">Pending</span>
+            </div>
+            <div class="history-body">
+              <div class="history-preview">Post preview</div>
+              <div class="history-content">
+                <p>The post is live on View and Facebook, while one destination is still waiting for final confirmation.</p>
+                <div class="meta-row">
+                  <span class="meta-pill">Text + Image</span>
+                  <span class="meta-pill">2/3 Complete</span>
+                  <span class="meta-pill">Awaiting sync</span>
+                </div>
+                <div class="action-row">
+                  <button class="outline-btn" data-publish-details="Creator Update Post">Details</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="history-card">
+            <div class="history-top">
+              <div class="history-title">
+                <h4>Video Promo</h4>
+                <p>TikTok publish failed because the account needs refresh</p>
+              </div>
+              <span class="status failed">Failed</span>
+            </div>
+            <div class="history-body">
+              <div class="history-preview">Video preview</div>
+              <div class="history-content">
+                <p>The post was not delivered to TikTok due to connection problems. Other selected platforms may still succeed.</p>
+                <div class="meta-row">
+                  <span class="meta-pill">Video Post</span>
+                  <span class="meta-pill">TikTok issue</span>
+                  <span class="meta-pill">Retry available</span>
+                </div>
+                <div class="action-row">
+                  <button class="outline-btn" data-retry-publish="Video Promo">Retry</button>
+                  <button class="outline-btn" data-publish-details="Video Promo">Details</button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <aside class="right-column">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>History Summary</h3>
+            <p>Quick publishing result overview.</p>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-item"><span>Total Jobs</span><strong>18</strong></div>
+          <div class="summary-item"><span>Successful</span><strong>13</strong></div>
+          <div class="summary-item"><span>Pending</span><strong>3</strong></div>
+          <div class="summary-item"><span>Failed</span><strong>2</strong></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="tip-box">
+          <h4>History tip</h4>
+          <p>
+            Check failed jobs often so you can retry quickly after fixing connected accounts or wallet-related issues.
+          </p>
+          <button class="primary-btn" onclick="window.location.href='connected-accounts.html'">Check Accounts</button>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
+    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
+    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
+    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
+    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="publish-history.js"></script>
+</body>
+</html>

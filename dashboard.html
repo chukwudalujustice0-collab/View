@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Dashboard | View</title>
+  <meta name="theme-color" content="#0b5ed7" />
+  <meta http-equiv="refresh" content="0; url=home.html" />
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+      background:linear-gradient(180deg,#eef5ff 0%, #ffffff 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      color:var(--text);
+    }
+
+    .card{
+      width:100%;
+      max-width:420px;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:28px 22px;
+      text-align:center;
+    }
+
+    .logo{
+      width:68px;
+      height:68px;
+      margin:0 auto 14px;
+      border-radius:18px;
+      background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+      color:#fff;
+      display:grid;
+      place-items:center;
+      font-size:32px;
+      font-weight:700;
+    }
+
+    h1{
+      font-size:28px;
+      color:var(--primary);
+      margin-bottom:6px;
+    }
+
+    p{
+      color:var(--soft);
+      font-size:14px;
+      line-height:1.6;
+      margin-bottom:18px;
+    }
+
+    .btn{
+      min-height:46px;
+      padding:0 16px;
+      border:none;
+      border-radius:12px;
+      background:var(--primary);
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">V</div>
+    <h1>View</h1>
+    <p>Opening your home feed...</p>
+    <button class="btn" onclick="window.location.href='home.html'">Continue</button>
+  </div>
+
+  <script>
+    window.location.replace("home.html");
+  </script>
+</body>
+</html>

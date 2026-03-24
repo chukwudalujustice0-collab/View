@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up | View</title>
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --danger:#dc2626;
+      --success:#16a34a;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{
+      min-height:100vh;
+      background:linear-gradient(180deg,#eef5ff 0%, #ffffff 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      color:var(--text);
+    }
+    .wrap{width:100%;max-width:460px}
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:24px;
+      box-shadow:0 10px 30px rgba(0,0,0,.06);
+    }
+    .brand{text-align:center;margin-bottom:18px}
+    .brand h1{color:var(--primary);font-size:30px;margin-bottom:4px}
+    .brand p{font-size:12px;color:var(--soft)}
+    .head{text-align:center;margin-bottom:18px}
+    .head h2{font-size:24px;margin-bottom:6px}
+    .head p{font-size:13px;color:var(--soft);line-height:1.5}
+    .group{margin-bottom:14px}
+    .group label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+    .group input,.group select{
+      width:100%;
+      height:48px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:0 14px;
+      font-size:14px;
+      background:#fff;
+    }
+    .group input:focus,.group select:focus{
+      outline:none;
+      border-color:var(--primary);
+    }
+    .password-wrap{position:relative}
+    .password-wrap input{padding-right:58px}
+    .toggle{
+      position:absolute;
+      right:12px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:12px;
+      color:var(--primary);
+      font-weight:700;
+      cursor:pointer;
+      user-select:none;
+    }
+    .terms{
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+      font-size:13px;
+      color:var(--soft);
+      margin:12px 0 14px;
+    }
+    .terms input{margin-top:2px}
+    .btn{
+      width:100%;
+      height:48px;
+      border:none;
+      border-radius:10px;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{background:var(--primary-dark)}
+    .btn-google{
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--border);
+    }
+    .divider{
+      text-align:center;
+      color:var(--soft);
+      font-size:12px;
+      margin:12px 0;
+    }
+    .message{
+      display:none;
+      margin-top:12px;
+      text-align:center;
+      font-size:13px;
+      line-height:1.5;
+      padding:10px;
+      border-radius:10px;
+    }
+    .message.error{
+      display:block;
+      color:var(--danger);
+      background:#fff5f5;
+      border:1px solid #fecaca;
+    }
+    .message.success{
+      display:block;
+      color:var(--success);
+      background:#f0fdf4;
+      border:1px solid #bbf7d0;
+    }
+    .message.info{
+      display:block;
+      color:#0b5ed7;
+      background:#eff6ff;
+      border:1px solid #bfdbfe;
+    }
+    .error{
+      display:none;
+      font-size:12px;
+      color:var(--danger);
+      margin-top:6px;
+    }
+    .bottom{
+      text-align:center;
+      margin-top:16px;
+      color:var(--soft);
+      font-size:14px;
+    }
+    .bottom a{
+      color:var(--primary);
+      font-weight:700;
+      text-decoration:none;
+    }
+    .debug{
+      margin-top:14px;
+      font-size:12px;
+      color:#374151;
+      background:#f9fafb;
+      border:1px solid #e5e7eb;
+      border-radius:10px;
+      padding:10px;
+      white-space:pre-wrap;
+      display:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="brand">
+        <h1>View</h1>
+        <p>Your world, your view</p>
+      </div>
+
+      <div class="head">
+        <h2>Create Account</h2>
+        <p>Join View and start building your presence.</p>
+      </div>
+
+      <form id="signupForm" novalidate>
+        <div class="group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" required />
+        </div>
+
+        <div class="group">
+          <label for="username">Username</label>
+          <input type="text" id="username" required />
+        </div>
+
+        <div class="group">
+          <label for="email">Email</label>
+          <input type="email" id="email" required />
+        </div>
+
+        <div class="group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" required />
+        </div>
+
+        <div class="group">
+          <label for="accountType">Account Type</label>
+          <select id="accountType">
+            <option value="creator">Creator</option>
+            <option value="business">Business</option>
+            <option value="personal">Personal</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="password" required />
+            <span class="toggle" onclick="togglePassword('password', this)">Show</span>
+          </div>
+        </div>
+
+        <div class="group">
+          <label for="confirmPassword">Confirm Password</label>
+          <div class="password-wrap">
+            <input type="password" id="confirmPassword" required />
+            <span class="toggle" onclick="togglePassword('confirmPassword', this)">Show</span>
+          </div>
+          <div id="passwordError" class="error">Passwords do not match.</div>
+        </div>
+
+        <div class="terms">
+          <input type="checkbox" id="agreeTerms" />
+          <label for="agreeTerms">I agree to Terms and Privacy Policy</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submitBtn">Create Account</button>
+
+        <div class="divider">OR</div>
+
+        <button type="button" class="btn btn-google" id="googleSignupBtn">Continue with Google</button>
+
+        <div id="signupMessage" class="message"></div>
+        <div id="debugBox" class="debug"></div>
+      </form>
+
+      <div class="bottom">
+        Already have an account? <a href="login.html">Login</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function togglePassword(inputId, toggleElement){
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      toggleElement.textContent = show ? "Hide" : "Show";
+    }
+
+    function showMessage(message, type = "error") {
+      const box = document.getElementById("signupMessage");
+      box.className = "message " + type;
+      box.textContent = message;
+    }
+
+    function showDebug(message) {
+      const box = document.getElementById("debugBox");
+      box.style.display = "block";
+      box.textContent = message;
+    }
+
+    async function usernameExists(username) {
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("id")
+        .eq("username", username)
+        .maybeSingle();
+
+      if (error) throw error;
+      return !!data;
+    }
+
+    async function saveProfile(userId, fullName, username, email, phone, accountType) {
+      const payload = {
+        id: userId,
+        email,
+        full_name: fullName,
+        username,
+        phone,
+        account_type: accountType,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabaseClient
+        .from("profiles")
+        .upsert(payload, { onConflict: "id" });
+
+      if (error) throw error;
+    }
+
+    async function ensureWallet(userId) {
+      const { error } = await supabaseClient
+        .from("wallets")
+        .upsert({
+          user_id: userId,
+          balance: 0,
+          currency: "NGN"
+        }, { onConflict: "user_id" });
+
+      if (error) console.error("Wallet upsert error:", error.message);
+    }
+
+    async function ensureStarterSubscription(userId) {
+      const { data: existing, error: checkError } = await supabaseClient
+        .from("subscriptions")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error("Subscription check error:", checkError.message);
+        return;
+      }
+
+      if (existing) return;
+
+      const { error } = await supabaseClient
+        .from("subscriptions")
+        .insert({
+          user_id: userId,
+          plan_name: "Starter",
+          billing_cycle: "monthly",
+          amount: 0,
+          status: "active",
+          start_date: new Date().toISOString()
+        });
+
+      if (error) {
+        console.error("Subscription insert error:", error.message);
+      }
+    }
+
+    document.getElementById("signupForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const submitBtn = document.getElementById("submitBtn");
+      const passwordError = document.getElementById("passwordError");
+      passwordError.style.display = "none";
+      showMessage("Checking form...", "info");
+      showDebug("");
+
+      const fullName = document.getElementById("fullName").value.trim();
+      const username = document.getElementById("username").value.trim().toLowerCase();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const accountType = document.getElementById("accountType").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const agreed = document.getElementById("agreeTerms").checked;
+
+      if (!fullName || !username || !email || !phone || !password || !confirmPassword) {
+        showMessage("Complete all required fields.");
+        return;
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        showMessage("Username can only contain letters, numbers, and underscore.");
+        return;
+      }
+
+      if (password.length < 6) {
+        showMessage("Password must be at least 6 characters.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        passwordError.style.display = "block";
+        showMessage("Passwords do not match.");
+        return;
+      }
+
+      if (!agreed) {
+        showMessage("You must agree to the terms and privacy policy.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating...";
+
+      try {
+        showMessage("Checking username...", "info");
+        const exists = await usernameExists(username);
+        if (exists) {
+          showMessage("Username already exists.");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Create Account";
+          return;
+        }
+
+        showMessage("Creating account...", "info");
+
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              username,
+              account_type: accountType
+            }
+          }
+        });
+
+        if (error) throw error;
+        if (!data?.user?.id) throw new Error("User account was not created.");
+
+        await saveProfile(data.user.id, fullName, username, email, phone, accountType);
+        await ensureWallet(data.user.id);
+        await ensureStarterSubscription(data.user.id);
+
+        const confirmationOff = !!data.session;
+
+        if (confirmationOff) {
+          showMessage("Signup successful. Redirecting to dashboard...", "success");
+          showDebug(
+            "Signup finished.\n" +
+            "User ID: " + data.user.id + "\n" +
+            "Email: " + data.user.email + "\n" +
+            "Phone saved: " + phone
+          );
+
+          setTimeout(() => {
+            window.location.href = "dashboard.html";
+          }, 1200);
+        } else {
+          showMessage("Signup successful. Check your email to confirm your account.", "success");
+          showDebug(
+            "Signup finished.\n" +
+            "User ID: " + data.user.id + "\n" +
+            "Email: " + data.user.email + "\n" +
+            "Phone saved: " + phone
+          );
+        }
+      } catch (error) {
+        console.error("Signup error:", error);
+        showMessage(error.message || "Signup failed.");
+        showDebug(
+          "Exact error:\n" +
+          (error && error.message ? error.message : JSON.stringify(error, null, 2))
+        );
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Create Account";
+      }
+    });
+
+    document.getElementById("googleSignupBtn").addEventListener("click", async function() {
+      try {
+        showMessage("Starting Google signup...", "info");
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: window.location.origin + "/dashboard.html"
+          }
+        });
+
+        if (error) throw error;
+      } catch (error) {
+        console.error("Google signup error:", error);
+        showMessage(error.message || "Google signup failed.");
+        showDebug(
+          "Google error:\n" +
+          (error && error.message ? error.message : JSON.stringify(error, null, 2))
+        );
+      }
+    });
+  </script>
+</body>
+</html>

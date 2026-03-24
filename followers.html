@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Followers</title>
+<style>
+:root{--primary:#0b5ed7;--bg:#f5f8ff;--card:#fff;--border:#e5e7eb;--soft:#6b7280}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{background:var(--bg);padding:20px}
+.container{max-width:600px;margin:auto}
+.card{background:var(--card);padding:15px;border-radius:12px;margin-bottom:10px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.avatar{width:40px;height:40px;border-radius:50%;background:#dbeafe}
+.name{font-weight:bold}
+button{padding:6px 12px;border:none;border-radius:8px;background:var(--primary);color:#fff}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Followers</h2>
+
+<div class="card">
+<div style="display:flex;gap:10px;align-items:center">
+<div class="avatar"></div>
+<div>
+<div class="name">John Doe</div>
+<div style="color:var(--soft);font-size:12px">@johndoe</div>
+</div>
+</div>
+<button>Follow Back</button>
+</div>
+
+<div class="card">
+<div style="display:flex;gap:10px;align-items:center">
+<div class="avatar"></div>
+<div>
+<div class="name">Ceetify Media</div>
+<div style="color:var(--soft);font-size:12px">@ceetify</div>
+</div>
+</div>
+<button>Following</button>
+</div>
+
+</div>
+</body>
+</html>

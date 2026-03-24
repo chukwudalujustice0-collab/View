@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Explore | View</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b5ed7" />
+  <style>
+    :root{
+      --primary:#0b5ed7;--primary-dark:#083b8a;--bg:#f5f8ff;--card:#fff;--text:#1f1f1f;
+      --soft:#6b7280;--border:#e5e7eb;--shadow:0 10px 30px rgba(0,0,0,.06);--radius:18px
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
+    button,input{font:inherit}
+    .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
+    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
+    .page-title p{font-size:12px;color:var(--soft)}
+    .icon-btn,.primary-btn,.outline-btn,.chip,.follow-btn{border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
+    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
+    .outline-btn,.chip,.follow-btn{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
+    .chip{min-height:38px;border-radius:999px;font-size:13px}
+    .chip.active{background:rgba(11,94,215,.08);border-color:rgba(11,94,215,.18)}
+    .follow-btn{min-height:38px;border-radius:999px;font-size:13px}
+    .container{max-width:1120px;margin:0 auto;padding:18px 16px 0;display:grid;grid-template-columns:1fr .85fr;gap:20px}
+    .left-column,.right-column{display:grid;gap:18px;align-content:start}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+    .section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+    .section-head h2,.section-head h3{font-size:20px;margin-bottom:4px}
+    .section-head p{font-size:13px;color:var(--soft);line-height:1.5}
+    .search-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .search-row input{flex:1;min-width:220px;height:46px;border:1px solid var(--border);border-radius:14px;padding:0 14px;background:#fff}
+    .search-row input:focus{outline:none;border-color:var(--primary)}
+    .filters,.action-row{display:flex;gap:10px;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .explore-card{border:1px solid var(--border);border-radius:18px;background:#fff;overflow:hidden}
+    .explore-media{height:170px;background:linear-gradient(135deg, rgba(11,94,215,.14), rgba(255,255,255,.22)), linear-gradient(135deg,#dbeafe,#f8fbff);display:grid;place-items:center;color:var(--soft);font-weight:700}
+    .explore-body{padding:14px}
+    .explore-body h4{font-size:16px;margin-bottom:4px}
+    .explore-body p{font-size:13px;color:var(--soft);line-height:1.5;margin-bottom:12px}
+    .user-list{display:grid;gap:12px}
+    .user-card{border:1px solid var(--border);border-radius:16px;padding:14px;background:#fff;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .user-left{display:flex;align-items:center;gap:12px}
+    .avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#dbeafe,#f8fbff);border:1px solid rgba(11,94,215,.12)}
+    .user-info h4{font-size:15px;margin-bottom:3px}
+    .user-info p{font-size:12px;color:var(--soft)}
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30}
+    .bottom-link{min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;color:var(--soft);text-decoration:none}
+    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
+    @media(max-width:960px){.container{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+    @media(max-width:760px){.bottom-nav{display:grid}}
+    @media(max-width:640px){.container{padding:14px 12px 0}.search-row{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='home.html'">←</button>
+      <div class="page-title">
+        <h1>Explore</h1>
+        <p>Discover creators, posts, and trending content</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="outline-btn" id="openExploreAiBtn">Ask AI</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="left-column">
+      <section class="card">
+        <div class="search-row">
+          <input type="text" id="exploreSearch" placeholder="Search creators, tags, topics..." />
+          <button class="primary-btn" id="exploreSearchBtn">Search</button>
+        </div>
+        <div class="filters">
+          <button class="chip active" data-explore-filter>Trending</button>
+          <button class="chip" data-explore-filter>Creators</button>
+          <button class="chip" data-explore-filter>Videos</button>
+          <button class="chip" data-explore-filter>Business</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Trending Now</h2>
+            <p>See what people are discovering on View.</p>
+          </div>
+        </div>
+
+        <div class="grid">
+          <article class="explore-card">
+            <div class="explore-media">Trending Post</div>
+            <div class="explore-body">
+              <h4>Brand Growth Tips</h4>
+              <p>Creator strategies, better reach, and premium branding ideas for small businesses.</p>
+              <div class="action-row">
+                <button class="outline-btn">Open</button>
+                <button class="outline-btn">Save</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="explore-card">
+            <div class="explore-media">Trending Video</div>
+            <div class="explore-body">
+              <h4>Content That Converts</h4>
+              <p>Short-form content ideas to help business owners and creators post better.</p>
+              <div class="action-row">
+                <button class="outline-btn">Watch</button>
+                <button class="outline-btn">Save</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <aside class="right-column">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Suggested Creators</h3>
+            <p>Profiles you may want to follow.</p>
+          </div>
+        </div>
+
+        <div class="user-list">
+          <article class="user-card">
+            <div class="user-left">
+              <div class="avatar"></div>
+              <div class="user-info">
+                <h4>Ceetify Media</h4>
+                <p>@ceetifymedia</p>
+              </div>
+            </div>
+            <button class="follow-btn" data-follow-btn data-following="false">Follow</button>
+          </article>
+
+          <article class="user-card">
+            <div class="user-left">
+              <div class="avatar"></div>
+              <div class="user-info">
+                <h4>Mivivi Foodies</h4>
+                <p>@mivivifoodies</p>
+              </div>
+            </div>
+            <button class="follow-btn" data-follow-btn data-following="false">Follow</button>
+          </article>
+
+          <article class="user-card">
+            <div class="user-left">
+              <div class="avatar"></div>
+              <div class="user-info">
+                <h4>Stock Flow Hub</h4>
+                <p>@stockflowhub</p>
+              </div>
+            </div>
+            <button class="follow-btn" data-follow-btn data-following="false">Follow</button>
+          </article>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
+    <a href="explore.html" class="bottom-link active"><span>🔍</span><span>Explore</span></a>
+    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
+    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
+    <a href="profile.html" class="bottom-link"><span>👤</span><span>Profile</span></a>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="explore.js"></script>
+</body>
+</html>follown

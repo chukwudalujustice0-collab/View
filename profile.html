@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Profile | View</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b5ed7" />
+  <style>
+    :root{
+      --primary:#0b5ed7;--bg:#f5f8ff;--card:#fff;--text:#1f1f1f;--soft:#6b7280;--border:#e5e7eb;
+      --shadow:0 10px 30px rgba(0,0,0,.06);--radius:18px
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
+    button{font:inherit}
+    .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
+    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
+    .page-title p{font-size:12px;color:var(--soft)}
+    .icon-btn,.primary-btn,.outline-btn,.chip{border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
+    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
+    .outline-btn,.chip{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
+    .chip{min-height:38px;border-radius:999px;font-size:13px}
+    .chip.active{background:rgba(11,94,215,.08);border-color:rgba(11,94,215,.18)}
+    .container{max-width:1120px;margin:0 auto;padding:18px 16px 0;display:grid;grid-template-columns:1fr .82fr;gap:20px}
+    .left-column,.right-column{display:grid;gap:18px;align-content:start}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+    .hero{padding:0;overflow:hidden}
+    .cover{height:150px;background:linear-gradient(135deg,#0b5ed7 0%, #083b8a 62%, #061f49 100%)}
+    .hero-body{padding:0 20px 20px;margin-top:-48px}
+    .profile-row{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
+    .profile-avatar{width:108px;height:108px;border-radius:50%;background:linear-gradient(135deg,#dbeafe,#f8fbff);border:4px solid #fff;box-shadow:var(--shadow)}
+    .profile-main h2{font-size:28px;margin-bottom:4px}
+    .username{font-size:14px;color:var(--soft);margin-bottom:10px}
+    .bio{font-size:14px;line-height:1.6;margin-bottom:12px}
+    .stats-row,.chips,.action-row,.tabs{display:flex;gap:10px;flex-wrap:wrap}
+    .stat-box{min-width:110px;padding:12px 14px;border-radius:16px;background:#fff;border:1px solid var(--border);text-align:center}
+    .stat-box strong{display:block;font-size:20px;margin-bottom:4px}
+    .stat-box span{font-size:12px;color:var(--soft);font-weight:700}
+    .section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+    .section-head h3{font-size:20px;margin-bottom:4px}
+    .section-head p{font-size:13px;color:var(--soft)}
+    .grid-posts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .post-tile{height:180px;border-radius:16px;background:linear-gradient(135deg, rgba(11,94,215,.14), rgba(255,255,255,.22)), linear-gradient(135deg,#dbeafe,#f8fbff);border:1px solid rgba(11,94,215,.1)}
+    .summary-grid{display:grid;gap:12px}
+    .summary-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border);font-size:14px}
+    .summary-item:first-child{border-top:none;padding-top:0}
+    .summary-item span{color:var(--soft)}
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30}
+    .bottom-link{min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;color:var(--soft);text-decoration:none}
+    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
+    @media(max-width:960px){.container{grid-template-columns:1fr}}
+    @media(max-width:760px){.grid-posts{grid-template-columns:repeat(2,1fr)}.bottom-nav{display:grid}}
+    @media(max-width:640px){.container{padding:14px 12px 0}.grid-posts{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='home.html'">←</button>
+      <div class="page-title">
+        <h1>Profile</h1>
+        <p>Your public identity and content space</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="outline-btn" onclick="window.location.href='edit-profile.html'">Edit</button>
+      <button class="primary-btn" id="shareProfileBtn">Share</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="left-column">
+      <section class="card hero">
+        <div class="cover"></div>
+        <div class="hero-body">
+          <div class="profile-row">
+            <div class="profile-avatar"></div>
+            <div class="profile-main">
+              <h2 data-profile-fullname>View User</h2>
+              <div class="username" data-profile-username>@view_user</div>
+              <div class="bio" data-profile-bio>Building View step by step under Ceetify.</div>
+            </div>
+          </div>
+
+          <div class="stats-row" style="margin-top:16px;">
+            <div class="stat-box"><strong data-profile-posts>128</strong><span>Posts</span></div>
+            <div class="stat-box"><strong data-profile-followers>2.4K</strong><span>Followers</span></div>
+            <div class="stat-box"><strong data-profile-following>318</strong><span>Following</span></div>
+            <div class="stat-box"><strong data-profile-videos>46</strong><span>Videos</span></div>
+          </div>
+
+          <div class="action-row" style="margin-top:16px;">
+            <button class="outline-btn" onclick="window.location.href='edit-profile.html'">Edit Profile</button>
+            <button class="outline-btn" onclick="window.location.href='followers.html'">Followers</button>
+            <button class="outline-btn" onclick="window.location.href='following.html'">Following</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="tabs">
+          <button class="chip active" data-profile-tab>Posts</button>
+          <button class="chip" data-profile-tab>Videos</button>
+          <button class="chip" data-profile-tab>Saved</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Content Grid</h3>
+            <p>Your recent content layout.</p>
+          </div>
+        </div>
+
+        <div class="grid-posts">
+          <div class="post-tile"></div>
+          <div class="post-tile"></div>
+          <div class="post-tile"></div>
+          <div class="post-tile"></div>
+          <div class="post-tile"></div>
+          <div class="post-tile"></div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="right-column">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Profile Summary</h3>
+            <p>Quick profile numbers and status.</p>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-item"><span>Account Type</span><strong>Creator</strong></div>
+          <div class="summary-item"><span>Profile Reach</span><strong>24.8K</strong></div>
+          <div class="summary-item"><span>Linked Accounts</span><strong>3</strong></div>
+          <div class="summary-item"><span>Plan</span><strong>Pro Monthly</strong></div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
+    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
+    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
+    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
+    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="profile.js"></script>
+</body>
+</html>

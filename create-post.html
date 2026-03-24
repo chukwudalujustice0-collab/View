@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Create Post | View</title>
+  <meta name="theme-color" content="#0b5ed7" />
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --danger:#dc2626;
+      --success:#16a34a;
+      --warning:#f59e0b;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
+    button,input,select,textarea{font:inherit}
+    .topbar{
+      position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap
+    }
+    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
+    .page-title p{font-size:12px;color:var(--soft)}
+    .icon-btn,.primary-btn,.outline-btn,.danger-btn,.platform-btn{
+      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+    }
+    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
+    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
+    .primary-btn:hover{background:var(--primary-dark)}
+    .outline-btn,.platform-btn{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
+    .danger-btn{background:#fff5f5;color:var(--danger);border:1px solid #fecaca;font-weight:700}
+    .platform-btn.active{background:rgba(11,94,215,.08);border-color:rgba(11,94,215,.18)}
+    .container{max-width:1100px;margin:0 auto;padding:18px 16px 0;display:grid;grid-template-columns:1.08fr .92fr;gap:20px}
+    .left-column,.right-column{display:grid;gap:18px;align-content:start}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+    .section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+    .section-head h2,.section-head h3{font-size:20px;margin-bottom:4px}
+    .section-head p{font-size:13px;color:var(--soft);line-height:1.5}
+    .group{margin-bottom:14px}
+    .group label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+    .group input,.group select,.group textarea{
+      width:100%;border:1px solid var(--border);border-radius:12px;background:#fff;padding:12px 14px;font-size:14px
+    }
+    .group textarea{min-height:170px;resize:vertical;line-height:1.6}
+    .group input:focus,.group select:focus,.group textarea:focus{outline:none;border-color:var(--primary)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .platform-row,.action-row{display:flex;gap:10px;flex-wrap:wrap}
+    .preview-box{
+      border:1px dashed rgba(11,94,215,.2);background:#f8fbff;border-radius:16px;padding:18px;min-height:220px;display:grid;gap:12px
+    }
+    .preview-user{display:flex;align-items:center;gap:12px}
+    .avatar{
+      width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#dbeafe,#f8fbff);
+      border:1px solid rgba(11,94,215,.14);display:grid;place-items:center;font-weight:700;color:var(--primary);overflow:hidden
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .preview-user h4{font-size:15px;margin-bottom:2px}
+    .preview-user p{font-size:12px;color:var(--soft)}
+    .preview-content{white-space:pre-wrap;line-height:1.6;font-size:14px}
+    .preview-meta{display:flex;gap:8px;flex-wrap:wrap}
+    .preview-pill{
+      min-height:30px;padding:0 10px;border-radius:999px;background:#fff;border:1px solid rgba(11,94,215,.12);
+      color:var(--soft);font-size:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:700
+    }
+    .preview-media{
+      min-height:180px;border-radius:16px;overflow:hidden;background:#fff;border:1px solid rgba(11,94,215,.12);
+      display:grid;place-items:center;color:var(--soft);font-size:13px;text-align:center;padding:12px
+    }
+    .preview-media img,.preview-media video{width:100%;max-height:360px;object-fit:cover;display:block;border-radius:14px}
+    .notice{display:none;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.5;margin-top:10px;white-space:pre-wrap}
+    .notice.error{display:block;background:#fff5f5;color:var(--danger);border:1px solid #fecaca}
+    .notice.success{display:block;background:#f0fdf4;color:var(--success);border:1px solid #bbf7d0}
+    .notice.info{display:block;background:#eff6ff;color:var(--primary);border:1px solid #bfdbfe}
+    .summary-list{display:grid;gap:12px}
+    .summary-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border);font-size:14px}
+    .summary-item:first-child{border-top:none;padding-top:0}
+    .summary-item span{color:var(--soft)}
+    .helper{font-size:12px;color:var(--soft);line-height:1.5;margin-top:6px}
+    @media(max-width:980px){.container{grid-template-columns:1fr}}
+    @media(max-width:640px){.container{padding:14px 12px 0}.row{grid-template-columns:1fr}.topbar-right .outline-btn{display:none}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='home.html'">←</button>
+      <div class="page-title">
+        <h1>Create Post</h1>
+        <p>Publish to View and selected connected platforms</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="outline-btn" onclick="window.location.href='connected-accounts.html'">Accounts</button>
+      <button class="outline-btn" onclick="window.location.href='saved-posts.html'">Saved</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="left-column">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Post Details</h2>
+            <p>View always publishes first. External platforms require connected status.</p>
+          </div>
+        </div>
+
+        <form id="createPostForm" novalidate>
+          <div class="group">
+            <label for="postTitle">Title</label>
+            <input type="text" id="postTitle" placeholder="Enter a title (optional)" />
+          </div>
+
+          <div class="group">
+            <label for="postContent">Caption / Content</label>
+            <textarea id="postContent" placeholder="Write your post content here..." required></textarea>
+          </div>
+
+          <div class="row">
+            <div class="group">
+              <label for="mediaType">Media Type</label>
+              <select id="mediaType">
+                <option value="text">Text</option>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+                <option value="story">Story</option>
+              </select>
+            </div>
+
+            <div class="group">
+              <label for="visibility">Visibility</label>
+              <select id="visibility">
+                <option value="public">Public</option>
+                <option value="followers">Followers</option>
+                <option value="private">Private</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="group">
+            <label for="mediaFile">Upload Image / Video</label>
+            <input type="file" id="mediaFile" accept="image/*,video/*" />
+            <div class="helper">Optional. Uploads to Supabase storage bucket <strong>post-media</strong>.</div>
+          </div>
+
+          <div class="group">
+            <label for="mediaUrl">Or paste media URL</label>
+            <input type="text" id="mediaUrl" placeholder="Optional: paste media URL instead" />
+          </div>
+
+          <div class="row">
+            <div class="group">
+              <label for="hashtags">Hashtags</label>
+              <input type="text" id="hashtags" placeholder="#view #creator #business" />
+            </div>
+
+            <div class="group">
+              <label for="location">Location</label>
+              <input type="text" id="location" placeholder="Add location" />
+            </div>
+          </div>
+
+          <div class="group">
+            <label>Platforms</label>
+            <div class="platform-row">
+              <button type="button" class="platform-btn active" data-platform="view">View</button>
+              <button type="button" class="platform-btn" data-platform="facebook">Facebook</button>
+              <button type="button" class="platform-btn" data-platform="instagram">Instagram</button>
+              <button type="button" class="platform-btn" data-platform="tiktok">TikTok</button>
+              <button type="button" class="platform-btn" data-platform="whatsapp">WhatsApp</button>
+              <button type="button" class="platform-btn" data-platform="youtube">YouTube</button>
+              <button type="button" class="platform-btn" data-platform="x">X</button>
+            </div>
+            <div class="helper">Only connected platforms can be included in the publish job.</div>
+          </div>
+
+          <div class="action-row">
+            <button type="submit" class="primary-btn" id="publishBtn">Publish Now</button>
+            <button type="button" class="outline-btn" id="saveDraftBtn">Save Draft</button>
+            <button type="button" class="danger-btn" id="clearPostBtn">Clear</button>
+          </div>
+
+          <div id="createPostMessage" class="notice"></div>
+        </form>
+      </section>
+    </div>
+
+    <aside class="right-column">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Live Preview</h3>
+            <p>See how your post looks before publishing.</p>
+          </div>
+        </div>
+
+        <div class="preview-box">
+          <div class="preview-user">
+            <div class="avatar" id="previewAvatar">V</div>
+            <div>
+              <h4 id="previewName">Loading...</h4>
+              <p id="previewUsername">@loading</p>
+            </div>
+          </div>
+
+          <div id="previewContent" class="preview-content">Your post preview will appear here.</div>
+
+          <div class="preview-meta">
+            <span class="preview-pill" id="previewMediaType">text</span>
+            <span class="preview-pill" id="previewVisibility">public</span>
+            <span class="preview-pill" id="previewLocation">No location</span>
+          </div>
+
+          <div class="preview-media" id="previewMediaBox">No media selected</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Publish Summary</h3>
+            <p>Shows what will happen when you publish.</p>
+          </div>
+        </div>
+
+        <div class="summary-list">
+          <div class="summary-item">
+            <span>Selected Platforms</span>
+            <strong id="selectedPlatformsText">View</strong>
+          </div>
+          <div class="summary-item">
+            <span>Connected Platforms</span>
+            <strong id="connectedPlatformsText">View</strong>
+          </div>
+          <div class="summary-item">
+            <span>Content Length</span>
+            <strong id="contentLengthText">0 chars</strong>
+          </div>
+          <div class="summary-item">
+            <span>Status</span>
+            <strong id="summaryStatus">Ready</strong>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const state = {
+      userId: null,
+      selectedPlatforms: new Set(["view"]),
+      connectedPlatforms: new Set(["view"]),
+      uploadedMediaUrl: ""
+    };
+
+    const els = {
+      form: document.getElementById("createPostForm"),
+      title: document.getElementById("postTitle"),
+      content: document.getElementById("postContent"),
+      mediaType: document.getElementById("mediaType"),
+      visibility: document.getElementById("visibility"),
+      mediaFile: document.getElementById("mediaFile"),
+      mediaUrl: document.getElementById("mediaUrl"),
+      hashtags: document.getElementById("hashtags"),
+      location: document.getElementById("location"),
+      publishBtn: document.getElementById("publishBtn"),
+      saveDraftBtn: document.getElementById("saveDraftBtn"),
+      clearBtn: document.getElementById("clearPostBtn"),
+      message: document.getElementById("createPostMessage"),
+      previewName: document.getElementById("previewName"),
+      previewUsername: document.getElementById("previewUsername"),
+      previewAvatar: document.getElementById("previewAvatar"),
+      previewContent: document.getElementById("previewContent"),
+      previewMediaType: document.getElementById("previewMediaType"),
+      previewVisibility: document.getElementById("previewVisibility"),
+      previewLocation: document.getElementById("previewLocation"),
+      previewMediaBox: document.getElementById("previewMediaBox"),
+      selectedPlatformsText: document.getElementById("selectedPlatformsText"),
+      connectedPlatformsText: document.getElementById("connectedPlatformsText"),
+      contentLengthText: document.getElementById("contentLengthText"),
+      summaryStatus: document.getElementById("summaryStatus"),
+      platformButtons: Array.from(document.querySelectorAll("[data-platform]"))
+    };
+
+    function showMessage(message, type = "error") {
+      els.message.className = "notice " + type;
+      els.message.textContent = message;
+    }
+
+    function clearMessage() {
+      els.message.className = "notice";
+      els.message.textContent = "";
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    async function getSession() {
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) throw error;
+      return data.session || null;
+    }
+
+    async function loadProfile() {
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("full_name, username, avatar_url")
+        .eq("id", state.userId)
+        .single();
+
+      if (error) throw error;
+
+      els.previewName.textContent = data.full_name || "View User";
+      els.previewUsername.textContent = "@" + (data.username || "view_user");
+
+      if (data.avatar_url) {
+        els.previewAvatar.innerHTML = `<img src="${escapeHtml(data.avatar_url)}" alt="Avatar" />`;
+      } else {
+        const seed = data.full_name || data.username || "V";
+        els.previewAvatar.textContent = seed.charAt(0).toUpperCase();
+      }
+    }
+
+    async function loadConnectedPlatforms() {
+      const { data, error } = await supabaseClient
+        .from("connected_accounts")
+        .select("platform,status")
+        .eq("user_id", state.userId)
+        .eq("status", "connected");
+
+      if (error) throw error;
+
+      state.connectedPlatforms = new Set(["view"]);
+      (data || []).forEach(item => state.connectedPlatforms.add(item.platform));
+      updatePreview();
+    }
+
+    function getFormData() {
+      return {
+        title: els.title.value.trim(),
+        content: els.content.value.trim(),
+        media_type: els.mediaType.value,
+        visibility: els.visibility.value,
+        media_url: state.uploadedMediaUrl || els.mediaUrl.value.trim(),
+        hashtags: els.hashtags.value.trim(),
+        location: els.location.value.trim(),
+        platforms: Array.from(state.selectedPlatforms)
+      };
+    }
+
+    function renderPreviewMediaFromFile(file) {
+      if (!file) {
+        els.previewMediaBox.textContent = "No media selected";
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+
+      if (file.type.startsWith("image/")) {
+        els.previewMediaBox.innerHTML = `<img src="${url}" alt="Preview image">`;
+        els.mediaType.value = "image";
+      } else if (file.type.startsWith("video/")) {
+        els.previewMediaBox.innerHTML = `<video controls src="${url}"></video>`;
+        els.mediaType.value = "video";
+      } else {
+        els.previewMediaBox.textContent = "Unsupported file selected";
+      }
+    }
+
+    function renderPreviewMediaFromUrl() {
+      const url = els.mediaUrl.value.trim();
+      if (!url) {
+        if (!els.mediaFile.files[0]) {
+          els.previewMediaBox.textContent = "No media selected";
+        }
+        return;
+      }
+
+      if (els.mediaType.value === "image") {
+        els.previewMediaBox.innerHTML = `<img src="${escapeHtml(url)}" alt="Preview image">`;
+      } else if (els.mediaType.value === "video") {
+        els.previewMediaBox.innerHTML = `<video controls src="${escapeHtml(url)}"></video>`;
+      } else {
+        els.previewMediaBox.textContent = "Media URL attached";
+      }
+    }
+
+    function updatePreview() {
+      const data = getFormData();
+
+      els.previewContent.textContent = data.content || "Your post preview will appear here.";
+      els.previewMediaType.textContent = data.media_type || "text";
+      els.previewVisibility.textContent = data.visibility || "public";
+      els.previewLocation.textContent = data.location || "No location";
+      els.selectedPlatformsText.textContent = data.platforms.join(", ");
+      els.connectedPlatformsText.textContent = Array.from(state.connectedPlatforms).join(", ");
+      els.contentLengthText.textContent = `${data.content.length} chars`;
+
+      const missing = data.platforms.filter(p => !state.connectedPlatforms.has(p));
+      els.summaryStatus.textContent = missing.length ? `Missing: ${missing.join(", ")}` : "Ready";
+
+      if (els.mediaFile.files[0]) renderPreviewMediaFromFile(els.mediaFile.files[0]);
+      else renderPreviewMediaFromUrl();
+    }
+
+    async function uploadSelectedFile() {
+      const file = els.mediaFile.files[0];
+      if (!file) return "";
+
+      const ext = file.name && file.name.includes(".") ? file.name.split(".").pop() : "jpg";
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
+      const filePath = `${state.userId}/${fileName}`;
+
+      const { error } = await supabaseClient.storage
+        .from("post-media")
+        .upload(filePath, file);
+
+      if (error) throw error;
+
+      const { data } = supabaseClient.storage
+        .from("post-media")
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    }
+
+    async function writePublishHistory(title, platforms, status, resultMessage, sourceId = null) {
+      const { error } = await supabaseClient
+        .from("publish_history")
+        .insert({
+          user_id: state.userId,
+          source_type: "post",
+          source_id: sourceId,
+          title,
+          platforms,
+          status,
+          charge_amount: 0,
+          result_message: resultMessage
+        });
+
+      if (error) throw error;
+    }
+
+    async function publishPost() {
+      clearMessage();
+      const initialData = getFormData();
+
+      if (!initialData.content) {
+        showMessage("Write something before publishing.");
+        return;
+      }
+
+      const missing = initialData.platforms.filter(p => !state.connectedPlatforms.has(p));
+      if (missing.length) {
+        showMessage(`These platforms are not connected: ${missing.join(", ")}`);
+        return;
+      }
+
+      els.publishBtn.disabled = true;
+      els.publishBtn.textContent = "Publishing...";
+
+      try {
+        let mediaUrl = initialData.media_url;
+
+        if (els.mediaFile.files[0]) {
+          showMessage("Uploading media...", "info");
+          mediaUrl = await uploadSelectedFile();
+          state.uploadedMediaUrl = mediaUrl;
+        }
+
+        showMessage("Publishing to View...", "info");
+
+        const { data: postRow, error } = await supabaseClient
+          .from("posts")
+          .insert({
+            user_id: state.userId,
+            content: initialData.content,
+            media_url: mediaUrl,
+            media_type: initialData.media_type,
+            hashtags: initialData.hashtags,
+            location: initialData.location,
+            visibility: initialData.visibility,
+            status: "published",
+            published_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        const externalPlatforms = initialData.platforms.filter(p => p !== "view");
+        const title = initialData.title || initialData.content.slice(0, 40) || "Post";
+
+        if (externalPlatforms.length) {
+          await writePublishHistory(
+            title,
+            initialData.platforms,
+            "pending",
+            `Published to View. External publish queued for: ${externalPlatforms.join(", ")}`,
+            postRow.id
+          );
+
+          showMessage(`Published to View. External publish queued for: ${externalPlatforms.join(", ")}`, "success");
+        } else {
+          await writePublishHistory(
+            title,
+            ["view"],
+            "success",
+            "Published successfully to View.",
+            postRow.id
+          );
+
+          showMessage("Published successfully to View.", "success");
+        }
+
+        setTimeout(() => {
+          window.location.href = "home.html";
+        }, 1000);
+      } catch (error) {
+        console.error("Publish error:", error);
+        showMessage("Publish failed: " + (error.message || "Unknown error"));
+      } finally {
+        els.publishBtn.disabled = false;
+        els.publishBtn.textContent = "Publish Now";
+      }
+    }
+
+    async function saveDraft() {
+      clearMessage();
+      const initialData = getFormData();
+
+      els.saveDraftBtn.disabled = true;
+      els.saveDraftBtn.textContent = "Saving...";
+
+      try {
+        let mediaUrl = initialData.media_url;
+
+        if (els.mediaFile.files[0]) {
+          showMessage("Uploading media for draft...", "info");
+          mediaUrl = await uploadSelectedFile();
+          state.uploadedMediaUrl = mediaUrl;
+        }
+
+        const { error } = await supabaseClient
+          .from("drafts")
+          .insert({
+            user_id: state.userId,
+            title: initialData.title,
+            content: initialData.content,
+            media_url: mediaUrl,
+            media_type: initialData.media_type,
+            hashtags: initialData.hashtags,
+            location: initialData.location,
+            platforms: initialData.platforms
+          });
+
+        if (error) throw error;
+
+        showMessage("Draft saved successfully.", "success");
+      } catch (error) {
+        console.error("Draft error:", error);
+        showMessage("Draft failed: " + (error.message || "Unknown error"));
+      } finally {
+        els.saveDraftBtn.disabled = false;
+        els.saveDraftBtn.textContent = "Save Draft";
+      }
+    }
+
+    function clearForm() {
+      els.form.reset();
+      state.selectedPlatforms = new Set(["view"]);
+      state.uploadedMediaUrl = "";
+
+      els.platformButtons.forEach(btn => {
+        const platform = btn.getAttribute("data-platform");
+        if (platform === "view") btn.classList.add("active");
+        else btn.classList.remove("active");
+      });
+
+      els.previewMediaBox.textContent = "No media selected";
+      updatePreview();
+      showMessage("Form cleared.", "info");
+    }
+
+    async function init() {
+      try {
+        const session = await getSession();
+        if (!session?.user) {
+          window.location.href = "login.html";
+          return;
+        }
+
+        state.userId = session.user.id;
+        await loadProfile();
+        await loadConnectedPlatforms();
+
+        [
+          els.title,
+          els.content,
+          els.mediaType,
+          els.visibility,
+          els.mediaUrl,
+          els.hashtags,
+          els.location
+        ].forEach(el => {
+          el.addEventListener("input", updatePreview);
+          el.addEventListener("change", updatePreview);
+        });
+
+        els.mediaFile.addEventListener("change", () => {
+          state.uploadedMediaUrl = "";
+          updatePreview();
+        });
+
+        els.platformButtons.forEach(btn => {
+          btn.addEventListener("click", () => {
+            const platform = btn.getAttribute("data-platform");
+            if (!platform) return;
+
+            if (state.selectedPlatforms.has(platform)) {
+              if (state.selectedPlatforms.size === 1) return;
+              state.selectedPlatforms.delete(platform);
+              btn.classList.remove("active");
+            } else {
+              state.selectedPlatforms.add(platform);
+              btn.classList.add("active");
+            }
+
+            updatePreview();
+          });
+        });
+
+        els.form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          await publishPost();
+        });
+
+        els.saveDraftBtn.addEventListener("click", async () => {
+          await saveDraft();
+        });
+
+        els.clearBtn.addEventListener("click", clearForm);
+
+        updatePreview();
+      } catch (error) {
+        console.error("Init error:", error);
+        showMessage("Page failed to load: " + (error.message || "Unknown error"));
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Wallet | View</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b5ed7" />
+
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+      --success:#16a34a;
+      --danger:#dc2626;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
+    a{text-decoration:none;color:inherit}
+    button,input{font:inherit}
+    .topbar{
+      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;
+      align-items:center;gap:12px;flex-wrap:wrap
+    }
+    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
+    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
+    .page-title p{font-size:12px;color:var(--soft)}
+    .icon-btn,.primary-btn,.outline-btn,.mini-btn,.amount-btn{
+      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;
+      justify-content:center;cursor:pointer;transition:.2s ease
+    }
+    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
+    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
+    .primary-btn:hover{background:var(--primary-dark)}
+    .outline-btn,.mini-btn,.amount-btn{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
+    .mini-btn{min-height:36px;border-radius:999px;font-size:12px;padding:0 12px}
+    .amount-btn{min-height:38px;border-radius:999px;font-size:13px}
+    .container{
+      max-width:1120px;margin:0 auto;padding:18px 16px 0;display:grid;grid-template-columns:1.05fr .85fr;gap:20px
+    }
+    .left-column,.right-column{display:grid;gap:18px;align-content:start}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px
+    }
+    .section-head{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap
+    }
+    .section-head h2,.section-head h3{font-size:20px;margin-bottom:4px}
+    .section-head p{font-size:13px;color:var(--soft);line-height:1.5}
+    .balance-card{
+      background:linear-gradient(135deg,#0b5ed7,#083b8a);
+      color:#fff;border:none;
+    }
+    .balance-card .section-head h2,.balance-card .section-head p{color:#fff}
+    .balance-big{font-size:38px;font-weight:700;margin-bottom:6px}
+    .balance-sub{font-size:13px;opacity:.86;margin-bottom:18px}
+    .wallet-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .wallet-actions .outline-btn{
+      background:rgba(255,255,255,.12);
+      color:#fff;border:1px solid rgba(255,255,255,.16)
+    }
+    .amount-input{
+      width:100%;height:48px;border:1px solid var(--border);border-radius:14px;padding:0 14px;font-size:14px
+    }
+    .amount-input:focus{outline:none;border-color:var(--primary)}
+    .amount-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .transaction-list{display:grid;gap:12px}
+    .transaction-card{
+      border:1px solid var(--border);border-radius:16px;background:#fff;padding:14px;
+      display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap
+    }
+    .transaction-left{display:flex;align-items:center;gap:12px;min-width:0}
+    .icon-box{
+      width:46px;height:46px;border-radius:14px;background:rgba(11,94,215,.08);color:var(--primary);
+      display:grid;place-items:center;font-weight:700;flex-shrink:0
+    }
+    .transaction-info h4{font-size:15px;margin-bottom:3px}
+    .transaction-info p{font-size:12px;color:var(--soft)}
+    .amount{font-weight:700}
+    .credit{color:var(--success)}
+    .debit{color:var(--danger)}
+    .summary-grid{display:grid;gap:12px}
+    .summary-item{
+      display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border);font-size:14px
+    }
+    .summary-item:first-child{border-top:none;padding-top:0}
+    .summary-item span{color:var(--soft)}
+    .tip-box{
+      border:1px dashed rgba(11,94,215,.18);border-radius:16px;background:#f8fbff;padding:16px
+    }
+    .tip-box h4{font-size:15px;margin-bottom:6px}
+    .tip-box p{font-size:13px;color:var(--soft);line-height:1.6;margin-bottom:12px}
+    .bottom-nav{
+      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
+      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
+    }
+    .bottom-link{
+      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:4px;font-size:11px;color:var(--soft)
+    }
+    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
+    @media(max-width:960px){.container{grid-template-columns:1fr}}
+    @media(max-width:760px){.bottom-nav{display:grid}}
+    @media(max-width:640px){
+      .container{padding:14px 12px 0}
+      .topbar-right .outline-btn{display:none}
+      .wallet-actions{flex-direction:column}
+      .wallet-actions button{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='dashboard.html'">←</button>
+      <div class="page-title">
+        <h1>Wallet</h1>
+        <p>Manage funding, publishing charges, and transaction history</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="outline-btn" onclick="window.location.href='subscriptions.html'">Subscriptions</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="left-column">
+      <section class="card balance-card">
+        <div class="section-head">
+          <div>
+            <h2>Available Balance</h2>
+            <p>Ready for cross-posting and premium tools</p>
+          </div>
+        </div>
+
+        <div class="balance-big" data-wallet-balance>₦12,450</div>
+        <div class="balance-sub">Current available wallet balance</div>
+
+        <div class="wallet-actions">
+          <button class="primary-btn" data-fund-wallet>Fund Wallet</button>
+          <button class="outline-btn" data-withdraw-wallet>Withdraw</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Quick Amount</h2>
+            <p>Choose or enter the amount you want to use.</p>
+          </div>
+        </div>
+
+        <input type="number" id="walletAmountInput" class="amount-input" placeholder="Enter amount" />
+
+        <div class="amount-row">
+          <button class="amount-btn" data-quick-amount="1000">₦1,000</button>
+          <button class="amount-btn" data-quick-amount="2500">₦2,500</button>
+          <button class="amount-btn" data-quick-amount="5000">₦5,000</button>
+          <button class="amount-btn" data-quick-amount="10000">₦10,000</button>
+          <button class="amount-btn" data-quick-amount="20000">₦20,000</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Recent Transactions</h2>
+            <p>Track wallet movement and publishing charges.</p>
+          </div>
+        </div>
+
+        <div class="transaction-list">
+          <article class="transaction-card">
+            <div class="transaction-left">
+              <div class="icon-box">📥</div>
+              <div class="transaction-info">
+                <h4>Wallet Funding</h4>
+                <p>Today • 10:15 AM</p>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <strong class="amount credit">+₦5,000</strong>
+              <button class="mini-btn" data-wallet-transaction-action="receipt">Receipt</button>
+            </div>
+          </article>
+
+          <article class="transaction-card">
+            <div class="transaction-left">
+              <div class="icon-box">📤</div>
+              <div class="transaction-info">
+                <h4>Cross-post Charge</h4>
+                <p>Instagram + Facebook + View</p>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <strong class="amount debit">-₦45</strong>
+              <button class="mini-btn" data-wallet-transaction-action="details">Details</button>
+            </div>
+          </article>
+
+          <article class="transaction-card">
+            <div class="transaction-left">
+              <div class="icon-box">💎</div>
+              <div class="transaction-info">
+                <h4>Subscription Renewal</h4>
+                <p>Pro Monthly Plan</p>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <strong class="amount debit">-₦2,500</strong>
+              <button class="mini-btn" data-wallet-transaction-action="details">Details</button>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <aside class="right-column">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Wallet Summary</h3>
+            <p>Important wallet numbers at a glance.</p>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span>Current Balance</span>
+            <strong data-wallet-balance>₦12,450</strong>
+          </div>
+          <div class="summary-item">
+            <span>Total Funded</span>
+            <strong>₦57,000</strong>
+          </div>
+          <div class="summary-item">
+            <span>Total Publish Charges</span>
+            <strong>₦8,640</strong>
+          </div>
+          <div class="summary-item">
+            <span>Current Plan</span>
+            <strong>Pro Monthly</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Quick Links</h3>
+            <p>Open related money and publishing pages.</p>
+          </div>
+        </div>
+
+        <div class="wallet-actions">
+          <button class="outline-btn" onclick="window.location.href='subscriptions.html'">Subscriptions</button>
+          <button class="outline-btn" onclick="window.location.href='publish-history.html'">Publish History</button>
+          <button class="outline-btn" onclick="window.location.href='analytics.html'">Analytics</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="tip-box">
+          <h4>Wallet tip</h4>
+          <p>
+            Keep enough balance for faster posting. This helps you publish immediately
+            without stopping to fund your account every time.
+          </p>
+          <button class="primary-btn" onclick="window.location.href='create-post.html'">Create Post</button>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
+    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
+    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
+    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
+    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="wallet.js"></script>
+</body>
+</html>

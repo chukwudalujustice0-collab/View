@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Analytics | View</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b5ed7" />
+
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --accent:#ff3b3b;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
+    a{text-decoration:none;color:inherit}
+    button{font:inherit}
+    .topbar{
+      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;
+      align-items:center;gap:12px;flex-wrap:wrap
+    }
+    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
+    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
+    .page-title p{font-size:12px;color:var(--soft)}
+    .icon-btn,.primary-btn,.outline-btn,.chip{
+      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+    }
+    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
+    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
+    .primary-btn:hover{background:var(--primary-dark)}
+    .outline-btn,.chip{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
+    .chip{min-height:38px;border-radius:999px;font-size:13px}
+    .chip.active{background:rgba(11,94,215,.08);border-color:rgba(11,94,215,.18)}
+    .container{
+      max-width:1120px;margin:0 auto;padding:18px 16px 0;display:grid;grid-template-columns:1fr .9fr;gap:20px
+    }
+    .left-column,.right-column{display:grid;gap:18px;align-content:start}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px
+    }
+    .section-head{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap
+    }
+    .section-head h2,.section-head h3{font-size:20px;margin-bottom:4px}
+    .section-head p{font-size:13px;color:var(--soft);line-height:1.5}
+    .filters{display:flex;gap:10px;flex-wrap:wrap}
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .stat-card{
+      border:1px solid var(--border);border-radius:16px;background:#fff;padding:16px
+    }
+    .stat-card .label{font-size:13px;color:var(--soft);margin-bottom:8px}
+    .stat-card .value{font-size:28px;font-weight:700}
+    .chart-placeholder{
+      height:260px;border-radius:18px;background:
+      linear-gradient(180deg,rgba(11,94,215,.08),rgba(11,94,215,.02)),
+      repeating-linear-gradient(to right,rgba(11,94,215,.08) 0,rgba(11,94,215,.08) 1px,transparent 1px,transparent 68px);
+      border:1px solid rgba(11,94,215,.12);position:relative;overflow:hidden
+    }
+    .chart-line{
+      position:absolute;left:20px;right:20px;bottom:40px;height:120px;border-bottom:3px solid var(--primary);
+      border-right:3px solid transparent;border-radius:0 0 40px 40px;transform:skewX(-28deg);opacity:.9
+    }
+    .chart-line.second{
+      bottom:68px;height:84px;border-bottom-color:var(--accent);opacity:.7
+    }
+    .tip-box{
+      border:1px dashed rgba(11,94,215,.18);border-radius:16px;background:#f8fbff;padding:16px
+    }
+    .tip-box h4{font-size:15px;margin-bottom:6px}
+    .tip-box p{font-size:13px;color:var(--soft);line-height:1.6;margin-bottom:12px}
+    .bottom-nav{
+      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
+      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
+    }
+    .bottom-link{
+      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:4px;font-size:11px;color:var(--soft)
+    }
+    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
+    @media(max-width:960px){.container{grid-template-columns:1fr}}
+    @media(max-width:760px){.bottom-nav{display:grid}}
+    @media(max-width:640px){
+      .container{padding:14px 12px 0}
+      .stats-grid{grid-template-columns:1fr}
+      .topbar-right .outline-btn{display:none}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="icon-btn" onclick="window.location.href='dashboard.html'">←</button>
+      <div class="page-title">
+        <h1>Analytics</h1>
+        <p>Track reach, engagement, clicks, and growth across your activity</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="outline-btn" data-export-analytics="PDF">Export</button>
+      <button class="primary-btn" id="openAnalyticsAiBtn">Ask AI</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="left-column">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Filters</h2>
+            <p>Switch between ranges and metrics.</p>
+          </div>
+        </div>
+
+        <div class="filters" style="margin-bottom:12px;">
+          <button class="chip active" data-analytics-range>7 days</button>
+          <button class="chip" data-analytics-range>30 days</button>
+          <button class="chip" data-analytics-range>90 days</button>
+        </div>
+
+        <div class="filters">
+          <button class="chip active" data-analytics-metric>Reach</button>
+          <button class="chip" data-analytics-metric>Engagement</button>
+          <button class="chip" data-analytics-metric>Clicks</button>
+          <button class="chip" data-analytics-metric>Followers</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Performance Chart</h2>
+            <p>Visual trend of your recent content performance.</p>
+          </div>
+        </div>
+
+        <div class="chart-placeholder">
+          <div class="chart-line"></div>
+          <div class="chart-line second"></div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="right-column">
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Summary</h3>
+            <p>Key numbers that matter most.</p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <div class="label">Reach</div>
+            <div class="value" data-analytics-reach>24.8K</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="label">Engagement</div>
+            <div class="value" data-analytics-engagement>8.6K</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="label">Clicks</div>
+            <div class="value" data-analytics-clicks>1.9K</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="label">Growth</div>
+            <div class="value" data-analytics-growth>+18%</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h3>Export Options</h3>
+            <p>Download your analytics summary.</p>
+          </div>
+        </div>
+
+        <div class="filters">
+          <button class="outline-btn" data-export-analytics="PDF">PDF</button>
+          <button class="outline-btn" data-export-analytics="CSV">CSV</button>
+          <button class="outline-btn" data-export-analytics="Image">Image</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="tip-box">
+          <h4>Analytics tip</h4>
+          <p>
+            Use View AI to interpret what is working best so your next caption,
+            schedule time, and platform choice perform better.
+          </p>
+          <button class="primary-btn" id="openAnalyticsAiBtn">Open AI Help</button>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
+    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
+    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
+    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
+    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+  <script src="auth.js"></script>
+  <script src="analytics.js"></script>
+</body>
+</html>

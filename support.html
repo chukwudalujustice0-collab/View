@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Support | View</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b5ed7" />
+
+  <style>
+    :root{
+      --primary:#0b5ed7;
+      --primary-dark:#083b8a;
+      --bg:#f5f8ff;
+      --card:#ffffff;
+      --text:#1f1f1f;
+      --soft:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 10px 30px rgba(0,0,0,.06);
+      --radius:18px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
+    button,textarea{font:inherit}
+    .topbar{
+      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:10px
+    }
+    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
+    .page-title p{font-size:12px;color:var(--soft)}
+    .icon-btn,.primary-btn,.outline-btn{
+      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+    }
+    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
+    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
+    .outline-btn{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
+    .container{
+      max-width:980px;margin:0 auto;padding:18px 16px 0;display:grid;grid-template-columns:1fr .82fr;gap:20px
+    }
+    .left-column,.right-column{display:grid;gap:18px;align-content:start}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px
+    }
+    .section-head h2,.section-head h3{font-size:20px;margin-bottom:4px}
+    .section-head p{font-size:13px;color:var(--soft);line-height:1.5;margin-bottom:16px}
+    textarea{
+      width:100%;min-height:180px;border:1px solid var(--border);border-radius:16px;padding:14px;resize:vertical;background:#fff
+    }
+    textarea:focus{outline:none;border-color:var(--primary)}
+    .action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .help-list{display:grid;gap:12px}
+    .help-item{
+      border:1px solid var(--border);border-radius:16px;padding:14px;background:#fff
+    }
+    .help-item h4{font-size:15px;margin-bottom:4px}
+    .help-item p{font-size:12px;color:var(--soft);line-height:1.5}
+    .bottom-nav{
+      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
+      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
+    }
+    .bottom-link{
+      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:4px;font-size:11px;color:var(--soft)
+    }
+    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
+    @media(max-width:960px){.container{grid-template-columns:1fr}}
+    @media(max-width:760px){.bottom-nav{display:grid}}
+    @media(max-width:640px){.container{padding:14px 12px 0}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <button class="icon-btn" onclick="window.location.href='settings.html'">←</button>
+    <div class="page-title">
+      <h1>Support</h1>
+      <p>Tell us what is wrong or what you need help with</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="left-column">
+      <section class="card">
+        <div class="section-head">
+          <h2>Contact Support</h2>
+          <p>Describe your issue clearly so we can guide you faster.</p>
+        </div>
+
+        <form id="supportForm">
+          <textarea id="supportMessage" placeholder="Explain your problem, question, or request..."></textarea>
+          <div class="action-row">
+            <button type="submit" class="primary-btn">Send Request</button>
+            <button type="button" class="outline-btn" onclick="window.location.href='faq.html'">Open FAQ</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <aside class="right-column">
+      <section class="card">
+        <div class="section-head">
+          <h3>Support Areas</h3>
+          <p>Main topics users usually need help with.</p>
+        </div>
+
+        <div class="help-list">
+          <article class="help-item">
+            <h4>Publishing Issues</h4>
+            <p>When a post fails, stays pending, or does not reach all connected platforms.</p>
+          </article>
+          <article class="help-item">
+            <h4>Wallet & Billing</h4>
+            <p>Funding problems, subscription questions, or missing transaction details.</p>
+          </article>
+          <article class="help-item">
+            <h4>Account & Access</h4>
+            <p>Login issues, settings problems, profile control, and connected accounts support.</p>
+          </article>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
+    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
+    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
+    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
+    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="app.js"></script>
+  <script src="support.js"></script>
+</body>
+</html>
