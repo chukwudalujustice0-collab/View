@@ -2,154 +2,341 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Settings | View</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0b5ed7" />
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{
-      --primary:#0b5ed7;
-      --primary-dark:#083b8a;
-      --bg:#f5f8ff;
-      --card:#ffffff;
-      --text:#1f1f1f;
-      --soft:#6b7280;
-      --border:#e5e7eb;
-      --shadow:0 10px 30px rgba(0,0,0,.06);
-      --radius:18px;
-      --danger:#dc2626;
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
     }
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
-    button{font:inherit}
+
+    body{
+      background:#f4f7fc;
+      color:#111827;
+      min-height:100vh;
+      padding:20px 16px 40px;
+    }
+
+    .wrap{
+      max-width:560px;
+      margin:0 auto;
+    }
+
     .topbar{
-      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
-      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;
-      align-items:center;gap:12px;flex-wrap:wrap
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
     }
-    .topbar-left{display:flex;align-items:center;gap:10px}
-    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
-    .page-title p{font-size:12px;color:var(--soft)}
-    .icon-btn,.primary-btn,.outline-btn,.toggle-pill{
-      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+
+    .back{
+      width:46px;
+      height:46px;
+      border:none;
+      border-radius:14px;
+      background:#fff;
+      box-shadow:0 8px 24px rgba(15,23,42,.08);
+      font-size:20px;
+      cursor:pointer;
     }
-    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
-    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
-    .outline-btn,.toggle-pill{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
-    .container{
-      max-width:980px;margin:0 auto;padding:18px 16px 0;display:grid;gap:18px
+
+    .topbar h1{
+      font-size:32px;
+      font-weight:800;
     }
+
+    .notice{
+      display:none;
+      padding:12px 14px;
+      border-radius:14px;
+      margin-bottom:16px;
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .notice.show{
+      display:block;
+    }
+
+    .notice.error{
+      background:#fee2e2;
+      color:#b91c1c;
+    }
+
+    .notice.success{
+      background:#dcfce7;
+      color:#15803d;
+    }
+
+    .hero{
+      background:linear-gradient(135deg,#1d4ed8,#2563eb);
+      color:#fff;
+      border-radius:28px;
+      padding:22px 20px;
+      box-shadow:0 14px 36px rgba(29,78,216,.22);
+      margin-bottom:18px;
+    }
+
+    .hero h2{
+      font-size:24px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .hero p{
+      color:#eff6ff;
+      font-size:14px;
+      line-height:1.6;
+    }
+
     .card{
-      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px
+      background:#fff;
+      border-radius:24px;
+      padding:22px 18px;
+      box-shadow:0 10px 30px rgba(15,23,42,.08);
+      margin-bottom:18px;
     }
-    .section-head{
-      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap
+
+    .card h2{
+      font-size:20px;
+      font-weight:800;
+      margin-bottom:14px;
     }
-    .section-head h2{font-size:20px;margin-bottom:4px}
-    .section-head p{font-size:13px;color:var(--soft);line-height:1.5}
-    .setting-list{display:grid;gap:12px}
-    .setting-item{
-      border:1px solid var(--border);border-radius:16px;padding:14px;background:#fff;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap
+
+    .menu{
+      display:grid;
+      gap:12px;
     }
-    .setting-info h4{font-size:15px;margin-bottom:4px}
-    .setting-info p{font-size:12px;color:var(--soft);line-height:1.5}
-    .toggle-pill.active{
-      background:rgba(11,94,215,.08);
-      border-color:rgba(11,94,215,.18)
+
+    .menu a,
+    .menu button{
+      width:100%;
+      text-decoration:none;
+      background:#fff;
+      border:1px solid #e5e7eb;
+      color:#111827;
+      min-height:62px;
+      border-radius:18px;
+      padding:0 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      font-size:17px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(15,23,42,.04);
     }
-    .action-row{display:flex;gap:10px;flex-wrap:wrap}
-    .danger-btn{
-      background:#fff;color:var(--danger);border:1px solid rgba(220,38,38,.18);font-weight:700
+
+    .menu .danger{
+      color:#b91c1c;
+      background:#fef2f2;
+      border-color:#fecaca;
     }
-    .bottom-nav{
-      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
-      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
+
+    .left{
+      display:flex;
+      align-items:center;
+      gap:12px;
     }
-    .bottom-link{
-      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:4px;font-size:11px;color:var(--soft)
+
+    .emoji{
+      font-size:20px;
     }
-    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
-    @media(max-width:760px){.bottom-nav{display:grid}}
-    @media(max-width:640px){.container{padding:14px 12px 0}}
+
+    .sub{
+      font-size:13px;
+      color:#6b7280;
+      font-weight:500;
+      margin-top:2px;
+      line-height:1.5;
+    }
+
+    .mini-grid{
+      display:grid;
+      gap:10px;
+    }
+
+    .mini-item{
+      padding:14px;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      background:#fff;
+    }
+
+    .mini-item b{
+      display:block;
+      margin-bottom:4px;
+      font-size:15px;
+    }
+
+    .mini-item span{
+      color:#6b7280;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    @media(max-width:520px){
+      .topbar h1{
+        font-size:28px;
+      }
+    }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="icon-btn" onclick="window.location.href='profile.html'">←</button>
-      <div class="page-title">
-        <h1>Settings</h1>
-        <p>Control notifications, privacy, appearance, and account actions</p>
-      </div>
+  <div class="wrap">
+    <div class="topbar">
+      <button class="back" onclick="window.location.href='profile.html'">←</button>
+      <h1>Settings</h1>
     </div>
-  </header>
 
-  <main class="container">
+    <div id="notice" class="notice"></div>
+
+    <section class="hero">
+      <h2>Manage Your Account</h2>
+      <p>Control your profile flow, connected platforms, and publishing setup from one place.</p>
+    </section>
+
     <section class="card">
-      <div class="section-head">
-        <div>
-          <h2>Preferences</h2>
-          <p>Turn app options on or off.</p>
-        </div>
-      </div>
+      <h2>Settings Menu</h2>
 
-      <div class="setting-list">
-        <article class="setting-item">
-          <div class="setting-info">
-            <h4>Notifications</h4>
-            <p>Receive alerts for messages, publishing results, and account activity.</p>
-          </div>
-          <button class="toggle-pill active" data-setting-toggle data-enabled="true">On</button>
-        </article>
+      <div class="menu">
+        <a href="connected-accounts.html">
+          <span>
+            <span class="left"><span class="emoji">🔗</span><span>Connected Accounts</span></span>
+            <div class="sub">Connect Facebook for real cross-posting</div>
+          </span>
+          <span>›</span>
+        </a>
 
-        <article class="setting-item">
-          <div class="setting-info">
-            <h4>Dark Mode</h4>
-            <p>Enable darker appearance when available in your app theme system.</p>
-          </div>
-          <button class="toggle-pill" data-setting-toggle data-enabled="false">Off</button>
-        </article>
+        <a href="profile.html">
+          <span>
+            <span class="left"><span class="emoji">👤</span><span>Profile</span></span>
+            <div class="sub">View your account details and quick actions</div>
+          </span>
+          <span>›</span>
+        </a>
 
-        <article class="setting-item">
-          <div class="setting-info">
-            <h4>Private Account</h4>
-            <p>Require approval before new followers can see your private content.</p>
-          </div>
-          <button class="toggle-pill" data-setting-toggle data-enabled="false">Off</button>
-        </article>
+        <a href="create-post.html">
+          <span>
+            <span class="left"><span class="emoji">➕</span><span>Create Post</span></span>
+            <div class="sub">Write and publish to View and Facebook</div>
+          </span>
+          <span>›</span>
+        </a>
+
+        <a href="notifications.html">
+          <span>
+            <span class="left"><span class="emoji">🔔</span><span>Notifications</span></span>
+            <div class="sub">Manage app alerts and update preferences</div>
+          </span>
+          <span>›</span>
+        </a>
+
+        <button class="danger" onclick="logoutUser()">
+          <span>
+            <span class="left"><span class="emoji">⇦</span><span>Logout</span></span>
+            <div class="sub">Sign out of your account securely</div>
+          </span>
+          <span>›</span>
+        </button>
       </div>
     </section>
 
     <section class="card">
-      <div class="section-head">
-        <div>
-          <h2>Actions</h2>
-          <p>Save your changes or leave your account safely.</p>
+      <h2>Connection Summary</h2>
+
+      <div class="mini-grid">
+        <div class="mini-item">
+          <b id="summaryEmail">Email: Loading...</b>
+          <span>Your current signed-in email</span>
+        </div>
+
+        <div class="mini-item">
+          <b id="summaryFacebook">Facebook: Checking...</b>
+          <span>Shows whether cross-posting is available</span>
         </div>
       </div>
-
-      <div class="action-row">
-        <button class="primary-btn" id="saveSettingsBtn">Save Settings</button>
-        <button class="outline-btn" onclick="window.location.href='support.html'">Support</button>
-        <button class="outline-btn danger-btn" id="logoutBtn">Logout</button>
-      </div>
     </section>
-  </main>
+  </div>
 
-  <nav class="bottom-nav">
-    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
-    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
-    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
-    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
-    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
-  </nav>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-  <script src="config.js"></script>
-  <script src="utils.js"></script>
-  <script src="app.js"></script>
-  <script src="auth.js"></script>
-  <script src="settings.js"></script>
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    function showNotice(message, type = "error") {
+      const box = document.getElementById("notice");
+      box.className = `notice show ${type}`;
+      box.textContent = message;
+    }
+
+    async function getSessionWithRetry(maxWaitMs = 3000) {
+      const start = Date.now();
+
+      while (Date.now() - start < maxWaitMs) {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (data.session?.user) return data.session;
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      return null;
+    }
+
+    async function requireSession() {
+      const session = await getSessionWithRetry();
+      if (!session?.user) {
+        window.location.href = "login.html?next=settings.html";
+        return null;
+      }
+      return session;
+    }
+
+    async function loadSettingsSummary() {
+      const session = await requireSession();
+      if (!session) return;
+
+      const user = session.user;
+      document.getElementById("summaryEmail").textContent = "Email: " + (user.email || "No email found");
+
+      const { data, error } = await supabaseClient
+        .from("connected_accounts")
+        .select("status, account_name")
+        .eq("user_id", user.id)
+        .eq("platform", "facebook")
+        .maybeSingle();
+
+      if (error || !data || data.status !== "connected") {
+        document.getElementById("summaryFacebook").textContent = "Facebook: Not connected";
+        return;
+      }
+
+      document.getElementById("summaryFacebook").textContent =
+        "Facebook: Connected" + (data.account_name ? " (" + data.account_name + ")" : "");
+    }
+
+    async function logoutUser() {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) {
+        showNotice(error.message || "Could not log out.");
+        return;
+      }
+      window.location.href = "login.html";
+    }
+
+    loadSettingsSummary().catch(err => {
+      showNotice(err.message || "Could not load settings.");
+    });
+  </script>
 </body>
 </html>
