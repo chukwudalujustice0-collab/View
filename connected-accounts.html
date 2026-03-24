@@ -2,235 +2,385 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Connected Accounts | View</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body{font-family:Arial,sans-serif;background:#f5f7fb;padding:20px}
-    .card{background:#fff;border-radius:12px;padding:20px;max-width:420px;margin:auto;box-shadow:0 10px 30px rgba(0,0,0,.05)}
-    h2{margin-bottom:16px}
-    .status{display:inline-block;padding:6px 12px;border-radius:20px;background:#ffe5e5;color:red;font-size:12px;font-weight:bold}
-    .connected{background:#d4ffe0;color:green}
-    .meta{margin:14px 0;color:#444;line-height:1.5}
-    button{padding:12px;border:none;border-radius:8px;margin-top:10px;width:100%;font-weight:bold;cursor:pointer}
-    .connect{background:#1877f2;color:#fff}
-    .disconnect{background:#eee;color:red}
-    .notice{margin:0 auto 16px;max-width:420px;padding:12px 14px;border-radius:10px;display:none}
-    .notice.show{display:block}
-    .notice.error{background:#ffe5e5;color:#b00020}
-    .notice.success{background:#dff7e8;color:#0b7a35}
-    .notice.info{background:#e8f1ff;color:#1e5eff}
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f7fc;
+      color: #111827;
+      padding: 24px 16px 40px;
+    }
+
+    .wrap {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .title {
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0 0 20px;
+    }
+
+    .notice {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .notice.show {
+      display: block;
+    }
+
+    .notice.error {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .notice.success {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .notice.info {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 24px 20px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .card-head h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .status.connected {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .desc {
+      margin: 0 0 20px;
+      font-size: 15px;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+
+    .meta {
+      margin: 0 0 20px;
+      font-size: 15px;
+      color: #374151;
+      line-height: 1.6;
+    }
+
+    .btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      min-height: 50px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn-connect {
+      background: #1d4ed8;
+      color: #fff;
+    }
+
+    .btn-disconnect {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .small {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 520px) {
+      .btns {
+        grid-template-columns: 1fr;
+      }
+
+      .title {
+        font-size: 28px;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <h1 class="title">Connected Accounts</h1>
 
-<div id="notice" class="notice"></div>
+    <div id="notice" class="notice"></div>
 
-<div class="card">
-  <h2>Facebook</h2>
-  <div id="status" class="status">Not connected</div>
-  <div id="meta" class="meta">Connect your Facebook for cross-posting.</div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Facebook</h2>
+        <div id="status" class="status">Not connected</div>
+      </div>
 
-  <button class="connect" onclick="connectFacebook()">Connect Facebook</button>
-  <button class="disconnect" onclick="disconnectFacebook()">Disconnect</button>
-</div>
+      <p class="desc">Connect your Facebook account for cross-posting.</p>
+      <p id="meta" class="meta">No Facebook account connected yet.</p>
 
-<script>
-  // Frontend config
-  const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+      <div class="btns">
+        <button class="btn-connect" onclick="connectFacebook()">Connect Facebook</button>
+        <button class="btn-disconnect" onclick="disconnectFacebook()">Disconnect</button>
+      </div>
 
-  // Vercel backend config
-  const VERCEL_BASE_URL = "https://view-psi-lac.vercel.app";
-  const APP_ID = "921040053900296";
-  const REDIRECT_URI = "https://view-psi-lac.vercel.app/connected-accounts.html";
-  const API_URL = `${VERCEL_BASE_URL}/api/facebook-connect`;
+      <div class="small">
+        Test with the same Facebook account that is already an admin on your Meta app.
+      </div>
+    </div>
+  </div>
 
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-  function showNotice(message, type = "error") {
-    const box = document.getElementById("notice");
-    box.className = `notice show ${type}`;
-    box.textContent = message;
-  }
+    const APP_ID = "921040053900296";
+    const VERCEL_BASE_URL = "https://view-psi-lac.vercel.app";
+    const REDIRECT_URI = "https://view-psi-lac.vercel.app/connected-accounts.html";
+    const API_URL = `${VERCEL_BASE_URL}/api/facebook-connect`;
 
-  function clearNotice() {
-    const box = document.getElementById("notice");
-    box.className = "notice";
-    box.textContent = "";
-  }
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  async function getLoggedInUser() {
-    const { data, error } = await supabaseClient.auth.getSession();
-    if (error) throw error;
-    return data?.session?.user || null;
-  }
-
-  function setStatusConnected(name, handle = "") {
-    const status = document.getElementById("status");
-    const meta = document.getElementById("meta");
-    status.textContent = "Connected";
-    status.classList.add("connected");
-    meta.textContent = handle ? `Connected as ${name} (${handle})` : `Connected as ${name}`;
-  }
-
-  function setStatusDisconnected() {
-    const status = document.getElementById("status");
-    const meta = document.getElementById("meta");
-    status.textContent = "Not connected";
-    status.classList.remove("connected");
-    meta.textContent = "Connect your Facebook for cross-posting.";
-  }
-
-  function connectFacebook() {
-    const url =
-      `https://www.facebook.com/v20.0/dialog/oauth` +
-      `?client_id=${APP_ID}` +
-      `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-      `&scope=${encodeURIComponent("public_profile,email,pages_show_list,pages_read_engagement,pages_manage_posts")}` +
-      `&response_type=code`;
-
-    window.location.href = url;
-  }
-
-  async function saveConnectionToSupabase(payload) {
-    const user = await getLoggedInUser();
-    if (!user) {
-      showNotice("Login to your app first before connecting Facebook.", "error");
-      return false;
+    function showNotice(message, type = "error") {
+      const box = document.getElementById("notice");
+      box.className = `notice show ${type}`;
+      box.textContent = message;
     }
 
-    const facebookUser = payload.facebook_user || {};
-    const facebookPages = Array.isArray(payload.facebook_pages) ? payload.facebook_pages : [];
-    const firstPage = facebookPages[0] || null;
-
-    const row = {
-      user_id: user.id,
-      platform: "facebook",
-      account_name: firstPage?.name || facebookUser.name || "Facebook",
-      account_handle: firstPage?.id || facebookUser.id || "",
-      status: "connected",
-      external_user_id: facebookUser.id || null,
-      external_page_id: firstPage?.id || null,
-      access_token: firstPage?.access_token || payload.access_token || null,
-      updated_at: new Date().toISOString()
-    };
-
-    const { error } = await supabaseClient
-      .from("connected_accounts")
-      .upsert(row, { onConflict: "user_id,platform" });
-
-    if (error) {
-      showNotice(error.message || "Could not save Facebook connection.", "error");
-      return false;
+    function clearNotice() {
+      const box = document.getElementById("notice");
+      box.className = "notice";
+      box.textContent = "";
     }
 
-    localStorage.setItem("facebook_user", JSON.stringify({
-      name: row.account_name,
-      handle: row.account_handle
-    }));
+    function setStatusConnected(name, handle = "") {
+      const status = document.getElementById("status");
+      const meta = document.getElementById("meta");
 
-    setStatusConnected(row.account_name, row.account_handle);
-    showNotice("Facebook connected successfully.", "success");
-    return true;
-  }
+      status.textContent = "Connected";
+      status.classList.add("connected");
 
-  async function handleFacebookRedirect() {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    if (!code) return;
-
-    clearNotice();
-    showNotice("Completing Facebook connection...", "info");
-
-    try {
-      const res = await fetch(
-        `${API_URL}?code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`
-      );
-      const data = await res.json();
-
-      if (!res.ok || data.error) {
-        showNotice(typeof data.error === "string" ? data.error : JSON.stringify(data.error || data), "error");
-        return;
-      }
-
-      await saveConnectionToSupabase(data);
-
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } catch (err) {
-      showNotice(err.message || "Facebook connection failed.", "error");
+      meta.textContent = handle ? `Connected as ${name} (${handle})` : `Connected as ${name}`;
     }
-  }
 
-  async function loadSavedConnection() {
-    try {
+    function setStatusDisconnected() {
+      const status = document.getElementById("status");
+      const meta = document.getElementById("meta");
+
+      status.textContent = "Not connected";
+      status.classList.remove("connected");
+
+      meta.textContent = "No Facebook account connected yet.";
+    }
+
+    async function getLoggedInUser() {
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) throw error;
+      return data?.session?.user || null;
+    }
+
+    function connectFacebook() {
+      clearNotice();
+
+      const scope = "public_profile,email";
+      const oauthUrl =
+        "https://www.facebook.com/v20.0/dialog/oauth" +
+        `?client_id=${encodeURIComponent(APP_ID)}` +
+        `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+        `&state=${encodeURIComponent("view_facebook_connect")}` +
+        `&response_type=code` +
+        `&scope=${encodeURIComponent(scope)}`;
+
+      window.location.href = oauthUrl;
+    }
+
+    async function saveConnectionToSupabase(payload) {
       const user = await getLoggedInUser();
+
       if (!user) {
-        setStatusDisconnected();
-        return;
+        showNotice("Login to your app first before connecting Facebook.", "error");
+        return false;
       }
 
-      const { data, error } = await supabaseClient
-        .from("connected_accounts")
-        .select("account_name, account_handle, status")
-        .eq("user_id", user.id)
-        .eq("platform", "facebook")
-        .maybeSingle();
+      const facebookUser = payload.facebook_user || {};
+      const facebookPages = Array.isArray(payload.facebook_pages) ? payload.facebook_pages : [];
+      const firstPage = facebookPages[0] || null;
 
-      if (error) {
-        setStatusDisconnected();
-        return;
-      }
-
-      if (data && data.status === "connected") {
-        setStatusConnected(data.account_name || "Facebook", data.account_handle || "");
-      } else {
-        setStatusDisconnected();
-      }
-    } catch {
-      setStatusDisconnected();
-    }
-  }
-
-  async function disconnectFacebook() {
-    try {
-      const user = await getLoggedInUser();
-      if (!user) {
-        setStatusDisconnected();
-        return;
-      }
+      const row = {
+        user_id: user.id,
+        platform: "facebook",
+        account_name: firstPage?.name || facebookUser.name || "Facebook",
+        account_handle: firstPage?.id || facebookUser.id || "",
+        status: "connected",
+        external_user_id: facebookUser.id || null,
+        external_page_id: firstPage?.id || null,
+        access_token: firstPage?.access_token || payload.access_token || null,
+        updated_at: new Date().toISOString()
+      };
 
       const { error } = await supabaseClient
         .from("connected_accounts")
-        .update({
-          status: "disconnected",
-          account_name: "",
-          account_handle: "",
-          access_token: null,
-          external_user_id: null,
-          external_page_id: null,
-          updated_at: new Date().toISOString()
-        })
-        .eq("user_id", user.id)
-        .eq("platform", "facebook");
+        .upsert(row, { onConflict: "user_id,platform" });
 
       if (error) {
-        showNotice(error.message || "Could not disconnect Facebook.", "error");
-        return;
+        showNotice(error.message || "Could not save Facebook connection.", "error");
+        return false;
       }
 
-      localStorage.removeItem("facebook_user");
-      setStatusDisconnected();
-      showNotice("Facebook disconnected.", "success");
-    } catch (err) {
-      showNotice(err.message || "Could not disconnect Facebook.", "error");
+      setStatusConnected(row.account_name, row.account_handle);
+      showNotice("Facebook connected successfully.", "success");
+      return true;
     }
-  }
 
-  window.onload = async function () {
-    await loadSavedConnection();
-    await handleFacebookRedirect();
-  };
-</script>
+    async function handleFacebookRedirect() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+
+      if (!code) return;
+
+      clearNotice();
+      showNotice("Completing Facebook connection...", "info");
+
+      try {
+        const response = await fetch(
+          `${API_URL}?code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || result.error) {
+          showNotice(
+            typeof result.error === "string"
+              ? result.error
+              : JSON.stringify(result.error || result),
+            "error"
+          );
+          return;
+        }
+
+        await saveConnectionToSupabase(result);
+
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (error) {
+        showNotice(error.message || "Facebook connection failed.", "error");
+      }
+    }
+
+    async function loadSavedConnection() {
+      try {
+        const user = await getLoggedInUser();
+
+        if (!user) {
+          setStatusDisconnected();
+          return;
+        }
+
+        const { data, error } = await supabaseClient
+          .from("connected_accounts")
+          .select("account_name, account_handle, status")
+          .eq("user_id", user.id)
+          .eq("platform", "facebook")
+          .maybeSingle();
+
+        if (error || !data || data.status !== "connected") {
+          setStatusDisconnected();
+          return;
+        }
+
+        setStatusConnected(data.account_name || "Facebook", data.account_handle || "");
+      } catch {
+        setStatusDisconnected();
+      }
+    }
+
+    async function disconnectFacebook() {
+      try {
+        const user = await getLoggedInUser();
+
+        if (!user) {
+          setStatusDisconnected();
+          return;
+        }
+
+        const { error } = await supabaseClient
+          .from("connected_accounts")
+          .update({
+            status: "disconnected",
+            account_name: "",
+            account_handle: "",
+            access_token: null,
+            external_user_id: null,
+            external_page_id: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", user.id)
+          .eq("platform", "facebook");
+
+        if (error) {
+          showNotice(error.message || "Could not disconnect Facebook.", "error");
+          return;
+        }
+
+        setStatusDisconnected();
+        showNotice("Facebook disconnected.", "success");
+      } catch (error) {
+        showNotice(error.message || "Could not disconnect Facebook.", "error");
+      }
+    }
+
+    window.onload = async function () {
+      await loadSavedConnection();
+      await handleFacebookRedirect();
+    };
+  </script>
 </body>
 </html>
