@@ -2,162 +2,180 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Profile | View</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0b5ed7" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{
-      --primary:#0b5ed7;--bg:#f5f8ff;--card:#fff;--text:#1f1f1f;--soft:#6b7280;--border:#e5e7eb;
-      --shadow:0 10px 30px rgba(0,0,0,.06);--radius:18px
+    *{box-sizing:border-box;font-family:Arial,sans-serif}
+    body{margin:0;background:#f4f7fc;color:#111827;padding:20px}
+    .wrap{max-width:520px;margin:0 auto}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .topbar h1{margin:0;font-size:34px;font-weight:800}
+    .icon-btn{
+      width:46px;height:46px;border:none;border-radius:14px;background:#fff;
+      box-shadow:0 8px 24px rgba(15,23,42,.08);font-size:22px;cursor:pointer
     }
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
-    button{font:inherit}
-    .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
-    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
-    .page-title p{font-size:12px;color:var(--soft)}
-    .icon-btn,.primary-btn,.outline-btn,.chip{border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
-    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
-    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
-    .outline-btn,.chip{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
-    .chip{min-height:38px;border-radius:999px;font-size:13px}
-    .chip.active{background:rgba(11,94,215,.08);border-color:rgba(11,94,215,.18)}
-    .container{max-width:1120px;margin:0 auto;padding:18px 16px 0;display:grid;grid-template-columns:1fr .82fr;gap:20px}
-    .left-column,.right-column{display:grid;gap:18px;align-content:start}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
-    .hero{padding:0;overflow:hidden}
-    .cover{height:150px;background:linear-gradient(135deg,#0b5ed7 0%, #083b8a 62%, #061f49 100%)}
-    .hero-body{padding:0 20px 20px;margin-top:-48px}
-    .profile-row{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
-    .profile-avatar{width:108px;height:108px;border-radius:50%;background:linear-gradient(135deg,#dbeafe,#f8fbff);border:4px solid #fff;box-shadow:var(--shadow)}
-    .profile-main h2{font-size:28px;margin-bottom:4px}
-    .username{font-size:14px;color:var(--soft);margin-bottom:10px}
-    .bio{font-size:14px;line-height:1.6;margin-bottom:12px}
-    .stats-row,.chips,.action-row,.tabs{display:flex;gap:10px;flex-wrap:wrap}
-    .stat-box{min-width:110px;padding:12px 14px;border-radius:16px;background:#fff;border:1px solid var(--border);text-align:center}
-    .stat-box strong{display:block;font-size:20px;margin-bottom:4px}
-    .stat-box span{font-size:12px;color:var(--soft);font-weight:700}
-    .section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap}
-    .section-head h3{font-size:20px;margin-bottom:4px}
-    .section-head p{font-size:13px;color:var(--soft)}
-    .grid-posts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .post-tile{height:180px;border-radius:16px;background:linear-gradient(135deg, rgba(11,94,215,.14), rgba(255,255,255,.22)), linear-gradient(135deg,#dbeafe,#f8fbff);border:1px solid rgba(11,94,215,.1)}
-    .summary-grid{display:grid;gap:12px}
-    .summary-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border);font-size:14px}
-    .summary-item:first-child{border-top:none;padding-top:0}
-    .summary-item span{color:var(--soft)}
-    .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30}
-    .bottom-link{min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;color:var(--soft);text-decoration:none}
-    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
-    @media(max-width:960px){.container{grid-template-columns:1fr}}
-    @media(max-width:760px){.grid-posts{grid-template-columns:repeat(2,1fr)}.bottom-nav{display:grid}}
-    @media(max-width:640px){.container{padding:14px 12px 0}.grid-posts{grid-template-columns:1fr}}
+    .card{
+      background:#fff;border-radius:24px;padding:24px 20px;
+      box-shadow:0 10px 30px rgba(15,23,42,.08);margin-bottom:18px
+    }
+    .hero{
+      background:linear-gradient(135deg,#1d4ed8,#2563eb);
+      color:#fff;border-radius:26px;padding:24px 20px 20px;
+      box-shadow:0 14px 36px rgba(29,78,216,.22);margin-bottom:18px
+    }
+    .avatar{
+      width:86px;height:86px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.28);
+      font-size:34px;font-weight:800;margin-bottom:14px
+    }
+    .name{font-size:28px;font-weight:800;margin:0 0 4px}
+    .handle{margin:0 0 10px;color:#dbeafe;font-size:15px}
+    .sub{margin:0;color:#eff6ff;font-size:14px;line-height:1.6}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+    .stat{
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);
+      border-radius:18px;padding:14px 10px;text-align:center
+    }
+    .stat b{display:block;font-size:24px;margin-bottom:4px}
+    .section-title{font-size:20px;font-weight:800;margin:0 0 14px}
+    .menu{display:grid;gap:12px}
+    .menu a,.menu button{
+      text-decoration:none;background:#fff;border:1px solid #e5e7eb;color:#111827;
+      min-height:58px;border-radius:18px;padding:0 16px;display:flex;align-items:center;
+      justify-content:space-between;font-size:17px;font-weight:700;cursor:pointer;
+      box-shadow:0 6px 18px rgba(15,23,42,.04)
+    }
+    .menu .danger{color:#b91c1c;background:#fef2f2;border-color:#fecaca}
+    .left{display:flex;align-items:center;gap:12px}
+    .left .emoji{font-size:20px}
+    .notice{
+      display:none;padding:12px 14px;border-radius:14px;margin-bottom:16px;
+      font-size:14px;line-height:1.5
+    }
+    .notice.show{display:block}
+    .notice.error{background:#fee2e2;color:#b91c1c}
+    .notice.success{background:#dcfce7;color:#15803d}
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="icon-btn" onclick="window.location.href='home.html'">←</button>
-      <div class="page-title">
-        <h1>Profile</h1>
-        <p>Your public identity and content space</p>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>Profile</h1>
+      <button class="icon-btn" onclick="window.location.href='home.html'">⌂</button>
+    </div>
+
+    <div id="notice" class="notice"></div>
+
+    <div class="hero">
+      <div class="avatar" id="avatarText">V</div>
+      <h2 class="name" id="profileName">Loading...</h2>
+      <p class="handle" id="profileHandle">@loading</p>
+      <p class="sub" id="profileMeta">Loading profile information...</p>
+
+      <div class="stats">
+        <div class="stat">
+          <b id="statPosts">0</b>
+          <span>Posts</span>
+        </div>
+        <div class="stat">
+          <b id="statPlatforms">0</b>
+          <span>Platforms</span>
+        </div>
+        <div class="stat">
+          <b id="statDrafts">0</b>
+          <span>Drafts</span>
+        </div>
       </div>
     </div>
-    <div class="topbar-right">
-      <button class="outline-btn" onclick="window.location.href='edit-profile.html'">Edit</button>
-      <button class="primary-btn" id="shareProfileBtn">Share</button>
+
+    <div class="card">
+      <h3 class="section-title">Quick Actions</h3>
+      <div class="menu">
+        <a href="settings.html">
+          <span class="left"><span class="emoji">⚙️</span><span>Settings</span></span>
+          <span>›</span>
+        </a>
+        <a href="connected-accounts.html">
+          <span class="left"><span class="emoji">🔗</span><span>Connected Accounts</span></span>
+          <span>›</span>
+        </a>
+        <a href="create-post.html">
+          <span class="left"><span class="emoji">➕</span><span>Create Post</span></span>
+          <span>›</span>
+        </a>
+        <button class="danger" onclick="logoutUser()">
+          <span class="left"><span class="emoji">⇦</span><span>Logout</span></span>
+          <span>›</span>
+        </button>
+      </div>
     </div>
-  </header>
+  </div>
 
-  <main class="container">
-    <div class="left-column">
-      <section class="card hero">
-        <div class="cover"></div>
-        <div class="hero-body">
-          <div class="profile-row">
-            <div class="profile-avatar"></div>
-            <div class="profile-main">
-              <h2 data-profile-fullname>View User</h2>
-              <div class="username" data-profile-username>@view_user</div>
-              <div class="bio" data-profile-bio>Building View step by step under Ceetify.</div>
-            </div>
-          </div>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9".replace("eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9","eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI");
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-          <div class="stats-row" style="margin-top:16px;">
-            <div class="stat-box"><strong data-profile-posts>128</strong><span>Posts</span></div>
-            <div class="stat-box"><strong data-profile-followers>2.4K</strong><span>Followers</span></div>
-            <div class="stat-box"><strong data-profile-following>318</strong><span>Following</span></div>
-            <div class="stat-box"><strong data-profile-videos>46</strong><span>Videos</span></div>
-          </div>
+    function showNotice(message, type = "error") {
+      const box = document.getElementById("notice");
+      box.className = `notice show ${type}`;
+      box.textContent = message;
+    }
 
-          <div class="action-row" style="margin-top:16px;">
-            <button class="outline-btn" onclick="window.location.href='edit-profile.html'">Edit Profile</button>
-            <button class="outline-btn" onclick="window.location.href='followers.html'">Followers</button>
-            <button class="outline-btn" onclick="window.location.href='following.html'">Following</button>
-          </div>
-        </div>
-      </section>
+    async function requireSession() {
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) throw error;
+      if (!data.session) {
+        window.location.href = "login.html";
+        return null;
+      }
+      return data.session;
+    }
 
-      <section class="card">
-        <div class="tabs">
-          <button class="chip active" data-profile-tab>Posts</button>
-          <button class="chip" data-profile-tab>Videos</button>
-          <button class="chip" data-profile-tab>Saved</button>
-        </div>
-      </section>
+    async function loadProfile() {
+      const session = await requireSession();
+      if (!session) return;
 
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <h3>Content Grid</h3>
-            <p>Your recent content layout.</p>
-          </div>
-        </div>
+      const user = session.user;
+      const fullName =
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        user.email?.split("@")[0] ||
+        "View User";
 
-        <div class="grid-posts">
-          <div class="post-tile"></div>
-          <div class="post-tile"></div>
-          <div class="post-tile"></div>
-          <div class="post-tile"></div>
-          <div class="post-tile"></div>
-          <div class="post-tile"></div>
-        </div>
-      </section>
-    </div>
+      const username =
+        user.user_metadata?.username ||
+        fullName.toLowerCase().replace(/\s+/g, "") ||
+        "viewuser";
 
-    <aside class="right-column">
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <h3>Profile Summary</h3>
-            <p>Quick profile numbers and status.</p>
-          </div>
-        </div>
+      document.getElementById("profileName").textContent = fullName;
+      document.getElementById("profileHandle").textContent = "@" + username;
+      document.getElementById("profileMeta").textContent = user.email || "No email found";
+      document.getElementById("avatarText").textContent = fullName.charAt(0).toUpperCase();
 
-        <div class="summary-grid">
-          <div class="summary-item"><span>Account Type</span><strong>Creator</strong></div>
-          <div class="summary-item"><span>Profile Reach</span><strong>24.8K</strong></div>
-          <div class="summary-item"><span>Linked Accounts</span><strong>3</strong></div>
-          <div class="summary-item"><span>Plan</span><strong>Pro Monthly</strong></div>
-        </div>
-      </section>
-    </aside>
-  </main>
+      const [{ count: postsCount }, { count: connectedCount }, { count: draftsCount }] = await Promise.all([
+        supabaseClient.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+        supabaseClient.from("connected_accounts").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "connected"),
+        supabaseClient.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "draft")
+      ]);
 
-  <nav class="bottom-nav">
-    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
-    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
-    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
-    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
-    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
-  </nav>
+      document.getElementById("statPosts").textContent = postsCount || 0;
+      document.getElementById("statPlatforms").textContent = connectedCount || 0;
+      document.getElementById("statDrafts").textContent = draftsCount || 0;
+    }
 
-  <script src="config.js"></script>
-  <script src="utils.js"></script>
-  <script src="app.js"></script>
-  <script src="auth.js"></script>
-  <script src="profile.js"></script>
+    async function logoutUser() {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) {
+        showNotice(error.message || "Could not log out.");
+        return;
+      }
+      window.location.href = "login.html";
+    }
+
+    loadProfile().catch(err => showNotice(err.message || "Could not load profile."));
+  </script>
 </body>
 </html>
