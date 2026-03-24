@@ -1,60 +1,166 @@
+import { createClient } from "@supabase/supabase-js";
+
+function parseBody(req) {
+  if (!req.body) return {};
+  if (typeof req.body === "string") {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
+  }
+  return req.body;
+}
+
 export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed." });
+  }
+
   try {
-    const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
-    const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
-    const SUPABASE_URL = process.env.SUPABASE_URL_VALUE;
-    const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET || !SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-      return res.status(500).json({ error: "Missing environment variables." });
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return res.status(500).json({ error: "Missing Supabase server credentials." });
     }
 
-    const code = req.query.code;
-    const redirectUri = req.query.redirect_uri;
+    const authHeader = req.headers.authorization || "";
+    const jwt = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
 
-    if (!code || !redirectUri) {
-      return res.status(400).json({ error: "Missing code or redirect_uri." });
+    if (!jwt) {
+      return res.status(401).json({ error: "Missing bearer token." });
     }
 
-    const tokenRes = await fetch(
-      `https://graph.facebook.com/v20.0/oauth/access_token?client_id=${encodeURIComponent(FACEBOOK_APP_ID)}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${encodeURIComponent(FACEBOOK_APP_SECRET)}&code=${encodeURIComponent(code)}`
-    );
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const tokenData = await tokenRes.json();
+    const {
+      data: { user },
+      error: userError
+    } = await supabase.auth.getUser(jwt);
 
-    if (!tokenRes.ok || !tokenData.access_token) {
-      return res.status(400).json({
-        error: tokenData?.error?.message || "Could not exchange code for token."
+    if (userError || !user) {
+      return res.status(401).json({ error: "Invalid session." });
+    }
+
+    const body = parseBody(req);
+    const message = String(body.message || "").trim();
+    const link = String(body.link || "").trim();
+    const imageUrl = String(body.imageUrl || "").trim();
+    const postId = body.postId || null;
+
+    if (!message && !link && !imageUrl) {
+      return res.status(400).json({ error: "Nothing to publish." });
+    }
+
+    const { data: account, error: accountError } = await supabase
+      .from("connected_accounts")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("platform", "facebook")
+      .eq("status", "connected")
+      .maybeSingle();
+
+    if (accountError || !account) {
+      return res.status(400).json({ error: "Facebook account is not connected." });
+    }
+
+    const pageId = account.page_id || account.external_page_id;
+    const pageToken = account.page_token;
+
+    if (!pageId || !pageToken) {
+      return res.status(400).json({ error: "No Facebook Page is linked for publishing." });
+    }
+
+    let fbResponse;
+    let endpoint;
+    let payload;
+
+    if (imageUrl) {
+      endpoint = `https://graph.facebook.com/v20.0/${encodeURIComponent(pageId)}/photos`;
+      payload = new URLSearchParams({
+        url: imageUrl,
+        caption: message || "",
+        access_token: pageToken
       });
-    }
 
-    const userAccessToken = tokenData.access_token;
-
-    const meRes = await fetch(
-      `https://graph.facebook.com/me?fields=id,name,email&access_token=${encodeURIComponent(userAccessToken)}`
-    );
-    const meData = await meRes.json();
-
-    if (!meRes.ok || !meData.id) {
-      return res.status(400).json({
-        error: meData?.error?.message || "Could not fetch Facebook profile."
+      const r = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: payload.toString()
       });
+      fbResponse = await r.json();
+
+      if (!r.ok || fbResponse.error) {
+        await supabase.from("publish_jobs").insert({
+          user_id: user.id,
+          platform: "facebook",
+          post_id: postId,
+          status: "failed",
+          request_payload: { message, link, imageUrl, pageId },
+          response_payload: fbResponse,
+          error_message: fbResponse?.error?.message || "Facebook photo publish failed."
+        });
+
+        return res.status(400).json({
+          error: fbResponse?.error?.message || "Facebook photo publish failed.",
+          raw: fbResponse
+        });
+      }
+    } else {
+      endpoint = `https://graph.facebook.com/v20.0/${encodeURIComponent(pageId)}/feed`;
+      payload = new URLSearchParams({
+        message: message || "",
+        access_token: pageToken
+      });
+
+      if (link) payload.append("link", link);
+
+      const r = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: payload.toString()
+      });
+      fbResponse = await r.json();
+
+      if (!r.ok || fbResponse.error) {
+        await supabase.from("publish_jobs").insert({
+          user_id: user.id,
+          platform: "facebook",
+          post_id: postId,
+          status: "failed",
+          request_payload: { message, link, imageUrl, pageId },
+          response_payload: fbResponse,
+          error_message: fbResponse?.error?.message || "Facebook post publish failed."
+        });
+
+        return res.status(400).json({
+          error: fbResponse?.error?.message || "Facebook post publish failed.",
+          raw: fbResponse
+        });
+      }
     }
 
-    const pagesRes = await fetch(
-      `https://graph.facebook.com/me/accounts?access_token=${encodeURIComponent(userAccessToken)}`
-    );
-    const pagesData = await pagesRes.json();
+    await supabase.from("publish_jobs").insert({
+      user_id: user.id,
+      platform: "facebook",
+      post_id: postId,
+      status: "success",
+      external_post_id: fbResponse.id || null,
+      request_payload: { message, link, imageUrl, pageId },
+      response_payload: fbResponse
+    });
 
     return res.status(200).json({
       success: true,
-      facebook_user: meData,
-      facebook_pages: pagesData?.data || [],
-      access_token: userAccessToken
+      platform: "facebook",
+      page_id: pageId,
+      external_post_id: fbResponse.id || null,
+      raw: fbResponse
     });
   } catch (error) {
     return res.status(500).json({
-      error: error instanceof Error ? error.message : "Unknown error."
+      error: error instanceof Error ? error.message : "Unknown server error."
     });
   }
 }
