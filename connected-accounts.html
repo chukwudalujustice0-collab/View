@@ -6,53 +6,96 @@
   <title>Connected Accounts | View</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
     body {
       margin: 0;
       background: #f4f7fc;
       color: #111827;
       padding: 24px 16px 40px;
     }
+
     .wrap {
-      max-width: 520px;
+      max-width: 560px;
       margin: 0 auto;
     }
-    .title {
-      font-size: 32px;
-      font-weight: 800;
-      margin: 0 0 20px;
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
     }
+
+    .back {
+      width: 46px;
+      height: 46px;
+      border: none;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 800;
+    }
+
     .notice {
       display: none;
       padding: 12px 14px;
-      border-radius: 12px;
+      border-radius: 14px;
       margin-bottom: 16px;
       font-size: 14px;
       line-height: 1.5;
     }
-    .notice.show { display: block; }
-    .notice.error { background: #fee2e2; color: #b91c1c; }
-    .notice.success { background: #dcfce7; color: #15803d; }
-    .notice.info { background: #dbeafe; color: #1d4ed8; }
+
+    .notice.show {
+      display: block;
+    }
+
+    .notice.error {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .notice.success {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .notice.info {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
 
     .card {
-      background: #ffffff;
-      border-radius: 22px;
+      background: #fff;
+      border-radius: 24px;
       padding: 24px 20px;
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     }
-    .card-head {
+
+    .head {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 12px;
       margin-bottom: 14px;
     }
-    .card-head h2 {
+
+    .head h2 {
       margin: 0;
       font-size: 22px;
       font-weight: 800;
     }
+
     .status {
       display: inline-flex;
       align-items: center;
@@ -65,63 +108,80 @@
       background: #fee2e2;
       color: #b91c1c;
     }
+
     .status.connected {
       background: #dcfce7;
       color: #15803d;
     }
+
     .desc {
-      margin: 0 0 20px;
+      margin: 0 0 18px;
       font-size: 15px;
       color: #4b5563;
       line-height: 1.6;
     }
+
     .meta {
       margin: 0 0 20px;
       font-size: 15px;
       color: #374151;
       line-height: 1.6;
     }
+
     .btns {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
-    button {
+
+    button.action-btn {
       border: none;
       border-radius: 14px;
-      min-height: 50px;
+      min-height: 54px;
       font-size: 18px;
       font-weight: 800;
       cursor: pointer;
     }
-    .btn-connect {
+
+    .connect {
       background: #1d4ed8;
       color: #fff;
     }
-    .btn-disconnect {
+
+    .disconnect {
       background: #fee2e2;
       color: #b91c1c;
     }
+
     .small {
       margin-top: 16px;
       font-size: 13px;
       color: #6b7280;
       line-height: 1.5;
     }
+
     @media (max-width: 520px) {
-      .btns { grid-template-columns: 1fr; }
-      .title { font-size: 28px; }
+      .btns {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar h1 {
+        font-size: 28px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1 class="title">Connected Accounts</h1>
+    <div class="topbar">
+      <button class="back" onclick="window.location.href='settings.html'">←</button>
+      <h1>Connected Accounts</h1>
+    </div>
 
     <div id="notice" class="notice"></div>
 
     <div class="card">
-      <div class="card-head">
+      <div class="head">
         <h2>Facebook</h2>
         <div id="status" class="status">Not connected</div>
       </div>
@@ -130,8 +190,8 @@
       <p id="meta" class="meta">No Facebook account connected yet.</p>
 
       <div class="btns">
-        <button class="btn-connect" onclick="connectFacebook()">Connect Facebook</button>
-        <button class="btn-disconnect" onclick="disconnectFacebook()">Disconnect</button>
+        <button class="action-btn connect" onclick="connectFacebook()">Connect Facebook</button>
+        <button class="action-btn disconnect" onclick="disconnectFacebook()">Disconnect</button>
       </div>
 
       <div class="small">
@@ -143,15 +203,19 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    // Replace the line above with your full anon key if it got cut during paste.
-    // Use the exact anon key you sent earlier.
 
     const APP_ID = "921040053900296";
     const VERCEL_BASE_URL = "https://view-psi-lac.vercel.app";
     const REDIRECT_URI = "https://view-psi-lac.vercel.app/connected-accounts.html";
     const API_URL = `${VERCEL_BASE_URL}/api/facebook-connect`;
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
 
     function showNotice(message, type = "error") {
       const box = document.getElementById("notice");
@@ -159,9 +223,16 @@
       box.textContent = message;
     }
 
+    function clearNotice() {
+      const box = document.getElementById("notice");
+      box.className = "notice";
+      box.textContent = "";
+    }
+
     function setStatusConnected(name, handle = "") {
       const status = document.getElementById("status");
       const meta = document.getElementById("meta");
+
       status.textContent = "Connected";
       status.classList.add("connected");
       meta.textContent = handle ? `Connected as ${name} (${handle})` : `Connected as ${name}`;
@@ -170,18 +241,37 @@
     function setStatusDisconnected() {
       const status = document.getElementById("status");
       const meta = document.getElementById("meta");
+
       status.textContent = "Not connected";
       status.classList.remove("connected");
       meta.textContent = "No Facebook account connected yet.";
     }
 
-    async function getLoggedInUser() {
-      const { data, error } = await supabaseClient.auth.getSession();
-      if (error) throw error;
-      return data?.session?.user || null;
+    async function getSessionWithRetry(maxWaitMs = 3000) {
+      const start = Date.now();
+
+      while (Date.now() - start < maxWaitMs) {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (data.session?.user) return data.session;
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      return null;
+    }
+
+    async function requireSession() {
+      const session = await getSessionWithRetry();
+      if (!session?.user) {
+        showNotice("Login to your app first before connecting Facebook.", "error");
+        return null;
+      }
+      return session;
     }
 
     function connectFacebook() {
+      clearNotice();
+
       const oauthUrl =
         "https://www.facebook.com/v20.0/dialog/oauth" +
         `?client_id=${encodeURIComponent(APP_ID)}` +
@@ -194,13 +284,10 @@
     }
 
     async function saveConnectionToSupabase(payload) {
-      const user = await getLoggedInUser();
+      const session = await requireSession();
+      if (!session) return false;
 
-      if (!user) {
-        showNotice("Login to your app first before connecting Facebook.", "error");
-        return false;
-      }
-
+      const user = session.user;
       const facebookUser = payload.facebook_user || {};
       const facebookPages = Array.isArray(payload.facebook_pages) ? payload.facebook_pages : [];
       const firstPage = facebookPages[0] || null;
@@ -234,8 +321,10 @@
     async function handleFacebookRedirect() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
+
       if (!code) return;
 
+      clearNotice();
       showNotice("Completing Facebook connection...", "info");
 
       try {
@@ -256,6 +345,7 @@
         }
 
         await saveConnectionToSupabase(result);
+
         window.history.replaceState({}, document.title, window.location.pathname);
       } catch (error) {
         showNotice(error.message || "Facebook connection failed.", "error");
@@ -264,13 +354,13 @@
 
     async function loadSavedConnection() {
       try {
-        const user = await getLoggedInUser();
-
-        if (!user) {
+        const session = await requireSession();
+        if (!session) {
           setStatusDisconnected();
           return;
         }
 
+        const user = session.user;
         const { data, error } = await supabaseClient
           .from("connected_accounts")
           .select("account_name, account_handle, status")
@@ -284,20 +374,18 @@
         }
 
         setStatusConnected(data.account_name || "Facebook", data.account_handle || "");
-      } catch {
+      } catch (error) {
+        showNotice(error.message || "Could not load connected account.", "error");
         setStatusDisconnected();
       }
     }
 
     async function disconnectFacebook() {
       try {
-        const user = await getLoggedInUser();
+        const session = await requireSession();
+        if (!session) return;
 
-        if (!user) {
-          setStatusDisconnected();
-          return;
-        }
-
+        const user = session.user;
         const { error } = await supabaseClient
           .from("connected_accounts")
           .update({
@@ -325,8 +413,8 @@
     }
 
     window.onload = async function () {
-      await loadSavedConnection();
       await handleFacebookRedirect();
+      await loadSavedConnection();
     };
   </script>
 </body>
