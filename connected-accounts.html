@@ -6,92 +6,356 @@
   <title>Connected Accounts | View</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    *{box-sizing:border-box;font-family:Arial,sans-serif}
-    body{margin:0;background:#f4f7fc;color:#111827;padding:24px 16px 40px}
-    .wrap{max-width:560px;margin:0 auto}
-    .notice{display:none;padding:12px 14px;border-radius:14px;margin-bottom:16px;font-size:14px;line-height:1.5}
-    .notice.show{display:block}
-    .notice.error{background:#fee2e2;color:#b91c1c}
-    .notice.success{background:#dcfce7;color:#15803d}
-    .notice.info{background:#dbeafe;color:#1d4ed8}
-    .card{background:#fff;border-radius:24px;padding:24px 20px;box-shadow:0 10px 30px rgba(15,23,42,.08)}
-    .head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
-    .head h2{margin:0;font-size:22px;font-weight:800}
-    .status{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:700;background:#fee2e2;color:#b91c1c}
-    .status.connected{background:#dcfce7;color:#15803d}
-    .desc,.meta,.small{line-height:1.6}
-    .desc{margin:0 0 18px;color:#4b5563}
-    .meta{margin:0 0 20px;color:#374151}
-    .btns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    button{border:none;border-radius:14px;min-height:54px;font-size:18px;font-weight:800;cursor:pointer}
-    .connect{background:#1d4ed8;color:#fff}
-    .disconnect{background:#fee2e2;color:#b91c1c}
-    .small{margin-top:16px;font-size:13px;color:#6b7280}
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
+    body{
+      background:#f4f7fc;
+      color:#111827;
+      min-height:100vh;
+      padding:20px 16px 40px;
+    }
+
+    .wrap{
+      max-width:560px;
+      margin:0 auto;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .back{
+      width:46px;
+      height:46px;
+      border:none;
+      border-radius:14px;
+      background:#fff;
+      box-shadow:0 8px 24px rgba(15,23,42,.08);
+      font-size:20px;
+      cursor:pointer;
+    }
+
+    .topbar h1{
+      font-size:32px;
+      font-weight:800;
+    }
+
+    .notice{
+      display:none;
+      padding:12px 14px;
+      border-radius:14px;
+      margin-bottom:16px;
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    .notice.show{
+      display:block;
+    }
+
+    .notice.error{
+      background:#fee2e2;
+      color:#b91c1c;
+    }
+
+    .notice.success{
+      background:#dcfce7;
+      color:#15803d;
+    }
+
+    .notice.info{
+      background:#dbeafe;
+      color:#1d4ed8;
+    }
+
+    .hero{
+      background:linear-gradient(135deg,#1d4ed8,#2563eb);
+      color:#fff;
+      border-radius:28px;
+      padding:22px 20px;
+      box-shadow:0 14px 36px rgba(29,78,216,.22);
+      margin-bottom:18px;
+    }
+
+    .hero h2{
+      font-size:24px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .hero p{
+      color:#eff6ff;
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    .card{
+      background:#fff;
+      border-radius:24px;
+      padding:22px 18px;
+      box-shadow:0 10px 30px rgba(15,23,42,.08);
+      margin-bottom:18px;
+    }
+
+    .head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .head h3{
+      font-size:22px;
+      font-weight:800;
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:36px;
+      padding:0 14px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:700;
+      background:#fee2e2;
+      color:#b91c1c;
+    }
+
+    .status.connected{
+      background:#dcfce7;
+      color:#15803d;
+    }
+
+    .desc{
+      color:#4b5563;
+      font-size:15px;
+      line-height:1.6;
+      margin-bottom:18px;
+    }
+
+    .meta-list{
+      display:grid;
+      gap:10px;
+      margin-bottom:18px;
+    }
+
+    .meta-item{
+      padding:14px;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      background:#fff;
+    }
+
+    .meta-item b{
+      display:block;
+      margin-bottom:4px;
+      font-size:15px;
+    }
+
+    .meta-item span{
+      color:#6b7280;
+      font-size:13px;
+      line-height:1.5;
+      word-break:break-word;
+    }
+
+    .btns{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    button.action-btn{
+      border:none;
+      border-radius:14px;
+      min-height:54px;
+      font-size:17px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .connect{
+      background:#1d4ed8;
+      color:#fff;
+    }
+
+    .disconnect{
+      background:#fee2e2;
+      color:#b91c1c;
+    }
+
+    .subcard{
+      padding:16px;
+      border:1px solid #e5e7eb;
+      border-radius:18px;
+      background:#fff;
+    }
+
+    .subcard h4{
+      font-size:16px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .subcard p{
+      color:#6b7280;
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    @media(max-width:520px){
+      .topbar h1{
+        font-size:28px;
+      }
+
+      .btns{
+        grid-template-columns:1fr;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <div class="topbar">
+      <button class="back" onclick="window.location.href='settings.html'">←</button>
+      <h1>Connected Accounts</h1>
+    </div>
+
     <div id="notice" class="notice"></div>
 
-    <div class="card">
+    <section class="hero">
+      <h2>Cross-posting Setup</h2>
+      <p>Connect your Facebook Page here. Once connected, posts from View can also be sent to Facebook.</p>
+    </section>
+
+    <section class="card">
       <div class="head">
-        <h2>Facebook</h2>
-        <div id="status" class="status">Not connected</div>
+        <h3>Facebook</h3>
+        <div id="fbStatus" class="status">Not connected</div>
       </div>
 
-      <p class="desc">Connect your Facebook Page for cross-posting.</p>
-      <p id="meta" class="meta">No Facebook Page connected yet.</p>
+      <p class="desc">This connection stores your Facebook Page information and page token so publishing can work correctly.</p>
+
+      <div class="meta-list">
+        <div class="meta-item">
+          <b>Connected Name</b>
+          <span id="fbAccountName">No account connected yet.</span>
+        </div>
+
+        <div class="meta-item">
+          <b>Facebook Page ID</b>
+          <span id="fbPageId">No page selected yet.</span>
+        </div>
+
+        <div class="meta-item">
+          <b>Connection Status</b>
+          <span id="fbConnectionMeta">Waiting for connection.</span>
+        </div>
+      </div>
 
       <div class="btns">
-        <button class="connect" onclick="connectFacebook()">Connect Facebook</button>
-        <button class="disconnect" onclick="disconnectFacebook()">Disconnect</button>
+        <button class="action-btn connect" id="connectBtn">Connect Facebook</button>
+        <button class="action-btn disconnect" id="disconnectBtn">Disconnect</button>
       </div>
+    </section>
 
-      <div class="small">This stores the first Page returned by Facebook as the default publish target.</div>
-    </div>
+    <section class="card">
+      <div class="subcard">
+        <h4>How it works</h4>
+        <p>
+          After you connect Facebook successfully, this app saves your default Facebook Page and its page token.
+          That token is what lets View publish real posts to Facebook.
+        </p>
+      </div>
+    </section>
   </div>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
     const APP_ID = "921040053900296";
     const VERCEL_BASE_URL = "https://view-psi-lac.vercel.app";
     const REDIRECT_URI = "https://view-psi-lac.vercel.app/connected-accounts.html";
-    const API_URL = `${VERCEL_BASE_URL}/api/facebook-connect`;
+    const FACEBOOK_CONNECT_API = `${VERCEL_BASE_URL}/api/facebook-connect`;
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
     });
 
+    const noticeBox = document.getElementById("notice");
+    const fbStatus = document.getElementById("fbStatus");
+    const fbAccountName = document.getElementById("fbAccountName");
+    const fbPageId = document.getElementById("fbPageId");
+    const fbConnectionMeta = document.getElementById("fbConnectionMeta");
+    const connectBtn = document.getElementById("connectBtn");
+    const disconnectBtn = document.getElementById("disconnectBtn");
+
     function showNotice(message, type = "error") {
-      const box = document.getElementById("notice");
-      box.className = `notice show ${type}`;
-      box.textContent = message;
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message;
     }
 
-    function setStatusConnected(name, handle = "") {
-      document.getElementById("status").textContent = "Connected";
-      document.getElementById("status").classList.add("connected");
-      document.getElementById("meta").textContent = handle ? `Connected as ${name} (${handle})` : `Connected as ${name}`;
+    function clearNotice() {
+      noticeBox.className = "notice";
+      noticeBox.textContent = "";
     }
 
-    function setStatusDisconnected() {
-      document.getElementById("status").textContent = "Not connected";
-      document.getElementById("status").classList.remove("connected");
-      document.getElementById("meta").textContent = "No Facebook Page connected yet.";
+    function setDisconnectedState() {
+      fbStatus.textContent = "Not connected";
+      fbStatus.classList.remove("connected");
+      fbAccountName.textContent = "No account connected yet.";
+      fbPageId.textContent = "No page selected yet.";
+      fbConnectionMeta.textContent = "Waiting for connection.";
     }
 
-    async function getSession() {
-      const { data, error } = await supabaseClient.auth.getSession();
-      if (error) throw error;
-      if (!data.session?.user) {
+    function setConnectedState(accountName, pageId) {
+      fbStatus.textContent = "Connected";
+      fbStatus.classList.add("connected");
+      fbAccountName.textContent = accountName || "Facebook connected";
+      fbPageId.textContent = pageId || "Page ID unavailable";
+      fbConnectionMeta.textContent = "Ready for Facebook cross-posting.";
+    }
+
+    async function getSessionWithRetry(maxWaitMs = 3000) {
+      const start = Date.now();
+
+      while (Date.now() - start < maxWaitMs) {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (data.session?.user) return data.session;
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      return null;
+    }
+
+    async function requireSession() {
+      const session = await getSessionWithRetry();
+      if (!session?.user) {
         window.location.href = "login.html?next=connected-accounts.html";
         return null;
       }
-      return data.session;
+      return session;
     }
 
     function connectFacebook() {
+      clearNotice();
+
       const oauthUrl =
         "https://www.facebook.com/v20.0/dialog/oauth" +
         `?client_id=${encodeURIComponent(APP_ID)}` +
@@ -103,27 +367,27 @@
       window.location.href = oauthUrl;
     }
 
-    async function saveConnectionToSupabase(payload) {
-      const session = await getSession();
+    async function saveFacebookConnection(payload) {
+      const session = await requireSession();
       if (!session) return false;
 
       const user = session.user;
-      const fbUser = payload.facebook_user || {};
-      const pages = Array.isArray(payload.facebook_pages) ? payload.facebook_pages : [];
-      const firstPage = pages[0] || null;
+      const facebookUser = payload.facebook_user || {};
+      const facebookPages = Array.isArray(payload.facebook_pages) ? payload.facebook_pages : [];
+      const firstPage = facebookPages[0] || null;
 
       if (!firstPage?.id || !firstPage?.access_token) {
-        showNotice("Facebook connected, but no publishable Page was returned.", "error");
+        showNotice("Facebook connected, but no publishable Facebook Page was returned.", "error");
         return false;
       }
 
-      const row = {
+      const connectionRow = {
         user_id: user.id,
         platform: "facebook",
-        account_name: firstPage.name || fbUser.name || "Facebook",
-        account_handle: firstPage.id || fbUser.id || "",
+        account_name: firstPage.name || facebookUser.name || "Facebook",
+        account_handle: firstPage.id || facebookUser.id || "",
         status: "connected",
-        external_user_id: fbUser.id || null,
+        external_user_id: facebookUser.id || null,
         external_page_id: firstPage.id,
         page_id: firstPage.id,
         page_name: firstPage.name || null,
@@ -134,87 +398,112 @@
 
       const { error } = await supabaseClient
         .from("connected_accounts")
-        .upsert(row, { onConflict: "user_id,platform" });
+        .upsert(connectionRow, { onConflict: "user_id,platform" });
 
       if (error) {
         showNotice(error.message || "Could not save Facebook connection.", "error");
         return false;
       }
 
-      setStatusConnected(row.account_name, row.account_handle);
+      setConnectedState(connectionRow.account_name, connectionRow.page_id);
       showNotice("Facebook connected successfully.", "success");
       return true;
     }
 
-    async function handleRedirect() {
+    async function handleFacebookRedirect() {
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
+
       if (!code) return;
 
-      try {
-        showNotice("Completing Facebook connection...", "info");
-        const res = await fetch(`${API_URL}?code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`);
-        const data = await res.json();
+      showNotice("Completing Facebook connection...", "info");
 
-        if (!res.ok || data.error) {
-          showNotice(data.error || "Facebook connection failed.", "error");
+      try {
+        const response = await fetch(
+          `${FACEBOOK_CONNECT_API}?code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || result.error) {
+          showNotice(
+            typeof result.error === "string"
+              ? result.error
+              : JSON.stringify(result.error || result),
+            "error"
+          );
           return;
         }
 
-        await saveConnectionToSupabase(data);
+        await saveFacebookConnection(result);
         window.history.replaceState({}, document.title, window.location.pathname);
-      } catch (e) {
-        showNotice(e.message || "Facebook connection failed.", "error");
+      } catch (error) {
+        showNotice(error.message || "Facebook connection failed.", "error");
       }
     }
 
     async function loadConnectedAccount() {
-      const session = await getSession();
+      const session = await requireSession();
       if (!session) return;
 
-      const { data } = await supabaseClient
+      const user = session.user;
+
+      const { data, error } = await supabaseClient
         .from("connected_accounts")
-        .select("account_name, account_handle, status")
-        .eq("user_id", session.user.id)
+        .select("status, account_name, page_id")
+        .eq("user_id", user.id)
         .eq("platform", "facebook")
         .maybeSingle();
 
-      if (data && data.status === "connected") {
-        setStatusConnected(data.account_name || "Facebook", data.account_handle || "");
-      } else {
-        setStatusDisconnected();
-      }
-    }
-
-    async function disconnectFacebook() {
-      const session = await getSession();
-      if (!session) return;
-
-      const { error } = await supabaseClient
-        .from("connected_accounts")
-        .update({
-          status: "disconnected",
-          external_page_id: null,
-          page_id: null,
-          page_name: null,
-          access_token: null,
-          page_token: null,
-          updated_at: new Date().toISOString()
-        })
-        .eq("user_id", session.user.id)
-        .eq("platform", "facebook");
-
-      if (error) {
-        showNotice(error.message || "Could not disconnect Facebook.", "error");
+      if (error || !data || data.status !== "connected") {
+        setDisconnectedState();
         return;
       }
 
-      setStatusDisconnected();
-      showNotice("Facebook disconnected.", "success");
+      setConnectedState(data.account_name, data.page_id);
     }
 
+    async function disconnectFacebook() {
+      const session = await requireSession();
+      if (!session) return;
+
+      try {
+        const user = session.user;
+
+        const { error } = await supabaseClient
+          .from("connected_accounts")
+          .update({
+            status: "disconnected",
+            account_name: "",
+            account_handle: "",
+            external_user_id: null,
+            external_page_id: null,
+            page_id: null,
+            page_name: null,
+            access_token: null,
+            page_token: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", user.id)
+          .eq("platform", "facebook");
+
+        if (error) {
+          showNotice(error.message || "Could not disconnect Facebook.", "error");
+          return;
+        }
+
+        setDisconnectedState();
+        showNotice("Facebook disconnected.", "success");
+      } catch (error) {
+        showNotice(error.message || "Could not disconnect Facebook.", "error");
+      }
+    }
+
+    connectBtn.addEventListener("click", connectFacebook);
+    disconnectBtn.addEventListener("click", disconnectFacebook);
+
     window.onload = async function () {
-      await handleRedirect();
+      await handleFacebookRedirect();
       await loadConnectedAccount();
     };
   </script>
