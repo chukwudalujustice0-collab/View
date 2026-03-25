@@ -2,578 +2,309 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Home | View</title>
-  <meta name="theme-color" content="#0b5ed7" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{
-      --primary:#0b5ed7;
-      --primary-dark:#083b8a;
-      --bg:#f5f8ff;
-      --card:#ffffff;
-      --text:#1f1f1f;
-      --soft:#6b7280;
-      --border:#e5e7eb;
-      --danger:#dc2626;
-      --success:#16a34a;
-      --shadow:0 10px 30px rgba(0,0,0,.06);
-      --radius:18px;
-    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:#f4f7fc;color:#111827;min-height:100vh;padding-bottom:100px}
+    .wrap{max-width:760px;margin:0 auto;padding:18px 16px 0}
+    .notice{display:none;padding:12px 14px;border-radius:14px;margin-bottom:16px;font-size:14px;line-height:1.6}
+    .notice.show{display:block}
+    .notice.error{background:#fee2e2;color:#b91c1c}
+    .notice.success{background:#dcfce7;color:#15803d}
+    .notice.info{background:#dbeafe;color:#1d4ed8}
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Arial,sans-serif;
-    }
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+    .brand h1{font-size:32px;font-weight:800;color:#1d4ed8;line-height:1;margin-bottom:4px}
+    .brand p{color:#6b7280;font-size:13px}
 
-    body{
-      background:var(--bg);
-      color:var(--text);
-      min-height:100vh;
-      padding-bottom:92px;
-    }
-
-    a{
-      text-decoration:none;
-      color:inherit;
-    }
-
-    button,input,textarea{
-      font:inherit;
-    }
-
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:50;
-      background:rgba(255,255,255,.96);
-      backdrop-filter:blur(14px);
-      border-bottom:1px solid var(--border);
-      padding:14px 16px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
-    .topbar-left,
-    .topbar-right{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-
-    .brand-mark{
-      width:42px;
-      height:42px;
-      border-radius:14px;
-      background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-      color:#fff;
-      display:grid;
-      place-items:center;
-      font-size:20px;
-      font-weight:700;
-    }
-
-    .brand-text h1{
-      font-size:22px;
-      color:var(--primary);
-      line-height:1;
-      margin-bottom:2px;
-    }
-
-    .brand-text p{
-      font-size:12px;
-      color:var(--soft);
-    }
-
-    .icon-btn,
-    .primary-btn,
-    .outline-btn,
-    .mini-btn{
-      border:none;
-      border-radius:12px;
-      min-height:42px;
-      padding:0 14px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-    }
-
+    .top-actions{display:flex;align-items:center;gap:10px}
     .icon-btn{
-      width:42px;
-      padding:0;
-      background:#fff;
-      border:1px solid var(--border);
+      width:46px;height:46px;border:none;border-radius:14px;background:#fff;
+      box-shadow:0 8px 24px rgba(15,23,42,.08);font-size:20px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;overflow:hidden;
+      text-decoration:none;color:#111827
+    }
+    .profile-btn-img{width:100%;height:100%;object-fit:cover;display:block;border-radius:14px}
+    .profile-btn-fallback{
+      width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+      background:#dbeafe;color:#1d4ed8;font-size:18px;font-weight:800;border-radius:14px
     }
 
-    .primary-btn{
-      background:var(--primary);
-      color:#fff;
-      font-weight:700;
+    .search-card,.card{
+      background:#fff;border-radius:24px;padding:18px 16px;
+      box-shadow:0 10px 30px rgba(15,23,42,.08);margin-bottom:18px
     }
-
-    .primary-btn:hover{
-      background:var(--primary-dark);
+    .search-wrap{
+      display:flex;align-items:center;gap:10px;border:1px solid #e5e7eb;
+      border-radius:16px;padding:0 14px;background:#fff;min-height:52px
     }
+    .search-wrap span{font-size:18px;color:#6b7280}
+    .search-wrap input{flex:1;border:none;outline:none;background:transparent;font-size:15px;color:#111827}
+    .search-wrap input::placeholder{color:#9ca3af}
 
-    .outline-btn,
-    .mini-btn{
-      background:#fff;
-      color:var(--primary);
-      border:1px solid var(--border);
-      font-weight:700;
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .section-head h2{font-size:20px;font-weight:800}
+
+    .stories{display:flex;gap:12px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+    .stories::-webkit-scrollbar{display:none}
+    .story{min-width:80px;text-align:center;text-decoration:none;color:inherit}
+    .story-avatar{
+      width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#2563eb);
+      color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;
+      font-weight:800;margin:0 auto 8px;border:3px solid #dbeafe;overflow:hidden
     }
+    .story-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .story-name{font-size:12px;color:#374151;line-height:1.4}
 
-    .mini-btn{
-      min-height:36px;
-      padding:0 12px;
-      border-radius:999px;
-      font-size:12px;
-    }
-
-    .container{
-      max-width:760px;
-      margin:0 auto;
-      padding:18px 16px 0;
-      display:grid;
-      gap:18px;
-    }
-
-    .composer-card,
-    .post-card,
-    .modal-card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-    }
-
-    .composer-card{
-      padding:18px;
-    }
-
-    .composer-top{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
+    .composer{display:flex;gap:12px;align-items:flex-start}
     .avatar{
-      width:48px;
-      height:48px;
-      border-radius:50%;
-      background:linear-gradient(135deg,#dbeafe,#f8fbff);
-      border:1px solid rgba(11,94,215,.12);
-      display:grid;
-      place-items:center;
-      color:var(--primary);
-      font-weight:700;
-      overflow:hidden;
-      flex-shrink:0;
+      width:48px;height:48px;min-width:48px;border-radius:50%;background:#dbeafe;color:#1d4ed8;
+      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;
+      overflow:hidden;text-decoration:none
     }
-
-    .avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .composer-box{flex:1}
     .composer-input{
-      flex:1;
-      min-height:48px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      background:#f8fbff;
-      padding:0 14px;
-      display:flex;
-      align-items:center;
-      color:var(--soft);
-      font-size:14px;
-      cursor:pointer;
+      width:100%;border:none;outline:none;background:#f8fafc;border-radius:18px;
+      padding:16px;font-size:15px;color:#111827;margin-bottom:12px;cursor:pointer;text-align:left
+    }
+    .composer-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .mini-btn{
+      border:none;border-radius:999px;padding:10px 14px;background:#eff6ff;color:#1d4ed8;
+      font-size:13px;font-weight:700;cursor:pointer
     }
 
-    .composer-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
+    .install-btn{
+      border:none;border-radius:999px;padding:10px 14px;background:#1d4ed8;color:#fff;
+      font-size:13px;font-weight:700;cursor:pointer;display:none
     }
 
-    .post-card{
-      overflow:hidden;
+    .feed{display:grid;gap:16px}
+    .post{
+      background:#fff;border-radius:24px;padding:18px 16px;
+      box-shadow:0 10px 30px rgba(15,23,42,.08)
     }
-
-    .post-head{
-      padding:16px 16px 10px;
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-    }
-
+    .post-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
     .post-user{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
+      display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;flex:1;min-width:0
     }
+    .post-user .avatar{width:46px;height:46px;min-width:46px}
+    .post-name{font-size:15px;font-weight:800;margin-bottom:3px;word-break:break-word}
+    .post-sub{font-size:12px;color:#6b7280}
 
-    .post-user-meta h3{
-      font-size:15px;
-      margin-bottom:2px;
-      word-break:break-word;
+    .post-menu-wrap{position:relative}
+    .post-menu{
+      border:none;background:transparent;font-size:22px;color:#6b7280;cursor:pointer;
+      line-height:1;padding:4px 6px;border-radius:10px
     }
-
-    .post-user-meta p{
-      font-size:12px;
-      color:var(--soft);
-      word-break:break-word;
+    .post-menu-popup{
+      position:absolute;right:0;top:36px;min-width:150px;background:#fff;border:1px solid #e5e7eb;
+      box-shadow:0 12px 30px rgba(15,23,42,.12);border-radius:16px;display:none;overflow:hidden;z-index:20
     }
-
-    .post-content{
-      padding:0 16px 14px;
-      font-size:14px;
-      line-height:1.7;
-      white-space:pre-wrap;
-      word-break:break-word;
+    .post-menu-popup.show{display:block}
+    .post-menu-popup button{
+      width:100%;border:none;background:#fff;text-align:left;padding:12px 14px;
+      font-size:14px;color:#111827;cursor:pointer
     }
+    .post-menu-popup button:hover{background:#f8fafc}
 
-    .post-media{
-      margin:0 16px 14px;
-      min-height:180px;
-      border-radius:16px;
-      background:linear-gradient(135deg, rgba(11,94,215,.14), rgba(255,255,255,.2)), linear-gradient(135deg,#dbeafe,#f8fbff);
-      border:1px solid rgba(11,94,215,.12);
-      display:grid;
-      place-items:center;
-      color:var(--soft);
-      font-weight:700;
-      padding:14px;
-      text-align:center;
-      overflow:hidden;
-    }
-
-    .post-media img,
-    .post-media video{
-      width:100%;
-      max-height:420px;
-      object-fit:cover;
-      display:block;
-      border-radius:14px;
-    }
-
-    .post-tags{
-      padding:0 16px 12px;
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .tag{
-      min-height:30px;
-      padding:0 10px;
-      border-radius:999px;
-      background:#f8fbff;
-      border:1px solid rgba(11,94,215,.12);
-      color:var(--primary);
-      font-size:12px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:700;
-    }
-
-    .post-stats{
-      padding:0 16px 10px;
-      color:var(--soft);
-      font-size:12px;
-      display:flex;
-      gap:14px;
-      flex-wrap:wrap;
+    .post-content{font-size:14px;line-height:1.7;color:#111827;white-space:pre-wrap;margin-bottom:14px}
+    .post-image,.post-video{
+      width:100%;border-radius:18px;border:1px solid #e5e7eb;margin-bottom:14px;
+      max-height:420px;object-fit:cover;background:#000;display:none
     }
 
     .post-actions{
-      padding:12px 16px 16px;
-      border-top:1px solid var(--border);
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+      padding-top:10px;border-top:1px solid #f1f5f9
     }
-
-    .action-btn.active{
-      background:rgba(11,94,215,.08);
-      border-color:rgba(11,94,215,.18);
+    .action-group{display:flex;gap:8px;flex-wrap:wrap}
+    .action-chip{
+      border:none;background:#f8fafc;color:#374151;border-radius:999px;padding:10px 14px;
+      font-size:13px;font-weight:700;cursor:pointer;transition:.2s ease
     }
-
-    .notice{
-      display:none;
-      padding:12px 14px;
-      border-radius:14px;
-      font-size:13px;
-      line-height:1.5;
-    }
-
-    .notice.error{
-      display:block;
-      background:#fff5f5;
-      color:var(--danger);
-      border:1px solid #fecaca;
-    }
-
-    .notice.success{
-      display:block;
-      background:#f0fdf4;
-      color:var(--success);
-      border:1px solid #bbf7d0;
-    }
+    .action-chip.active{background:#eff6ff;color:#1d4ed8}
 
     .empty-state{
-      background:#fff;
-      border:1px dashed rgba(11,94,215,.18);
-      border-radius:16px;
-      padding:28px 18px;
-      text-align:center;
-    }
-
-    .empty-state h3{
-      font-size:18px;
-      margin-bottom:6px;
-    }
-
-    .empty-state p{
-      color:var(--soft);
-      font-size:14px;
-      line-height:1.6;
-      margin-bottom:14px;
+      text-align:center;padding:30px 16px;color:#6b7280;font-size:14px;line-height:1.7;
+      background:#fff;border-radius:24px;box-shadow:0 10px 30px rgba(15,23,42,.08)
     }
 
     .bottom-nav{
-      position:fixed;
-      left:0;
-      right:0;
-      bottom:0;
-      background:#fff;
-      border-top:1px solid var(--border);
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:6px;
-      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
-      z-index:60;
+      position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
+      width:min(760px, calc(100% - 20px));background:#fff;border-radius:22px;
+      box-shadow:0 16px 40px rgba(15,23,42,.12);padding:10px 8px;
+      display:grid;grid-template-columns:repeat(5,1fr);gap:6px;z-index:50
     }
-
-    .bottom-link{
-      min-height:54px;
-      border-radius:12px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      font-size:11px;
-      color:var(--soft);
+    .nav-btn{
+      text-decoration:none;color:#6b7280;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;gap:4px;min-height:58px;border-radius:16px;font-size:12px;font-weight:700
     }
+    .nav-btn.active{background:#eff6ff;color:#1d4ed8}
+    .nav-icon{font-size:20px;line-height:1}
 
-    .bottom-link.active{
-      color:var(--primary);
-      background:rgba(11,94,215,.08);
-      font-weight:700;
-    }
-
-    .modal{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.35);
-      display:none;
-      align-items:flex-end;
-      justify-content:center;
-      z-index:100;
-    }
-
-    .modal.show{
-      display:flex;
-    }
-
-    .modal-card{
-      width:min(760px,100%);
-      max-height:85vh;
-      border-bottom-left-radius:0;
-      border-bottom-right-radius:0;
-      padding:18px;
-      display:grid;
-      gap:14px;
-    }
-
-    .modal-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-    }
-
-    .modal-head h3{
-      font-size:18px;
-    }
-
-    .comment-list{
-      display:grid;
-      gap:12px;
-      overflow:auto;
-      max-height:46vh;
-      padding-right:4px;
-    }
-
-    .comment-card{
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:12px;
-      background:#fff;
-    }
-
-    .comment-card h4{
-      font-size:14px;
-      margin-bottom:4px;
-    }
-
-    .comment-card p{
-      font-size:13px;
-      line-height:1.6;
-    }
-
-    .comment-card span{
-      display:block;
-      margin-top:6px;
-      color:var(--soft);
-      font-size:11px;
-    }
-
-    .comment-form{
-      display:grid;
-      gap:10px;
-    }
-
-    .comment-form textarea{
-      width:100%;
-      min-height:90px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:12px 14px;
-      resize:vertical;
-    }
-
-    @media(max-width:640px){
-      .container{
-        padding:14px 12px 0;
-      }
-
-      .topbar-right .outline-btn{
-        display:none;
-      }
+    @media(max-width:560px){
+      .topbar{align-items:flex-start}
+      .brand h1{font-size:28px}
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <div class="topbar">
       <div class="brand">
-        <div class="brand-mark">V</div>
-        <div class="brand-text">
-          <h1>View</h1>
-          <p>Your world, your view</p>
-        </div>
+        <h1>View</h1>
+        <p id="welcomeText">Welcome back</p>
+      </div>
+
+      <div class="top-actions">
+        <button id="installAppBtn" class="install-btn" onclick="installViewApp()">Install App</button>
+        <button class="icon-btn" onclick="window.location.href='notifications.html'" title="Notifications">🔔</button>
+        <a id="topProfileBtn" class="icon-btn" href="profile.html" title="Profile">
+          <div class="profile-btn-fallback">V</div>
+        </a>
       </div>
     </div>
 
-    <div class="topbar-right">
-      <button class="outline-btn" onclick="window.location.href='saved-posts.html'">Saved</button>
-      <button class="primary-btn" onclick="window.location.href='create-post.html'">Create</button>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="composer-card">
-      <div class="composer-top">
-        <div class="avatar" id="composerAvatar">V</div>
-        <div class="composer-input" onclick="window.location.href='create-post.html'">
-          What do you want to share today?
-        </div>
-      </div>
-
-      <div class="composer-actions">
-        <button class="mini-btn" onclick="window.location.href='create-post.html'">Text</button>
-        <button class="mini-btn" onclick="window.location.href='create-post.html'">Photo</button>
-        <button class="mini-btn" onclick="window.location.href='create-post.html'">Video</button>
+    <section class="search-card">
+      <div class="search-wrap">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Search people, posts, chats..." />
       </div>
     </section>
 
-    <div id="feedNotice" class="notice"></div>
-
-    <section id="feedContainer"></section>
-  </main>
-
-  <div id="commentsModal" class="modal">
-    <div class="modal-card">
-      <div class="modal-head">
-        <h3>Comments</h3>
-        <button class="outline-btn" id="closeCommentsBtn">Close</button>
+    <section class="card">
+      <div class="section-head">
+        <h2>Stories</h2>
       </div>
 
-      <div id="commentList" class="comment-list"></div>
+      <div class="stories">
+        <a class="story" href="profile.html">
+          <div class="story-avatar">+</div>
+          <div class="story-name">Add Story</div>
+        </a>
+        <a class="story" href="profile.html?user=amara">
+          <div class="story-avatar">A</div>
+          <div class="story-name">Amara</div>
+        </a>
+        <a class="story" href="profile.html?user=john">
+          <div class="story-avatar">J</div>
+          <div class="story-name">John</div>
+        </a>
+        <a class="story" href="profile.html?user=kate">
+          <div class="story-avatar">K</div>
+          <div class="story-name">Kate</div>
+        </a>
+        <a class="story" href="profile.html?user=moses">
+          <div class="story-avatar">M</div>
+          <div class="story-name">Moses</div>
+        </a>
+      </div>
+    </section>
 
-      <form id="commentForm" class="comment-form">
-        <textarea id="commentInput" placeholder="Write a comment..."></textarea>
-        <button type="submit" class="primary-btn" id="commentSubmitBtn">Post Comment</button>
-      </form>
+    <section class="card">
+      <div class="composer">
+        <a class="avatar" id="composerAvatar" href="profile.html">V</a>
 
-      <div id="commentNotice" class="notice"></div>
+        <div class="composer-box">
+          <button class="composer-input" onclick="window.location.href='create-post.html'">
+            What's on your mind?
+          </button>
+
+          <div class="composer-actions">
+            <button class="mini-btn" onclick="window.location.href='create-post.html'">📷 Photo</button>
+            <button class="mini-btn" onclick="window.location.href='create-post.html'">🔗 Link</button>
+            <button class="mini-btn" onclick="window.location.href='create-post.html'">✍️ Text</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-head" style="margin-bottom:12px;">
+      <h2>Feed</h2>
     </div>
+
+    <section id="feed" class="feed"></section>
   </div>
 
   <nav class="bottom-nav">
-    <a href="home.html" class="bottom-link active"><span>🏠</span><span>Home</span></a>
-    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
-    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
-    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
-    <a href="profile.html" class="bottom-link"><span>👤</span><span>Profile</span></a>
+    <a class="nav-btn active" href="home.html">
+      <span class="nav-icon">⌂</span>
+      <span>Home</span>
+    </a>
+    <a class="nav-btn" href="create-post.html">
+      <span class="nav-icon">＋</span>
+      <span>Create</span>
+    </a>
+    <a class="nav-btn" href="chats.html">
+      <span class="nav-icon">💬</span>
+      <span>Chats</span>
+    </a>
+    <a class="nav-btn" href="video-feed.html">
+      <span class="nav-icon">🎥</span>
+      <span>Video</span>
+    </a>
+    <a class="nav-btn" href="settings.html">
+      <span class="nav-icon">⚙️</span>
+      <span>Settings</span>
+    </a>
   </nav>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/install.js"></script>
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const feedContainer = document.getElementById("feedContainer");
-    const feedNotice = document.getElementById("feedNotice");
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    const noticeBox = document.getElementById("notice");
+    const welcomeText = document.getElementById("welcomeText");
     const composerAvatar = document.getElementById("composerAvatar");
-    const commentsModal = document.getElementById("commentsModal");
-    const closeCommentsBtn = document.getElementById("closeCommentsBtn");
-    const commentList = document.getElementById("commentList");
-    const commentForm = document.getElementById("commentForm");
-    const commentInput = document.getElementById("commentInput");
-    const commentSubmitBtn = document.getElementById("commentSubmitBtn");
-    const commentNotice = document.getElementById("commentNotice");
+    const feed = document.getElementById("feed");
+    const searchInput = document.getElementById("searchInput");
+    const topProfileBtn = document.getElementById("topProfileBtn");
 
-    const state = {
-      currentUserId: null,
-      currentCommentsPostId: null,
-      posts: [],
-      likesMap: new Map(),
-      savedMap: new Map(),
-      commentCountMap: new Map(),
-      profilesMap: new Map()
-    };
+    let allPosts = [];
+    let currentUserId = "";
+    let currentUserName = "View User";
+    let videoObserver = null;
+
+    function showNotice(message, type = "error") {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message;
+    }
+
+    async function getSessionWithRetry(maxWaitMs = 3000) {
+      const start = Date.now();
+      while (Date.now() - start < maxWaitMs) {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (data.session?.user) return data.session;
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      return null;
+    }
+
+    async function requireSession() {
+      const session = await getSessionWithRetry();
+      if (!session?.user) {
+        window.location.href = "login.html?next=home.html";
+        return null;
+      }
+      return session;
+    }
 
     function escapeHtml(value) {
       return String(value || "")
@@ -584,445 +315,299 @@
         .replace(/'/g, "&#039;");
     }
 
-    function showNotice(message, type = "error") {
-      feedNotice.className = "notice " + type;
-      feedNotice.textContent = message;
+    function buildProfileUrl(postUserId) {
+      return postUserId ? `profile.html?user=${encodeURIComponent(postUserId)}` : "profile.html";
     }
 
-    function showCommentNotice(message, type = "error") {
-      commentNotice.className = "notice " + type;
-      commentNotice.textContent = message;
-    }
-
-    function clearCommentNotice() {
-      commentNotice.className = "notice";
-      commentNotice.textContent = "";
+    function isVideoUrl(url) {
+      if (!url) return false;
+      return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
     }
 
     function formatDate(value) {
-      if (!value) return "";
-      const date = new Date(value);
-      if (isNaN(date.getTime())) return "";
-      return date.toLocaleString();
+      if (!value) return "Just now";
+      try { return new Date(value).toLocaleString(); }
+      catch { return "Just now"; }
     }
 
-    function buildTags(post) {
-      const tags = [];
-      if (post.media_type) tags.push(`<span class="tag">${escapeHtml(post.media_type)}</span>`);
-      if (post.location) tags.push(`<span class="tag">${escapeHtml(post.location)}</span>`);
-      if (post.visibility) tags.push(`<span class="tag">${escapeHtml(post.visibility)}</span>`);
-      return tags.join("");
-    }
+    function setTopProfileImage(user) {
+      const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || "";
+      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "View User";
+      const initial = fullName.charAt(0).toUpperCase();
 
-    function buildMedia(post) {
-      if (!post.media_url) return "";
-
-      if (post.media_type === "image") {
-        return `<div class="post-media"><img src="${escapeHtml(post.media_url)}" alt="Post image"></div>`;
-      }
-
-      if (post.media_type === "video") {
-        return `<div class="post-media"><video controls src="${escapeHtml(post.media_url)}"></video></div>`;
-      }
-
-      return `<div class="post-media">Media attached</div>`;
-    }
-
-    function renderEmpty() {
-      feedContainer.innerHTML = `
-        <div class="empty-state">
-          <h3>No posts yet</h3>
-          <p>Your feed is empty for now. Create your first post and it will appear here.</p>
-          <button class="primary-btn" onclick="window.location.href='create-post.html'">Create Post</button>
-        </div>
-      `;
-    }
-
-    async function getSessionUser() {
-      const { data } = await supabaseClient.auth.getSession();
-      return data?.session?.user || null;
-    }
-
-    async function loadComposerProfile() {
-      const user = await getSessionUser();
-      state.currentUserId = user?.id || null;
-      if (!state.currentUserId) return;
-
-      const { data: profile } = await supabaseClient
-        .from("profiles")
-        .select("full_name, username, avatar_url")
-        .eq("id", state.currentUserId)
-        .maybeSingle();
-
-      if (!profile) return;
-
-      if (profile.avatar_url) {
-        composerAvatar.innerHTML = `<img src="${escapeHtml(profile.avatar_url)}" alt="Avatar">`;
+      if (avatarUrl) {
+        topProfileBtn.innerHTML = `<img src="${avatarUrl}" alt="Profile" class="profile-btn-img">`;
+        composerAvatar.innerHTML = `<img src="${avatarUrl}" alt="Profile">`;
       } else {
-        const seed = profile.full_name || profile.username || "V";
-        composerAvatar.textContent = seed.charAt(0).toUpperCase();
+        topProfileBtn.innerHTML = `<div class="profile-btn-fallback">${initial}</div>`;
+        composerAvatar.textContent = initial;
       }
     }
 
-    async function loadFeed() {
-      const { data, error } = await supabaseClient
-        .from("posts")
-        .select("id,user_id,content,media_url,media_type,location,visibility,status,created_at,published_at")
-        .eq("status", "published")
-        .order("published_at", { ascending: false });
+    function togglePostMenu(postId) {
+      document.querySelectorAll(".post-menu-popup").forEach(menu => {
+        if (menu.dataset.postId !== String(postId)) menu.classList.remove("show");
+      });
+      const target = document.getElementById(`menu-${postId}`);
+      if (target) target.classList.toggle("show");
+    }
 
-      if (error) throw error;
+    function closeAllMenus() {
+      document.querySelectorAll(".post-menu-popup").forEach(menu => menu.classList.remove("show"));
+    }
 
-      state.posts = data || [];
+    function toggleLike(btn) {
+      btn.classList.toggle("active");
+      btn.textContent = btn.classList.contains("active") ? "💙 Liked" : "👍 Like";
+    }
 
-      if (!state.posts.length) {
-        renderEmpty();
+    function toggleSave(btn, postId) {
+      const key = `view_saved_${postId}`;
+      const active = btn.classList.toggle("active");
+      btn.textContent = active ? "✅ Saved" : "🔖 Save";
+      if (active) localStorage.setItem(key, "true");
+      else localStorage.removeItem(key);
+    }
+
+    function restoreSavedState(postId) {
+      return localStorage.getItem(`view_saved_${postId}`) === "true";
+    }
+
+    async function sharePost(postId, text) {
+      const shareUrl = `${window.location.origin}/home.html?post=${encodeURIComponent(postId)}`;
+      const shareData = {
+        title: "View Post",
+        text: text || "Check out this post on View",
+        url: shareUrl
+      };
+
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+          return;
+        }
+      } catch (error) {
+        if (error && error.name === "AbortError") return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        showNotice("Post link copied to clipboard.", "success");
+      } catch {
+        showNotice("Sharing is not available on this device.");
+      }
+    }
+
+    function openComments(postId) {
+      window.location.href = `comments.html?post=${encodeURIComponent(postId)}`;
+    }
+
+    async function copyPostLink(postId) {
+      const shareUrl = `${window.location.origin}/home.html?post=${encodeURIComponent(postId)}`;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        showNotice("Post link copied.", "success");
+      } catch {
+        showNotice("Could not copy post link.");
+      }
+      closeAllMenus();
+    }
+
+    function reportPost() {
+      showNotice("Post reported successfully.", "success");
+      closeAllMenus();
+    }
+
+    function setupVideoAutoplay() {
+      if (videoObserver) videoObserver.disconnect();
+
+      const videos = document.querySelectorAll(".post-video");
+      videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target;
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+            document.querySelectorAll(".post-video").forEach(v => {
+              if (v !== video) v.pause();
+            });
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        });
+      }, { threshold: [0.2, 0.6, 0.9] });
+
+      videos.forEach(video => videoObserver.observe(video));
+    }
+
+    function getAuthorName(post) {
+      if (post.author_name) return post.author_name;
+      if (post.full_name) return post.full_name;
+      if (post.username) return post.username;
+      if (post.user_id && post.user_id === currentUserId) return currentUserName;
+      return "View User";
+    }
+
+    function renderFeed(posts) {
+      if (!posts.length) {
+        feed.innerHTML = `
+          <div class="empty-state">
+            No posts yet.<br>
+            Create your first post to start your View feed.
+          </div>
+        `;
         return;
       }
 
-      await Promise.all([
-        hydrateProfiles(),
-        hydrateLikes(),
-        hydrateSaved(),
-        hydrateCommentCounts()
-      ]);
-
-      renderPosts();
-    }
-
-    async function hydrateProfiles() {
-      const ids = [...new Set(state.posts.map(post => post.user_id).filter(Boolean))];
-      if (!ids.length) return;
-
-      const { data, error } = await supabaseClient
-        .from("profiles")
-        .select("id,full_name,username,avatar_url")
-        .in("id", ids);
-
-      if (error) throw error;
-
-      state.profilesMap = new Map((data || []).map(item => [item.id, item]));
-    }
-
-    async function hydrateLikes() {
-      const ids = state.posts.map(post => post.id);
-      if (!ids.length) return;
-
-      const { data, error } = await supabaseClient
-        .from("post_likes")
-        .select("post_id,user_id")
-        .in("post_id", ids);
-
-      if (error) throw error;
-
-      state.likesMap = new Map();
-      ids.forEach(id => state.likesMap.set(id, { count: 0, liked: false }));
-
-      (data || []).forEach(row => {
-        const current = state.likesMap.get(row.post_id) || { count: 0, liked: false };
-        current.count += 1;
-        if (row.user_id === state.currentUserId) current.liked = true;
-        state.likesMap.set(row.post_id, current);
-      });
-    }
-
-    async function hydrateSaved() {
-      if (!state.currentUserId) return;
-
-      const ids = state.posts.map(post => post.id);
-      if (!ids.length) return;
-
-      const { data, error } = await supabaseClient
-        .from("saved_posts")
-        .select("post_id")
-        .eq("user_id", state.currentUserId)
-        .in("post_id", ids);
-
-      if (error) throw error;
-
-      state.savedMap = new Map();
-      ids.forEach(id => state.savedMap.set(id, false));
-      (data || []).forEach(row => state.savedMap.set(row.post_id, true));
-    }
-
-    async function hydrateCommentCounts() {
-      const ids = state.posts.map(post => post.id);
-      if (!ids.length) return;
-
-      const { data, error } = await supabaseClient
-        .from("comments")
-        .select("post_id")
-        .in("post_id", ids);
-
-      if (error) throw error;
-
-      state.commentCountMap = new Map();
-      ids.forEach(id => state.commentCountMap.set(id, 0));
-      (data || []).forEach(row => {
-        state.commentCountMap.set(row.post_id, (state.commentCountMap.get(row.post_id) || 0) + 1);
-      });
-    }
-
-    function renderPosts() {
-      feedContainer.innerHTML = state.posts.map(post => {
-        const profile = state.profilesMap.get(post.user_id) || {};
-        const displayName = profile.full_name || profile.username || "View User";
-        const username = profile.username ? "@" + profile.username : "@view_user";
-        const avatarLetter = displayName.charAt(0).toUpperCase();
-        const likeState = state.likesMap.get(post.id) || { count: 0, liked: false };
-        const saved = state.savedMap.get(post.id) || false;
-        const comments = state.commentCountMap.get(post.id) || 0;
+      feed.innerHTML = posts.map(post => {
+        const postId = post.id || Math.random().toString(36).slice(2);
+        const author = getAuthorName(post);
+        const authorInitial = author.charAt(0).toUpperCase();
+        const avatarUrl = post.avatar_url || "";
+        const profileUrl = buildProfileUrl(post.user_id);
+        const content = escapeHtml(post.content || "");
+        const mediaUrl = post.media_url ? escapeHtml(post.media_url) : "";
+        const createdAt = formatDate(post.created_at);
+        const saved = restoreSavedState(postId);
+        const video = isVideoUrl(mediaUrl);
 
         return `
-          <article class="post-card" data-post-id="${escapeHtml(post.id)}">
+          <article class="post" data-post-id="${postId}">
             <div class="post-head">
-              <div class="post-user">
+              <a class="post-user" href="${profileUrl}">
                 <div class="avatar">
-                  ${profile.avatar_url ? `<img src="${escapeHtml(profile.avatar_url)}" alt="Avatar">` : avatarLetter}
+                  ${avatarUrl ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(author)}">` : authorInitial}
                 </div>
-                <div class="post-user-meta">
-                  <h3>${escapeHtml(displayName)}</h3>
-                  <p>${escapeHtml(username)} • ${escapeHtml(formatDate(post.published_at || post.created_at))}</p>
+                <div>
+                  <div class="post-name">${escapeHtml(author)}</div>
+                  <div class="post-sub">${createdAt}</div>
+                </div>
+              </a>
+
+              <div class="post-menu-wrap">
+                <button class="post-menu" onclick="togglePostMenu('${postId}')">⋯</button>
+                <div class="post-menu-popup" id="menu-${postId}" data-post-id="${postId}">
+                  <button onclick="copyPostLink('${postId}')">Copy Link</button>
+                  <button onclick="reportPost()">Report Post</button>
                 </div>
               </div>
             </div>
 
-            <div class="post-content">${escapeHtml(post.content || "")}</div>
+            <div class="post-content">${content}</div>
 
-            ${buildMedia(post)}
-
-            <div class="post-tags">${buildTags(post)}</div>
-
-            <div class="post-stats">
-              <span id="likes-count-${escapeHtml(post.id)}">${likeState.count} likes</span>
-              <span id="comments-count-${escapeHtml(post.id)}">${comments} comments</span>
-            </div>
+            ${mediaUrl && !video ? `<img class="post-image" src="${mediaUrl}" alt="Post image" style="display:block;">` : ""}
+            ${mediaUrl && video ? `<video class="post-video" src="${mediaUrl}" controls playsinline muted preload="metadata" style="display:block;"></video>` : ""}
 
             <div class="post-actions">
-              <button class="mini-btn action-btn ${likeState.liked ? "active" : ""}" onclick="toggleLike('${escapeHtml(post.id)}')">
-                ${likeState.liked ? "Liked" : "Like"}
-              </button>
-              <button class="mini-btn action-btn" onclick="openComments('${escapeHtml(post.id)}')">Comment</button>
-              <button class="mini-btn action-btn ${saved ? "active" : ""}" onclick="toggleSave('${escapeHtml(post.id)}')">
-                ${saved ? "Saved" : "Save"}
-              </button>
-              <button class="mini-btn action-btn" onclick="sharePost('${escapeHtml(post.id)}')">Share</button>
+              <div class="action-group">
+                <button class="action-chip" onclick="toggleLike(this)">👍 Like</button>
+                <button class="action-chip" onclick="openComments('${postId}')">💬 Comment</button>
+                <button class="action-chip" onclick="sharePost('${postId}', '${escapeHtml((post.content || '').slice(0,80))}')">↗ Share</button>
+              </div>
+
+              <div class="action-group">
+                <button class="action-chip ${saved ? "active" : ""}" onclick="toggleSave(this, '${postId}')">
+                  ${saved ? "✅ Saved" : "🔖 Save"}
+                </button>
+              </div>
             </div>
           </article>
         `;
       }).join("");
+
+      setupVideoAutoplay();
     }
 
-    async function toggleLike(postId) {
-      const stateItem = state.likesMap.get(postId) || { count: 0, liked: false };
-
-      if (!state.currentUserId) {
-        showNotice("Login first to like posts.");
+    function filterFeed() {
+      const term = searchInput.value.trim().toLowerCase();
+      if (!term) {
+        renderFeed(allPosts);
         return;
       }
 
-      try {
-        if (stateItem.liked) {
-          const { error } = await supabaseClient
-            .from("post_likes")
-            .delete()
-            .eq("post_id", postId)
-            .eq("user_id", state.currentUserId);
+      const filtered = allPosts.filter(post => {
+        const content = String(post.content || "").toLowerCase();
+        const author = String(getAuthorName(post) || "").toLowerCase();
+        return content.includes(term) || author.includes(term);
+      });
 
-          if (error) throw error;
-          stateItem.liked = false;
-          stateItem.count = Math.max(0, stateItem.count - 1);
-        } else {
-          const { error } = await supabaseClient
-            .from("post_likes")
-            .insert({ post_id: postId, user_id: state.currentUserId });
-
-          if (error) throw error;
-          stateItem.liked = true;
-          stateItem.count += 1;
-        }
-
-        state.likesMap.set(postId, stateItem);
-        renderPosts();
-      } catch (error) {
-        console.error(error);
-        showNotice(error.message || "Could not update like.");
-      }
+      renderFeed(filtered);
     }
 
-    async function toggleSave(postId) {
-      if (!state.currentUserId) {
-        showNotice("Login first to save posts.");
-        return;
-      }
+    async function loadHome() {
+      const session = await requireSession();
+      if (!session) return;
 
-      const saved = state.savedMap.get(postId) || false;
+      const user = session.user;
+      currentUserId = user.id;
+      currentUserName =
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        user.email?.split("@")[0] ||
+        "View User";
 
-      try {
-        if (saved) {
-          const { error } = await supabaseClient
-            .from("saved_posts")
-            .delete()
-            .eq("post_id", postId)
-            .eq("user_id", state.currentUserId);
+      welcomeText.textContent = `Welcome back, ${currentUserName}`;
+      setTopProfileImage(user);
 
-          if (error) throw error;
-          state.savedMap.set(postId, false);
-        } else {
-          const { error } = await supabaseClient
-            .from("saved_posts")
-            .insert({ post_id: postId, user_id: state.currentUserId });
+      let data = null;
+      let error = null;
 
-          if (error) throw error;
-          state.savedMap.set(postId, true);
-        }
-
-        renderPosts();
-      } catch (error) {
-        console.error(error);
-        showNotice(error.message || "Could not update saved post.");
-      }
-    }
-
-    async function loadComments(postId) {
-      const { data, error } = await supabaseClient
-        .from("comments")
-        .select("id,user_id,content,created_at")
-        .eq("post_id", postId)
+      const res1 = await supabaseClient
+        .from("posts")
+        .select("*")
+        .or("status.eq.published,status.is.null")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      data = res1.data;
+      error = res1.error;
 
-      const userIds = [...new Set((data || []).map(item => item.user_id).filter(Boolean))];
-      let commentProfiles = [];
+      if (error) {
+        const res2 = await supabaseClient
+          .from("posts")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-      if (userIds.length) {
-        const { data: profilesData, error: profilesError } = await supabaseClient
-          .from("profiles")
-          .select("id,full_name,username")
-          .in("id", userIds);
-
-        if (profilesError) throw profilesError;
-        commentProfiles = profilesData || [];
+        data = res2.data;
+        error = res2.error;
       }
 
-      const profileMap = new Map(commentProfiles.map(item => [item.id, item]));
-
-      if (!data || !data.length) {
-        commentList.innerHTML = `
-          <div class="empty-state">
-            <h3>No comments yet</h3>
-            <p>Be the first to comment on this post.</p>
-          </div>
-        `;
+      if (error) {
+        showNotice(error.message || "Could not load feed.");
+        renderFeed([]);
         return;
       }
 
-      commentList.innerHTML = data.map(item => {
-        const profile = profileMap.get(item.user_id) || {};
-        const name = profile.full_name || profile.username || "View User";
-        return `
-          <div class="comment-card">
-            <h4>${escapeHtml(name)}</h4>
-            <p>${escapeHtml(item.content || "")}</p>
-            <span>${escapeHtml(formatDate(item.created_at))}</span>
-          </div>
-        `;
-      }).join("");
+      allPosts = data || [];
+      renderFeed(allPosts);
     }
 
-    async function openComments(postId) {
-      state.currentCommentsPostId = postId;
-      clearCommentNotice();
-      commentInput.value = "";
-      commentsModal.classList.add("show");
-      await loadComments(postId);
-    }
-
-    function closeComments() {
-      commentsModal.classList.remove("show");
-      state.currentCommentsPostId = null;
-    }
-
-    async function submitComment(event) {
-      event.preventDefault();
-      clearCommentNotice();
-
-      if (!state.currentUserId) {
-        showCommentNotice("Login first to comment.");
-        return;
-      }
-
-      const content = commentInput.value.trim();
-      if (!content) {
-        showCommentNotice("Write a comment first.");
-        return;
-      }
-
-      commentSubmitBtn.disabled = true;
-      commentSubmitBtn.textContent = "Posting...";
-
-      try {
-        const { error } = await supabaseClient
-          .from("comments")
-          .insert({
-            post_id: state.currentCommentsPostId,
-            user_id: state.currentUserId,
-            content
-          });
-
-        if (error) throw error;
-
-        const currentCount = state.commentCountMap.get(state.currentCommentsPostId) || 0;
-        state.commentCountMap.set(state.currentCommentsPostId, currentCount + 1);
-
-        commentInput.value = "";
-        await loadComments(state.currentCommentsPostId);
-        renderPosts();
-        showCommentNotice("Comment posted.", "success");
-      } catch (error) {
-        console.error(error);
-        showCommentNotice(error.message || "Could not post comment.");
-      } finally {
-        commentSubmitBtn.disabled = false;
-        commentSubmitBtn.textContent = "Post Comment";
-      }
-    }
-
-    function sharePost(postId) {
-      const shareUrl = window.location.origin + "/home.html#post-" + postId;
-
-      if (navigator.share) {
-        navigator.share({
-          title: "View Post",
-          text: "Check out this post on View",
-          url: shareUrl
-        }).catch(() => {});
-        return;
-      }
-
-      navigator.clipboard.writeText(shareUrl)
-        .then(() => showNotice("Post link copied.", "success"))
-        .catch(() => showNotice("Could not copy post link."));
-    }
-
-    closeCommentsBtn.addEventListener("click", closeComments);
-    commentsModal.addEventListener("click", (event) => {
-      if (event.target === commentsModal) closeComments();
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".post-menu-wrap")) closeAllMenus();
     });
-    commentForm.addEventListener("submit", submitComment);
 
+    searchInput.addEventListener("input", filterFeed);
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", async () => {
+        try {
+          await navigator.serviceWorker.register("/service-worker.js");
+          console.log("Service worker registered");
+        } catch (error) {
+          console.error("Service worker failed:", error);
+        }
+      });
+    }
+
+    loadHome().catch(err => {
+      showNotice(err.message || "Could not load home.");
+    });
+
+    window.togglePostMenu = togglePostMenu;
     window.toggleLike = toggleLike;
     window.toggleSave = toggleSave;
-    window.openComments = openComments;
     window.sharePost = sharePost;
-
-    async function init() {
-      await loadComposerProfile();
-      await loadFeed();
-    }
-
-    init();
+    window.openComments = openComments;
+    window.copyPostLink = copyPostLink;
+    window.reportPost = reportPost;
   </script>
 </body>
 </html>
