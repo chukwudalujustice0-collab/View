@@ -1,114 +1,123 @@
 {
-  "name": "View - Social & Creator Platform",
+  "name": "View",
   "short_name": "View",
-  "description": "Your world, your view. Create, connect, and cross-post across all platforms in one place.",
-  "start_url": "/index.html",
+  "description": "A modern social app for posts, chats, calls, notifications, and community interaction.",
+  "start_url": "/home.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f5f8ff",
-  "theme_color": "#0b5ed7",
+  "background_color": "#f4f7fc",
+  "theme_color": "#1d4ed8",
   "lang": "en",
   "dir": "ltr",
-
+  "categories": [
+    "social",
+    "communication",
+    "lifestyle"
+  ],
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "icon-72.png",
+      "src": "/icons/icon-72x72.png",
       "sizes": "72x72",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-96.png",
+      "src": "/icons/icon-96x96.png",
       "sizes": "96x96",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-128.png",
+      "src": "/icons/icon-128x128.png",
       "sizes": "128x128",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-144.png",
+      "src": "/icons/icon-144x144.png",
       "sizes": "144x144",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-152.png",
+      "src": "/icons/icon-152x152.png",
       "sizes": "152x152",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-192.png",
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-384.png",
+      "src": "/icons/icon-384x384.png",
       "sizes": "384x384",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-
-  "categories": ["social", "productivity", "business"],
-
   "shortcuts": [
     {
+      "name": "Home",
+      "short_name": "Home",
+      "description": "Open the View home feed",
+      "url": "/home.html",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
       "name": "Create Post",
-      "short_name": "Post",
-      "description": "Create a new post",
+      "short_name": "Create",
+      "description": "Create a new post on View",
       "url": "/create-post.html",
       "icons": [
         {
-          "src": "icon-192.png",
-          "sizes": "192x192"
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     },
     {
-      "name": "Messages",
-      "short_name": "Chat",
-      "description": "Open your messages",
-      "url": "/messages.html",
+      "name": "Chats",
+      "short_name": "Chats",
+      "description": "Open your chats",
+      "url": "/chats.html",
       "icons": [
         {
-          "src": "icon-192.png",
-          "sizes": "192x192"
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     },
     {
-      "name": "Explore",
-      "short_name": "Explore",
-      "description": "Discover content",
-      "url": "/explore.html",
+      "name": "Profile",
+      "short_name": "Profile",
+      "description": "Open your profile",
+      "url": "/profile.html",
       "icons": [
         {
-          "src": "icon-192.png",
-          "sizes": "192x192"
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
-    }
-  ],
-
-  "screenshots": [
-    {
-      "src": "screenshot1.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "screenshot2.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow"
     }
   ]
 }
