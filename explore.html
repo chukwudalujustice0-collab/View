@@ -4,97 +4,67 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Explore | View</title>
-  <meta name="theme-color" content="#0b1220" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#1d4ed8" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-    body{
-      background:#0b1220;
-      color:#fff;
-      min-height:100vh;
-      padding-bottom:108px;
-    }
+    body{background:#f4f7fc;color:#111827;min-height:100vh;padding-bottom:100px}
+    .wrap{max-width:760px;margin:0 auto;padding:18px 16px 0}
 
-    .wrap{
-      max-width:760px;
-      margin:0 auto;
-      padding:18px 16px 0;
-    }
-
-    .notice{
-      display:none;
-      margin-bottom:16px;
-      padding:12px 14px;
-      border-radius:14px;
-      font-size:14px;
-      line-height:1.5;
-    }
+    .notice{display:none;padding:12px 14px;border-radius:14px;margin-bottom:16px;font-size:14px;line-height:1.6}
     .notice.show{display:block}
-    .notice.error{background:#3b1218;color:#fca5a5}
-    .notice.success{background:#0f2d20;color:#86efac}
-    .notice.info{background:#10233d;color:#93c5fd}
+    .notice.error{background:#fee2e2;color:#b91c1c}
+    .notice.success{background:#dcfce7;color:#15803d}
+    .notice.info{background:#dbeafe;color:#1d4ed8}
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
-    }
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+    .brand h1{font-size:32px;font-weight:800;color:#1d4ed8;line-height:1;margin-bottom:4px}
+    .brand p{color:#6b7280;font-size:13px}
 
-    .title{
-      font-size:30px;
-      font-weight:800;
-    }
-
-    .top-actions{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-
+    .top-actions{display:flex;align-items:center;gap:10px}
     .icon-btn{
-      width:44px;
-      height:44px;
-      border:none;
-      border-radius:14px;
-      background:#121a2b;
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      text-decoration:none;
-      font-size:20px;
+      width:46px;height:46px;border:none;border-radius:14px;background:#fff;
+      box-shadow:0 8px 24px rgba(15,23,42,.08);font-size:20px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;overflow:hidden;
+      text-decoration:none;color:#111827
+    }
+
+    .card{
+      background:#fff;border-radius:24px;padding:18px 16px;
+      box-shadow:0 10px 30px rgba(15,23,42,.08);margin-bottom:18px
     }
 
     .search-wrap{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-height:56px;
-      border-radius:24px;
-      background:#121a2b;
-      border:1px solid #1f2937;
-      padding:0 16px;
-      margin-bottom:18px;
+      display:flex;align-items:center;gap:10px;border:1px solid #e5e7eb;
+      border-radius:16px;padding:0 14px;background:#fff;min-height:52px
     }
+    .search-wrap span{font-size:18px;color:#6b7280}
+    .search-wrap input{flex:1;border:none;outline:none;background:transparent;font-size:15px;color:#111827}
+    .search-wrap input::placeholder{color:#9ca3af}
 
-    .search-wrap input{
-      flex:1;
-      border:none;
-      outline:none;
-      background:transparent;
-      color:#fff;
-      font-size:15px;
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
     }
-
-    .search-wrap input::placeholder{
-      color:#9ca3af;
+    .stat{
+      background:#f8fbff;
+      border:1px solid #e8eefc;
+      border-radius:18px;
+      padding:14px 12px;
+      text-align:center;
     }
-
-    .section{
-      margin-bottom:22px;
+    .stat h3{
+      font-size:22px;
+      font-weight:800;
+      color:#1d4ed8;
+      margin-bottom:4px;
+    }
+    .stat p{
+      font-size:12px;
+      color:#6b7280;
+      font-weight:700;
     }
 
     .section-head{
@@ -102,206 +72,125 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
+      margin-bottom:14px
+    }
+    .section-head h2{
+      font-size:20px;
+      font-weight:800
+    }
+
+    .refresh-btn{
+      border:none;
+      border-radius:999px;
+      padding:10px 14px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer
+    }
+
+    .filter-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
       margin-bottom:14px;
     }
 
-    .section-head h2{
-      font-size:18px;
-      font-weight:800;
-    }
-
-    .section-head button{
+    .filter-btn{
       border:none;
-      background:#121a2b;
-      color:#cbd5e1;
       border-radius:999px;
-      padding:8px 12px;
-      font-size:12px;
+      padding:10px 14px;
+      background:#f8fafc;
+      color:#475569;
+      font-size:13px;
       font-weight:700;
       cursor:pointer;
     }
-
-    .users-grid{
-      display:grid;
-      gap:12px;
+    .filter-btn.active{
+      background:#eff6ff;
+      color:#1d4ed8;
     }
 
+    .users-grid{display:grid;gap:14px}
+
     .user-card{
-      background:#111827;
-      border:1px solid #1f2937;
-      border-radius:20px;
-      padding:14px;
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:center;
+      background:#fff;border-radius:22px;padding:16px;
+      box-shadow:0 10px 30px rgba(15,23,42,.08);
+      display:flex;justify-content:space-between;gap:14px;align-items:center
     }
 
     .user-main{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      min-width:0;
-      flex:1;
-      cursor:pointer;
+      display:flex;align-items:center;gap:12px;min-width:0;flex:1;cursor:pointer
     }
 
     .avatar{
-      width:56px;
-      height:56px;
-      border-radius:50%;
-      overflow:hidden;
-      background:#1d4ed8;
-      color:#fff;
-      display:flex;
+      width:56px;height:56px;min-width:56px;border-radius:50%;
+      background:#dbeafe;color:#1d4ed8;display:flex;align-items:center;justify-content:center;
+      font-size:20px;font-weight:800;overflow:hidden
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+
+    .user-meta{min-width:0;flex:1}
+    .user-name{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .user-username{font-size:13px;color:#6b7280;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .user-bio{font-size:13px;color:#4b5563;margin-top:6px;line-height:1.5}
+    .user-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .tag{
+      display:inline-flex;
       align-items:center;
       justify-content:center;
-      font-size:22px;
-      font-weight:800;
-      flex-shrink:0;
-    }
-
-    .avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .user-info{
-      min-width:0;
-      flex:1;
-    }
-
-    .user-name{
-      font-size:16px;
-      font-weight:800;
-      margin-bottom:4px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .user-sub{
-      font-size:13px;
-      color:#9ca3af;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .badge-row{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:8px;
-    }
-
-    .mini-badge{
-      background:#121a2b;
-      color:#cbd5e1;
-      border:1px solid #1f2937;
+      min-height:28px;
+      padding:0 10px;
       border-radius:999px;
-      padding:6px 10px;
+      background:#eff6ff;
+      color:#1d4ed8;
       font-size:11px;
       font-weight:700;
     }
 
     .user-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-      flex-shrink:0;
+      display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end
     }
 
     .btn{
-      border:none;
-      border-radius:12px;
-      padding:10px 12px;
-      font-size:12px;
-      font-weight:700;
-      cursor:pointer;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width:82px;
+      border:none;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer
+    }
+    .btn-follow{background:#1d4ed8;color:#fff}
+    .btn-chat{background:#eff6ff;color:#1d4ed8}
+    .btn-following{background:#dcfce7;color:#15803d}
+    .btn-profile{background:#f8fafc;color:#475569}
+
+    .empty-state{
+      text-align:center;padding:30px 16px;color:#6b7280;font-size:14px;line-height:1.7;
+      background:#fff;border-radius:24px;box-shadow:0 10px 30px rgba(15,23,42,.08)
     }
 
-    .btn-primary{
-      background:#1d4ed8;
-      color:#fff;
-    }
-
-    .btn-secondary{
-      background:#121a2b;
-      color:#d1d5db;
-    }
-
-    .btn-success{
-      background:#22c55e;
-      color:#052e16;
-    }
-
-    .empty{
+    .loading{
       text-align:center;
-      background:#111827;
-      border:1px solid #1f2937;
-      border-radius:24px;
-      padding:28px 18px;
-      color:#9ca3af;
-      line-height:1.7;
+      padding:24px 16px;
+      color:#6b7280;
       font-size:14px;
     }
 
     .bottom-nav{
-      position:fixed;
-      left:50%;
-      bottom:14px;
-      transform:translateX(-50%);
-      width:min(760px, calc(100% - 20px));
-      background:#0f1724;
-      border:1px solid #1f2937;
-      border-radius:22px;
-      box-shadow:0 16px 40px rgba(0,0,0,.25);
-      padding:10px 8px;
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:6px;
-      z-index:40;
+      position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
+      width:min(760px, calc(100% - 20px));background:#fff;border-radius:22px;
+      box-shadow:0 16px 40px rgba(15,23,42,.12);padding:10px 8px;
+      display:grid;grid-template-columns:repeat(5,1fr);gap:6px;z-index:50
     }
-
     .nav-btn{
-      text-decoration:none;
-      color:#9ca3af;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      min-height:58px;
-      border-radius:16px;
-      font-size:12px;
-      font-weight:700;
-      position:relative;
-      text-align:center;
+      text-decoration:none;color:#6b7280;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;gap:4px;min-height:58px;border-radius:16px;font-size:12px;font-weight:700;text-align:center
     }
+    .nav-btn.active{background:#eff6ff;color:#1d4ed8}
+    .nav-icon{font-size:20px;line-height:1}
 
-    .nav-btn.active{
-      background:#111f18;
-      color:#22c55e;
-    }
-
-    .nav-icon{
-      font-size:20px;
-      line-height:1;
-    }
-
-    @media(max-width:560px){
-      .title{font-size:26px}
-      .user-card{align-items:flex-start;flex-direction:column}
+    @media(max-width:640px){
+      .brand h1{font-size:28px}
+      .user-card{flex-direction:column;align-items:flex-start}
       .user-actions{justify-content:flex-start}
+      .stats{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -310,24 +199,56 @@
     <div id="notice" class="notice"></div>
 
     <div class="topbar">
-      <div class="title">Discover People</div>
+      <div class="brand">
+        <h1>Explore</h1>
+        <p>Find people to follow and chat with</p>
+      </div>
+
       <div class="top-actions">
         <a class="icon-btn" href="notifications.html" title="Notifications">🔔</a>
         <a class="icon-btn" href="profile.html" title="Profile">👤</a>
       </div>
     </div>
 
-    <div class="search-wrap">
-      <span>🔍</span>
-      <input id="searchInput" type="text" placeholder="Search users..." />
-    </div>
-
-    <section class="section">
-      <div class="section-head">
-        <h2>Suggested Users</h2>
-        <button id="reloadBtn">Reload</button>
+    <section class="card">
+      <div class="search-wrap">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Search username, full name, bio..." />
       </div>
-      <div id="usersGrid" class="users-grid"></div>
+    </section>
+
+    <section class="card">
+      <div class="stats">
+        <div class="stat">
+          <h3 id="allCount">0</h3>
+          <p>All Users</p>
+        </div>
+        <div class="stat">
+          <h3 id="suggestedCount">0</h3>
+          <p>Suggested</p>
+        </div>
+        <div class="stat">
+          <h3 id="followingCount">0</h3>
+          <p>Following</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>People</h2>
+        <button id="refreshBtn" class="refresh-btn">Refresh</button>
+      </div>
+
+      <div class="filter-row">
+        <button class="filter-btn active" data-filter="all">All Users</button>
+        <button class="filter-btn" data-filter="suggested">Suggested</button>
+        <button class="filter-btn" data-filter="following">Following</button>
+      </div>
+
+      <div id="usersGrid" class="users-grid">
+        <div class="loading">Loading users...</div>
+      </div>
     </section>
   </div>
 
@@ -336,21 +257,21 @@
       <span class="nav-icon">⌂</span>
       <span>Home</span>
     </a>
-    <a class="nav-btn" href="friends.html">
-      <span class="nav-icon">👥</span>
-      <span>Friends</span>
-    </a>
-    <a class="nav-btn" href="home.html">
-      <span class="nav-icon">📝</span>
-      <span>Posts</span>
-    </a>
-    <a class="nav-btn" href="updates.html">
-      <span class="nav-icon">📰</span>
-      <span>News</span>
-    </a>
     <a class="nav-btn active" href="explore.html">
-      <span class="nav-icon">🛒</span>
-      <span>Market Place</span>
+      <span class="nav-icon">🔍</span>
+      <span>Explore</span>
+    </a>
+    <a class="nav-btn" href="chats.html">
+      <span class="nav-icon">💬</span>
+      <span>Chats</span>
+    </a>
+    <a class="nav-btn" href="video-feed.html">
+      <span class="nav-icon">🎥</span>
+      <span>Video</span>
+    </a>
+    <a class="nav-btn" href="settings.html">
+      <span class="nav-icon">⚙️</span>
+      <span>Settings</span>
     </a>
   </nav>
 
@@ -358,7 +279,7 @@
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -366,27 +287,54 @@
       }
     });
 
-    const notice = document.getElementById("notice");
-    const searchInput = document.getElementById("searchInput");
+    const noticeBox = document.getElementById("notice");
     const usersGrid = document.getElementById("usersGrid");
-    const reloadBtn = document.getElementById("reloadBtn");
+    const searchInput = document.getElementById("searchInput");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const allCount = document.getElementById("allCount");
+    const suggestedCount = document.getElementById("suggestedCount");
+    const followingCount = document.getElementById("followingCount");
 
-    let currentUser = null;
-    let users = [];
-    let followMap = new Map();
+    let currentUserId = "";
+    let allUsers = [];
+    let followingIds = new Set();
+    let currentFilter = "all";
+    let followersChannel = null;
+    let profilesChannel = null;
 
-    function showNotice(text, type = "error") {
-      notice.className = `notice show ${type}`;
-      notice.textContent = text;
+    function showNotice(message, type = "error") {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message;
     }
 
     function clearNotice() {
-      notice.className = "notice";
-      notice.textContent = "";
+      noticeBox.className = "notice";
+      noticeBox.textContent = "";
     }
 
-    function escapeHtml(text) {
-      return String(text || "")
+    async function getSessionWithRetry(maxWaitMs = 3000) {
+      const start = Date.now();
+      while (Date.now() - start < maxWaitMs) {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (data.session?.user) return data.session;
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      return null;
+    }
+
+    async function requireSession() {
+      const session = await getSessionWithRetry();
+      if (!session?.user) {
+        window.location.href = "login.html?next=explore.html";
+        return null;
+      }
+      return session;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -394,171 +342,249 @@
         .replace(/'/g, "&#039;");
     }
 
-    async function getCurrentUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) throw error;
-      currentUser = data.user || null;
+    function getDisplayName(user) {
+      return user.username || user.full_name || "User";
     }
 
-    async function loadFollowRelations() {
-      if (!currentUser) {
-        followMap = new Map();
-        return;
-      }
+    function updateStats() {
+      allCount.textContent = allUsers.length;
+      suggestedCount.textContent = allUsers.filter(u => !followingIds.has(u.id)).length;
+      followingCount.textContent = allUsers.filter(u => followingIds.has(u.id)).length;
+    }
 
-      const { data, error } = await supabase
+    async function loadFollowing() {
+      const { data, error } = await supabaseClient
         .from("followers")
         .select("following_id")
-        .eq("follower_id", currentUser.id);
+        .eq("follower_id", currentUserId);
 
       if (error) throw error;
 
-      followMap = new Map((data || []).map(row => [row.following_id, true]));
+      followingIds = new Set((data || []).map(row => row.following_id));
+      updateStats();
     }
 
     async function loadUsers() {
       clearNotice();
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from("profiles")
-        .select("*")
+        .select("id, username, full_name, avatar_url, bio")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        showNotice(error.message || "Could not load users.");
+        usersGrid.innerHTML = `<div class="empty-state">Could not load users.</div>`;
+        return;
+      }
 
-      const all = data || [];
-
-      users = all.filter(user => {
-        if (!currentUser) return true;
-        if (user.id === currentUser.id) return false;
-        return !followMap.has(user.id);
-      });
-
+      allUsers = (data || []).filter(user => user.id !== currentUserId);
+      updateStats();
       renderUsers();
     }
 
-    function renderUsers() {
-      const q = searchInput.value.trim().toLowerCase();
+    function getFilteredUsers() {
+      const term = searchInput.value.trim().toLowerCase();
+      let source = [...allUsers];
 
-      const filtered = users.filter(user => {
-        const name = String(user.full_name || "").toLowerCase();
+      if (currentFilter === "suggested") {
+        source = source.filter(user => !followingIds.has(user.id));
+      } else if (currentFilter === "following") {
+        source = source.filter(user => followingIds.has(user.id));
+      }
+
+      return source.filter(user => {
         const username = String(user.username || "").toLowerCase();
+        const fullName = String(user.full_name || "").toLowerCase();
         const bio = String(user.bio || "").toLowerCase();
-        return !q || name.includes(q) || username.includes(q) || bio.includes(q);
+        return username.includes(term) || fullName.includes(term) || bio.includes(term);
       });
+    }
+
+    function renderUsers() {
+      const filtered = getFilteredUsers();
 
       if (!filtered.length) {
-        usersGrid.innerHTML = `<div class="empty">No suggested users found.</div>`;
+        usersGrid.innerHTML = `
+          <div class="empty-state">
+            No users found.<br>
+            Try another search or create more accounts.
+          </div>
+        `;
         return;
       }
 
-      usersGrid.innerHTML = filtered.map(user => `
-        <div class="user-card">
-          <div class="user-main" onclick="viewProfile('${user.id}')">
-            <div class="avatar">
-              ${user.avatar_url
-                ? `<img src="${user.avatar_url}" alt="${escapeHtml(user.full_name || user.username || "User")}">`
-                : escapeHtml((user.full_name || user.username || "U").charAt(0).toUpperCase())
-              }
-            </div>
+      usersGrid.innerHTML = filtered.map(user => {
+        const displayName = getDisplayName(user);
+        const avatar = user.avatar_url
+          ? `<img src="${escapeHtml(user.avatar_url)}" alt="${escapeHtml(displayName)}">`
+          : escapeHtml(displayName.charAt(0).toUpperCase());
 
-            <div class="user-info">
-              <div class="user-name">${escapeHtml(user.full_name || user.username || "User")}</div>
-              <div class="user-sub">@${escapeHtml(user.username || "viewuser")}${user.bio ? " • " + escapeHtml(user.bio) : ""}</div>
+        const isFollowing = followingIds.has(user.id);
 
-              <div class="badge-row">
-                <span class="mini-badge">Suggested User</span>
-                ${user.is_online ? `<span class="mini-badge">Online</span>` : ``}
+        return `
+          <div class="user-card">
+            <div class="user-main" onclick="openProfile('${user.id}')">
+              <div class="avatar">${avatar}</div>
+
+              <div class="user-meta">
+                <div class="user-name">${escapeHtml(displayName)}</div>
+                <div class="user-username">@${escapeHtml(user.username || "user")}</div>
+                ${user.bio ? `<div class="user-bio">${escapeHtml(user.bio)}</div>` : ``}
+                <div class="user-tags">
+                  ${!isFollowing ? `<span class="tag">Suggested</span>` : `<span class="tag">Following</span>`}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="user-actions">
-            <button class="btn btn-secondary" onclick="viewProfile('${user.id}')">Profile</button>
-            <button class="btn btn-success" onclick="followUser('${user.id}')">Follow</button>
-            <button class="btn btn-primary" onclick="startChat('${user.id}')">Message</button>
+            <div class="user-actions">
+              <button class="btn btn-profile" onclick="openProfileFromBtn(event, '${user.id}')">Profile</button>
+
+              <button
+                class="btn ${isFollowing ? "btn-following" : "btn-follow"}"
+                onclick="toggleFollow(event, '${user.id}')"
+              >
+                ${isFollowing ? "Following" : "Follow"}
+              </button>
+
+              <button class="btn btn-chat" onclick="startChat(event, '${user.id}')">
+                Message
+              </button>
+            </div>
           </div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
     }
 
-    async function followUser(userId) {
-      if (!currentUser) {
-        showNotice("Please log in first.");
-        return;
-      }
+    async function toggleFollow(event, userId) {
+      event.stopPropagation();
 
       try {
         clearNotice();
 
-        const { error } = await supabase
-          .from("followers")
-          .insert({
-            follower_id: currentUser.id,
-            following_id: userId
-          });
+        if (followingIds.has(userId)) {
+          const { error } = await supabaseClient
+            .from("followers")
+            .delete()
+            .eq("follower_id", currentUserId)
+            .eq("following_id", userId);
 
-        if (error) throw error;
+          if (error) throw error;
 
-        showNotice("User followed successfully.", "success");
-        followMap.set(userId, true);
-        users = users.filter(user => user.id !== userId);
+          followingIds.delete(userId);
+          showNotice("Unfollowed successfully.", "success");
+        } else {
+          const { error } = await supabaseClient
+            .from("followers")
+            .insert({
+              follower_id: currentUserId,
+              following_id: userId
+            });
+
+          if (error) throw error;
+
+          followingIds.add(userId);
+          showNotice("Followed successfully.", "success");
+        }
+
+        updateStats();
         renderUsers();
-      } catch (err) {
-        showNotice(err.message || "Failed to follow user.");
+      } catch (error) {
+        showNotice(error.message || "Could not update follow.");
       }
     }
 
-    async function startChat(userId) {
-      if (!currentUser) {
-        showNotice("Please log in first.");
-        return;
-      }
+    async function startChat(event, userId) {
+      event.stopPropagation();
 
       try {
         clearNotice();
 
-        const { data, error } = await supabase.rpc("get_or_create_conversation", {
+        const { data, error } = await supabaseClient.rpc("get_or_create_conversation", {
           other_user_id: userId
         });
 
         if (error) throw error;
-        if (!data) throw new Error("Could not create conversation.");
+        if (!data) throw new Error("Could not start conversation.");
 
         window.location.href = `chat-room.html?id=${encodeURIComponent(data)}`;
-      } catch (err) {
-        showNotice(err.message || "Failed to start chat.");
+      } catch (error) {
+        showNotice(error.message || "Could not start chat.");
       }
     }
 
-    function viewProfile(userId) {
-      if (!userId) return;
+    function openProfile(userId) {
       window.location.href = `profile.html?user=${encodeURIComponent(userId)}`;
     }
 
-    searchInput.addEventListener("input", renderUsers);
-    reloadBtn.addEventListener("click", async () => {
-      try {
-        await loadFollowRelations();
-        await loadUsers();
-      } catch (err) {
-        showNotice(err.message || "Failed to reload users.");
-      }
-    });
+    function openProfileFromBtn(event, userId) {
+      event.stopPropagation();
+      openProfile(userId);
+    }
 
-    async function init() {
-      try {
-        await getCurrentUser().catch(() => {});
-        await loadFollowRelations();
-        await loadUsers();
-      } catch (err) {
-        showNotice(err.message || "Failed to load users.");
+    function setFilter(value) {
+      currentFilter = value;
+      filterButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.filter === value);
+      });
+      renderUsers();
+    }
+
+    function subscribeRealtime() {
+      if (!followersChannel) {
+        followersChannel = supabaseClient
+          .channel("explore-followers-live")
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "followers"
+          }, async () => {
+            await loadFollowing();
+            renderUsers();
+          })
+          .subscribe();
+      }
+
+      if (!profilesChannel) {
+        profilesChannel = supabaseClient
+          .channel("explore-profiles-live")
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "profiles"
+          }, async () => {
+            await loadUsers();
+          })
+          .subscribe();
       }
     }
 
-    window.followUser = followUser;
+    async function init() {
+      try {
+        const session = await requireSession();
+        if (!session) return;
+
+        currentUserId = session.user.id;
+
+        await loadFollowing();
+        await loadUsers();
+        subscribeRealtime();
+      } catch (error) {
+        showNotice(error.message || "Could not load explore.");
+        usersGrid.innerHTML = `<div class="empty-state">Could not load explore.</div>`;
+      }
+    }
+
+    searchInput.addEventListener("input", renderUsers);
+    refreshBtn.addEventListener("click", init);
+    filterButtons.forEach(btn => {
+      btn.addEventListener("click", () => setFilter(btn.dataset.filter));
+    });
+
+    window.toggleFollow = toggleFollow;
     window.startChat = startChat;
-    window.viewProfile = viewProfile;
+    window.openProfile = openProfile;
+    window.openProfileFromBtn = openProfileFromBtn;
 
     init();
   </script>
