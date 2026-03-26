@@ -1,57 +1,62 @@
-const CACHE_NAME = "view-cache-v6";
+const CACHE_NAME = "view-cache-v7";
 
+// Only static files here (DO NOT add home.html or dynamic pages)
 const STATIC_ASSETS = [
   "/",
   "/index.html",
   "/login.html",
   "/signup.html",
-  "/forgot-password.html",
-  "/reset-password.html",
   "/manifest.json",
   "/install.js",
-  "/icon-72x72.png",
-  "/icon-96x96.png",
-  "/icon-128x128.png",
-  "/icon-144x144.png",
-  "/icon-152x152.png",
   "/icon-192x192.png",
-  "/icon-384x384.png",
   "/icon-512x512.png"
 ];
 
-// Install
+
+// ================= INSTALL =================
 self.addEventListener("install", (event) => {
+  console.log("Service Worker Installing...");
+
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(STATIC_ASSETS);
+    })
   );
-  self.skipWaiting();
+
+  self.skipWaiting(); // activate immediately
 });
 
-// Activate
+
+// ================= ACTIVATE =================
 self.addEventListener("activate", (event) => {
+  console.log("Service Worker Activated");
+
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log("Deleting old cache:", key);
             return caches.delete(key);
           }
         })
       )
     )
   );
-  self.clients.claim();
+
+  self.clients.claim(); // take control immediately
 });
 
-// Fetch
+
+// ================= FETCH =================
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // Only handle GET
+  // Only GET requests
   if (request.method !== "GET") return;
 
-  // Never cache Supabase/API requests
+  // 🚫 NEVER CACHE SUPABASE OR API
   if (
     url.hostname.includes("supabase.co") ||
     url.pathname.startsWith("/api/")
@@ -60,7 +65,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // HTML pages: NETWORK FIRST
+  // ================= HTML (NETWORK FIRST) =================
   if (
     request.headers.get("accept") &&
     request.headers.get("accept").includes("text/html")
@@ -68,33 +73,41 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((networkResponse) => {
-          const responseClone = networkResponse.clone();
+          // Save fresh version
+          const clone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseClone);
+            cache.put(request, clone);
           });
           return networkResponse;
         })
-        .catch(() =>
-          caches.match(request).then((cached) => {
-            return cached || caches.match("/index.html");
-          })
-        )
+        .catch(() => {
+          // fallback if offline
+          return caches.match(request) || caches.match("/index.html");
+        })
     );
     return;
   }
 
-  // Static assets: CACHE FIRST
+  // ================= STATIC FILES (CACHE FIRST) =================
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;
 
       return fetch(request).then((networkResponse) => {
-        const responseClone = networkResponse.clone();
+        const clone = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
-          cache.put(request, responseClone);
+          cache.put(request, clone);
         });
         return networkResponse;
       });
     })
   );
+});
+
+
+// ================= FORCE UPDATE =================
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
