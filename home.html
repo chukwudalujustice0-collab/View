@@ -26,7 +26,7 @@
       width:46px;height:46px;border:none;border-radius:14px;background:#fff;
       box-shadow:0 8px 24px rgba(15,23,42,.08);font-size:20px;cursor:pointer;
       display:flex;align-items:center;justify-content:center;overflow:hidden;
-      text-decoration:none;color:#111827
+      text-decoration:none;color:#111827;position:relative
     }
     .profile-btn-img{width:100%;height:100%;object-fit:cover;display:block;border-radius:14px}
     .profile-btn-fallback{
@@ -189,21 +189,21 @@
           <div class="story-avatar">+</div>
           <div class="story-name">Add Story</div>
         </a>
-        <a class="story" href="profile.html?user=amara">
-          <div class="story-avatar">A</div>
-          <div class="story-name">Amara</div>
+        <a class="story" href="explore.html">
+          <div class="story-avatar">🔍</div>
+          <div class="story-name">Explore</div>
         </a>
-        <a class="story" href="profile.html?user=john">
-          <div class="story-avatar">J</div>
-          <div class="story-name">John</div>
+        <a class="story" href="friends.html">
+          <div class="story-avatar">👥</div>
+          <div class="story-name">Friends</div>
         </a>
-        <a class="story" href="profile.html?user=kate">
-          <div class="story-avatar">K</div>
-          <div class="story-name">Kate</div>
+        <a class="story" href="chats.html">
+          <div class="story-avatar">💬</div>
+          <div class="story-name">Chats</div>
         </a>
-        <a class="story" href="profile.html?user=moses">
-          <div class="story-avatar">M</div>
-          <div class="story-name">Moses</div>
+        <a class="story" href="create-post.html">
+          <div class="story-avatar">✍️</div>
+          <div class="story-name">Create</div>
         </a>
       </div>
     </section>
@@ -278,12 +278,18 @@
 
     let allPosts = [];
     let currentUserId = "";
-    let currentUserName = "View User";
+    let currentUserName = "User";
     let videoObserver = null;
+    let postsChannel = null;
 
     function showNotice(message, type = "error") {
       noticeBox.className = `notice show ${type}`;
       noticeBox.textContent = message;
+    }
+
+    function clearNotice() {
+      noticeBox.className = "notice";
+      noticeBox.textContent = "";
     }
 
     async function getSessionWithRetry(maxWaitMs = 3000) {
@@ -324,6 +330,11 @@
       return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
     }
 
+    function isImageUrl(url) {
+      if (!url) return false;
+      return /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/i.test(url);
+    }
+
     function formatDate(value) {
       if (!value) return "Just now";
       try { return new Date(value).toLocaleString(); }
@@ -332,7 +343,7 @@
 
     function setTopProfileImage(user) {
       const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || "";
-      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "View User";
+      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "User";
       const initial = fullName.charAt(0).toUpperCase();
 
       if (avatarUrl) {
@@ -440,11 +451,19 @@
     }
 
     function getAuthorName(post) {
-      if (post.author_name) return post.author_name;
-      if (post.full_name) return post.full_name;
-      if (post.username) return post.username;
+      if (post.full_name && String(post.full_name).trim()) return post.full_name;
+      if (post.username && String(post.username).trim()) return post.username;
       if (post.user_id && post.user_id === currentUserId) return currentUserName;
-      return "View User";
+      return "User";
+    }
+
+    function normalizePosts(rows) {
+      return (rows || []).map(post => ({
+        ...post,
+        full_name: post.profiles?.full_name || null,
+        username: post.profiles?.username || null,
+        avatar_url: post.profiles?.avatar_url || null
+      }));
     }
 
     function renderFeed(posts) {
@@ -468,7 +487,8 @@
         const mediaUrl = post.media_url ? escapeHtml(post.media_url) : "";
         const createdAt = formatDate(post.created_at);
         const saved = restoreSavedState(postId);
-        const video = isVideoUrl(mediaUrl);
+        const isVideo = isVideoUrl(mediaUrl);
+        const isImage = isImageUrl(mediaUrl);
 
         return `
           <article class="post" data-post-id="${postId}">
@@ -494,8 +514,9 @@
 
             <div class="post-content">${content}</div>
 
-            ${mediaUrl && !video ? `<img class="post-image" src="${mediaUrl}" alt="Post image" style="display:block;">` : ""}
-            ${mediaUrl && video ? `<video class="post-video" src="${mediaUrl}" controls playsinline muted preload="metadata" style="display:block;"></video>` : ""}
+            ${mediaUrl && isImage ? `<img class="post-image" src="${mediaUrl}" alt="Post image" style="display:block;">` : ""}
+            ${mediaUrl && isVideo ? `<video class="post-video" src="${mediaUrl}" controls playsinline muted preload="metadata" style="display:block;"></video>` : ""}
+            ${mediaUrl && !isImage && !isVideo ? `<a href="${mediaUrl}" target="_blank" rel="noopener" class="action-chip" style="display:inline-flex;margin-bottom:14px;">📎 Open Attachment</a>` : ""}
 
             <div class="post-actions">
               <div class="action-group">
@@ -534,6 +555,8 @@
     }
 
     async function loadHome() {
+      clearNotice();
+
       const session = await requireSession();
       if (!session) return;
 
@@ -543,32 +566,26 @@
         user.user_metadata?.full_name ||
         user.user_metadata?.name ||
         user.email?.split("@")[0] ||
-        "View User";
+        "User";
 
       welcomeText.textContent = `Welcome back, ${currentUserName}`;
       setTopProfileImage(user);
 
-      let data = null;
-      let error = null;
-
-      const res1 = await supabaseClient
+      const { data, error } = await supabaseClient
         .from("posts")
-        .select("*")
-        .or("status.eq.published,status.is.null")
+        .select(`
+          id,
+          user_id,
+          content,
+          media_url,
+          created_at,
+          profiles (
+            full_name,
+            username,
+            avatar_url
+          )
+        `)
         .order("created_at", { ascending: false });
-
-      data = res1.data;
-      error = res1.error;
-
-      if (error) {
-        const res2 = await supabaseClient
-          .from("posts")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        data = res2.data;
-        error = res2.error;
-      }
 
       if (error) {
         showNotice(error.message || "Could not load feed.");
@@ -576,8 +593,23 @@
         return;
       }
 
-      allPosts = data || [];
+      allPosts = normalizePosts(data);
       renderFeed(allPosts);
+    }
+
+    function subscribePostsRealtime() {
+      if (postsChannel) return;
+
+      postsChannel = supabaseClient
+        .channel("home-posts-live")
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "posts"
+        }, async () => {
+          await loadHome();
+        })
+        .subscribe();
     }
 
     document.addEventListener("click", (event) => {
@@ -590,14 +622,15 @@
       window.addEventListener("load", async () => {
         try {
           await navigator.serviceWorker.register("/service-worker.js");
-          console.log("Service worker registered");
         } catch (error) {
           console.error("Service worker failed:", error);
         }
       });
     }
 
-    loadHome().catch(err => {
+    loadHome().then(() => {
+      subscribePostsRealtime();
+    }).catch(err => {
       showNotice(err.message || "Could not load home.");
     });
 
