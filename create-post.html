@@ -355,7 +355,7 @@
 <body>
   <div class="wrap">
     <div class="topbar">
-      <button class="back" onclick="window.location.href='profile.html'">←</button>
+      <button class="back" onclick="window.location.href='home.html'">←</button>
       <h1>Create Post</h1>
     </div>
 
@@ -378,7 +378,7 @@
 
           <div class="row">
             <div class="group">
-              <label for="imageUrl">Image URL</label>
+              <label for="imageUrl">Image / Media URL</label>
               <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg" />
             </div>
 
@@ -441,7 +441,7 @@
               <div class="preview-head">
                 <div class="avatar" id="previewAvatar">V</div>
                 <div>
-                  <div class="preview-name" id="previewName">View User</div>
+                  <div class="preview-name" id="previewName">User</div>
                   <div class="preview-sub" id="previewSub">Posting from View</div>
                 </div>
               </div>
@@ -577,7 +577,7 @@
         currentUser.user_metadata?.full_name ||
         currentUser.user_metadata?.name ||
         currentUser.email?.split("@")[0] ||
-        "View User";
+        "User";
 
       previewName.textContent = fullName;
       previewAvatar.textContent = fullName.charAt(0).toUpperCase();
@@ -608,14 +608,13 @@
     }
 
     async function savePostToView(statusValue = "published") {
+      const content = postContent.value.trim();
+      const mediaUrl = imageUrl.value.trim();
+
       const payload = {
         user_id: currentUser.id,
-        content: postContent.value.trim(),
-        media_url: imageUrl.value.trim() || null,
-        link_url: linkUrl.value.trim() || null,
-        visibility: postVisibility.value,
-        status: statusValue,
-        created_at: new Date().toISOString()
+        content: content || null,
+        media_url: mediaUrl || null
       };
 
       const { data, error } = await supabaseClient
@@ -692,8 +691,8 @@
         lastActionSummary.textContent = actionMessages.join(" • ");
 
         setTimeout(() => {
-          window.location.href = "profile.html";
-        }, 1000);
+          window.location.href = "home.html";
+        }, 900);
       } catch (error) {
         showNotice(error.message || "Publishing failed.");
         lastActionSummary.textContent = error.message || "Publishing failed.";
@@ -716,11 +715,11 @@
 
       try {
         await savePostToView("draft");
-        showNotice("Draft saved successfully.", "success");
-        lastActionSummary.textContent = "Draft saved successfully.";
+        showNotice("Draft saved as a normal View post.", "success");
+        lastActionSummary.textContent = "Saved successfully.";
       } catch (error) {
-        showNotice(error.message || "Could not save draft.");
-        lastActionSummary.textContent = error.message || "Could not save draft.";
+        showNotice(error.message || "Could not save.");
+        lastActionSummary.textContent = error.message || "Could not save.";
       } finally {
         saveDraftBtn.disabled = false;
         saveDraftBtn.textContent = "Save Draft";
