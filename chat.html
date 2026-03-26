@@ -2,136 +2,348 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Chat | View</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0b5ed7" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chats | View</title>
+  <meta name="theme-color" content="#1d4ed8" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{
-      --primary:#0b5ed7;--bg:#f5f8ff;--card:#fff;--text:#1f1f1f;--soft:#6b7280;--border:#e5e7eb;
-      --shadow:0 10px 30px rgba(0,0,0,.06);--radius:18px
-    }
     *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
-    button,textarea{font:inherit}
-    .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
-    .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#dbeafe,#f8fbff);border:1px solid rgba(11,94,215,.12)}
-    .page-title h1{font-size:18px;color:var(--primary);margin-bottom:2px;line-height:1}
-    .page-title p{font-size:12px;color:var(--soft)}
-    .icon-btn,.primary-btn,.outline-btn,.mini-btn,.tool-btn{border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
-    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
-    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
-    .outline-btn,.mini-btn,.tool-btn{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
-    .mini-btn{min-height:36px;border-radius:999px;font-size:12px;padding:0 12px}
-    .tool-btn{min-height:38px;border-radius:999px;font-size:12px;padding:0 12px}
-    .container{max-width:980px;margin:0 auto;padding:18px 16px 0;display:grid;gap:18px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
-    .chat-box{display:grid;gap:12px}
-    .message-row{display:flex}
-    .message-row.sent{justify-content:flex-end}
-    .bubble{max-width:78%;padding:12px 14px;border-radius:18px;font-size:14px;line-height:1.6}
-    .received .bubble{background:#fff;border:1px solid var(--border);border-top-left-radius:8px}
-    .sent .bubble{background:#dcecff;border-top-right-radius:8px}
-    .message-meta{font-size:11px;color:var(--soft);margin-top:6px}
-    .action-row,.tool-row{display:flex;gap:10px;flex-wrap:wrap}
-    .reply-box{display:none;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px dashed rgba(11,94,215,.18);border-radius:14px;background:#f8fbff}
-    .composer{display:grid;gap:12px}
-    .composer textarea{width:100%;min-height:90px;border:1px solid var(--border);border-radius:16px;padding:14px;resize:vertical;background:#fff}
-    .composer textarea:focus{outline:none;border-color:var(--primary)}
-    .bottom-nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30}
-    .bottom-link{min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;color:var(--soft);text-decoration:none}
-    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
-    @media(max-width:760px){.bottom-nav{display:grid}}
-    @media(max-width:640px){.container{padding:14px 12px 0}.bubble{max-width:90%}}
+    body{background:#f4f7fc;color:#111827;min-height:100vh;padding-bottom:100px}
+    .wrap{max-width:760px;margin:0 auto;padding:18px 16px 0}
+
+    .notice{display:none;padding:12px 14px;border-radius:14px;margin-bottom:16px;font-size:14px;line-height:1.6}
+    .notice.show{display:block}
+    .notice.error{background:#fee2e2;color:#b91c1c}
+    .notice.success{background:#dcfce7;color:#15803d}
+    .notice.info{background:#dbeafe;color:#1d4ed8}
+
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+    .brand h1{font-size:32px;font-weight:800;color:#1d4ed8;line-height:1;margin-bottom:4px}
+    .brand p{color:#6b7280;font-size:13px}
+
+    .top-actions{display:flex;align-items:center;gap:10px}
+    .icon-btn{
+      width:46px;height:46px;border:none;border-radius:14px;background:#fff;
+      box-shadow:0 8px 24px rgba(15,23,42,.08);font-size:20px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;overflow:hidden;
+      text-decoration:none;color:#111827
+    }
+
+    .search-card,.chat-card{
+      background:#fff;border-radius:24px;padding:18px 16px;
+      box-shadow:0 10px 30px rgba(15,23,42,.08);margin-bottom:18px
+    }
+
+    .search-wrap{
+      display:flex;align-items:center;gap:10px;border:1px solid #e5e7eb;
+      border-radius:16px;padding:0 14px;background:#fff;min-height:52px
+    }
+    .search-wrap span{font-size:18px;color:#6b7280}
+    .search-wrap input{flex:1;border:none;outline:none;background:transparent;font-size:15px;color:#111827}
+    .search-wrap input::placeholder{color:#9ca3af}
+
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .section-head h2{font-size:20px;font-weight:800}
+    .new-chat-btn{
+      border:none;border-radius:999px;padding:10px 14px;background:#1d4ed8;color:#fff;
+      font-size:13px;font-weight:700;cursor:pointer
+    }
+
+    .chat-list{display:grid;gap:14px}
+
+    .chat-item{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:14px;border:1px solid #eef2f7;border-radius:18px;background:#fff;cursor:pointer;
+      transition:.2s ease
+    }
+    .chat-item:hover{background:#f8fbff}
+
+    .chat-main{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+    .avatar{
+      width:56px;height:56px;min-width:56px;border-radius:50%;
+      background:#dbeafe;color:#1d4ed8;display:flex;align-items:center;justify-content:center;
+      font-size:20px;font-weight:800;overflow:hidden
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+
+    .chat-meta{min-width:0;flex:1}
+    .chat-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+    .chat-name{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .chat-time{font-size:12px;color:#6b7280;white-space:nowrap}
+    .chat-preview{font-size:13px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    .chat-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+    .badge{
+      min-width:22px;height:22px;padding:0 7px;border-radius:999px;
+      background:#1d4ed8;color:#fff;font-size:11px;font-weight:800;
+      display:inline-flex;align-items:center;justify-content:center
+    }
+
+    .empty-state{
+      text-align:center;padding:30px 16px;color:#6b7280;font-size:14px;line-height:1.7;
+      background:#fff;border-radius:24px;box-shadow:0 10px 30px rgba(15,23,42,.08)
+    }
+
+    .bottom-nav{
+      position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
+      width:min(760px, calc(100% - 20px));background:#fff;border-radius:22px;
+      box-shadow:0 16px 40px rgba(15,23,42,.12);padding:10px 8px;
+      display:grid;grid-template-columns:repeat(5,1fr);gap:6px;z-index:50
+    }
+    .nav-btn{
+      text-decoration:none;color:#6b7280;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;gap:4px;min-height:58px;border-radius:16px;font-size:12px;font-weight:700;text-align:center
+    }
+    .nav-btn.active{background:#eff6ff;color:#1d4ed8}
+    .nav-icon{font-size:20px;line-height:1}
+
+    @media(max-width:560px){
+      .brand h1{font-size:28px}
+    }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="icon-btn" onclick="window.location.href='messages.html'">←</button>
-      <div class="avatar"></div>
-      <div class="page-title">
-        <h1>Ceetify Media</h1>
-        <p>Online now</p>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <div class="topbar">
+      <div class="brand">
+        <h1>Chats</h1>
+        <p>Your conversations</p>
+      </div>
+
+      <div class="top-actions">
+        <a class="icon-btn" href="notifications.html" title="Notifications">🔔</a>
+        <a class="icon-btn" href="profile.html" title="Profile">👤</a>
       </div>
     </div>
-    <div class="topbar-right">
-      <button class="icon-btn" data-chat-call>📞</button>
-    </div>
-  </header>
 
-  <main class="container">
-    <section class="card">
-      <div class="chat-box">
-        <div class="message-row received">
-          <div class="bubble">
-            Let’s finish the View app structure today.
-            <div class="message-meta">09:15 AM</div>
-          </div>
-        </div>
-
-        <div class="message-row sent">
-          <div class="bubble">
-            Alright, send the next pages.
-            <div class="message-meta">09:16 AM</div>
-          </div>
-        </div>
-
-        <div class="message-row received">
-          <div class="bubble">
-            We should make the publish system premium.
-            <div class="message-meta">09:17 AM</div>
-          </div>
-        </div>
+    <section class="search-card">
+      <div class="search-wrap">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Search chats..." />
       </div>
     </section>
 
-    <section class="card">
-      <div id="replyingBox" class="reply-box">
-        <div>Replying to <strong id="replyingToName">@user</strong></div>
-        <button class="mini-btn" id="closeReplyBox">Close</button>
+    <section class="chat-card">
+      <div class="section-head">
+        <h2>All Chats</h2>
+        <button id="newChatBtn" class="new-chat-btn">New Chat</button>
       </div>
 
-      <div class="tool-row" style="margin:12px 0;">
-        <button class="tool-btn" data-chat-tool="emoji">Emoji</button>
-        <button class="tool-btn" data-chat-tool="gif">GIF</button>
-        <button class="tool-btn" data-chat-tool="sticker">Sticker</button>
-        <button class="tool-btn" data-chat-tool="image">Image</button>
-        <button class="tool-btn" data-chat-tool="file">File</button>
-      </div>
-
-      <div class="composer">
-        <textarea id="chatMessageInput" placeholder="Write your message..."></textarea>
-        <div class="action-row">
-          <button class="outline-btn" id="voiceNoteBtn">Voice Note</button>
-          <button class="primary-btn" id="sendMessageBtn">Send</button>
-        </div>
-      </div>
+      <div id="chatList" class="chat-list"></div>
     </section>
-
-    <section class="card">
-      <div class="action-row">
-        <button class="mini-btn" data-message-action="reply">Reply</button>
-        <button class="mini-btn" data-message-action="forward">Forward</button>
-        <button class="mini-btn" data-message-action="react">React</button>
-        <button class="mini-btn" data-message-action="delete">Delete</button>
-      </div>
-    </section>
-  </main>
+  </div>
 
   <nav class="bottom-nav">
-    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
-    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
-    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
-    <a href="messages.html" class="bottom-link active"><span>💬</span><span>Chat</span></a>
-    <a href="profile.html" class="bottom-link"><span>👤</span><span>Profile</span></a>
+    <a class="nav-btn" href="home.html">
+      <span class="nav-icon">⌂</span>
+      <span>Home</span>
+    </a>
+    <a class="nav-btn" href="explore.html">
+      <span class="nav-icon">🔍</span>
+      <span>Explore</span>
+    </a>
+    <a class="nav-btn active" href="chats.html">
+      <span class="nav-icon">💬</span>
+      <span>Chats</span>
+    </a>
+    <a class="nav-btn" href="video-feed.html">
+      <span class="nav-icon">🎥</span>
+      <span>Video</span>
+    </a>
+    <a class="nav-btn" href="settings.html">
+      <span class="nav-icon">⚙️</span>
+      <span>Settings</span>
+    </a>
   </nav>
 
-  <script src="config.js"></script>
-  <script src="utils.js"></script>
-  <script src="app.js"></script>
-  <script src="auth.js"></script>
-  <script src="chat.js"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    const noticeBox = document.getElementById("notice");
+    const chatList = document.getElementById("chatList");
+    const searchInput = document.getElementById("searchInput");
+    const newChatBtn = document.getElementById("newChatBtn");
+
+    let currentUserId = "";
+    let allChats = [];
+    let chatsChannel = null;
+
+    function showNotice(message, type = "error") {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message;
+    }
+
+    function clearNotice() {
+      noticeBox.className = "notice";
+      noticeBox.textContent = "";
+    }
+
+    async function getSessionWithRetry(maxWaitMs = 3000) {
+      const start = Date.now();
+      while (Date.now() - start < maxWaitMs) {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (data.session?.user) return data.session;
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      return null;
+    }
+
+    async function requireSession() {
+      const session = await getSessionWithRetry();
+      if (!session?.user) {
+        window.location.href = "login.html?next=chats.html";
+        return null;
+      }
+      return session;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatTime(value) {
+      if (!value) return "";
+      try {
+        return new Date(value).toLocaleString();
+      } catch {
+        return "";
+      }
+    }
+
+    function getOtherUserName(chat) {
+      return chat.other_user_name || chat.other_username || "User";
+    }
+
+    function getPreview(chat) {
+      return chat.last_message || "Start chatting...";
+    }
+
+    function renderChats(chats) {
+      const term = searchInput.value.trim().toLowerCase();
+
+      const filtered = chats.filter(chat => {
+        const name = getOtherUserName(chat).toLowerCase();
+        const preview = String(getPreview(chat)).toLowerCase();
+        return name.includes(term) || preview.includes(term);
+      });
+
+      if (!filtered.length) {
+        chatList.innerHTML = `
+          <div class="empty-state">
+            No chats found.<br>
+            Start a new conversation from Explore.
+          </div>
+        `;
+        return;
+      }
+
+      chatList.innerHTML = filtered.map(chat => {
+        const name = getOtherUserName(chat);
+        const avatarUrl = chat.other_user_avatar || "";
+        const avatar = avatarUrl
+          ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(name)}">`
+          : escapeHtml(name.charAt(0).toUpperCase());
+
+        const unread = Number(chat.unread_count || 0);
+
+        return `
+          <div class="chat-item" onclick="openChat('${chat.id}')">
+            <div class="chat-main">
+              <div class="avatar">${avatar}</div>
+
+              <div class="chat-meta">
+                <div class="chat-top">
+                  <div class="chat-name">${escapeHtml(name)}</div>
+                  <div class="chat-time">${escapeHtml(formatTime(chat.last_message_at || chat.updated_at))}</div>
+                </div>
+
+                <div class="chat-preview">${escapeHtml(getPreview(chat))}</div>
+              </div>
+            </div>
+
+            <div class="chat-side">
+              ${unread > 0 ? `<span class="badge">${unread}</span>` : ``}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadChats() {
+      clearNotice();
+
+      const { data, error } = await supabaseClient
+        .from("conversations_view")
+        .select("*")
+        .order("last_message_at", { ascending: false });
+
+      if (error) {
+        showNotice(error.message || "Could not load chats.");
+        chatList.innerHTML = `<div class="empty-state">Could not load chats.</div>`;
+        return;
+      }
+
+      allChats = data || [];
+      renderChats(allChats);
+    }
+
+    function openChat(conversationId) {
+      window.location.href = `chat-room.html?id=${encodeURIComponent(conversationId)}`;
+    }
+
+    function subscribeRealtime() {
+      if (chatsChannel) return;
+
+      chatsChannel = supabaseClient
+        .channel("chats-live")
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "messages"
+        }, async () => {
+          await loadChats();
+        })
+        .subscribe();
+    }
+
+    async function init() {
+      try {
+        const session = await requireSession();
+        if (!session) return;
+
+        currentUserId = session.user.id;
+        await loadChats();
+        subscribeRealtime();
+      } catch (error) {
+        showNotice(error.message || "Could not load chats.");
+      }
+    }
+
+    searchInput.addEventListener("input", () => renderChats(allChats));
+    newChatBtn.addEventListener("click", () => {
+      window.location.href = "explore.html";
+    });
+
+    window.openChat = openChat;
+
+    init();
+  </script>
 </body>
 </html>
