@@ -24,10 +24,6 @@
       --green:#22c55e;
       --danger:#ef4444;
       --shadow:0 20px 50px rgba(0,0,0,.28);
-      --radius-xl:28px;
-      --radius-lg:22px;
-      --radius-md:18px;
-      --radius-sm:14px;
     }
 
     *{
@@ -43,7 +39,7 @@
       background:
         radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
         radial-gradient(circle at top left, rgba(0,255,200,.08), transparent 18%),
-        linear-gradient(180deg, #08142e 0%, #061126 52%, #050d1c 100%);
+        linear-gradient(180deg,#08142e 0%,#061126 52%,#050d1c 100%);
       color:var(--text);
     }
 
@@ -52,7 +48,7 @@
     }
 
     .wrap{
-      width:min(100%, 860px);
+      width:min(100%,860px);
       margin:0 auto;
       min-height:100vh;
       display:flex;
@@ -645,9 +641,7 @@
 
         <div class="chat-head">
           <div class="avatar-wrap">
-            <button id="profileBtn" class="avatar-btn" type="button" aria-label="Open profile">
-              U
-            </button>
+            <button id="profileBtn" class="avatar-btn" type="button" aria-label="Open profile">U</button>
             <span id="onlineDot" class="online-dot"></span>
           </div>
 
@@ -734,6 +728,16 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const ROUTES = {
+      chats: "chats.html",
+      profile: "profile.html",
+      publicProfile: "public-profile.html",
+      groups: "groups.html",
+      calls: "calls.html"
+    };
+
+    const MEDIA_BUCKET = "chat-media";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -830,7 +834,11 @@
       if (date.toDateString() === now.toDateString()) return "Today";
       if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
 
-      return date.toLocaleDateString([], { day: "2-digit", month: "short", year: "numeric" });
+      return date.toLocaleDateString([], {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      });
     }
 
     function autoGrowTextarea() {
@@ -856,25 +864,19 @@
     }
 
     function getMessageContent(message) {
-      return (
-        message.content ||
-        message.message ||
-        message.text ||
-        message.body ||
-        ""
-      );
+      return message.message || "";
     }
 
     function getMessageType(message) {
-      return message.message_type || message.type || "text";
+      return message.message_type || "text";
     }
 
-    function getMessageFileUrl(message) {
-      return message.file_url || message.media_url || message.attachment_url || "";
+    function getMessageMediaUrl(message) {
+      return message.media_url || "";
     }
 
     function getMessageFileName(message) {
-      return message.file_name || message.attachment_name || "Attachment";
+      return message.file_name || "Attachment";
     }
 
     function setTypingVisible(text = "Typing...") {
@@ -907,10 +909,10 @@
         : (isOtherUserOnline() ? "Online now" : "Chat options");
 
       if (conversationIsGroup) {
-        sheetProfileAction.href = `groups.html?id=${encodeURIComponent(conversationId)}`;
+        sheetProfileAction.href = `${ROUTES.groups}?id=${encodeURIComponent(conversationId)}`;
         sheetProfileAction.querySelector("span").textContent = "Open Group";
       } else {
-        sheetProfileAction.href = `public-profile.html?id=${encodeURIComponent(otherUser?.id || "")}`;
+        sheetProfileAction.href = `${ROUTES.publicProfile}?id=${encodeURIComponent(otherUser?.id || "")}`;
         sheetProfileAction.querySelector("span").textContent = "View User Profile";
       }
 
@@ -979,12 +981,12 @@
       let html = "";
 
       currentMessages.forEach(message => {
-        const senderId = message.sender_id || message.user_id || "";
+        const senderId = message.sender_id || "";
         const isMe = senderId === currentUserId;
         const day = formatDay(message.created_at);
         const type = getMessageType(message);
         const text = getMessageContent(message);
-        const fileUrl = getMessageFileUrl(message);
+        const mediaUrl = getMessageMediaUrl(message);
         const fileName = getMessageFileName(message);
 
         if (day !== lastDay) {
@@ -997,21 +999,21 @@
         }
 
         let mediaHtml = "";
-        if (type === "image" && fileUrl) {
+        if (type === "image" && mediaUrl) {
           mediaHtml = `
             <div class="bubble-media">
-              <img src="${escapeHtml(fileUrl)}" alt="Image" />
+              <img src="${escapeHtml(mediaUrl)}" alt="Image" />
             </div>
           `;
-        } else if (type === "video" && fileUrl) {
+        } else if (type === "video" && mediaUrl) {
           mediaHtml = `
             <div class="bubble-media">
-              <video src="${escapeHtml(fileUrl)}" controls playsinline></video>
+              <video src="${escapeHtml(mediaUrl)}" controls playsinline></video>
             </div>
           `;
-        } else if ((type === "file" || type === "document") && fileUrl) {
+        } else if ((type === "file" || type === "document") && mediaUrl) {
           mediaHtml = `
-            <a class="file-card" href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener">
+            <a class="file-card" href="${escapeHtml(mediaUrl)}" target="_blank" rel="noopener">
               <span class="file-icon">📎</span>
               <div>
                 <div style="font-weight:800;font-size:13px;">${escapeHtml(fileName)}</div>
@@ -1058,7 +1060,7 @@
     async function requireSession() {
       const session = await getSessionWithRetry();
       if (!session?.user) {
-        window.location.href = `login.html?next=${encodeURIComponent(location.pathname + location.search)}`;
+        window.location.href = `${ROUTES.chats}`;
         return null;
       }
       return session;
@@ -1122,39 +1124,6 @@
 
       if (error) throw error;
       currentMessages = data || [];
-    }
-
-    async function hydrateConversationDetails() {
-      await loadConversation();
-      await loadConversationMembers();
-
-      const memberIds = [...new Set(currentMembers.map(m => m.user_id).filter(Boolean))];
-      const profiles = await loadProfiles(memberIds);
-      const profileMap = new Map(profiles.map(p => [p.id, p]));
-
-      if (conversationIsGroup) {
-        currentMessages = currentMessages.map(msg => {
-          const profile = profileMap.get(msg.sender_id) || {};
-          return {
-            ...msg,
-            sender_name: getProfileDisplayName(profile, "User")
-          };
-        });
-      } else {
-        const otherMember = currentMembers.find(m => m.user_id !== currentUserId);
-        const profile = profileMap.get(otherMember?.user_id) || {};
-        otherUser = {
-          id: otherMember?.user_id || "",
-          name: getProfileDisplayName(profile, "User"),
-          avatar: getProfileAvatar(profile)
-        };
-      }
-
-      if (conversationIsGroup) {
-        if (!currentConversation.name && currentMembers.length) {
-          currentConversation.name = `Group (${currentMembers.length})`;
-        }
-      }
     }
 
     async function refreshAll() {
@@ -1238,7 +1207,7 @@
 
       const { error: uploadError } = await supabaseClient
         .storage
-        .from("chat-media")
+        .from(MEDIA_BUCKET)
         .upload(path, file, {
           cacheControl: "3600",
           upsert: false
@@ -1251,7 +1220,7 @@
 
       const { data } = supabaseClient
         .storage
-        .from("chat-media")
+        .from(MEDIA_BUCKET)
         .getPublicUrl(path);
 
       uploadPill.classList.remove("show");
@@ -1259,13 +1228,14 @@
       return {
         url: data?.publicUrl || "",
         type: detectFileType(file),
-        name: file.name
+        name: file.name,
+        size: file.size || null,
+        mime: file.type || null
       };
     }
 
     async function sendMessage({ text = "", attachment = null }) {
       const cleanText = String(text || "").trim();
-
       if (!cleanText && !attachment) return;
 
       sendBtn.disabled = true;
@@ -1274,17 +1244,14 @@
         const payload = {
           conversation_id: conversationId,
           sender_id: currentUserId,
-          content: cleanText || null,
-          created_at: new Date().toISOString()
+          receiver_id: conversationIsGroup ? null : (otherUser?.id || null),
+          message_type: attachment ? attachment.type : "text",
+          message: cleanText || null,
+          media_url: attachment ? attachment.url : null,
+          file_name: attachment ? attachment.name : null,
+          file_size: attachment ? attachment.size : null,
+          mime_type: attachment ? attachment.mime : null
         };
-
-        if (attachment) {
-          payload.file_url = attachment.url;
-          payload.message_type = attachment.type;
-          payload.file_name = attachment.name;
-        } else {
-          payload.message_type = "text";
-        }
 
         const { error } = await supabaseClient
           .from("messages")
@@ -1306,7 +1273,6 @@
 
     function broadcastTyping() {
       if (!typingChannel) return;
-
       typingChannel.send({
         type: "broadcast",
         event: "typing",
@@ -1322,7 +1288,6 @@
       messageInput.addEventListener("input", () => {
         autoGrowTextarea();
         broadcastTyping();
-
         if (typingTimeout) clearTimeout(typingTimeout);
         typingTimeout = setTimeout(() => {}, 1600);
       });
@@ -1389,9 +1354,7 @@
 
       presenceChannel = supabaseClient.channel(`presence-chat-${conversationId}`, {
         config: {
-          presence: {
-            key: currentUserId
-          }
+          presence: { key: currentUserId }
         }
       });
 
@@ -1399,7 +1362,6 @@
         .on("presence", { event: "sync" }, () => {
           const state = presenceChannel.presenceState();
           const next = new Set();
-
           Object.keys(state || {}).forEach(key => next.add(key));
           onlineUserIds = next;
           updateHeader();
@@ -1427,8 +1389,7 @@
           .eq("user_id", currentUserId);
 
         if (error) throw error;
-
-        window.location.href = "chats.html";
+        window.location.href = ROUTES.chats;
       } catch (error) {
         console.error("Delete chat error:", error);
         showNotice(error.message || "Could not delete chat.");
@@ -1436,27 +1397,27 @@
     }
 
     backBtn.addEventListener("click", () => {
-      window.location.href = "chats.html";
+      window.location.href = ROUTES.chats;
     });
 
     profileBtn.addEventListener("click", () => {
       if (conversationIsGroup) {
-        window.location.href = `groups.html?id=${encodeURIComponent(conversationId)}`;
+        window.location.href = `${ROUTES.groups}?id=${encodeURIComponent(conversationId)}`;
       } else if (otherUser?.id) {
-        window.location.href = `public-profile.html?id=${encodeURIComponent(otherUser.id)}`;
+        window.location.href = `${ROUTES.publicProfile}?id=${encodeURIComponent(otherUser.id)}`;
       }
     });
 
     callBtn.addEventListener("click", () => {
       if (conversationIsGroup) {
-        showNotice("Group calling page is not linked yet.", "info");
+        showNotice("Group call page is not linked yet.", "info");
         return;
       }
       if (!otherUser?.id) {
         showNotice("User is not available for calling.", "info");
         return;
       }
-      window.location.href = `calls.html?user_id=${encodeURIComponent(otherUser.id)}&conversation_id=${encodeURIComponent(conversationId)}`;
+      window.location.href = `${ROUTES.calls}?user_id=${encodeURIComponent(otherUser.id)}&conversation_id=${encodeURIComponent(conversationId)}`;
     });
 
     videoBtn.addEventListener("click", () => {
@@ -1468,14 +1429,16 @@
         showNotice("User is not available for video.", "info");
         return;
       }
-      window.location.href = `calls.html?mode=video&user_id=${encodeURIComponent(otherUser.id)}&conversation_id=${encodeURIComponent(conversationId)}`;
+      window.location.href = `${ROUTES.calls}?mode=video&user_id=${encodeURIComponent(otherUser.id)}&conversation_id=${encodeURIComponent(conversationId)}`;
     });
 
     menuBtn.addEventListener("click", openOptionsSheet);
+
     sheetRefreshAction.addEventListener("click", async () => {
       closeOptionsSheet({ target: optionsSheetBackdrop });
       await refreshAll();
     });
+
     sheetDeleteAction.addEventListener("click", async () => {
       closeOptionsSheet({ target: optionsSheetBackdrop });
       await deleteChatForMe();
@@ -1483,7 +1446,6 @@
 
     composerForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const text = messageInput.value;
 
       let attachment = null;
       if (fileInput.files && fileInput.files[0]) {
@@ -1496,7 +1458,10 @@
         }
       }
 
-      await sendMessage({ text, attachment });
+      await sendMessage({
+        text: messageInput.value,
+        attachment
+      });
     });
 
     attachBtn.addEventListener("click", () => {
