@@ -37,7 +37,7 @@
 
     .search-wrap{
       display:flex;align-items:center;gap:10px;border:1px solid #e5e7eb;
-      border-radius:16px;padding:0 14px;background:#fff;min-height:52px
+      border-radius:16px;padding:0 14px;background:#fff;min-height:54px
     }
     .search-wrap span{font-size:18px;color:#6b7280}
     .search-wrap input{flex:1;border:none;outline:none;background:transparent;font-size:15px;color:#111827}
@@ -79,7 +79,13 @@
       font-weight:800
     }
 
-    .refresh-btn{
+    .action-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .refresh-btn,.action-btn{
       border:none;
       border-radius:999px;
       padding:10px 14px;
@@ -117,8 +123,10 @@
     .user-card{
       background:#fff;border-radius:22px;padding:16px;
       box-shadow:0 10px 30px rgba(15,23,42,.08);
-      display:flex;justify-content:space-between;gap:14px;align-items:center
+      display:flex;justify-content:space-between;gap:14px;align-items:center;
+      transition:.18s ease;
     }
+    .user-card:hover{transform:translateY(-1px)}
 
     .user-main{
       display:flex;align-items:center;gap:12px;min-width:0;flex:1;cursor:pointer
@@ -212,7 +220,7 @@
 
     <section class="card">
       <div class="search-wrap">
-        <span>🔍</span>
+        <span>🔎</span>
         <input type="text" id="searchInput" placeholder="Search username, full name, bio..." />
       </div>
     </section>
@@ -237,7 +245,9 @@
     <section class="card">
       <div class="section-head">
         <h2>People</h2>
-        <button id="refreshBtn" class="refresh-btn">Refresh</button>
+        <div class="action-row">
+          <button id="refreshBtn" class="refresh-btn">Refresh</button>
+        </div>
       </div>
 
       <div class="filter-row">
@@ -283,7 +293,8 @@
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        flowType: "pkce"
       }
     });
 
@@ -313,26 +324,6 @@
       noticeBox.textContent = "";
     }
 
-    async function getSessionWithRetry(maxWaitMs = 3000) {
-      const start = Date.now();
-      while (Date.now() - start < maxWaitMs) {
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (error) throw error;
-        if (data.session?.user) return data.session;
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-      return null;
-    }
-
-    async function requireSession() {
-      const session = await getSessionWithRetry();
-      if (!session?.user) {
-        window.location.href = "login.html?next=explore.html";
-        return null;
-      }
-      return session;
-    }
-
     function escapeHtml(value) {
       return String(value || "")
         .replace(/&/g, "&amp;")
@@ -350,6 +341,30 @@
       allCount.textContent = allUsers.length;
       suggestedCount.textContent = allUsers.filter(u => !followingIds.has(u.id)).length;
       followingCount.textContent = allUsers.filter(u => followingIds.has(u.id)).length;
+    }
+
+    async function getActiveSession() {
+      const {
+        data: { session },
+        error
+      } = await supabaseClient.auth.getSession();
+
+      if (error) throw error;
+      return session || null;
+    }
+
+    async function requireSession() {
+      const session = await getActiveSession();
+
+      if (!session || !session.user) {
+        showNotice("Please log in first.");
+        setTimeout(() => {
+          window.location.href = "login.html?next=explore.html";
+        }, 1000);
+        return null;
+      }
+
+      return session;
     }
 
     async function loadFollowing() {
@@ -385,6 +400,7 @@
 
     function getFilteredUsers() {
       const term = searchInput.value.trim().toLowerCase();
+
       let source = [...allUsers];
 
       if (currentFilter === "suggested") {
@@ -462,6 +478,11 @@
       try {
         clearNotice();
 
+        const session = await requireSession();
+        if (!session) return;
+
+        currentUserId = session.user.id;
+
         if (followingIds.has(userId)) {
           const { error } = await supabaseClient
             .from("followers")
@@ -500,6 +521,19 @@
       try {
         clearNotice();
 
+        const session = await requireSession();
+        if (!session) return;
+
+        currentUserId = session.user.id;
+
+        if (!userId) {
+          throw new Error("User not found.");
+        }
+
+        if (userId === currentUserId) {
+          throw new Error("You cannot chat with yourself.");
+        }
+
         const { data, error } = await supabaseClient.rpc("get_or_create_conversation", {
           other_user_id: userId
         });
@@ -522,14 +556,6 @@
       openProfile(userId);
     }
 
-    function setFilter(value) {
-      currentFilter = value;
-      filterButtons.forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.filter === value);
-      });
-      renderUsers();
-    }
-
     function subscribeRealtime() {
       if (!followersChannel) {
         followersChannel = supabaseClient
@@ -539,6 +565,7 @@
             schema: "public",
             table: "followers"
           }, async () => {
+            if (!currentUserId) return;
             await loadFollowing();
             renderUsers();
           })
@@ -553,6 +580,7 @@
             schema: "public",
             table: "profiles"
           }, async () => {
+            if (!currentUserId) return;
             await loadUsers();
           })
           .subscribe();
@@ -561,6 +589,8 @@
 
     async function init() {
       try {
+        clearNotice();
+
         const session = await requireSession();
         if (!session) return;
 
@@ -571,14 +601,28 @@
         subscribeRealtime();
       } catch (error) {
         showNotice(error.message || "Could not load explore.");
-        usersGrid.innerHTML = `<div class="empty-state">Could not load explore.</div>`;
       }
     }
 
     searchInput.addEventListener("input", renderUsers);
     refreshBtn.addEventListener("click", init);
+
     filterButtons.forEach(btn => {
-      btn.addEventListener("click", () => setFilter(btn.dataset.filter));
+      btn.addEventListener("click", () => {
+        filterButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.dataset.filter;
+        renderUsers();
+      });
+    });
+
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (!session?.user) {
+        showNotice("You have been logged out.");
+        setTimeout(() => {
+          window.location.href = "login.html?next=explore.html";
+        }, 1000);
+      }
     });
 
     window.toggleFollow = toggleFollow;
