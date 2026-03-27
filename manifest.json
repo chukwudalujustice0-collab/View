@@ -1,19 +1,21 @@
 {
   "id": "/",
-  "name": "View",
+  "name": "View - Social App",
   "short_name": "View",
-  "description": "View social app by Ceetify",
+  "description": "View social app by Ceetify - Chat, Calls, Groups, AI & Social Experience",
   "start_url": "/home.html",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait",
   "background_color": "#07122a",
   "theme_color": "#1d4ed8",
   "lang": "en",
   "dir": "ltr",
-  "categories": ["social", "communication"],
+
+  "categories": ["social", "communication", "productivity"],
   "prefer_related_applications": false,
-  "display_override": ["standalone", "minimal-ui", "browser"],
+
   "icons": [
     {
       "src": "/icon-72x72.png",
@@ -64,6 +66,7 @@
       "purpose": "any maskable"
     }
   ],
+
   "shortcuts": [
     {
       "name": "Chats",
@@ -79,10 +82,23 @@
       ]
     },
     {
-      "name": "Notifications",
-      "short_name": "Alerts",
-      "description": "Open notifications",
-      "url": "/notifications.html",
+      "name": "Groups",
+      "short_name": "Groups",
+      "description": "Open your groups",
+      "url": "/groups.html",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Calls",
+      "short_name": "Calls",
+      "description": "Start calls",
+      "url": "/calls.html",
       "icons": [
         {
           "src": "/icon-192x192.png",
@@ -103,6 +119,21 @@
           "type": "image/png"
         }
       ]
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/chat.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ]
 }
