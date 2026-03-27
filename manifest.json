@@ -1,66 +1,64 @@
 {
+  "id": "/",
   "name": "View",
   "short_name": "View",
-  "description": "A modern social app for posts, chats, calls, notifications, and community interaction.",
+  "description": "View social app by Ceetify",
   "start_url": "/home.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f4f7fc",
+  "background_color": "#07122a",
   "theme_color": "#1d4ed8",
   "lang": "en",
   "dir": "ltr",
-  "categories": [
-    "social",
-    "communication",
-    "lifestyle"
-  ],
+  "categories": ["social", "communication"],
   "prefer_related_applications": false,
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
+      "src": "/icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-96x96.png",
+      "src": "/icon-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-128x128.png",
+      "src": "/icon-128x128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-144x144.png",
+      "src": "/icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-152x152.png",
+      "src": "/icon-152x152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-384x384.png",
+      "src": "/icon-384x384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -68,52 +66,39 @@
   ],
   "shortcuts": [
     {
-      "name": "Home",
-      "short_name": "Home",
-      "description": "Open the View home feed",
-      "url": "/home.html",
-      "icons": [
-        {
-          "src": "/icons/icon-192x192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
-      "name": "Create Post",
-      "short_name": "Create",
-      "description": "Create a new post on View",
-      "url": "/create-post.html",
-      "icons": [
-        {
-          "src": "/icons/icon-192x192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
       "name": "Chats",
       "short_name": "Chats",
       "description": "Open your chats",
       "url": "/chats.html",
       "icons": [
         {
-          "src": "/icons/icon-192x192.png",
+          "src": "/icon-192x192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
       ]
     },
     {
-      "name": "Profile",
-      "short_name": "Profile",
-      "description": "Open your profile",
-      "url": "/profile.html",
+      "name": "Notifications",
+      "short_name": "Alerts",
+      "description": "Open notifications",
+      "url": "/notifications.html",
       "icons": [
         {
-          "src": "/icons/icon-192x192.png",
+          "src": "/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Explore",
+      "short_name": "Explore",
+      "description": "Find people and content",
+      "url": "/explore.html",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
