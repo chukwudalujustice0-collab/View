@@ -5,198 +5,1066 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Notifications | View</title>
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0b5ed7" />
+  <meta name="theme-color" content="#07122a" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{
-      --primary:#0b5ed7;
-      --primary-dark:#083b8a;
-      --bg:#f5f8ff;
-      --card:#ffffff;
-      --text:#1f1f1f;
-      --soft:#6b7280;
-      --border:#e5e7eb;
-      --shadow:0 10px 30px rgba(0,0,0,.06);
-      --radius:18px;
+      --bg:#061126;
+      --bg2:#0a1835;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.05);
+      --stroke:rgba(255,255,255,.08);
+      --text:#f8fbff;
+      --muted:#9db0cf;
+      --soft:#7f91af;
+      --primary:#2d6bff;
+      --primary2:#5c8cff;
+      --green:#22c55e;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --shadow:0 18px 50px rgba(0,0,0,.28);
     }
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
-    a{text-decoration:none;color:inherit}
-    button,input{font:inherit}
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Inter,Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
+        radial-gradient(circle at top left, rgba(0,255,200,.06), transparent 18%),
+        linear-gradient(180deg,#08142e 0%,#061126 55%,#050d1c 100%);
+      color:var(--text);
+    }
+
+    body{
+      padding-bottom:118px;
+    }
+
+    .wrap{
+      width:min(100%, 920px);
+      margin:0 auto;
+      padding:18px 16px 0;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:16px;
+      padding:14px 16px;
+      border-radius:18px;
+      font-size:14px;
+      line-height:1.6;
+      border:1px solid transparent;
+      backdrop-filter:blur(10px);
+    }
+    .notice.show{display:block}
+    .notice.error{
+      background:rgba(239,68,68,.12);
+      border-color:rgba(239,68,68,.24);
+      color:#ffd9d9;
+    }
+    .notice.success{
+      background:rgba(34,197,94,.12);
+      border-color:rgba(34,197,94,.24);
+      color:#ddffe8;
+    }
+    .notice.info{
+      background:rgba(45,107,255,.14);
+      border-color:rgba(45,107,255,.26);
+      color:#dce8ff;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
+        linear-gradient(135deg, rgba(45,107,255,.16), rgba(92,140,255,.06));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:30px;
+      padding:18px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(18px);
+      margin-bottom:18px;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      top:-70px;
+      right:-70px;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(92,140,255,.30), transparent 66%);
+      pointer-events:none;
+    }
+
     .topbar{
-      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
-      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;
-      align-items:center;gap:12px;flex-wrap:wrap
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+      position:relative;
+      z-index:1;
     }
-    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
-    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
-    .page-title p{font-size:12px;color:var(--soft)}
-    .icon-btn,.primary-btn,.outline-btn,.chip,.mini-btn{
-      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+
+    .brand-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
     }
-    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
-    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
-    .outline-btn,.chip,.mini-btn{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
-    .chip{min-height:38px;border-radius:999px;font-size:13px}
-    .chip.active{background:rgba(11,94,215,.08);border-color:rgba(11,94,215,.18)}
-    .mini-btn{min-height:36px;border-radius:999px;font-size:12px;padding:0 12px}
-    .container{max-width:980px;margin:0 auto;padding:18px 16px 0}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
-    .section-head{
-      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap
+
+    .icon-btn{
+      width:48px;
+      height:48px;
+      min-width:48px;
+      border:none;
+      border-radius:18px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      font-size:20px;
+      cursor:pointer;
+      box-shadow:0 10px 24px rgba(0,0,0,.18);
     }
-    .section-head h2{font-size:20px;margin-bottom:4px}
-    .section-head p{font-size:13px;color:var(--soft)}
-    .filters{display:flex;gap:10px;flex-wrap:wrap}
-    .notifications-list{display:grid;gap:12px}
+
+    .brand-logo{
+      width:52px;
+      height:52px;
+      min-width:52px;
+      border-radius:18px;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:24px;
+      font-weight:900;
+      box-shadow:0 12px 28px rgba(45,107,255,.30);
+    }
+
+    .brand-text h1{
+      font-size:31px;
+      font-weight:900;
+      letter-spacing:-.03em;
+      line-height:1;
+      margin-bottom:5px;
+    }
+
+    .brand-text p{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-shrink:0;
+    }
+
+    .search-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-height:60px;
+      padding:0 16px;
+      border-radius:20px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      margin-bottom:14px;
+      position:relative;
+      z-index:1;
+    }
+
+    .search-wrap input{
+      flex:1;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:#fff;
+      font-size:15px;
+    }
+
+    .search-wrap input::placeholder{
+      color:#9db1d1;
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:1;
+    }
+
+    .pill-btn,.primary-btn{
+      min-height:42px;
+      border:none;
+      border-radius:999px;
+      padding:0 14px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .pill-btn{
+      color:#fff;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .pill-btn.active{
+      background:rgba(45,107,255,.18);
+      border-color:rgba(45,107,255,.24);
+    }
+
+    .primary-btn{
+      color:#fff;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:0 12px 28px rgba(45,107,255,.28);
+    }
+
+    .panel{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:28px;
+      padding:18px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(16px);
+    }
+
+    .panel-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+
+    .panel-title h2{
+      font-size:24px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      margin-bottom:4px;
+    }
+
+    .panel-title p{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .stats{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .stat-chip{
+      min-height:38px;
+      padding:0 13px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#dce8ff;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .notifications-list{
+      display:grid;
+      gap:14px;
+    }
+
     .notification-card{
-      border:1px solid var(--border);border-radius:16px;background:#fff;padding:14px;display:flex;
-      justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      padding:15px;
+      border-radius:24px;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      box-shadow:0 12px 30px rgba(2,8,23,.18);
+      flex-wrap:wrap;
     }
-    .notification-card.unread{background:#f8fbff;border-color:rgba(11,94,215,.18)}
-    .notification-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+
+    .notification-card.unread{
+      border-color:rgba(45,107,255,.24);
+      background:
+        linear-gradient(180deg, rgba(45,107,255,.12), rgba(255,255,255,.05));
+    }
+
+    .notification-left{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
     .icon-box{
-      width:46px;height:46px;border-radius:14px;background:rgba(11,94,215,.08);color:var(--primary);
-      display:grid;place-items:center;font-weight:700;flex-shrink:0
+      width:48px;
+      height:48px;
+      min-width:48px;
+      border-radius:16px;
+      background:rgba(45,107,255,.14);
+      border:1px solid rgba(45,107,255,.18);
+      color:#dbe7ff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      box-shadow:0 10px 20px rgba(45,107,255,.12);
     }
-    .notification-info h4{font-size:15px;margin-bottom:3px}
-    .notification-info p{font-size:12px;color:var(--soft);line-height:1.5}
-    .notification-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+    .notification-content{
+      min-width:0;
+      flex:1;
+    }
+
+    .notification-title-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:5px;
+      flex-wrap:wrap;
+    }
+
+    .notification-title{
+      font-size:16px;
+      font-weight:900;
+      color:#fff;
+      line-height:1.35;
+    }
+
+    .notification-time{
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .notification-body{
+      font-size:13.5px;
+      color:#bfd0ea;
+      line-height:1.7;
+      margin-bottom:8px;
+    }
+
+    .notification-meta{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .meta-tag{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:800;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#dce8ff;
+      text-transform:capitalize;
+    }
+
+    .notification-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .mini-btn{
+      min-height:40px;
+      border:none;
+      border-radius:999px;
+      padding:0 14px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-size:12px;
+      font-weight:800;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+    }
+
+    .mini-btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      border:none;
+    }
+
+    .mini-btn.danger{
+      color:#ffd8d8;
+      background:rgba(239,68,68,.10);
+      border-color:rgba(239,68,68,.20);
+    }
+
+    .empty-state{
+      padding:34px 18px;
+      text-align:center;
+      line-height:1.8;
+      color:var(--muted);
+      border-radius:24px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .empty-state strong{
+      display:block;
+      color:#fff;
+      font-size:18px;
+      margin-bottom:6px;
+    }
+
+    .spinner{
+      width:18px;
+      height:18px;
+      border:2px solid rgba(255,255,255,.24);
+      border-top-color:#fff;
+      border-radius:50%;
+      animation:spin .8s linear infinite;
+      display:inline-block;
+    }
+
+    @keyframes spin{
+      to{transform:rotate(360deg)}
+    }
+
     .bottom-nav{
-      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
-      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
+      position:fixed;
+      left:50%;
+      bottom:14px;
+      transform:translateX(-50%);
+      width:min(100%,820px);
+      max-width:calc(100% - 18px);
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:8px;
+      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+      border-radius:28px;
+      background:rgba(7,18,43,.94);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 22px 56px rgba(0,0,0,.34);
+      backdrop-filter:blur(18px);
+      z-index:55;
     }
-    .bottom-link{
-      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:4px;font-size:11px;color:var(--soft)
+
+    .nav-btn{
+      min-height:62px;
+      border-radius:18px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      color:#90a5c7;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:800;
+      text-align:center;
     }
-    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
-    @media(max-width:760px){.bottom-nav{display:grid}}
-    @media(max-width:640px){
-      .container{padding:14px 12px 0}
-      .topbar-right .outline-btn{display:none}
+
+    .nav-btn.active{
+      color:#fff;
+      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
+      border:1px solid rgba(45,107,255,.20);
+    }
+
+    .nav-icon{
+      font-size:21px;
+      line-height:1;
+    }
+
+    @media (max-width:700px){
+      .panel-head{
+        flex-direction:column;
+      }
+    }
+
+    @media (max-width:640px){
+      .brand-text h1{font-size:28px}
+      .notification-title-row{
+        flex-direction:column;
+      }
+      .notification-card{
+        flex-direction:column;
+      }
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="icon-btn" onclick="window.location.href='dashboard.html'">←</button>
-      <div class="page-title">
-        <h1>Notifications</h1>
-        <p>Activity alerts from posts, wallet, chat, and publishing</p>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <button class="outline-btn" id="markAllReadBtn">Mark all read</button>
-    </div>
-  </header>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
 
-  <main class="container">
-    <section class="card" style="margin-bottom:18px;">
-      <div class="filters">
-        <button class="chip active" data-notification-filter>All</button>
-        <button class="chip" data-notification-filter>Unread</button>
-        <button class="chip" data-notification-filter>Messages</button>
-        <button class="chip" data-notification-filter>Publishing</button>
-        <button class="chip" data-notification-filter>Payments</button>
-      </div>
-    </section>
+    <section class="hero">
+      <div class="topbar">
+        <div class="brand-wrap">
+          <button id="backBtn" class="icon-btn" type="button" aria-label="Back">←</button>
+          <div class="brand-logo">🔔</div>
+          <div class="brand-text">
+            <h1>Notifications</h1>
+            <p>Messages, calls, publishing, follows, and system updates</p>
+          </div>
+        </div>
 
-    <section class="card">
-      <div class="section-head">
-        <div>
-          <h2>Recent Notifications</h2>
-          <p>Your latest activity and system updates.</p>
+        <div class="top-actions">
+          <a class="icon-btn" href="profile.html" title="Profile" aria-label="Profile">👤</a>
         </div>
       </div>
 
-      <div class="notifications-list">
-        <article class="notification-card unread" data-notification-card data-read="false">
-          <div class="notification-left">
-            <div class="icon-box">💬</div>
-            <div class="notification-info">
-              <h4>New message from Ceetify Media</h4>
-              <p>Your dashboard structure looks strong. Continue the conversation.</p>
-            </div>
-          </div>
-          <div class="notification-actions">
-            <button class="mini-btn" data-notification-action="open-chat">Open</button>
-            <button class="mini-btn" data-notification-action="dismiss">Dismiss</button>
-          </div>
-        </article>
+      <div class="search-wrap">
+        <span>🔎</span>
+        <input id="searchInput" type="text" placeholder="Search notifications..." />
+      </div>
 
-        <article class="notification-card unread" data-notification-card data-read="false">
-          <div class="notification-left">
-            <div class="icon-box">📤</div>
-            <div class="notification-info">
-              <h4>Post published successfully</h4>
-              <p>Your post was sent to View, Facebook, and Instagram.</p>
-            </div>
-          </div>
-          <div class="notification-actions">
-            <button class="mini-btn" data-notification-action="open-post">View</button>
-            <button class="mini-btn" data-notification-action="dismiss">Dismiss</button>
-          </div>
-        </article>
-
-        <article class="notification-card" data-notification-card data-read="true">
-          <div class="notification-left">
-            <div class="icon-box">💳</div>
-            <div class="notification-info">
-              <h4>Wallet funded</h4>
-              <p>Your wallet has been credited successfully.</p>
-            </div>
-          </div>
-          <div class="notification-actions">
-            <button class="mini-btn" data-notification-action="open-wallet">Open Wallet</button>
-            <button class="mini-btn" data-notification-action="dismiss">Dismiss</button>
-          </div>
-        </article>
-
-        <article class="notification-card" data-notification-card data-read="true">
-          <div class="notification-left">
-            <div class="icon-box">📞</div>
-            <div class="notification-info">
-              <h4>Missed call from Praise Ngozi</h4>
-              <p>You missed a video call 20 minutes ago.</p>
-            </div>
-          </div>
-          <div class="notification-actions">
-            <button class="mini-btn" data-notification-action="open-call">Call Back</button>
-            <button class="mini-btn" data-notification-action="dismiss">Dismiss</button>
-          </div>
-        </article>
-
-        <article class="notification-card" data-notification-card data-read="true">
-          <div class="notification-left">
-            <div class="icon-box">👤</div>
-            <div class="notification-info">
-              <h4>New follower</h4>
-              <p>Stock Flow Hub started following your profile.</p>
-            </div>
-          </div>
-          <div class="notification-actions">
-            <button class="mini-btn" data-notification-action="open-profile">Profile</button>
-            <button class="mini-btn" data-notification-action="dismiss">Dismiss</button>
-          </div>
-        </article>
+      <div class="hero-actions">
+        <button class="pill-btn active" data-filter="all" type="button">All</button>
+        <button class="pill-btn" data-filter="unread" type="button">Unread</button>
+        <button class="pill-btn" data-filter="messages" type="button">Messages</button>
+        <button class="pill-btn" data-filter="publishing" type="button">Publishing</button>
+        <button class="pill-btn" data-filter="payments" type="button">Payments</button>
+        <button class="pill-btn" data-filter="calls" type="button">Calls</button>
+        <button id="markAllReadBtn" class="primary-btn" type="button">Mark all read</button>
       </div>
     </section>
-  </main>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <h2>Recent Notifications</h2>
+          <p>Live notification center for your View account.</p>
+        </div>
+
+        <div class="stats">
+          <div id="totalCountChip" class="stat-chip">0 total</div>
+          <div id="unreadCountChip" class="stat-chip">0 unread</div>
+        </div>
+      </div>
+
+      <div id="notificationsList" class="notifications-list">
+        <div class="empty-state"><span class="spinner"></span></div>
+      </div>
+    </section>
+  </div>
 
   <nav class="bottom-nav">
-    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
-    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
-    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
-    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
-    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
+    <a href="home.html" class="nav-btn">
+      <span class="nav-icon">⌂</span>
+      <span>Home</span>
+    </a>
+    <a href="explore.html" class="nav-btn">
+      <span class="nav-icon">🔎</span>
+      <span>Explore</span>
+    </a>
+    <a href="chats.html" class="nav-btn">
+      <span class="nav-icon">💬</span>
+      <span>Chat</span>
+    </a>
+    <a href="calls.html" class="nav-btn">
+      <span class="nav-icon">📞</span>
+      <span>Call</span>
+    </a>
+    <a href="groups.html" class="nav-btn active">
+      <span class="nav-icon">🔔</span>
+      <span>Alerts</span>
+    </a>
   </nav>
 
-  <script src="config.js"></script>
-  <script src="utils.js"></script>
-  <script src="app.js"></script>
-  <script src="auth.js"></script>
-  <script src="notifications.js"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const ROUTES = {
+      home: "home.html",
+      explore: "explore.html",
+      chats: "chats.html",
+      calls: "calls.html",
+      groups: "groups.html",
+      profile: "profile.html",
+      publicProfile: "public-profile.html",
+      notifications: "notifications.html",
+      chatRoom: "chat-room.html"
+    };
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    const noticeBox = document.getElementById("notice");
+    const backBtn = document.getElementById("backBtn");
+    const searchInput = document.getElementById("searchInput");
+    const notificationsList = document.getElementById("notificationsList");
+    const totalCountChip = document.getElementById("totalCountChip");
+    const unreadCountChip = document.getElementById("unreadCountChip");
+    const markAllReadBtn = document.getElementById("markAllReadBtn");
+    const filterButtons = [...document.querySelectorAll("[data-filter]")];
+
+    let currentUser = null;
+    let currentUserId = "";
+    let currentFilter = "all";
+    let allNotifications = [];
+    let realtimeChannel = null;
+
+    function showNotice(message, type = "error") {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+    }
+
+    function clearNotice() {
+      noticeBox.className = "notice";
+      noticeBox.textContent = "";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatDateTime(value) {
+      if (!value) return "";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "";
+      return d.toLocaleString([], {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function timeAgo(value) {
+      if (!value) return "";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "";
+      const diffMs = Date.now() - d.getTime();
+      const mins = Math.floor(diffMs / 60000);
+      if (mins < 1) return "Just now";
+      if (mins < 60) return `${mins} min ago`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${hours} hr ago`;
+      const days = Math.floor(hours / 24);
+      if (days < 7) return `${days} day ago`;
+      return formatDateTime(value);
+    }
+
+    function getNotificationType(notification = {}) {
+      const type = String(notification.type || notification.category || notification.kind || "general").toLowerCase();
+      return type;
+    }
+
+    function getNotificationTitle(notification = {}) {
+      return (
+        notification.title ||
+        notification.subject ||
+        notification.heading ||
+        "Notification"
+      );
+    }
+
+    function getNotificationBody(notification = {}) {
+      return (
+        notification.body ||
+        notification.message ||
+        notification.text ||
+        notification.content ||
+        "You have a new update."
+      );
+    }
+
+    function getNotificationReadState(notification = {}) {
+      return Boolean(notification.is_read || notification.read === true);
+    }
+
+    function getNotificationData(notification = {}) {
+      if (notification.data && typeof notification.data === "object") return notification.data;
+      try {
+        if (typeof notification.data === "string") return JSON.parse(notification.data);
+      } catch {}
+      return {};
+    }
+
+    function getNotificationIcon(type) {
+      if (type.includes("message") || type.includes("chat")) return "💬";
+      if (type.includes("publish") || type.includes("post")) return "📤";
+      if (type.includes("payment") || type.includes("wallet") || type.includes("fund")) return "💳";
+      if (type.includes("call")) return "📞";
+      if (type.includes("follow") || type.includes("profile")) return "👤";
+      if (type.includes("group")) return "👥";
+      return "🔔";
+    }
+
+    function getNotificationOpenLabel(type) {
+      if (type.includes("message") || type.includes("chat")) return "Open Chat";
+      if (type.includes("publish") || type.includes("post")) return "View Post";
+      if (type.includes("payment") || type.includes("wallet") || type.includes("fund")) return "Open Wallet";
+      if (type.includes("call")) return "Call Back";
+      if (type.includes("follow") || type.includes("profile")) return "Open Profile";
+      if (type.includes("group")) return "Open Group";
+      return "Open";
+    }
+
+    function getNotificationTarget(notification = {}) {
+      const type = getNotificationType(notification);
+      const data = getNotificationData(notification);
+
+      if (notification.url) return notification.url;
+      if (data.url) return data.url;
+
+      if ((type.includes("message") || type.includes("chat")) && (data.conversation_id || data.conversationId)) {
+        return `${ROUTES.chatRoom}?id=${encodeURIComponent(data.conversation_id || data.conversationId)}`;
+      }
+
+      if (type.includes("call")) {
+        const params = new URLSearchParams();
+        if (data.user_id || data.userId) params.set("user_id", data.user_id || data.userId);
+        if (data.conversation_id || data.conversationId) params.set("conversation_id", data.conversation_id || data.conversationId);
+        const qs = params.toString();
+        return qs ? `${ROUTES.calls}?${qs}` : ROUTES.calls;
+      }
+
+      if (type.includes("group")) {
+        return data.group_id || data.groupId
+          ? `${ROUTES.groups}?id=${encodeURIComponent(data.group_id || data.groupId)}`
+          : ROUTES.groups;
+      }
+
+      if (type.includes("follow") || type.includes("profile")) {
+        return data.user_id || data.userId
+          ? `${ROUTES.publicProfile}?id=${encodeURIComponent(data.user_id || data.userId)}`
+          : ROUTES.profile;
+      }
+
+      if (type.includes("payment") || type.includes("wallet") || type.includes("fund")) {
+        return ROUTES.profile;
+      }
+
+      return ROUTES.notifications;
+    }
+
+    function applyFilter(items) {
+      const term = searchInput.value.trim().toLowerCase();
+
+      return items.filter((item) => {
+        const type = getNotificationType(item);
+        const read = getNotificationReadState(item);
+        const title = getNotificationTitle(item).toLowerCase();
+        const body = getNotificationBody(item).toLowerCase();
+
+        const searchMatch = title.includes(term) || body.includes(term);
+
+        if (!searchMatch) return false;
+        if (currentFilter === "all") return true;
+        if (currentFilter === "unread") return !read;
+        if (currentFilter === "messages") return type.includes("message") || type.includes("chat");
+        if (currentFilter === "publishing") return type.includes("publish") || type.includes("post");
+        if (currentFilter === "payments") return type.includes("payment") || type.includes("wallet") || type.includes("fund");
+        if (currentFilter === "calls") return type.includes("call");
+        return true;
+      });
+    }
+
+    function updateStats() {
+      const unread = allNotifications.filter(item => !getNotificationReadState(item)).length;
+      totalCountChip.textContent = `${allNotifications.length} total`;
+      unreadCountChip.textContent = `${unread} unread`;
+    }
+
+    function renderNotifications() {
+      const filtered = applyFilter(allNotifications);
+
+      if (!filtered.length) {
+        notificationsList.innerHTML = `
+          <div class="empty-state">
+            <strong>No notifications found</strong>
+            You are all caught up for this filter.
+          </div>
+        `;
+        return;
+      }
+
+      notificationsList.innerHTML = filtered.map((item) => {
+        const type = getNotificationType(item);
+        const title = getNotificationTitle(item);
+        const body = getNotificationBody(item);
+        const isRead = getNotificationReadState(item);
+        const icon = getNotificationIcon(type);
+        const actionLabel = getNotificationOpenLabel(type);
+        const stamp = timeAgo(item.created_at || item.inserted_at || item.updated_at);
+
+        return `
+          <article class="notification-card ${isRead ? "" : "unread"}">
+            <div class="notification-left">
+              <div class="icon-box">${icon}</div>
+              <div class="notification-content">
+                <div class="notification-title-row">
+                  <div class="notification-title">${escapeHtml(title)}</div>
+                  <div class="notification-time" title="${escapeHtml(formatDateTime(item.created_at || item.updated_at))}">
+                    ${escapeHtml(stamp)}
+                  </div>
+                </div>
+
+                <div class="notification-body">${escapeHtml(body)}</div>
+
+                <div class="notification-meta">
+                  <span class="meta-tag">${escapeHtml(type)}</span>
+                  ${isRead ? `<span class="meta-tag">read</span>` : `<span class="meta-tag">unread</span>`}
+                </div>
+              </div>
+            </div>
+
+            <div class="notification-actions">
+              ${!isRead ? `<button class="mini-btn" type="button" onclick="markOneRead('${escapeHtml(item.id)}')">Mark Read</button>` : ``}
+              <button class="mini-btn primary" type="button" onclick="openNotification('${escapeHtml(item.id)}')">${escapeHtml(actionLabel)}</button>
+              <button class="mini-btn danger" type="button" onclick="dismissNotification('${escapeHtml(item.id)}')">Dismiss</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function getSessionWithRetry(maxWaitMs = 3000) {
+      const start = Date.now();
+      while (Date.now() - start < maxWaitMs) {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (data.session?.user) return data.session;
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      return null;
+    }
+
+    async function requireSession() {
+      const session = await getSessionWithRetry();
+      if (!session?.user) {
+        window.location.href = "login.html?next=notifications.html";
+        return null;
+      }
+      return session;
+    }
+
+    async function loadNotifications() {
+      clearNotice();
+      notificationsList.innerHTML = `<div class="empty-state"><span class="spinner"></span></div>`;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from("notifications")
+          .select("*")
+          .eq("user_id", currentUserId)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        allNotifications = data || [];
+        updateStats();
+        renderNotifications();
+      } catch (error) {
+        console.error("Load notifications error:", error);
+        allNotifications = [];
+        updateStats();
+        showNotice(error.message || "Could not load notifications.");
+        notificationsList.innerHTML = `
+          <div class="empty-state">
+            <strong>Could not load notifications</strong>
+            Please refresh and try again.
+          </div>
+        `;
+      }
+    }
+
+    async function markNotificationReadById(id) {
+      const { error } = await supabaseClient
+        .from("notifications")
+        .update({ is_read: true })
+        .eq("id", id)
+        .eq("user_id", currentUserId);
+
+      if (error) throw error;
+
+      allNotifications = allNotifications.map(item =>
+        item.id === id ? { ...item, is_read: true } : item
+      );
+      updateStats();
+      renderNotifications();
+    }
+
+    async function markAllRead() {
+      const unreadIds = allNotifications
+        .filter(item => !getNotificationReadState(item))
+        .map(item => item.id);
+
+      if (!unreadIds.length) {
+        showNotice("All notifications are already read.", "info");
+        return;
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from("notifications")
+          .update({ is_read: true })
+          .eq("user_id", currentUserId)
+          .eq("is_read", false);
+
+        if (error) throw error;
+
+        allNotifications = allNotifications.map(item => ({ ...item, is_read: true }));
+        updateStats();
+        renderNotifications();
+        showNotice("All notifications marked as read.", "success");
+      } catch (error) {
+        console.error("Mark all read error:", error);
+        showNotice(error.message || "Could not mark all as read.");
+      }
+    }
+
+    async function dismissNotificationById(id) {
+      try {
+        const { error } = await supabaseClient
+          .from("notifications")
+          .delete()
+          .eq("id", id)
+          .eq("user_id", currentUserId);
+
+        if (error) throw error;
+
+        allNotifications = allNotifications.filter(item => item.id !== id);
+        updateStats();
+        renderNotifications();
+        showNotice("Notification dismissed.", "success");
+      } catch (error) {
+        console.error("Dismiss notification error:", error);
+        showNotice(error.message || "Could not dismiss notification.");
+      }
+    }
+
+    async function openNotificationById(id) {
+      const item = allNotifications.find(n => n.id === id);
+      if (!item) return;
+
+      const isRead = getNotificationReadState(item);
+      if (!isRead) {
+        try {
+          await markNotificationReadById(id);
+        } catch {}
+      }
+
+      const target = getNotificationTarget(item);
+      if (target) {
+        window.location.href = target;
+      }
+    }
+
+    function setupRealtime() {
+      if (realtimeChannel) return;
+
+      realtimeChannel = supabaseClient
+        .channel("view-notifications-live")
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${currentUserId}`
+        }, async () => {
+          await loadNotifications();
+        })
+        .subscribe();
+    }
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        filterButtons.forEach(x => x.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.dataset.filter;
+        renderNotifications();
+      });
+    });
+
+    searchInput.addEventListener("input", renderNotifications);
+    markAllReadBtn.addEventListener("click", markAllRead);
+
+    backBtn.addEventListener("click", () => {
+      if (document.referrer && document.referrer.startsWith(window.location.origin)) {
+        window.history.back();
+      } else {
+        window.location.href = ROUTES.home;
+      }
+    });
+
+    window.markOneRead = async (id) => {
+      try {
+        await markNotificationReadById(id);
+        showNotice("Notification marked as read.", "success");
+      } catch (error) {
+        showNotice(error.message || "Could not mark notification as read.");
+      }
+    };
+
+    window.dismissNotification = async (id) => {
+      await dismissNotificationById(id);
+    };
+
+    window.openNotification = async (id) => {
+      await openNotificationById(id);
+    };
+
+    async function init() {
+      try {
+        const session = await requireSession();
+        if (!session?.user) return;
+
+        currentUser = session.user;
+        currentUserId = session.user.id;
+
+        await loadNotifications();
+        setupRealtime();
+      } catch (error) {
+        console.error("Init notifications error:", error);
+        showNotice(error.message || "Could not initialize notifications.");
+      }
+    }
+
+    init();
+  </script>
 </body>
 </html>
