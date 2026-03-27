@@ -2,15 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
   <title>Chat Room | View</title>
-  <meta name="theme-color" content="#07122a" />
+  <meta name="theme-color" content="#07122b" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    :root{
+      --bg:#061126;
+      --bg2:#0a1835;
+      --panel:rgba(255,255,255,.08);
+      --panel2:rgba(255,255,255,.05);
+      --stroke:rgba(255,255,255,.08);
+      --text:#f8fbff;
+      --muted:#9eb2cf;
+      --primary:#2d6bff;
+      --primary2:#5c8cff;
+      --green:#22c55e;
+      --danger:#ef4444;
+      --shadow:0 20px 50px rgba(0,0,0,.28);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:18px;
+      --radius-sm:14px;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Inter,Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
+        radial-gradient(circle at top left, rgba(0,255,200,.08), transparent 18%),
+        linear-gradient(180deg, #08142e 0%, #061126 52%, #050d1c 100%);
+      color:var(--text);
+    }
+
     body{
-      background:#07122a;
-      color:#fff;
+      padding-bottom:98px;
+    }
+
+    .wrap{
+      width:min(100%, 860px);
+      margin:0 auto;
       min-height:100vh;
       display:flex;
       flex-direction:column;
@@ -18,262 +61,256 @@
 
     .notice{
       display:none;
-      margin:14px 16px 0;
-      padding:12px 14px;
-      border-radius:14px;
+      margin:12px 16px 0;
+      padding:13px 15px;
+      border-radius:18px;
       font-size:14px;
       line-height:1.5;
+      border:1px solid transparent;
+      backdrop-filter:blur(10px);
     }
     .notice.show{display:block}
-    .notice.error{background:#3b1218;color:#fca5a5}
-    .notice.success{background:#0f2d20;color:#86efac}
-    .notice.info{background:#10233d;color:#93c5fd}
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:16px;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      background:#061127;
-      position:sticky;
-      top:0;
-      z-index:20;
+    .notice.error{
+      background:rgba(239,68,68,.12);
+      border-color:rgba(239,68,68,.25);
+      color:#ffdada;
+    }
+    .notice.success{
+      background:rgba(34,197,94,.12);
+      border-color:rgba(34,197,94,.25);
+      color:#ddffe7;
+    }
+    .notice.info{
+      background:rgba(45,107,255,.14);
+      border-color:rgba(45,107,255,.26);
+      color:#dbe8ff;
     }
 
-    .top-left{
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:30;
+      padding:12px 16px 10px;
+      backdrop-filter:blur(18px);
+      background:linear-gradient(180deg, rgba(5,13,28,.92), rgba(5,13,28,.72));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .topbar-row{
       display:flex;
       align-items:center;
       gap:12px;
-      min-width:0;
-      flex:1;
     }
 
     .icon-btn{
-      width:46px;
-      height:46px;
+      width:48px;
+      height:48px;
+      min-width:48px;
       border:none;
-      border-radius:14px;
-      background:rgba(255,255,255,.06);
+      border-radius:18px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.08);
       color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       font-size:20px;
+      cursor:pointer;
+      text-decoration:none;
+      box-shadow:0 10px 24px rgba(0,0,0,.16);
+    }
+
+    .chat-head{
+      flex:1;
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      overflow:hidden;
+    }
+
+    .avatar-wrap{
+      position:relative;
+      width:56px;
+      height:56px;
+      min-width:56px;
+    }
+
+    .avatar-btn{
+      width:56px;
+      height:56px;
+      border:none;
+      border-radius:50%;
+      overflow:hidden;
+      background:linear-gradient(135deg, var(--primary), #7da2ff);
+      color:#fff;
+      font-size:22px;
+      font-weight:900;
       display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
-      text-decoration:none;
-      flex-shrink:0;
+      box-shadow:0 12px 25px rgba(45,107,255,.25);
     }
 
-    .person{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-      flex:1;
-      text-decoration:none;
-      color:inherit;
-    }
-
-    .avatar{
-      width:54px;
-      height:54px;
-      min-width:54px;
-      border-radius:50%;
-      background:#1d4ed8;
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:22px;
-      font-weight:800;
-      overflow:hidden;
-    }
-    .avatar img{
+    .avatar-btn img{
       width:100%;
       height:100%;
       object-fit:cover;
       display:block;
     }
 
-    .meta{
-      min-width:0;
-      flex:1;
-    }
-
-    .name{
-      font-size:18px;
-      font-weight:800;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      margin-bottom:3px;
-    }
-
-    .status{
-      font-size:13px;
-      color:#9fb0c9;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .top-right{
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-
-    .reply-bar{
+    .online-dot{
+      position:absolute;
+      right:2px;
+      bottom:2px;
+      width:14px;
+      height:14px;
+      border-radius:50%;
+      background:var(--green);
+      border:2px solid #091530;
+      box-shadow:0 0 0 4px rgba(34,197,94,.10);
       display:none;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:10px 14px;
-      background:#0e1d3d;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      color:#dbeafe;
-      font-size:13px;
-      z-index:15;
     }
-    .reply-bar.show{display:flex}
-    .reply-content{
+    .online-dot.show{display:block}
+
+    .title-wrap{
       min-width:0;
       flex:1;
     }
-    .reply-label{
-      font-size:11px;
-      font-weight:800;
-      color:#60a5fa;
-      margin-bottom:2px;
+
+    .chat-title{
+      font-size:20px;
+      font-weight:900;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      margin-bottom:4px;
     }
-    .reply-text{
+
+    .chat-subtitle{
+      font-size:13px;
+      color:var(--muted);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .messages{
+    .head-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .messages-area{
       flex:1;
-      padding:16px;
-      overflow-y:auto;
       display:flex;
       flex-direction:column;
-      gap:12px;
-      padding-bottom:210px;
+      min-height:0;
+      padding:14px 16px 8px;
+    }
+
+    .messages-scroll{
+      flex:1;
+      min-height:0;
+      overflow:auto;
+      padding-bottom:12px;
       scroll-behavior:smooth;
     }
 
-    .empty-state{
-      margin:auto 0;
-      text-align:center;
-      color:#9fb0c9;
-      line-height:1.7;
-      padding:20px;
+    .day-divider{
+      display:flex;
+      justify-content:center;
+      margin:14px 0;
     }
 
-    .typing-banner{
-      align-self:flex-start;
-      background:#0d1b37;
-      color:#93c5fd;
-      font-size:12px;
-      padding:8px 12px;
+    .day-divider span{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.06);
-      display:none;
+      padding:7px 12px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+      backdrop-filter:blur(10px);
     }
-    .typing-banner.show{display:inline-flex}
 
     .message-row{
       display:flex;
-      flex-direction:column;
-      max-width:82%;
-      position:relative;
+      margin-bottom:12px;
     }
 
     .message-row.me{
-      align-self:flex-end;
-      align-items:flex-end;
+      justify-content:flex-end;
     }
 
-    .message-row.other{
-      align-self:flex-start;
-      align-items:flex-start;
+    .message-row.them{
+      justify-content:flex-start;
     }
 
     .bubble-wrap{
+      max-width:min(80%, 520px);
       display:flex;
       flex-direction:column;
-      gap:6px;
-      width:100%;
+      gap:5px;
     }
 
-    .reply-preview{
-      font-size:12px;
-      line-height:1.4;
-      padding:8px 10px;
-      border-radius:14px;
-      background:rgba(255,255,255,.07);
-      border-left:3px solid #60a5fa;
-      color:#dbeafe;
+    .sender-label{
+      font-size:11px;
+      color:var(--muted);
+      padding:0 8px;
     }
 
     .bubble{
-      border-radius:20px;
-      padding:12px 14px;
-      font-size:14px;
-      line-height:1.6;
-      white-space:pre-wrap;
-      word-break:break-word;
-      box-shadow:0 10px 30px rgba(0,0,0,.14);
-    }
-
-    .message-row.me .bubble{
-      background:#22c55e;
-      color:#07122a;
-      border-bottom-right-radius:6px;
-    }
-
-    .message-row.other .bubble{
-      background:#0d1b37;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.06);
-      border-bottom-left-radius:6px;
-    }
-
-    .bubble.deleted{
-      font-style:italic;
-      opacity:.75;
-    }
-
-    .message-media{
-      max-width:100%;
-      width:280px;
-      border-radius:16px;
-      margin-top:2px;
-      display:block;
-      object-fit:cover;
-      background:#000;
+      position:relative;
+      border-radius:22px;
+      padding:11px 13px 10px;
+      backdrop-filter:blur(14px);
+      box-shadow:0 14px 30px rgba(0,0,0,.14);
       border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+      word-wrap:break-word;
+      overflow-wrap:anywhere;
     }
 
-    .audio-player{
-      width:280px;
-      max-width:100%;
-      margin-top:4px;
+    .bubble.me{
+      background:linear-gradient(135deg, var(--primary), var(--primary2));
+      color:#fff;
+      border-bottom-right-radius:8px;
+    }
+
+    .bubble.them{
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      border-bottom-left-radius:8px;
+    }
+
+    .bubble-media{
+      width:100%;
+      border-radius:16px;
+      overflow:hidden;
+      margin-bottom:8px;
+      background:rgba(255,255,255,.06);
+    }
+
+    .bubble-media img,
+    .bubble-media video{
+      display:block;
+      width:100%;
+      max-height:360px;
+      object-fit:cover;
+      background:#0b1428;
     }
 
     .file-card{
       display:flex;
       align-items:center;
       gap:10px;
-      width:280px;
-      max-width:100%;
-      padding:12px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
       border-radius:16px;
-      background:#0d1b37;
-      border:1px solid rgba(255,255,255,.06);
+      padding:12px;
+      margin-bottom:8px;
       text-decoration:none;
       color:#fff;
     }
@@ -282,380 +319,479 @@
       width:42px;
       height:42px;
       min-width:42px;
-      border-radius:12px;
-      background:#1e3a8a;
+      border-radius:14px;
+      background:rgba(255,255,255,.12);
       display:flex;
       align-items:center;
       justify-content:center;
       font-size:18px;
     }
 
-    .file-meta{
-      min-width:0;
-      flex:1;
+    .bubble-text{
+      font-size:14.5px;
+      line-height:1.55;
+      white-space:pre-wrap;
     }
 
-    .file-name{
+    .bubble-meta{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:7px;
+      margin-top:7px;
+      font-size:11px;
+      opacity:.9;
+    }
+
+    .typing-bar{
+      min-height:24px;
+      display:flex;
+      align-items:center;
+      padding:0 6px 10px;
+      color:#7ef3a4;
       font-size:13px;
       font-weight:700;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
     }
 
-    .file-size{
-      font-size:11px;
-      color:#9fb0c9;
-      margin-top:4px;
-    }
-
-    .message-time{
-      font-size:11px;
-      color:#8ea0ba;
-      margin-top:4px;
-      padding:0 4px;
-      display:flex;
-      gap:6px;
-      align-items:center;
-    }
-
-    .ticks{
-      font-size:11px;
-      color:#9fb0c9;
-    }
-
-    .message-row.me .ticks.seen{
-      color:#60a5fa;
-    }
-
-    .edited-label{
-      font-size:11px;
-      color:#8ea0ba;
-    }
-
-    .highlight{
-      outline:2px solid #60a5fa;
-      border-radius:20px;
-      box-shadow:0 0 0 4px rgba(96,165,250,.12);
+    .typing-bar.hidden{
+      visibility:hidden;
     }
 
     .composer-shell{
-      position:fixed;
-      left:0;
-      right:0;
+      position:sticky;
       bottom:0;
-      background:#07122a;
-      border-top:1px solid rgba(255,255,255,.06);
       z-index:25;
-    }
-
-    .toolbar{
-      display:none;
-      gap:10px;
-      padding:10px 14px 0;
-      flex-wrap:wrap;
-    }
-    .toolbar.show{display:flex}
-
-    .tool-chip{
-      border:none;
-      border-radius:999px;
-      padding:10px 14px;
-      background:#0d1b37;
-      color:#dbeafe;
-      font-size:12px;
-      font-weight:700;
-      cursor:pointer;
-      border:1px solid rgba(255,255,255,.06);
-    }
-
-    .emoji-panel{
-      display:none;
-      padding:10px 14px 0;
-      flex-wrap:wrap;
-      gap:8px;
-    }
-    .emoji-panel.show{display:flex}
-    .emoji-btn{
-      width:42px;
-      height:42px;
-      border:none;
-      border-radius:12px;
-      background:#0d1b37;
-      color:#fff;
-      font-size:22px;
-      cursor:pointer;
-      border:1px solid rgba(255,255,255,.06);
+      padding:8px 12px calc(12px + env(safe-area-inset-bottom));
+      background:linear-gradient(180deg, rgba(5,13,28,.10), rgba(5,13,28,.92) 30%);
+      backdrop-filter:blur(18px);
     }
 
     .composer{
-      padding:12px 14px max(12px, env(safe-area-inset-bottom));
       display:flex;
       align-items:flex-end;
       gap:10px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:28px;
+      padding:10px;
+      box-shadow:var(--shadow);
     }
 
-    .composer-btn{
-      width:52px;
-      height:52px;
-      border:none;
-      border-radius:16px;
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      font-size:22px;
-      cursor:pointer;
+    .composer-side{
+      display:flex;
+      align-items:center;
+      gap:8px;
       flex-shrink:0;
     }
 
-    .composer-btn.active{
-      background:#1d4ed8;
+    .circle-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border:none;
+      border-radius:18px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      font-size:20px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
 
     .input-wrap{
       flex:1;
       min-width:0;
-      background:#0b1731;
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:20px;
-      padding:8px 14px;
       display:flex;
       align-items:flex-end;
-      gap:10px;
+      gap:8px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:22px;
+      padding:8px 10px;
     }
 
-    .composer-input{
+    textarea{
       flex:1;
-      min-height:40px;
-      max-height:110px;
+      min-height:24px;
+      max-height:120px;
       resize:none;
       border:none;
       outline:none;
       background:transparent;
       color:#fff;
-      font-size:16px;
+      font-size:15px;
       line-height:1.5;
+      padding:4px 2px;
     }
-    .composer-input::placeholder{color:#7f8ea7}
+
+    textarea::placeholder{
+      color:#94a8c8;
+    }
 
     .send-btn{
+      width:54px;
+      height:54px;
+      min-width:54px;
+      border:none;
+      border-radius:20px;
+      background:linear-gradient(135deg, #1ad96d, #12b65a);
+      color:#062012;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      font-weight:900;
+      box-shadow:0 16px 36px rgba(18,182,90,.32);
+    }
+
+    .send-btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    .empty{
+      min-height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      color:var(--muted);
+      padding:30px 20px;
+    }
+
+    .empty-card{
+      max-width:360px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:28px;
+      padding:26px 20px;
+      box-shadow:var(--shadow);
+    }
+
+    .empty-card h3{
+      font-size:22px;
+      margin-bottom:8px;
+      color:#fff;
+    }
+
+    .empty-card p{
+      line-height:1.7;
+      font-size:14px;
+    }
+
+    .sheet-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(3,8,20,.58);
+      backdrop-filter:blur(8px);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      z-index:120;
+      padding:12px;
+    }
+
+    .sheet-backdrop.show{
+      display:flex;
+    }
+
+    .sheet{
+      width:min(100%, 700px);
+      background:linear-gradient(180deg, #0a1835, #08142e);
+      border-radius:28px 28px 18px 18px;
+      border:1px solid rgba(255,255,255,.08);
+      padding:12px 14px 16px;
+      box-shadow:0 24px 70px rgba(0,0,0,.42);
+    }
+
+    .sheet-handle{
+      width:54px;
+      height:5px;
+      border-radius:999px;
+      background:rgba(255,255,255,.18);
+      margin:4px auto 14px;
+    }
+
+    .sheet-head{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .sheet-avatar{
       width:58px;
       height:58px;
-      border:none;
-      border-radius:18px;
-      background:#22c55e;
-      color:#07122a;
-      font-size:24px;
-      font-weight:800;
-      cursor:pointer;
-      flex-shrink:0;
-      box-shadow:0 10px 26px rgba(34,197,94,.25);
-    }
-
-    .context-menu{
-      position:fixed;
-      left:50%;
-      bottom:110px;
-      transform:translateX(-50%);
-      width:min(320px, calc(100% - 24px));
-      background:#0d1b37;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:22px;
-      box-shadow:0 20px 50px rgba(0,0,0,.35);
-      display:none;
-      flex-direction:column;
+      border-radius:50%;
       overflow:hidden;
-      z-index:40;
-    }
-    .context-menu.show{display:flex}
-
-    .context-btn{
-      border:none;
-      background:transparent;
+      background:linear-gradient(135deg, var(--primary), #7da2ff);
       color:#fff;
-      text-align:left;
-      padding:14px 16px;
-      font-size:14px;
-      cursor:pointer;
-      border-bottom:1px solid rgba(255,255,255,.06);
+      font-size:22px;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
-    .context-btn:last-child{border-bottom:none}
-    .context-btn.danger{color:#fca5a5}
 
-    .record-indicator{
+    .sheet-avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .sheet-title{
+      font-size:18px;
+      font-weight:900;
+      margin-bottom:4px;
+    }
+
+    .sheet-sub{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .sheet-actions{
+      display:grid;
+      gap:10px;
+    }
+
+    .sheet-action{
+      width:100%;
+      min-height:54px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:0 16px;
+      cursor:pointer;
+      text-decoration:none;
+      font-size:15px;
+      font-weight:700;
+    }
+
+    .sheet-action.danger{
+      color:#ffd8d8;
+      background:rgba(239,68,68,.10);
+      border-color:rgba(239,68,68,.18);
+    }
+
+    .upload-pill{
+      font-size:12px;
+      color:#cfe0ff;
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(45,107,255,.12);
+      border:1px solid rgba(45,107,255,.16);
       display:none;
+      margin:0 6px 8px;
+    }
+    .upload-pill.show{
+      display:inline-flex;
       align-items:center;
       gap:8px;
-      color:#fca5a5;
-      font-size:12px;
-      font-weight:700;
-      padding:0 14px 10px;
-    }
-    .record-indicator.show{display:flex}
-    .record-dot{
-      width:10px;
-      height:10px;
-      border-radius:50%;
-      background:#ef4444;
     }
 
-    @media(max-width:640px){
-      .name{font-size:16px}
-      .avatar{width:50px;height:50px;min-width:50px}
-      .icon-btn{width:44px;height:44px}
-      .composer-btn{width:48px;height:48px}
-      .send-btn{width:54px;height:54px}
+    .spinner{
+      width:18px;
+      height:18px;
+      border:2px solid rgba(255,255,255,.24);
+      border-top-color:#fff;
+      border-radius:50%;
+      display:inline-block;
+      animation:spin .8s linear infinite;
+    }
+
+    @keyframes spin{
+      to{transform:rotate(360deg)}
+    }
+
+    @media (max-width:640px){
+      .chat-title{
+        font-size:18px;
+      }
+      .icon-btn{
+        width:46px;
+        height:46px;
+        min-width:46px;
+      }
+      .bubble-wrap{
+        max-width:88%;
+      }
+      .head-actions .icon-btn:nth-child(2){
+        display:none;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="notice" class="notice"></div>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
 
-  <header class="topbar">
-    <div class="top-left">
-      <a class="icon-btn" href="chats.html" title="Back">←</a>
+    <header class="topbar">
+      <div class="topbar-row">
+        <button id="backBtn" class="icon-btn" type="button" aria-label="Back">←</button>
 
-      <a id="profileLink" class="person" href="profile.html">
-        <div id="headerAvatar" class="avatar">U</div>
-        <div class="meta">
-          <div id="headerName" class="name">User</div>
-          <div id="headerStatus" class="status">Loading...</div>
+        <div class="chat-head">
+          <div class="avatar-wrap">
+            <button id="profileBtn" class="avatar-btn" type="button" aria-label="Open profile">
+              U
+            </button>
+            <span id="onlineDot" class="online-dot"></span>
+          </div>
+
+          <div class="title-wrap">
+            <div id="chatTitle" class="chat-title">Loading...</div>
+            <div id="chatSubtitle" class="chat-subtitle">Connecting...</div>
+          </div>
         </div>
-      </a>
-    </div>
 
-    <div class="top-right">
-      <button id="voiceCallBtn" class="icon-btn" title="Voice Call">📞</button>
-      <button id="videoCallBtn" class="icon-btn" title="Video Call">🎥</button>
-      <button id="menuBtn" class="icon-btn" title="Menu">⋮</button>
-    </div>
-  </header>
+        <div class="head-actions">
+          <button id="callBtn" class="icon-btn" type="button" title="Call">📞</button>
+          <button id="videoBtn" class="icon-btn" type="button" title="Video">🎥</button>
+          <button id="menuBtn" class="icon-btn" type="button" title="More">⋮</button>
+        </div>
+      </div>
+    </header>
 
-  <div id="replyBar" class="reply-bar">
-    <div class="reply-content">
-      <div class="reply-label">Replying to</div>
-      <div id="replyBarText" class="reply-text"></div>
-    </div>
-    <button id="cancelReplyBtn" class="icon-btn" style="width:38px;height:38px;font-size:16px;">✕</button>
-  </div>
-
-  <main id="messages" class="messages">
-    <div id="typingBanner" class="typing-banner"></div>
-    <div class="empty-state">Loading conversation...</div>
-  </main>
-
-  <div class="composer-shell">
-    <div id="toolbar" class="toolbar">
-      <button class="tool-chip" id="gifUrlBtn">Send GIF URL</button>
-      <button class="tool-chip" id="stickerUrlBtn">Send Sticker URL</button>
-      <button class="tool-chip" id="startVoiceRecordBtn">Record Voice</button>
-      <button class="tool-chip" id="startVideoRecordBtn">Record Video</button>
-      <button class="tool-chip" id="voiceTypingBtn">Voice Typing</button>
-      <button class="tool-chip" id="clearEditBtn" style="display:none;">Cancel Edit</button>
-    </div>
-
-    <div id="emojiPanel" class="emoji-panel"></div>
-
-    <div id="recordIndicator" class="record-indicator">
-      <span class="record-dot"></span>
-      <span id="recordText">Recording...</span>
-    </div>
-
-    <form id="composerForm" class="composer">
-      <button type="button" id="emojiBtn" class="composer-btn" title="Emoji">😊</button>
-      <button type="button" id="attachBtn" class="composer-btn" title="Attach">📎</button>
-      <button type="button" id="imageBtn" class="composer-btn" title="Image">🖼️</button>
-
-      <div class="input-wrap">
-        <textarea id="messageInput" class="composer-input" rows="1" placeholder="Type a message..." enterkeyhint="enter"></textarea>
+    <div id="messagesArea" class="messages-area">
+      <div id="messagesScroll" class="messages-scroll">
+        <div class="empty">
+          <div class="empty-card">
+            <h3>Loading chat</h3>
+            <p>Please wait while we load your conversation.</p>
+          </div>
+        </div>
       </div>
 
-      <button id="sendBtn" class="send-btn" type="submit">➤</button>
+      <div id="typingBar" class="typing-bar hidden">Typing...</div>
 
-      <input id="fileInput" type="file" hidden />
-      <input id="imageInput" type="file" accept="image/*,video/*" hidden />
-    </form>
+      <div id="uploadPill" class="upload-pill">
+        <span class="spinner"></span>
+        <span id="uploadPillText">Uploading...</span>
+      </div>
+    </div>
+
+    <div class="composer-shell">
+      <form id="composerForm" class="composer">
+        <div class="composer-side">
+          <button id="emojiBtn" class="circle-btn" type="button" title="Emoji">😊</button>
+          <button id="attachBtn" class="circle-btn" type="button" title="Attach file">📎</button>
+          <input id="fileInput" class="hidden" type="file" />
+        </div>
+
+        <div class="input-wrap">
+          <textarea id="messageInput" rows="1" placeholder="Type a message..."></textarea>
+        </div>
+
+        <button id="sendBtn" class="send-btn" type="submit" aria-label="Send">➤</button>
+      </form>
+    </div>
   </div>
 
-  <div id="contextMenu" class="context-menu">
-    <button id="contextReplyBtn" class="context-btn">Reply</button>
-    <button id="contextEditBtn" class="context-btn">Edit</button>
-    <button id="contextDeleteBtn" class="context-btn danger">Delete</button>
-    <button id="contextCopyBtn" class="context-btn">Copy</button>
-    <button id="contextCloseBtn" class="context-btn">Close</button>
+  <div id="optionsSheetBackdrop" class="sheet-backdrop" onclick="closeOptionsSheet(event)">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+
+      <div class="sheet-head">
+        <div id="sheetAvatar" class="sheet-avatar">U</div>
+        <div>
+          <div id="sheetTitle" class="sheet-title">User</div>
+          <div id="sheetSub" class="sheet-sub">Chat options</div>
+        </div>
+      </div>
+
+      <div class="sheet-actions">
+        <a id="sheetProfileAction" class="sheet-action" href="#">
+          <span>View User Profile</span>
+          <span>↗</span>
+        </a>
+
+        <button id="sheetRefreshAction" class="sheet-action" type="button">
+          <span>Refresh Chat</span>
+          <span>↻</span>
+        </button>
+
+        <button id="sheetDeleteAction" class="sheet-action danger" type="button">
+          <span>Delete Chat</span>
+          <span>🗑️</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const CHAT_MEDIA_BUCKET = "chat-media";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
     });
 
-    const params = new URLSearchParams(window.location.search);
-    const conversationId = params.get("id") || params.get("conversation") || "";
-
     const noticeBox = document.getElementById("notice");
-    const messagesBox = document.getElementById("messages");
-    const profileLink = document.getElementById("profileLink");
-    const headerAvatar = document.getElementById("headerAvatar");
-    const headerName = document.getElementById("headerName");
-    const headerStatus = document.getElementById("headerStatus");
-    const voiceCallBtn = document.getElementById("voiceCallBtn");
-    const videoCallBtn = document.getElementById("videoCallBtn");
+    const backBtn = document.getElementById("backBtn");
+    const profileBtn = document.getElementById("profileBtn");
+    const onlineDot = document.getElementById("onlineDot");
+    const chatTitle = document.getElementById("chatTitle");
+    const chatSubtitle = document.getElementById("chatSubtitle");
+    const callBtn = document.getElementById("callBtn");
+    const videoBtn = document.getElementById("videoBtn");
+    const menuBtn = document.getElementById("menuBtn");
+    const messagesScroll = document.getElementById("messagesScroll");
+    const typingBar = document.getElementById("typingBar");
+    const uploadPill = document.getElementById("uploadPill");
+    const uploadPillText = document.getElementById("uploadPillText");
     const composerForm = document.getElementById("composerForm");
-    const messageInput = document.getElementById("messageInput");
     const emojiBtn = document.getElementById("emojiBtn");
     const attachBtn = document.getElementById("attachBtn");
-    const imageBtn = document.getElementById("imageBtn");
     const fileInput = document.getElementById("fileInput");
-    const imageInput = document.getElementById("imageInput");
-    const emojiPanel = document.getElementById("emojiPanel");
-    const typingBanner = document.getElementById("typingBanner");
-    const replyBar = document.getElementById("replyBar");
-    const replyBarText = document.getElementById("replyBarText");
-    const cancelReplyBtn = document.getElementById("cancelReplyBtn");
-    const toolbar = document.getElementById("toolbar");
-    const gifUrlBtn = document.getElementById("gifUrlBtn");
-    const stickerUrlBtn = document.getElementById("stickerUrlBtn");
-    const startVoiceRecordBtn = document.getElementById("startVoiceRecordBtn");
-    const startVideoRecordBtn = document.getElementById("startVideoRecordBtn");
-    const voiceTypingBtn = document.getElementById("voiceTypingBtn");
-    const clearEditBtn = document.getElementById("clearEditBtn");
-    const contextMenu = document.getElementById("contextMenu");
-    const contextReplyBtn = document.getElementById("contextReplyBtn");
-    const contextEditBtn = document.getElementById("contextEditBtn");
-    const contextDeleteBtn = document.getElementById("contextDeleteBtn");
-    const contextCopyBtn = document.getElementById("contextCopyBtn");
-    const contextCloseBtn = document.getElementById("contextCloseBtn");
-    const recordIndicator = document.getElementById("recordIndicator");
-    const recordText = document.getElementById("recordText");
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
 
+    const optionsSheetBackdrop = document.getElementById("optionsSheetBackdrop");
+    const sheetAvatar = document.getElementById("sheetAvatar");
+    const sheetTitle = document.getElementById("sheetTitle");
+    const sheetSub = document.getElementById("sheetSub");
+    const sheetProfileAction = document.getElementById("sheetProfileAction");
+    const sheetRefreshAction = document.getElementById("sheetRefreshAction");
+    const sheetDeleteAction = document.getElementById("sheetDeleteAction");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const conversationId = urlParams.get("id") || urlParams.get("conversation_id") || "";
+
+    let currentUser = null;
     let currentUserId = "";
-    let otherUserId = "";
-    let otherUserProfile = null;
-    let allMessages = [];
-    let messageMap = new Map();
-    let messagesChannel = null;
-    let typingChannel = null;
-    let presenceChannel = null;
-    let replyToMessage = null;
-    let editingMessage = null;
-    let typingTimeout = null;
-    let stopTypingTimeout = null;
-    let selectedMessage = null;
-    let mediaRecorder = null;
-    let mediaChunks = [];
-    let speechRecognition = null;
-    let recordMode = "";
-    let heartbeatId = null;
+    let currentConversation = null;
+    let currentMembers = [];
+    let currentMessages = [];
+    let otherUser = null;
+    let conversationIsGroup = false;
 
-    const QUICK_EMOJIS = ["😀","😂","😍","🔥","👍","🙏","🎉","❤️","😎","🥳","😢","😡","💯","👀","🤝","✅"];
+    let messagesChannel = null;
+    let presenceChannel = null;
+    let typingChannel = null;
+    let onlineUserIds = new Set();
+    let typingTimeout = null;
+    let otherTypingTimeout = null;
 
     function showNotice(message, type = "error") {
       noticeBox.className = `notice show ${type}`;
-      noticeBox.textContent = message;
+      noticeBox.textContent = message || "";
     }
 
     function clearNotice() {
@@ -664,7 +800,7 @@
     }
 
     function escapeHtml(value) {
-      return String(value || "")
+      return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -672,24 +808,240 @@
         .replace(/'/g, "&#039;");
     }
 
-    function nl2br(text) {
-      return escapeHtml(text).replace(/\n/g, "<br>");
+    function getInitial(name) {
+      const safe = String(name || "U").trim();
+      return safe ? safe.charAt(0).toUpperCase() : "U";
     }
 
-    function formatDate(value) {
+    function formatTime(value) {
       if (!value) return "";
-      try {
-        return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      } catch {
-        return "";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function formatDay(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+      const now = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(now.getDate() - 1);
+
+      if (date.toDateString() === now.toDateString()) return "Today";
+      if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+
+      return date.toLocaleDateString([], { day: "2-digit", month: "short", year: "numeric" });
+    }
+
+    function autoGrowTextarea() {
+      messageInput.style.height = "24px";
+      messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + "px";
+    }
+
+    function getProfileDisplayName(profile = {}, fallback = "User") {
+      const list = [
+        profile.full_name,
+        profile.display_name,
+        profile.username,
+        profile.name,
+        [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim()
+      ].filter(Boolean);
+
+      const value = list.find(Boolean);
+      return value ? String(value).trim() : fallback;
+    }
+
+    function getProfileAvatar(profile = {}) {
+      return profile.avatar_url || profile.profile_picture || profile.photo_url || profile.image_url || "";
+    }
+
+    function getMessageContent(message) {
+      return (
+        message.content ||
+        message.message ||
+        message.text ||
+        message.body ||
+        ""
+      );
+    }
+
+    function getMessageType(message) {
+      return message.message_type || message.type || "text";
+    }
+
+    function getMessageFileUrl(message) {
+      return message.file_url || message.media_url || message.attachment_url || "";
+    }
+
+    function getMessageFileName(message) {
+      return message.file_name || message.attachment_name || "Attachment";
+    }
+
+    function setTypingVisible(text = "Typing...") {
+      typingBar.textContent = text;
+      typingBar.classList.remove("hidden");
+    }
+
+    function hideTypingVisible() {
+      typingBar.textContent = "Typing...";
+      typingBar.classList.add("hidden");
+    }
+
+    function openOptionsSheet() {
+      if (!currentConversation) return;
+      const name = conversationIsGroup
+        ? (currentConversation.name || currentConversation.title || "Group")
+        : (otherUser?.name || "User");
+
+      const avatar = conversationIsGroup
+        ? (currentConversation.avatar_url || "")
+        : (otherUser?.avatar || "");
+
+      sheetAvatar.innerHTML = avatar
+        ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">`
+        : escapeHtml(getInitial(name));
+
+      sheetTitle.textContent = name;
+      sheetSub.textContent = conversationIsGroup
+        ? "Group conversation"
+        : (isOtherUserOnline() ? "Online now" : "Chat options");
+
+      if (conversationIsGroup) {
+        sheetProfileAction.href = `groups.html?id=${encodeURIComponent(conversationId)}`;
+        sheetProfileAction.querySelector("span").textContent = "Open Group";
+      } else {
+        sheetProfileAction.href = `public-profile.html?id=${encodeURIComponent(otherUser?.id || "")}`;
+        sheetProfileAction.querySelector("span").textContent = "View User Profile";
+      }
+
+      optionsSheetBackdrop.classList.add("show");
+    }
+
+    function closeOptionsSheet(event) {
+      if (event && event.target && event.target !== optionsSheetBackdrop) return;
+      optionsSheetBackdrop.classList.remove("show");
+    }
+
+    function isOtherUserOnline() {
+      if (!otherUser?.id) return false;
+      return onlineUserIds.has(otherUser.id);
+    }
+
+    function updateHeader() {
+      if (!currentConversation) {
+        chatTitle.textContent = "Chat";
+        chatSubtitle.textContent = "Unavailable";
+        profileBtn.textContent = "U";
+        onlineDot.classList.remove("show");
+        return;
+      }
+
+      if (conversationIsGroup) {
+        const groupName = currentConversation.name || currentConversation.title || "Group";
+        chatTitle.textContent = groupName;
+        chatSubtitle.textContent = `${currentMembers.length} member${currentMembers.length === 1 ? "" : "s"}`;
+
+        const avatar = currentConversation.avatar_url || "";
+        profileBtn.innerHTML = avatar
+          ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(groupName)}">`
+          : escapeHtml(getInitial(groupName));
+
+        onlineDot.classList.remove("show");
+      } else {
+        const name = otherUser?.name || "User";
+        const subtitle = isOtherUserOnline() ? "Online" : "Offline";
+        const avatar = otherUser?.avatar || "";
+
+        chatTitle.textContent = name;
+        chatSubtitle.textContent = subtitle;
+        profileBtn.innerHTML = avatar
+          ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">`
+          : escapeHtml(getInitial(name));
+
+        onlineDot.classList.toggle("show", isOtherUserOnline());
       }
     }
 
-    function fileSizeText(bytes) {
-      if (!bytes && bytes !== 0) return "";
-      if (bytes < 1024) return `${bytes} B`;
-      if (bytes < 1024 * 1024) return `${(bytes/1024).toFixed(1)} KB`;
-      return `${(bytes/(1024*1024)).toFixed(1)} MB`;
+    function renderMessages() {
+      if (!currentMessages.length) {
+        messagesScroll.innerHTML = `
+          <div class="empty">
+            <div class="empty-card">
+              <h3>No messages yet</h3>
+              <p>Start the conversation by sending your first message.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      let lastDay = "";
+      let html = "";
+
+      currentMessages.forEach(message => {
+        const senderId = message.sender_id || message.user_id || "";
+        const isMe = senderId === currentUserId;
+        const day = formatDay(message.created_at);
+        const type = getMessageType(message);
+        const text = getMessageContent(message);
+        const fileUrl = getMessageFileUrl(message);
+        const fileName = getMessageFileName(message);
+
+        if (day !== lastDay) {
+          html += `
+            <div class="day-divider">
+              <span>${escapeHtml(day)}</span>
+            </div>
+          `;
+          lastDay = day;
+        }
+
+        let mediaHtml = "";
+        if (type === "image" && fileUrl) {
+          mediaHtml = `
+            <div class="bubble-media">
+              <img src="${escapeHtml(fileUrl)}" alt="Image" />
+            </div>
+          `;
+        } else if (type === "video" && fileUrl) {
+          mediaHtml = `
+            <div class="bubble-media">
+              <video src="${escapeHtml(fileUrl)}" controls playsinline></video>
+            </div>
+          `;
+        } else if ((type === "file" || type === "document") && fileUrl) {
+          mediaHtml = `
+            <a class="file-card" href="${escapeHtml(fileUrl)}" target="_blank" rel="noopener">
+              <span class="file-icon">📎</span>
+              <div>
+                <div style="font-weight:800;font-size:13px;">${escapeHtml(fileName)}</div>
+                <div style="font-size:12px;color:#c2d2ec;">Tap to open</div>
+              </div>
+            </a>
+          `;
+        }
+
+        html += `
+          <div class="message-row ${isMe ? "me" : "them"}">
+            <div class="bubble-wrap">
+              ${conversationIsGroup && !isMe ? `<div class="sender-label">${escapeHtml(message.sender_name || "User")}</div>` : ""}
+              <div class="bubble ${isMe ? "me" : "them"}">
+                ${mediaHtml}
+                ${text ? `<div class="bubble-text">${escapeHtml(text)}</div>` : ""}
+                <div class="bubble-meta">
+                  <span>${escapeHtml(formatTime(message.created_at))}</span>
+                  ${isMe ? `<span>✓</span>` : ``}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      messagesScroll.innerHTML = html;
+      requestAnimationFrame(() => {
+        messagesScroll.scrollTop = messagesScroll.scrollHeight;
+      });
     }
 
     async function getSessionWithRetry(maxWaitMs = 3000) {
@@ -706,874 +1058,512 @@
     async function requireSession() {
       const session = await getSessionWithRetry();
       if (!session?.user) {
-        window.location.href = "login.html?next=" + encodeURIComponent(location.pathname + location.search);
+        window.location.href = `login.html?next=${encodeURIComponent(location.pathname + location.search)}`;
         return null;
       }
       return session;
     }
 
-    function setHeaderUser(profile) {
-      const name = profile?.username || profile?.full_name || "User";
-      const avatarUrl = profile?.avatar_url || "";
-      const initial = name.charAt(0).toUpperCase();
+    async function ensureMembership() {
+      const { data, error } = await supabaseClient
+        .from("conversation_members")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .eq("user_id", currentUserId)
+        .maybeSingle();
 
-      headerName.textContent = name;
-      profileLink.href = profile?.id ? `profile.html?user=${encodeURIComponent(profile.id)}` : "profile.html";
+      if (error) throw error;
+      return !!data;
+    }
 
-      if (avatarUrl) {
-        headerAvatar.innerHTML = `<img src="${avatarUrl}" alt="${escapeHtml(name)}">`;
-      } else {
-        headerAvatar.textContent = initial;
-      }
+    async function loadConversation() {
+      const { data, error } = await supabaseClient
+        .from("conversations")
+        .select("*")
+        .eq("id", conversationId)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) throw new Error("Conversation not found.");
+      currentConversation = data;
+      conversationIsGroup = !!(data.is_group || data.type === "group");
     }
 
     async function loadConversationMembers() {
-      if (!conversationId) throw new Error("Missing conversation id.");
-
       const { data, error } = await supabaseClient
         .from("conversation_members")
-        .select("user_id")
+        .select("*")
         .eq("conversation_id", conversationId);
 
       if (error) throw error;
-      if (!data || data.length < 2) throw new Error("Conversation members not found.");
+      currentMembers = data || [];
+    }
 
-      const other = data.find(member => member.user_id !== currentUserId);
-      if (!other) throw new Error("Other user not found.");
-
-      otherUserId = other.user_id;
-
-      const { data: profile, error: profileError } = await supabaseClient
+    async function loadProfiles(ids) {
+      if (!ids.length) return [];
+      const { data, error } = await supabaseClient
         .from("profiles")
-        .select("id, username, full_name, avatar_url")
-        .eq("id", otherUserId)
-        .maybeSingle();
+        .select("*")
+        .in("id", ids);
 
-      if (profileError) throw profileError;
-
-      otherUserProfile = profile || null;
-      setHeaderUser(otherUserProfile);
-    }
-
-    async function updatePresence(isOnline) {
-      if (!currentUserId) return;
-      await supabaseClient
-        .from("user_presence")
-        .upsert({
-          user_id: currentUserId,
-          is_online: isOnline,
-          last_seen: new Date().toISOString()
-        }, { onConflict: "user_id" });
-    }
-
-    async function loadOtherPresence() {
-      if (!otherUserId) return;
-
-      const { data } = await supabaseClient
-        .from("user_presence")
-        .select("is_online, last_seen")
-        .eq("user_id", otherUserId)
-        .maybeSingle();
-
-      if (data?.is_online) {
-        headerStatus.textContent = "Online";
-      } else if (data?.last_seen) {
-        const date = new Date(data.last_seen);
-        headerStatus.textContent = "Last seen " + date.toLocaleString();
-      } else {
-        headerStatus.textContent = "Offline";
+      if (error) {
+        console.warn("Profiles load warning:", error.message);
+        return [];
       }
-    }
-
-    async function loadTypingStatus() {
-      if (!otherUserId) return;
-      const { data } = await supabaseClient
-        .from("typing_status")
-        .select("is_typing")
-        .eq("conversation_id", conversationId)
-        .eq("user_id", otherUserId)
-        .maybeSingle();
-
-      if (data?.is_typing) {
-        typingBanner.textContent = `${otherUserProfile?.username || otherUserProfile?.full_name || "User"} is typing...`;
-        typingBanner.classList.add("show");
-      } else {
-        typingBanner.classList.remove("show");
-      }
-    }
-
-    async function setTyping(isTyping) {
-      if (!currentUserId || !conversationId) return;
-
-      await supabaseClient
-        .from("typing_status")
-        .upsert({
-          conversation_id: conversationId,
-          user_id: currentUserId,
-          is_typing: isTyping,
-          updated_at: new Date().toISOString()
-        }, { onConflict: "conversation_id,user_id" });
-    }
-
-    function buildReplyPreview(message) {
-      if (!message) return "";
-      const sender = message.sender_id === currentUserId ? "You" : (otherUserProfile?.username || otherUserProfile?.full_name || "User");
-      const text = message.deleted_at ? "Deleted message" : (message.message || message.file_name || message.message_type || "Attachment");
-      return `
-        <div class="reply-preview">
-          <strong>${escapeHtml(sender)}</strong><br>${escapeHtml(text).slice(0, 120)}
-        </div>
-      `;
-    }
-
-    function ticksForMessage(msg) {
-      if (msg.sender_id !== currentUserId) return "";
-      if (msg.seen_at) return `<span class="ticks seen">✓✓</span>`;
-      if (msg.delivered_at) return `<span class="ticks">✓✓</span>`;
-      return `<span class="ticks">✓</span>`;
-    }
-
-    function mediaBlock(msg) {
-      if (!msg.media_url) return "";
-
-      const type = msg.message_type || "";
-
-      if (type === "image" || type === "gif" || type === "sticker") {
-        return `<img class="message-media" src="${escapeHtml(msg.media_url)}" alt="media">`;
-      }
-
-      if (type === "video" || type === "video_note") {
-        return `<video class="message-media" controls playsinline src="${escapeHtml(msg.media_url)}"></video>`;
-      }
-
-      if (type === "audio" || type === "voice") {
-        return `<audio class="audio-player" controls src="${escapeHtml(msg.media_url)}"></audio>`;
-      }
-
-      return `
-        <a class="file-card" href="${escapeHtml(msg.media_url)}" target="_blank" rel="noopener">
-          <div class="file-icon">📄</div>
-          <div class="file-meta">
-            <div class="file-name">${escapeHtml(msg.file_name || "Attachment")}</div>
-            <div class="file-size">${escapeHtml(fileSizeText(msg.file_size || 0))}</div>
-          </div>
-        </a>
-      `;
-    }
-
-    function renderMessages() {
-      if (!allMessages.length) {
-        messagesBox.innerHTML = `
-          <div id="typingBanner" class="typing-banner ${typingBanner.classList.contains("show") ? "show" : ""}">${typingBanner.textContent}</div>
-          <div class="empty-state">
-            No messages yet.<br>
-            Say hello to start the conversation.
-          </div>
-        `;
-        return;
-      }
-
-      messagesBox.innerHTML = `
-        <div id="typingBanner" class="typing-banner ${typingBanner.classList.contains("show") ? "show" : ""}">${typingBanner.textContent}</div>
-        ${allMessages.map(msg => {
-          const isMe = msg.sender_id === currentUserId;
-          const side = isMe ? "me" : "other";
-          const replyTarget = msg.reply_to_message_id ? messageMap.get(msg.reply_to_message_id) : null;
-          const text = msg.deleted_at ? "This message was deleted." : (msg.message || "");
-          const edited = msg.edited_at ? `<span class="edited-label">edited</span>` : "";
-
-          return `
-            <div class="message-row ${side}" data-message-id="${msg.id}">
-              <div class="bubble-wrap">
-                ${replyTarget ? buildReplyPreview(replyTarget) : ""}
-                <div class="bubble ${msg.deleted_at ? "deleted" : ""}">
-                  ${text ? nl2br(text) : ""}
-                </div>
-                ${mediaBlock(msg)}
-                <div class="message-time">
-                  <span>${escapeHtml(formatDate(msg.created_at))}</span>
-                  ${edited}
-                  ${ticksForMessage(msg)}
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("")}
-      `;
-
-      attachMessageHoldHandlers();
-      const newTypingBanner = document.getElementById("typingBanner");
-      if (newTypingBanner) {
-        if (typingBanner.classList.contains("show")) newTypingBanner.classList.add("show");
-        newTypingBanner.textContent = typingBanner.textContent;
-      }
-    }
-
-    function scrollToBottom() {
-      requestAnimationFrame(() => {
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-      });
-    }
-
-    function setReply(message) {
-      replyToMessage = message;
-      replyBarText.textContent = message.message || message.file_name || message.message_type || "Attachment";
-      replyBar.classList.add("show");
-    }
-
-    function clearReply() {
-      replyToMessage = null;
-      replyBar.classList.remove("show");
-    }
-
-    function setEdit(message) {
-      editingMessage = message;
-      messageInput.value = message.message || "";
-      clearEditBtn.style.display = "inline-flex";
-      toolbar.classList.add("show");
-      autoResizeInput();
-      messageInput.focus();
-    }
-
-    function clearEdit() {
-      editingMessage = null;
-      clearEditBtn.style.display = "none";
-    }
-
-    function autoResizeInput() {
-      messageInput.style.height = "40px";
-      messageInput.style.height = Math.min(messageInput.scrollHeight, 110) + "px";
-    }
-
-    async function uploadFile(file, folder = "files") {
-      const ext = (file.name.split(".").pop() || "bin").toLowerCase();
-      const filePath = `${folder}/${currentUserId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-
-      const { error: uploadError } = await supabaseClient.storage
-        .from(CHAT_MEDIA_BUCKET)
-        .upload(filePath, file, { upsert: false });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabaseClient.storage
-        .from(CHAT_MEDIA_BUCKET)
-        .getPublicUrl(filePath);
-
-      return data.publicUrl;
+      return data || [];
     }
 
     async function loadMessages() {
       const { data, error } = await supabaseClient
         .from("messages")
-        .select(`
-          id, conversation_id, sender_id, receiver_id, message, media_url,
-          created_at, edited_at, deleted_at, message_type, reply_to_message_id,
-          file_name, file_size, duration_seconds, delivered_at, seen_at
-        `)
+        .select("*")
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
-
-      allMessages = data || [];
-      messageMap = new Map(allMessages.map(m => [m.id, m]));
-      renderMessages();
-      scrollToBottom();
-      await markDeliveredAndSeen();
+      currentMessages = data || [];
     }
 
-    async function markDeliveredAndSeen() {
-      if (!conversationId || !currentUserId) return;
+    async function hydrateConversationDetails() {
+      await loadConversation();
+      await loadConversationMembers();
 
-      const now = new Date().toISOString();
+      const memberIds = [...new Set(currentMembers.map(m => m.user_id).filter(Boolean))];
+      const profiles = await loadProfiles(memberIds);
+      const profileMap = new Map(profiles.map(p => [p.id, p]));
 
-      await supabaseClient
-        .from("messages")
-        .update({ delivered_at: now })
-        .eq("conversation_id", conversationId)
-        .eq("receiver_id", currentUserId)
-        .is("delivered_at", null);
-
-      await supabaseClient
-        .from("messages")
-        .update({ seen_at: now, delivered_at: now })
-        .eq("conversation_id", conversationId)
-        .eq("receiver_id", currentUserId)
-        .is("seen_at", null);
-    }
-
-    async function upsertMessage(data) {
-      const exists = allMessages.some(msg => msg.id === data.id);
-      if (!exists) {
-        allMessages.push(data);
+      if (conversationIsGroup) {
+        currentMessages = currentMessages.map(msg => {
+          const profile = profileMap.get(msg.sender_id) || {};
+          return {
+            ...msg,
+            sender_name: getProfileDisplayName(profile, "User")
+          };
+        });
       } else {
-        allMessages = allMessages.map(msg => msg.id === data.id ? data : msg);
+        const otherMember = currentMembers.find(m => m.user_id !== currentUserId);
+        const profile = profileMap.get(otherMember?.user_id) || {};
+        otherUser = {
+          id: otherMember?.user_id || "",
+          name: getProfileDisplayName(profile, "User"),
+          avatar: getProfileAvatar(profile)
+        };
       }
-      allMessages.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
-      messageMap = new Map(allMessages.map(m => [m.id, m]));
-      renderMessages();
-      scrollToBottom();
+
+      if (conversationIsGroup) {
+        if (!currentConversation.name && currentMembers.length) {
+          currentConversation.name = `Group (${currentMembers.length})`;
+        }
+      }
     }
 
-    async function sendMessage(event) {
-      event.preventDefault();
+    async function refreshAll() {
+      clearNotice();
 
-      const text = messageInput.value.trim();
-      if (!text && !replyToMessage && !editingMessage) return;
-      if (!otherUserId) return;
+      if (!conversationId) {
+        showNotice("Missing conversation ID.");
+        messagesScroll.innerHTML = `
+          <div class="empty">
+            <div class="empty-card">
+              <h3>Invalid chat link</h3>
+              <p>This conversation link is missing or broken.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const memberOkay = await ensureMembership();
+      if (!memberOkay) {
+        showNotice("You do not have access to this chat.");
+        messagesScroll.innerHTML = `
+          <div class="empty">
+            <div class="empty-card">
+              <h3>Access denied</h3>
+              <p>This conversation does not belong to you.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      await Promise.all([
+        loadMessages(),
+        loadConversation(),
+        loadConversationMembers()
+      ]);
+
+      const memberIds = [...new Set(currentMembers.map(m => m.user_id).filter(Boolean))];
+      const profiles = await loadProfiles(memberIds);
+      const profileMap = new Map(profiles.map(p => [p.id, p]));
+
+      if (conversationIsGroup) {
+        currentMessages = currentMessages.map(msg => {
+          const profile = profileMap.get(msg.sender_id) || {};
+          return {
+            ...msg,
+            sender_name: getProfileDisplayName(profile, "User")
+          };
+        });
+      } else {
+        const otherMember = currentMembers.find(m => m.user_id !== currentUserId);
+        const otherProfile = profileMap.get(otherMember?.user_id) || {};
+        otherUser = {
+          id: otherMember?.user_id || "",
+          name: getProfileDisplayName(otherProfile, "User"),
+          avatar: getProfileAvatar(otherProfile)
+        };
+      }
+
+      updateHeader();
+      renderMessages();
+    }
+
+    function detectFileType(file) {
+      if (!file) return "file";
+      if (file.type.startsWith("image/")) return "image";
+      if (file.type.startsWith("video/")) return "video";
+      return "file";
+    }
+
+    async function uploadAttachment(file) {
+      if (!file) return null;
+
+      const ext = (file.name.split(".").pop() || "bin").toLowerCase();
+      const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `${conversationId}/${safeName}`;
+
+      uploadPillText.textContent = `Uploading ${file.name}...`;
+      uploadPill.classList.add("show");
+
+      const { error: uploadError } = await supabaseClient
+        .storage
+        .from("chat-media")
+        .upload(path, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
+
+      if (uploadError) {
+        uploadPill.classList.remove("show");
+        throw uploadError;
+      }
+
+      const { data } = supabaseClient
+        .storage
+        .from("chat-media")
+        .getPublicUrl(path);
+
+      uploadPill.classList.remove("show");
+
+      return {
+        url: data?.publicUrl || "",
+        type: detectFileType(file),
+        name: file.name
+      };
+    }
+
+    async function sendMessage({ text = "", attachment = null }) {
+      const cleanText = String(text || "").trim();
+
+      if (!cleanText && !attachment) return;
+
+      sendBtn.disabled = true;
 
       try {
-        clearNotice();
-
-        if (editingMessage) {
-          const { data, error } = await supabaseClient
-            .from("messages")
-            .update({
-              message: text,
-              edited_at: new Date().toISOString()
-            })
-            .eq("id", editingMessage.id)
-            .eq("sender_id", currentUserId)
-            .select()
-            .single();
-
-          if (error) throw error;
-
-          await upsertMessage(data);
-          messageInput.value = "";
-          clearEdit();
-          autoResizeInput();
-          return;
-        }
-
-        const tempId = "temp_" + Date.now();
-        const optimisticMessage = {
-          id: tempId,
+        const payload = {
           conversation_id: conversationId,
           sender_id: currentUserId,
-          receiver_id: otherUserId,
-          message: text,
-          media_url: null,
-          created_at: new Date().toISOString(),
-          edited_at: null,
-          deleted_at: null,
-          message_type: "text",
-          reply_to_message_id: replyToMessage?.id || null,
-          file_name: null,
-          file_size: null,
-          duration_seconds: null,
-          delivered_at: null,
-          seen_at: null
+          content: cleanText || null,
+          created_at: new Date().toISOString()
         };
 
-        allMessages.push(optimisticMessage);
-        messageMap.set(tempId, optimisticMessage);
-        renderMessages();
-        scrollToBottom();
+        if (attachment) {
+          payload.file_url = attachment.url;
+          payload.message_type = attachment.type;
+          payload.file_name = attachment.name;
+        } else {
+          payload.message_type = "text";
+        }
+
+        const { error } = await supabaseClient
+          .from("messages")
+          .insert(payload);
+
+        if (error) throw error;
 
         messageInput.value = "";
-        autoResizeInput();
-        clearReply();
-        await setTyping(false);
-
-        const { data, error } = await supabaseClient
-          .from("messages")
-          .insert({
-            conversation_id: conversationId,
-            sender_id: currentUserId,
-            receiver_id: otherUserId,
-            message: text,
-            message_type: "text",
-            reply_to_message_id: replyToMessage?.id || null
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        allMessages = allMessages.map(msg => msg.id === tempId ? data : msg);
-        messageMap = new Map(allMessages.map(m => [m.id, m]));
-        renderMessages();
-        scrollToBottom();
+        fileInput.value = "";
+        autoGrowTextarea();
+        hideTypingVisible();
       } catch (error) {
-        allMessages = allMessages.filter(msg => !String(msg.id).startsWith("temp_"));
-        messageMap = new Map(allMessages.map(m => [m.id, m]));
-        renderMessages();
+        console.error("Send message error:", error);
         showNotice(error.message || "Could not send message.");
+      } finally {
+        sendBtn.disabled = false;
       }
     }
 
-    async function sendMediaMessage(url, messageType, extra = {}) {
-      const { data, error } = await supabaseClient
-        .from("messages")
-        .insert({
+    function broadcastTyping() {
+      if (!typingChannel) return;
+
+      typingChannel.send({
+        type: "broadcast",
+        event: "typing",
+        payload: {
           conversation_id: conversationId,
-          sender_id: currentUserId,
-          receiver_id: otherUserId,
-          message: extra.message || null,
-          media_url: url,
-          message_type: messageType,
-          reply_to_message_id: replyToMessage?.id || null,
-          file_name: extra.file_name || null,
-          file_size: extra.file_size || null,
-          duration_seconds: extra.duration_seconds || null
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      clearReply();
-      await upsertMessage(data);
-    }
-
-    async function handleFilePicked(file) {
-      if (!file) return;
-
-      try {
-        clearNotice();
-        const mime = file.type || "";
-        let type = "file";
-        let folder = "files";
-
-        if (mime.startsWith("image/")) {
-          type = "image";
-          folder = "images";
-        } else if (mime.startsWith("video/")) {
-          type = "video";
-          folder = "videos";
-        } else if (mime.startsWith("audio/")) {
-          type = "audio";
-          folder = "audio";
+          user_id: currentUserId,
+          at: new Date().toISOString()
         }
-
-        const url = await uploadFile(file, folder);
-        await sendMediaMessage(url, type, {
-          file_name: file.name,
-          file_size: file.size
-        });
-      } catch (error) {
-        showNotice(error.message || "Could not upload file.");
-      }
-    }
-
-    async function startVoiceRecording() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaChunks = [];
-        mediaRecorder = new MediaRecorder(stream);
-        recordMode = "voice";
-
-        mediaRecorder.ondataavailable = e => {
-          if (e.data.size > 0) mediaChunks.push(e.data);
-        };
-
-        mediaRecorder.onstop = async () => {
-          const blob = new Blob(mediaChunks, { type: "audio/webm" });
-          const file = new File([blob], `voice_${Date.now()}.webm`, { type: "audio/webm" });
-          stream.getTracks().forEach(track => track.stop());
-          recordIndicator.classList.remove("show");
-          try {
-            const url = await uploadFile(file, "voice");
-            await sendMediaMessage(url, "voice", {
-              file_name: file.name,
-              file_size: file.size
-            });
-          } catch (error) {
-            showNotice(error.message || "Could not send voice note.");
-          }
-        };
-
-        mediaRecorder.start();
-        recordIndicator.classList.add("show");
-        recordText.textContent = "Recording voice... tap again to stop";
-        startVoiceRecordBtn.textContent = "Stop Voice";
-        startVoiceRecordBtn.dataset.recording = "true";
-      } catch (error) {
-        showNotice(error.message || "Microphone access denied.");
-      }
-    }
-
-    async function startVideoRecording() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-        mediaChunks = [];
-        mediaRecorder = new MediaRecorder(stream);
-        recordMode = "video";
-
-        mediaRecorder.ondataavailable = e => {
-          if (e.data.size > 0) mediaChunks.push(e.data);
-        };
-
-        mediaRecorder.onstop = async () => {
-          const blob = new Blob(mediaChunks, { type: "video/webm" });
-          const file = new File([blob], `video_${Date.now()}.webm`, { type: "video/webm" });
-          stream.getTracks().forEach(track => track.stop());
-          recordIndicator.classList.remove("show");
-          try {
-            const url = await uploadFile(file, "recorded-video");
-            await sendMediaMessage(url, "video", {
-              file_name: file.name,
-              file_size: file.size
-            });
-          } catch (error) {
-            showNotice(error.message || "Could not send recorded video.");
-          }
-        };
-
-        mediaRecorder.start();
-        recordIndicator.classList.add("show");
-        recordText.textContent = "Recording video... tap again to stop";
-        startVideoRecordBtn.textContent = "Stop Video";
-        startVideoRecordBtn.dataset.recording = "true";
-      } catch (error) {
-        showNotice(error.message || "Camera access denied.");
-      }
-    }
-
-    function stopRecorder(button, defaultText) {
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-      }
-      button.textContent = defaultText;
-      button.dataset.recording = "";
-    }
-
-    function startVoiceTyping() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        showNotice("Voice typing is not supported on this device.");
-        return;
-      }
-
-      if (speechRecognition) {
-        speechRecognition.stop();
-        speechRecognition = null;
-        voiceTypingBtn.classList.remove("active");
-        return;
-      }
-
-      speechRecognition = new SpeechRecognition();
-      speechRecognition.lang = "en-US";
-      speechRecognition.interimResults = true;
-      speechRecognition.continuous = false;
-      voiceTypingBtn.classList.add("active");
-
-      speechRecognition.onresult = (event) => {
-        let transcript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
-        }
-        messageInput.value = transcript.trim();
-        autoResizeInput();
-      };
-
-      speechRecognition.onend = () => {
-        speechRecognition = null;
-        voiceTypingBtn.classList.remove("active");
-      };
-
-      speechRecognition.onerror = () => {
-        speechRecognition = null;
-        voiceTypingBtn.classList.remove("active");
-      };
-
-      speechRecognition.start();
-    }
-
-    function openContextMenu(message) {
-      selectedMessage = message;
-      contextMenu.classList.add("show");
-      contextEditBtn.style.display = message.sender_id === currentUserId && !message.deleted_at ? "block" : "none";
-      contextDeleteBtn.style.display = message.sender_id === currentUserId && !message.deleted_at ? "block" : "block";
-    }
-
-    function closeContextMenu() {
-      selectedMessage = null;
-      contextMenu.classList.remove("show");
-    }
-
-    function attachMessageHoldHandlers() {
-      const rows = document.querySelectorAll(".message-row");
-      rows.forEach(row => {
-        let timer = null;
-        const messageId = row.dataset.messageId;
-        const message = messageMap.get(messageId);
-
-        row.addEventListener("pointerdown", () => {
-          timer = setTimeout(() => {
-            openContextMenu(message);
-          }, 450);
-        });
-
-        ["pointerup","pointerleave","pointercancel"].forEach(evt => {
-          row.addEventListener(evt, () => {
-            clearTimeout(timer);
-          });
-        });
-
-        row.addEventListener("dblclick", () => {
-          setReply(message);
-          row.classList.add("highlight");
-          setTimeout(() => row.classList.remove("highlight"), 1200);
-        });
       });
     }
 
-    async function deleteSelectedMessage() {
-      if (!selectedMessage) return;
+    function setupTypingEvents() {
+      messageInput.addEventListener("input", () => {
+        autoGrowTextarea();
+        broadcastTyping();
+
+        if (typingTimeout) clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {}, 1600);
+      });
+    }
+
+    function setupRealtimeMessages() {
+      if (messagesChannel) return;
+
+      messagesChannel = supabaseClient
+        .channel(`chat-room-${conversationId}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`
+        }, async () => {
+          await refreshAll();
+        })
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "conversation_members",
+          filter: `conversation_id=eq.${conversationId}`
+        }, async () => {
+          await refreshAll();
+        })
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "profiles"
+        }, async () => {
+          await refreshAll();
+        })
+        .subscribe();
+    }
+
+    function setupTypingChannel() {
+      if (typingChannel) return;
+
+      typingChannel = supabaseClient.channel(`typing-${conversationId}`);
+
+      typingChannel
+        .on("broadcast", { event: "typing" }, ({ payload }) => {
+          if (!payload) return;
+          if (payload.conversation_id !== conversationId) return;
+          if (payload.user_id === currentUserId) return;
+
+          if (conversationIsGroup) {
+            setTypingVisible("Someone is typing...");
+          } else {
+            setTypingVisible(`${otherUser?.name || "User"} is typing...`);
+          }
+
+          if (otherTypingTimeout) clearTimeout(otherTypingTimeout);
+          otherTypingTimeout = setTimeout(() => {
+            hideTypingVisible();
+          }, 2200);
+        })
+        .subscribe();
+    }
+
+    function setupPresence() {
+      if (presenceChannel) return;
+
+      presenceChannel = supabaseClient.channel(`presence-chat-${conversationId}`, {
+        config: {
+          presence: {
+            key: currentUserId
+          }
+        }
+      });
+
+      presenceChannel
+        .on("presence", { event: "sync" }, () => {
+          const state = presenceChannel.presenceState();
+          const next = new Set();
+
+          Object.keys(state || {}).forEach(key => next.add(key));
+          onlineUserIds = next;
+          updateHeader();
+        })
+        .subscribe(async status => {
+          if (status === "SUBSCRIBED") {
+            await presenceChannel.track({
+              user_id: currentUserId,
+              conversation_id: conversationId,
+              online_at: new Date().toISOString()
+            });
+          }
+        });
+    }
+
+    async function deleteChatForMe() {
+      const confirmDelete = window.confirm("Delete this chat from your list?");
+      if (!confirmDelete) return;
+
       try {
-        const { data, error } = await supabaseClient
-          .from("messages")
-          .update({
-            message: null,
-            media_url: null,
-            deleted_at: new Date().toISOString()
-          })
-          .eq("id", selectedMessage.id)
-          .eq("sender_id", currentUserId)
-          .select()
-          .single();
+        const { error } = await supabaseClient
+          .from("conversation_members")
+          .delete()
+          .eq("conversation_id", conversationId)
+          .eq("user_id", currentUserId);
 
         if (error) throw error;
-        await upsertMessage(data);
-        closeContextMenu();
+
+        window.location.href = "chats.html";
       } catch (error) {
-        showNotice(error.message || "Could not delete message.");
+        console.error("Delete chat error:", error);
+        showNotice(error.message || "Could not delete chat.");
       }
     }
 
-    function subscribeRealtime() {
-      if (!conversationId) return;
+    backBtn.addEventListener("click", () => {
+      window.location.href = "chats.html";
+    });
 
-      if (!messagesChannel) {
-        messagesChannel = supabaseClient
-          .channel("chat-room-messages-" + conversationId)
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "messages",
-              filter: `conversation_id=eq.${conversationId}`
-            },
-            async (payload) => {
-              if (payload.eventType === "DELETE") return;
-              const row = payload.new;
-              if (!row) return;
-              await upsertMessage(row);
-              if (row.receiver_id === currentUserId) {
-                await markDeliveredAndSeen();
-              }
-            }
-          )
-          .subscribe();
+    profileBtn.addEventListener("click", () => {
+      if (conversationIsGroup) {
+        window.location.href = `groups.html?id=${encodeURIComponent(conversationId)}`;
+      } else if (otherUser?.id) {
+        window.location.href = `public-profile.html?id=${encodeURIComponent(otherUser.id)}`;
+      }
+    });
+
+    callBtn.addEventListener("click", () => {
+      if (conversationIsGroup) {
+        showNotice("Group calling page is not linked yet.", "info");
+        return;
+      }
+      if (!otherUser?.id) {
+        showNotice("User is not available for calling.", "info");
+        return;
+      }
+      window.location.href = `calls.html?user_id=${encodeURIComponent(otherUser.id)}&conversation_id=${encodeURIComponent(conversationId)}`;
+    });
+
+    videoBtn.addEventListener("click", () => {
+      if (conversationIsGroup) {
+        showNotice("Group video page is not linked yet.", "info");
+        return;
+      }
+      if (!otherUser?.id) {
+        showNotice("User is not available for video.", "info");
+        return;
+      }
+      window.location.href = `calls.html?mode=video&user_id=${encodeURIComponent(otherUser.id)}&conversation_id=${encodeURIComponent(conversationId)}`;
+    });
+
+    menuBtn.addEventListener("click", openOptionsSheet);
+    sheetRefreshAction.addEventListener("click", async () => {
+      closeOptionsSheet({ target: optionsSheetBackdrop });
+      await refreshAll();
+    });
+    sheetDeleteAction.addEventListener("click", async () => {
+      closeOptionsSheet({ target: optionsSheetBackdrop });
+      await deleteChatForMe();
+    });
+
+    composerForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const text = messageInput.value;
+
+      let attachment = null;
+      if (fileInput.files && fileInput.files[0]) {
+        try {
+          attachment = await uploadAttachment(fileInput.files[0]);
+        } catch (error) {
+          console.error("Upload error:", error);
+          showNotice(error.message || "Could not upload attachment.");
+          return;
+        }
       }
 
-      if (!typingChannel) {
-        typingChannel = supabaseClient
-          .channel("chat-room-typing-" + conversationId)
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "typing_status",
-              filter: `conversation_id=eq.${conversationId}`
-            },
-            async () => {
-              await loadTypingStatus();
-            }
-          )
-          .subscribe();
+      await sendMessage({ text, attachment });
+    });
+
+    attachBtn.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      showNotice(`${file.name} selected. Tap send to upload.`, "info");
+    });
+
+    emojiBtn.addEventListener("click", () => {
+      messageInput.value += "😊";
+      autoGrowTextarea();
+      messageInput.focus();
+      broadcastTyping();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeOptionsSheet({ target: optionsSheetBackdrop });
       }
-
-      if (!presenceChannel) {
-        presenceChannel = supabaseClient
-          .channel("chat-room-presence")
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "user_presence",
-              filter: `user_id=eq.${otherUserId}`
-            },
-            async () => {
-              await loadOtherPresence();
-            }
-          )
-          .subscribe();
-      }
-    }
-
-    function openVoiceCall() {
-      if (!otherUserId) return;
-      window.location.href = `call.html?conversation=${encodeURIComponent(conversationId)}&user=${encodeURIComponent(otherUserId)}&type=voice`;
-    }
-
-    function openVideoCall() {
-      if (!otherUserId) return;
-      window.location.href = `call.html?conversation=${encodeURIComponent(conversationId)}&user=${encodeURIComponent(otherUserId)}&type=video`;
-    }
-
-    function buildEmojiPanel() {
-      emojiPanel.innerHTML = QUICK_EMOJIS.map(emoji => {
-        return `<button class="emoji-btn" type="button" data-emoji="${emoji}">${emoji}</button>`;
-      }).join("");
-
-      emojiPanel.querySelectorAll(".emoji-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          messageInput.value += btn.dataset.emoji;
-          autoResizeInput();
-          messageInput.focus();
-        });
-      });
-    }
+    });
 
     async function init() {
       try {
-        clearNotice();
-        buildEmojiPanel();
-
-        if (!conversationId) throw new Error("Missing conversation id.");
-
         const session = await requireSession();
-        if (!session) return;
+        if (!session?.user) return;
 
+        currentUser = session.user;
         currentUserId = session.user.id;
 
-        await loadConversationMembers();
-        await loadOtherPresence();
-        await loadMessages();
-        subscribeRealtime();
+        if (!conversationId) {
+          showNotice("Conversation ID is missing.");
+          messagesScroll.innerHTML = `
+            <div class="empty">
+              <div class="empty-card">
+                <h3>Invalid conversation</h3>
+                <p>Open a chat from your chats list and try again.</p>
+              </div>
+            </div>
+          `;
+          return;
+        }
 
-        await updatePresence(true);
-        heartbeatId = setInterval(() => updatePresence(true), 25000);
-
-        window.addEventListener("beforeunload", () => {
-          updatePresence(false);
-          setTyping(false);
-        });
+        autoGrowTextarea();
+        await refreshAll();
+        setupRealtimeMessages();
+        setupTypingChannel();
+        setupPresence();
+        setupTypingEvents();
       } catch (error) {
-        showNotice(error.message || "Could not load chat room.");
-        messagesBox.innerHTML = `
-          <div class="empty-state">
-            ${escapeHtml(error.message || "Could not load chat room.")}
+        console.error("Chat init error:", error);
+        showNotice(error.message || "Could not load chat.");
+        messagesScroll.innerHTML = `
+          <div class="empty">
+            <div class="empty-card">
+              <h3>Could not load chat</h3>
+              <p>Please go back and try again.</p>
+            </div>
           </div>
         `;
       }
     }
 
-    composerForm.addEventListener("submit", sendMessage);
-
-    messageInput.addEventListener("input", async () => {
-      autoResizeInput();
-      toolbar.classList.add("show");
-
-      clearTimeout(typingTimeout);
-      clearTimeout(stopTypingTimeout);
-
-      typingTimeout = setTimeout(() => setTyping(true), 80);
-      stopTypingTimeout = setTimeout(() => setTyping(false), 1300);
-    });
-
-    messageInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" && !event.shiftKey && (event.ctrlKey || event.metaKey)) {
-        event.preventDefault();
-        composerForm.requestSubmit();
-      }
-    });
-
-    emojiBtn.addEventListener("click", () => {
-      emojiPanel.classList.toggle("show");
-      toolbar.classList.toggle("show", emojiPanel.classList.contains("show") || !!editingMessage);
-      emojiBtn.classList.toggle("active", emojiPanel.classList.contains("show"));
-    });
-
-    attachBtn.addEventListener("click", () => {
-      toolbar.classList.toggle("show");
-      attachBtn.classList.toggle("active", toolbar.classList.contains("show"));
-    });
-
-    imageBtn.addEventListener("click", () => imageInput.click());
-    fileInput.addEventListener("change", e => handleFilePicked(e.target.files[0]));
-    imageInput.addEventListener("change", e => handleFilePicked(e.target.files[0]));
-
-    attachBtn.addEventListener("dblclick", () => fileInput.click());
-
-    cancelReplyBtn.addEventListener("click", clearReply);
-    clearEditBtn.addEventListener("click", () => {
-      clearEdit();
-      messageInput.value = "";
-      autoResizeInput();
-    });
-
-    gifUrlBtn.addEventListener("click", async () => {
-      const url = prompt("Paste GIF URL");
-      if (!url) return;
-      try {
-        await sendMediaMessage(url, "gif");
-      } catch (error) {
-        showNotice(error.message || "Could not send GIF.");
-      }
-    });
-
-    stickerUrlBtn.addEventListener("click", async () => {
-      const url = prompt("Paste Sticker URL");
-      if (!url) return;
-      try {
-        await sendMediaMessage(url, "sticker");
-      } catch (error) {
-        showNotice(error.message || "Could not send sticker.");
-      }
-    });
-
-    startVoiceRecordBtn.addEventListener("click", () => {
-      if (startVoiceRecordBtn.dataset.recording === "true") {
-        stopRecorder(startVoiceRecordBtn, "Record Voice");
-      } else {
-        startVoiceRecording();
-      }
-    });
-
-    startVideoRecordBtn.addEventListener("click", () => {
-      if (startVideoRecordBtn.dataset.recording === "true") {
-        stopRecorder(startVideoRecordBtn, "Record Video");
-      } else {
-        startVideoRecording();
-      }
-    });
-
-    voiceTypingBtn.addEventListener("click", startVoiceTyping);
-
-    contextReplyBtn.addEventListener("click", () => {
-      if (selectedMessage) setReply(selectedMessage);
-      closeContextMenu();
-    });
-
-    contextEditBtn.addEventListener("click", () => {
-      if (selectedMessage) setEdit(selectedMessage);
-      closeContextMenu();
-    });
-
-    contextDeleteBtn.addEventListener("click", deleteSelectedMessage);
-
-    contextCopyBtn.addEventListener("click", async () => {
-      if (!selectedMessage) return;
-      try {
-        await navigator.clipboard.writeText(selectedMessage.message || "");
-        showNotice("Message copied.", "success");
-      } catch {}
-      closeContextMenu();
-    });
-
-    contextCloseBtn.addEventListener("click", closeContextMenu);
-    document.addEventListener("click", (e) => {
-      if (!contextMenu.contains(e.target)) closeContextMenu();
-    });
-
-    voiceCallBtn.addEventListener("click", openVoiceCall);
-    videoCallBtn.addEventListener("click", openVideoCall);
+    window.closeOptionsSheet = closeOptionsSheet;
 
     init();
   </script>
