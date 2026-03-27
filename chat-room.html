@@ -39,7 +39,7 @@
       background:#061127;
       position:sticky;
       top:0;
-      z-index:10;
+      z-index:20;
     }
 
     .top-left{
@@ -125,6 +125,35 @@
       align-items:center;
     }
 
+    .reply-bar{
+      display:none;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 14px;
+      background:#0e1d3d;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      color:#dbeafe;
+      font-size:13px;
+      z-index:15;
+    }
+    .reply-bar.show{display:flex}
+    .reply-content{
+      min-width:0;
+      flex:1;
+    }
+    .reply-label{
+      font-size:11px;
+      font-weight:800;
+      color:#60a5fa;
+      margin-bottom:2px;
+    }
+    .reply-text{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
     .messages{
       flex:1;
       padding:16px;
@@ -132,7 +161,8 @@
       display:flex;
       flex-direction:column;
       gap:12px;
-      padding-bottom:110px;
+      padding-bottom:210px;
+      scroll-behavior:smooth;
     }
 
     .empty-state{
@@ -143,10 +173,23 @@
       padding:20px;
     }
 
+    .typing-banner{
+      align-self:flex-start;
+      background:#0d1b37;
+      color:#93c5fd;
+      font-size:12px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.06);
+      display:none;
+    }
+    .typing-banner.show{display:inline-flex}
+
     .message-row{
       display:flex;
       flex-direction:column;
       max-width:82%;
+      position:relative;
     }
 
     .message-row.me{
@@ -157,6 +200,23 @@
     .message-row.other{
       align-self:flex-start;
       align-items:flex-start;
+    }
+
+    .bubble-wrap{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      width:100%;
+    }
+
+    .reply-preview{
+      font-size:12px;
+      line-height:1.4;
+      padding:8px 10px;
+      border-radius:14px;
+      background:rgba(255,255,255,.07);
+      border-left:3px solid #60a5fa;
+      color:#dbeafe;
     }
 
     .bubble{
@@ -182,36 +242,157 @@
       border-bottom-left-radius:6px;
     }
 
+    .bubble.deleted{
+      font-style:italic;
+      opacity:.75;
+    }
+
     .message-media{
       max-width:100%;
       width:280px;
       border-radius:16px;
-      margin-top:8px;
+      margin-top:2px;
       display:block;
       object-fit:cover;
       background:#000;
       border:1px solid rgba(255,255,255,.08);
     }
 
+    .audio-player{
+      width:280px;
+      max-width:100%;
+      margin-top:4px;
+    }
+
+    .file-card{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      width:280px;
+      max-width:100%;
+      padding:12px;
+      border-radius:16px;
+      background:#0d1b37;
+      border:1px solid rgba(255,255,255,.06);
+      text-decoration:none;
+      color:#fff;
+    }
+
+    .file-icon{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:12px;
+      background:#1e3a8a;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+    }
+
+    .file-meta{
+      min-width:0;
+      flex:1;
+    }
+
+    .file-name{
+      font-size:13px;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .file-size{
+      font-size:11px;
+      color:#9fb0c9;
+      margin-top:4px;
+    }
+
     .message-time{
       font-size:11px;
       color:#8ea0ba;
-      margin-top:5px;
+      margin-top:4px;
       padding:0 4px;
+      display:flex;
+      gap:6px;
+      align-items:center;
     }
 
-    .composer{
+    .ticks{
+      font-size:11px;
+      color:#9fb0c9;
+    }
+
+    .message-row.me .ticks.seen{
+      color:#60a5fa;
+    }
+
+    .edited-label{
+      font-size:11px;
+      color:#8ea0ba;
+    }
+
+    .highlight{
+      outline:2px solid #60a5fa;
+      border-radius:20px;
+      box-shadow:0 0 0 4px rgba(96,165,250,.12);
+    }
+
+    .composer-shell{
       position:fixed;
       left:0;
       right:0;
       bottom:0;
       background:#07122a;
       border-top:1px solid rgba(255,255,255,.06);
+      z-index:25;
+    }
+
+    .toolbar{
+      display:none;
+      gap:10px;
+      padding:10px 14px 0;
+      flex-wrap:wrap;
+    }
+    .toolbar.show{display:flex}
+
+    .tool-chip{
+      border:none;
+      border-radius:999px;
+      padding:10px 14px;
+      background:#0d1b37;
+      color:#dbeafe;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .emoji-panel{
+      display:none;
+      padding:10px 14px 0;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .emoji-panel.show{display:flex}
+    .emoji-btn{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:12px;
+      background:#0d1b37;
+      color:#fff;
+      font-size:22px;
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .composer{
       padding:12px 14px max(12px, env(safe-area-inset-bottom));
       display:flex;
-      align-items:center;
+      align-items:flex-end;
       gap:10px;
-      z-index:20;
     }
 
     .composer-btn{
@@ -226,18 +407,35 @@
       flex-shrink:0;
     }
 
+    .composer-btn.active{
+      background:#1d4ed8;
+    }
+
+    .input-wrap{
+      flex:1;
+      min-width:0;
+      background:#0b1731;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:20px;
+      padding:8px 14px;
+      display:flex;
+      align-items:flex-end;
+      gap:10px;
+    }
+
     .composer-input{
       flex:1;
-      min-height:56px;
+      min-height:40px;
+      max-height:110px;
+      resize:none;
       border:none;
       outline:none;
-      border-radius:20px;
-      padding:0 18px;
-      background:#0b1731;
+      background:transparent;
       color:#fff;
       font-size:16px;
-      border:1px solid rgba(255,255,255,.06);
+      line-height:1.5;
     }
+    .composer-input::placeholder{color:#7f8ea7}
 
     .send-btn{
       width:58px;
@@ -251,6 +449,53 @@
       cursor:pointer;
       flex-shrink:0;
       box-shadow:0 10px 26px rgba(34,197,94,.25);
+    }
+
+    .context-menu{
+      position:fixed;
+      left:50%;
+      bottom:110px;
+      transform:translateX(-50%);
+      width:min(320px, calc(100% - 24px));
+      background:#0d1b37;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:22px;
+      box-shadow:0 20px 50px rgba(0,0,0,.35);
+      display:none;
+      flex-direction:column;
+      overflow:hidden;
+      z-index:40;
+    }
+    .context-menu.show{display:flex}
+
+    .context-btn{
+      border:none;
+      background:transparent;
+      color:#fff;
+      text-align:left;
+      padding:14px 16px;
+      font-size:14px;
+      cursor:pointer;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .context-btn:last-child{border-bottom:none}
+    .context-btn.danger{color:#fca5a5}
+
+    .record-indicator{
+      display:none;
+      align-items:center;
+      gap:8px;
+      color:#fca5a5;
+      font-size:12px;
+      font-weight:700;
+      padding:0 14px 10px;
+    }
+    .record-indicator.show{display:flex}
+    .record-dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:#ef4444;
     }
 
     @media(max-width:640px){
@@ -285,32 +530,71 @@
     </div>
   </header>
 
+  <div id="replyBar" class="reply-bar">
+    <div class="reply-content">
+      <div class="reply-label">Replying to</div>
+      <div id="replyBarText" class="reply-text"></div>
+    </div>
+    <button id="cancelReplyBtn" class="icon-btn" style="width:38px;height:38px;font-size:16px;">✕</button>
+  </div>
+
   <main id="messages" class="messages">
+    <div id="typingBanner" class="typing-banner"></div>
     <div class="empty-state">Loading conversation...</div>
   </main>
 
-  <form id="composerForm" class="composer">
-    <button type="button" id="emojiBtn" class="composer-btn" title="Emoji">😊</button>
-    <button type="button" id="attachBtn" class="composer-btn" title="Attach">📎</button>
-    <button type="button" id="imageBtn" class="composer-btn" title="Image">🖼️</button>
-    <input id="messageInput" class="composer-input" type="text" placeholder="Type a message..." />
-    <button id="sendBtn" class="send-btn" type="submit">➤</button>
-  </form>
+  <div class="composer-shell">
+    <div id="toolbar" class="toolbar">
+      <button class="tool-chip" id="gifUrlBtn">Send GIF URL</button>
+      <button class="tool-chip" id="stickerUrlBtn">Send Sticker URL</button>
+      <button class="tool-chip" id="startVoiceRecordBtn">Record Voice</button>
+      <button class="tool-chip" id="startVideoRecordBtn">Record Video</button>
+      <button class="tool-chip" id="voiceTypingBtn">Voice Typing</button>
+      <button class="tool-chip" id="clearEditBtn" style="display:none;">Cancel Edit</button>
+    </div>
+
+    <div id="emojiPanel" class="emoji-panel"></div>
+
+    <div id="recordIndicator" class="record-indicator">
+      <span class="record-dot"></span>
+      <span id="recordText">Recording...</span>
+    </div>
+
+    <form id="composerForm" class="composer">
+      <button type="button" id="emojiBtn" class="composer-btn" title="Emoji">😊</button>
+      <button type="button" id="attachBtn" class="composer-btn" title="Attach">📎</button>
+      <button type="button" id="imageBtn" class="composer-btn" title="Image">🖼️</button>
+
+      <div class="input-wrap">
+        <textarea id="messageInput" class="composer-input" rows="1" placeholder="Type a message..." enterkeyhint="enter"></textarea>
+      </div>
+
+      <button id="sendBtn" class="send-btn" type="submit">➤</button>
+
+      <input id="fileInput" type="file" hidden />
+      <input id="imageInput" type="file" accept="image/*,video/*" hidden />
+    </form>
+  </div>
+
+  <div id="contextMenu" class="context-menu">
+    <button id="contextReplyBtn" class="context-btn">Reply</button>
+    <button id="contextEditBtn" class="context-btn">Edit</button>
+    <button id="contextDeleteBtn" class="context-btn danger">Delete</button>
+    <button id="contextCopyBtn" class="context-btn">Copy</button>
+    <button id="contextCloseBtn" class="context-btn">Close</button>
+  </div>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const CHAT_MEDIA_BUCKET = "chat-media";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
 
     const params = new URLSearchParams(window.location.search);
-    const conversationId = params.get("id");
+    const conversationId = params.get("id") || params.get("conversation") || "";
 
     const noticeBox = document.getElementById("notice");
     const messagesBox = document.getElementById("messages");
@@ -322,12 +606,52 @@
     const videoCallBtn = document.getElementById("videoCallBtn");
     const composerForm = document.getElementById("composerForm");
     const messageInput = document.getElementById("messageInput");
+    const emojiBtn = document.getElementById("emojiBtn");
+    const attachBtn = document.getElementById("attachBtn");
+    const imageBtn = document.getElementById("imageBtn");
+    const fileInput = document.getElementById("fileInput");
+    const imageInput = document.getElementById("imageInput");
+    const emojiPanel = document.getElementById("emojiPanel");
+    const typingBanner = document.getElementById("typingBanner");
+    const replyBar = document.getElementById("replyBar");
+    const replyBarText = document.getElementById("replyBarText");
+    const cancelReplyBtn = document.getElementById("cancelReplyBtn");
+    const toolbar = document.getElementById("toolbar");
+    const gifUrlBtn = document.getElementById("gifUrlBtn");
+    const stickerUrlBtn = document.getElementById("stickerUrlBtn");
+    const startVoiceRecordBtn = document.getElementById("startVoiceRecordBtn");
+    const startVideoRecordBtn = document.getElementById("startVideoRecordBtn");
+    const voiceTypingBtn = document.getElementById("voiceTypingBtn");
+    const clearEditBtn = document.getElementById("clearEditBtn");
+    const contextMenu = document.getElementById("contextMenu");
+    const contextReplyBtn = document.getElementById("contextReplyBtn");
+    const contextEditBtn = document.getElementById("contextEditBtn");
+    const contextDeleteBtn = document.getElementById("contextDeleteBtn");
+    const contextCopyBtn = document.getElementById("contextCopyBtn");
+    const contextCloseBtn = document.getElementById("contextCloseBtn");
+    const recordIndicator = document.getElementById("recordIndicator");
+    const recordText = document.getElementById("recordText");
 
     let currentUserId = "";
     let otherUserId = "";
     let otherUserProfile = null;
     let allMessages = [];
+    let messageMap = new Map();
     let messagesChannel = null;
+    let typingChannel = null;
+    let presenceChannel = null;
+    let replyToMessage = null;
+    let editingMessage = null;
+    let typingTimeout = null;
+    let stopTypingTimeout = null;
+    let selectedMessage = null;
+    let mediaRecorder = null;
+    let mediaChunks = [];
+    let speechRecognition = null;
+    let recordMode = "";
+    let heartbeatId = null;
+
+    const QUICK_EMOJIS = ["😀","😂","😍","🔥","👍","🙏","🎉","❤️","😎","🥳","😢","😡","💯","👀","🤝","✅"];
 
     function showNotice(message, type = "error") {
       noticeBox.className = `notice show ${type}`;
@@ -348,13 +672,24 @@
         .replace(/'/g, "&#039;");
     }
 
+    function nl2br(text) {
+      return escapeHtml(text).replace(/\n/g, "<br>");
+    }
+
     function formatDate(value) {
       if (!value) return "";
       try {
-        return new Date(value).toLocaleString();
+        return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       } catch {
         return "";
       }
+    }
+
+    function fileSizeText(bytes) {
+      if (!bytes && bytes !== 0) return "";
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes/1024).toFixed(1)} KB`;
+      return `${(bytes/(1024*1024)).toFixed(1)} MB`;
     }
 
     async function getSessionWithRetry(maxWaitMs = 3000) {
@@ -383,7 +718,6 @@
       const initial = name.charAt(0).toUpperCase();
 
       headerName.textContent = name;
-      headerStatus.textContent = "Online";
       profileLink.href = profile?.id ? `profile.html?user=${encodeURIComponent(profile.id)}` : "profile.html";
 
       if (avatarUrl) {
@@ -394,9 +728,7 @@
     }
 
     async function loadConversationMembers() {
-      if (!conversationId) {
-        throw new Error("Missing conversation id.");
-      }
+      if (!conversationId) throw new Error("Missing conversation id.");
 
       const { data, error } = await supabaseClient
         .from("conversation_members")
@@ -423,23 +755,116 @@
       setHeaderUser(otherUserProfile);
     }
 
-    async function loadMessages() {
-      const { data, error } = await supabaseClient
-        .from("messages")
-        .select("id, conversation_id, sender_id, receiver_id, message, media_url, created_at")
+    async function updatePresence(isOnline) {
+      if (!currentUserId) return;
+      await supabaseClient
+        .from("user_presence")
+        .upsert({
+          user_id: currentUserId,
+          is_online: isOnline,
+          last_seen: new Date().toISOString()
+        }, { onConflict: "user_id" });
+    }
+
+    async function loadOtherPresence() {
+      if (!otherUserId) return;
+
+      const { data } = await supabaseClient
+        .from("user_presence")
+        .select("is_online, last_seen")
+        .eq("user_id", otherUserId)
+        .maybeSingle();
+
+      if (data?.is_online) {
+        headerStatus.textContent = "Online";
+      } else if (data?.last_seen) {
+        const date = new Date(data.last_seen);
+        headerStatus.textContent = "Last seen " + date.toLocaleString();
+      } else {
+        headerStatus.textContent = "Offline";
+      }
+    }
+
+    async function loadTypingStatus() {
+      if (!otherUserId) return;
+      const { data } = await supabaseClient
+        .from("typing_status")
+        .select("is_typing")
         .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true });
+        .eq("user_id", otherUserId)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (data?.is_typing) {
+        typingBanner.textContent = `${otherUserProfile?.username || otherUserProfile?.full_name || "User"} is typing...`;
+        typingBanner.classList.add("show");
+      } else {
+        typingBanner.classList.remove("show");
+      }
+    }
 
-      allMessages = data || [];
-      renderMessages();
-      scrollToBottom();
+    async function setTyping(isTyping) {
+      if (!currentUserId || !conversationId) return;
+
+      await supabaseClient
+        .from("typing_status")
+        .upsert({
+          conversation_id: conversationId,
+          user_id: currentUserId,
+          is_typing: isTyping,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "conversation_id,user_id" });
+    }
+
+    function buildReplyPreview(message) {
+      if (!message) return "";
+      const sender = message.sender_id === currentUserId ? "You" : (otherUserProfile?.username || otherUserProfile?.full_name || "User");
+      const text = message.deleted_at ? "Deleted message" : (message.message || message.file_name || message.message_type || "Attachment");
+      return `
+        <div class="reply-preview">
+          <strong>${escapeHtml(sender)}</strong><br>${escapeHtml(text).slice(0, 120)}
+        </div>
+      `;
+    }
+
+    function ticksForMessage(msg) {
+      if (msg.sender_id !== currentUserId) return "";
+      if (msg.seen_at) return `<span class="ticks seen">✓✓</span>`;
+      if (msg.delivered_at) return `<span class="ticks">✓✓</span>`;
+      return `<span class="ticks">✓</span>`;
+    }
+
+    function mediaBlock(msg) {
+      if (!msg.media_url) return "";
+
+      const type = msg.message_type || "";
+
+      if (type === "image" || type === "gif" || type === "sticker") {
+        return `<img class="message-media" src="${escapeHtml(msg.media_url)}" alt="media">`;
+      }
+
+      if (type === "video" || type === "video_note") {
+        return `<video class="message-media" controls playsinline src="${escapeHtml(msg.media_url)}"></video>`;
+      }
+
+      if (type === "audio" || type === "voice") {
+        return `<audio class="audio-player" controls src="${escapeHtml(msg.media_url)}"></audio>`;
+      }
+
+      return `
+        <a class="file-card" href="${escapeHtml(msg.media_url)}" target="_blank" rel="noopener">
+          <div class="file-icon">📄</div>
+          <div class="file-meta">
+            <div class="file-name">${escapeHtml(msg.file_name || "Attachment")}</div>
+            <div class="file-size">${escapeHtml(fileSizeText(msg.file_size || 0))}</div>
+          </div>
+        </a>
+      `;
     }
 
     function renderMessages() {
       if (!allMessages.length) {
         messagesBox.innerHTML = `
+          <div id="typingBanner" class="typing-banner ${typingBanner.classList.contains("show") ? "show" : ""}">${typingBanner.textContent}</div>
           <div class="empty-state">
             No messages yet.<br>
             Say hello to start the conversation.
@@ -448,20 +873,40 @@
         return;
       }
 
-      messagesBox.innerHTML = allMessages.map(msg => {
-        const isMe = msg.sender_id === currentUserId;
-        const side = isMe ? "me" : "other";
-        const text = escapeHtml(msg.message || "");
-        const media = msg.media_url ? escapeHtml(msg.media_url) : "";
+      messagesBox.innerHTML = `
+        <div id="typingBanner" class="typing-banner ${typingBanner.classList.contains("show") ? "show" : ""}">${typingBanner.textContent}</div>
+        ${allMessages.map(msg => {
+          const isMe = msg.sender_id === currentUserId;
+          const side = isMe ? "me" : "other";
+          const replyTarget = msg.reply_to_message_id ? messageMap.get(msg.reply_to_message_id) : null;
+          const text = msg.deleted_at ? "This message was deleted." : (msg.message || "");
+          const edited = msg.edited_at ? `<span class="edited-label">edited</span>` : "";
 
-        return `
-          <div class="message-row ${side}">
-            <div class="bubble">${text || (media ? "Attachment" : "")}</div>
-            ${media ? `<img class="message-media" src="${media}" alt="Attachment">` : ""}
-            <div class="message-time">${escapeHtml(formatDate(msg.created_at))}</div>
-          </div>
-        `;
-      }).join("");
+          return `
+            <div class="message-row ${side}" data-message-id="${msg.id}">
+              <div class="bubble-wrap">
+                ${replyTarget ? buildReplyPreview(replyTarget) : ""}
+                <div class="bubble ${msg.deleted_at ? "deleted" : ""}">
+                  ${text ? nl2br(text) : ""}
+                </div>
+                ${mediaBlock(msg)}
+                <div class="message-time">
+                  <span>${escapeHtml(formatDate(msg.created_at))}</span>
+                  ${edited}
+                  ${ticksForMessage(msg)}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      `;
+
+      attachMessageHoldHandlers();
+      const newTypingBanner = document.getElementById("typingBanner");
+      if (newTypingBanner) {
+        if (typingBanner.classList.contains("show")) newTypingBanner.classList.add("show");
+        newTypingBanner.textContent = typingBanner.textContent;
+      }
     }
 
     function scrollToBottom() {
@@ -470,49 +915,495 @@
       });
     }
 
+    function setReply(message) {
+      replyToMessage = message;
+      replyBarText.textContent = message.message || message.file_name || message.message_type || "Attachment";
+      replyBar.classList.add("show");
+    }
+
+    function clearReply() {
+      replyToMessage = null;
+      replyBar.classList.remove("show");
+    }
+
+    function setEdit(message) {
+      editingMessage = message;
+      messageInput.value = message.message || "";
+      clearEditBtn.style.display = "inline-flex";
+      toolbar.classList.add("show");
+      autoResizeInput();
+      messageInput.focus();
+    }
+
+    function clearEdit() {
+      editingMessage = null;
+      clearEditBtn.style.display = "none";
+    }
+
+    function autoResizeInput() {
+      messageInput.style.height = "40px";
+      messageInput.style.height = Math.min(messageInput.scrollHeight, 110) + "px";
+    }
+
+    async function uploadFile(file, folder = "files") {
+      const ext = (file.name.split(".").pop() || "bin").toLowerCase();
+      const filePath = `${folder}/${currentUserId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { error: uploadError } = await supabaseClient.storage
+        .from(CHAT_MEDIA_BUCKET)
+        .upload(filePath, file, { upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabaseClient.storage
+        .from(CHAT_MEDIA_BUCKET)
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    }
+
+    async function loadMessages() {
+      const { data, error } = await supabaseClient
+        .from("messages")
+        .select(`
+          id, conversation_id, sender_id, receiver_id, message, media_url,
+          created_at, edited_at, deleted_at, message_type, reply_to_message_id,
+          file_name, file_size, duration_seconds, delivered_at, seen_at
+        `)
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+
+      allMessages = data || [];
+      messageMap = new Map(allMessages.map(m => [m.id, m]));
+      renderMessages();
+      scrollToBottom();
+      await markDeliveredAndSeen();
+    }
+
+    async function markDeliveredAndSeen() {
+      if (!conversationId || !currentUserId) return;
+
+      const now = new Date().toISOString();
+
+      await supabaseClient
+        .from("messages")
+        .update({ delivered_at: now })
+        .eq("conversation_id", conversationId)
+        .eq("receiver_id", currentUserId)
+        .is("delivered_at", null);
+
+      await supabaseClient
+        .from("messages")
+        .update({ seen_at: now, delivered_at: now })
+        .eq("conversation_id", conversationId)
+        .eq("receiver_id", currentUserId)
+        .is("seen_at", null);
+    }
+
+    async function upsertMessage(data) {
+      const exists = allMessages.some(msg => msg.id === data.id);
+      if (!exists) {
+        allMessages.push(data);
+      } else {
+        allMessages = allMessages.map(msg => msg.id === data.id ? data : msg);
+      }
+      allMessages.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+      messageMap = new Map(allMessages.map(m => [m.id, m]));
+      renderMessages();
+      scrollToBottom();
+    }
+
     async function sendMessage(event) {
       event.preventDefault();
 
-      const message = messageInput.value.trim();
-      if (!message) return;
+      const text = messageInput.value.trim();
+      if (!text && !replyToMessage && !editingMessage) return;
+      if (!otherUserId) return;
 
       try {
         clearNotice();
 
-        const { error } = await supabaseClient
+        if (editingMessage) {
+          const { data, error } = await supabaseClient
+            .from("messages")
+            .update({
+              message: text,
+              edited_at: new Date().toISOString()
+            })
+            .eq("id", editingMessage.id)
+            .eq("sender_id", currentUserId)
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          await upsertMessage(data);
+          messageInput.value = "";
+          clearEdit();
+          autoResizeInput();
+          return;
+        }
+
+        const tempId = "temp_" + Date.now();
+        const optimisticMessage = {
+          id: tempId,
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          receiver_id: otherUserId,
+          message: text,
+          media_url: null,
+          created_at: new Date().toISOString(),
+          edited_at: null,
+          deleted_at: null,
+          message_type: "text",
+          reply_to_message_id: replyToMessage?.id || null,
+          file_name: null,
+          file_size: null,
+          duration_seconds: null,
+          delivered_at: null,
+          seen_at: null
+        };
+
+        allMessages.push(optimisticMessage);
+        messageMap.set(tempId, optimisticMessage);
+        renderMessages();
+        scrollToBottom();
+
+        messageInput.value = "";
+        autoResizeInput();
+        clearReply();
+        await setTyping(false);
+
+        const { data, error } = await supabaseClient
           .from("messages")
           .insert({
             conversation_id: conversationId,
             sender_id: currentUserId,
             receiver_id: otherUserId,
-            message
-          });
+            message: text,
+            message_type: "text",
+            reply_to_message_id: replyToMessage?.id || null
+          })
+          .select()
+          .single();
 
         if (error) throw error;
 
-        messageInput.value = "";
+        allMessages = allMessages.map(msg => msg.id === tempId ? data : msg);
+        messageMap = new Map(allMessages.map(m => [m.id, m]));
+        renderMessages();
+        scrollToBottom();
       } catch (error) {
+        allMessages = allMessages.filter(msg => !String(msg.id).startsWith("temp_"));
+        messageMap = new Map(allMessages.map(m => [m.id, m]));
+        renderMessages();
         showNotice(error.message || "Could not send message.");
       }
     }
 
-    function subscribeRealtime() {
-      if (messagesChannel) return;
-
-      messagesChannel = supabaseClient
-        .channel("chat-room-live")
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "messages"
-        }, async (payload) => {
-          const row = payload.new || payload.old;
-          if (!row) return;
-          if (row.conversation_id !== conversationId) return;
-
-          await loadMessages();
+    async function sendMediaMessage(url, messageType, extra = {}) {
+      const { data, error } = await supabaseClient
+        .from("messages")
+        .insert({
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          receiver_id: otherUserId,
+          message: extra.message || null,
+          media_url: url,
+          message_type: messageType,
+          reply_to_message_id: replyToMessage?.id || null,
+          file_name: extra.file_name || null,
+          file_size: extra.file_size || null,
+          duration_seconds: extra.duration_seconds || null
         })
-        .subscribe();
+        .select()
+        .single();
+
+      if (error) throw error;
+      clearReply();
+      await upsertMessage(data);
+    }
+
+    async function handleFilePicked(file) {
+      if (!file) return;
+
+      try {
+        clearNotice();
+        const mime = file.type || "";
+        let type = "file";
+        let folder = "files";
+
+        if (mime.startsWith("image/")) {
+          type = "image";
+          folder = "images";
+        } else if (mime.startsWith("video/")) {
+          type = "video";
+          folder = "videos";
+        } else if (mime.startsWith("audio/")) {
+          type = "audio";
+          folder = "audio";
+        }
+
+        const url = await uploadFile(file, folder);
+        await sendMediaMessage(url, type, {
+          file_name: file.name,
+          file_size: file.size
+        });
+      } catch (error) {
+        showNotice(error.message || "Could not upload file.");
+      }
+    }
+
+    async function startVoiceRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        recordMode = "voice";
+
+        mediaRecorder.ondataavailable = e => {
+          if (e.data.size > 0) mediaChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(mediaChunks, { type: "audio/webm" });
+          const file = new File([blob], `voice_${Date.now()}.webm`, { type: "audio/webm" });
+          stream.getTracks().forEach(track => track.stop());
+          recordIndicator.classList.remove("show");
+          try {
+            const url = await uploadFile(file, "voice");
+            await sendMediaMessage(url, "voice", {
+              file_name: file.name,
+              file_size: file.size
+            });
+          } catch (error) {
+            showNotice(error.message || "Could not send voice note.");
+          }
+        };
+
+        mediaRecorder.start();
+        recordIndicator.classList.add("show");
+        recordText.textContent = "Recording voice... tap again to stop";
+        startVoiceRecordBtn.textContent = "Stop Voice";
+        startVoiceRecordBtn.dataset.recording = "true";
+      } catch (error) {
+        showNotice(error.message || "Microphone access denied.");
+      }
+    }
+
+    async function startVideoRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        mediaChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        recordMode = "video";
+
+        mediaRecorder.ondataavailable = e => {
+          if (e.data.size > 0) mediaChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(mediaChunks, { type: "video/webm" });
+          const file = new File([blob], `video_${Date.now()}.webm`, { type: "video/webm" });
+          stream.getTracks().forEach(track => track.stop());
+          recordIndicator.classList.remove("show");
+          try {
+            const url = await uploadFile(file, "recorded-video");
+            await sendMediaMessage(url, "video", {
+              file_name: file.name,
+              file_size: file.size
+            });
+          } catch (error) {
+            showNotice(error.message || "Could not send recorded video.");
+          }
+        };
+
+        mediaRecorder.start();
+        recordIndicator.classList.add("show");
+        recordText.textContent = "Recording video... tap again to stop";
+        startVideoRecordBtn.textContent = "Stop Video";
+        startVideoRecordBtn.dataset.recording = "true";
+      } catch (error) {
+        showNotice(error.message || "Camera access denied.");
+      }
+    }
+
+    function stopRecorder(button, defaultText) {
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+      }
+      button.textContent = defaultText;
+      button.dataset.recording = "";
+    }
+
+    function startVoiceTyping() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        showNotice("Voice typing is not supported on this device.");
+        return;
+      }
+
+      if (speechRecognition) {
+        speechRecognition.stop();
+        speechRecognition = null;
+        voiceTypingBtn.classList.remove("active");
+        return;
+      }
+
+      speechRecognition = new SpeechRecognition();
+      speechRecognition.lang = "en-US";
+      speechRecognition.interimResults = true;
+      speechRecognition.continuous = false;
+      voiceTypingBtn.classList.add("active");
+
+      speechRecognition.onresult = (event) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        messageInput.value = transcript.trim();
+        autoResizeInput();
+      };
+
+      speechRecognition.onend = () => {
+        speechRecognition = null;
+        voiceTypingBtn.classList.remove("active");
+      };
+
+      speechRecognition.onerror = () => {
+        speechRecognition = null;
+        voiceTypingBtn.classList.remove("active");
+      };
+
+      speechRecognition.start();
+    }
+
+    function openContextMenu(message) {
+      selectedMessage = message;
+      contextMenu.classList.add("show");
+      contextEditBtn.style.display = message.sender_id === currentUserId && !message.deleted_at ? "block" : "none";
+      contextDeleteBtn.style.display = message.sender_id === currentUserId && !message.deleted_at ? "block" : "block";
+    }
+
+    function closeContextMenu() {
+      selectedMessage = null;
+      contextMenu.classList.remove("show");
+    }
+
+    function attachMessageHoldHandlers() {
+      const rows = document.querySelectorAll(".message-row");
+      rows.forEach(row => {
+        let timer = null;
+        const messageId = row.dataset.messageId;
+        const message = messageMap.get(messageId);
+
+        row.addEventListener("pointerdown", () => {
+          timer = setTimeout(() => {
+            openContextMenu(message);
+          }, 450);
+        });
+
+        ["pointerup","pointerleave","pointercancel"].forEach(evt => {
+          row.addEventListener(evt, () => {
+            clearTimeout(timer);
+          });
+        });
+
+        row.addEventListener("dblclick", () => {
+          setReply(message);
+          row.classList.add("highlight");
+          setTimeout(() => row.classList.remove("highlight"), 1200);
+        });
+      });
+    }
+
+    async function deleteSelectedMessage() {
+      if (!selectedMessage) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from("messages")
+          .update({
+            message: null,
+            media_url: null,
+            deleted_at: new Date().toISOString()
+          })
+          .eq("id", selectedMessage.id)
+          .eq("sender_id", currentUserId)
+          .select()
+          .single();
+
+        if (error) throw error;
+        await upsertMessage(data);
+        closeContextMenu();
+      } catch (error) {
+        showNotice(error.message || "Could not delete message.");
+      }
+    }
+
+    function subscribeRealtime() {
+      if (!conversationId) return;
+
+      if (!messagesChannel) {
+        messagesChannel = supabaseClient
+          .channel("chat-room-messages-" + conversationId)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "messages",
+              filter: `conversation_id=eq.${conversationId}`
+            },
+            async (payload) => {
+              if (payload.eventType === "DELETE") return;
+              const row = payload.new;
+              if (!row) return;
+              await upsertMessage(row);
+              if (row.receiver_id === currentUserId) {
+                await markDeliveredAndSeen();
+              }
+            }
+          )
+          .subscribe();
+      }
+
+      if (!typingChannel) {
+        typingChannel = supabaseClient
+          .channel("chat-room-typing-" + conversationId)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "typing_status",
+              filter: `conversation_id=eq.${conversationId}`
+            },
+            async () => {
+              await loadTypingStatus();
+            }
+          )
+          .subscribe();
+      }
+
+      if (!presenceChannel) {
+        presenceChannel = supabaseClient
+          .channel("chat-room-presence")
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "user_presence",
+              filter: `user_id=eq.${otherUserId}`
+            },
+            async () => {
+              await loadOtherPresence();
+            }
+          )
+          .subscribe();
+      }
     }
 
     function openVoiceCall() {
@@ -525,13 +1416,26 @@
       window.location.href = `call.html?conversation=${encodeURIComponent(conversationId)}&user=${encodeURIComponent(otherUserId)}&type=video`;
     }
 
+    function buildEmojiPanel() {
+      emojiPanel.innerHTML = QUICK_EMOJIS.map(emoji => {
+        return `<button class="emoji-btn" type="button" data-emoji="${emoji}">${emoji}</button>`;
+      }).join("");
+
+      emojiPanel.querySelectorAll(".emoji-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          messageInput.value += btn.dataset.emoji;
+          autoResizeInput();
+          messageInput.focus();
+        });
+      });
+    }
+
     async function init() {
       try {
         clearNotice();
+        buildEmojiPanel();
 
-        if (!conversationId) {
-          throw new Error("Missing conversation id.");
-        }
+        if (!conversationId) throw new Error("Missing conversation id.");
 
         const session = await requireSession();
         if (!session) return;
@@ -539,8 +1443,17 @@
         currentUserId = session.user.id;
 
         await loadConversationMembers();
+        await loadOtherPresence();
         await loadMessages();
         subscribeRealtime();
+
+        await updatePresence(true);
+        heartbeatId = setInterval(() => updatePresence(true), 25000);
+
+        window.addEventListener("beforeunload", () => {
+          updatePresence(false);
+          setTyping(false);
+        });
       } catch (error) {
         showNotice(error.message || "Could not load chat room.");
         messagesBox.innerHTML = `
@@ -552,6 +1465,113 @@
     }
 
     composerForm.addEventListener("submit", sendMessage);
+
+    messageInput.addEventListener("input", async () => {
+      autoResizeInput();
+      toolbar.classList.add("show");
+
+      clearTimeout(typingTimeout);
+      clearTimeout(stopTypingTimeout);
+
+      typingTimeout = setTimeout(() => setTyping(true), 80);
+      stopTypingTimeout = setTimeout(() => setTyping(false), 1300);
+    });
+
+    messageInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        composerForm.requestSubmit();
+      }
+    });
+
+    emojiBtn.addEventListener("click", () => {
+      emojiPanel.classList.toggle("show");
+      toolbar.classList.toggle("show", emojiPanel.classList.contains("show") || !!editingMessage);
+      emojiBtn.classList.toggle("active", emojiPanel.classList.contains("show"));
+    });
+
+    attachBtn.addEventListener("click", () => {
+      toolbar.classList.toggle("show");
+      attachBtn.classList.toggle("active", toolbar.classList.contains("show"));
+    });
+
+    imageBtn.addEventListener("click", () => imageInput.click());
+    fileInput.addEventListener("change", e => handleFilePicked(e.target.files[0]));
+    imageInput.addEventListener("change", e => handleFilePicked(e.target.files[0]));
+
+    attachBtn.addEventListener("dblclick", () => fileInput.click());
+
+    cancelReplyBtn.addEventListener("click", clearReply);
+    clearEditBtn.addEventListener("click", () => {
+      clearEdit();
+      messageInput.value = "";
+      autoResizeInput();
+    });
+
+    gifUrlBtn.addEventListener("click", async () => {
+      const url = prompt("Paste GIF URL");
+      if (!url) return;
+      try {
+        await sendMediaMessage(url, "gif");
+      } catch (error) {
+        showNotice(error.message || "Could not send GIF.");
+      }
+    });
+
+    stickerUrlBtn.addEventListener("click", async () => {
+      const url = prompt("Paste Sticker URL");
+      if (!url) return;
+      try {
+        await sendMediaMessage(url, "sticker");
+      } catch (error) {
+        showNotice(error.message || "Could not send sticker.");
+      }
+    });
+
+    startVoiceRecordBtn.addEventListener("click", () => {
+      if (startVoiceRecordBtn.dataset.recording === "true") {
+        stopRecorder(startVoiceRecordBtn, "Record Voice");
+      } else {
+        startVoiceRecording();
+      }
+    });
+
+    startVideoRecordBtn.addEventListener("click", () => {
+      if (startVideoRecordBtn.dataset.recording === "true") {
+        stopRecorder(startVideoRecordBtn, "Record Video");
+      } else {
+        startVideoRecording();
+      }
+    });
+
+    voiceTypingBtn.addEventListener("click", startVoiceTyping);
+
+    contextReplyBtn.addEventListener("click", () => {
+      if (selectedMessage) setReply(selectedMessage);
+      closeContextMenu();
+    });
+
+    contextEditBtn.addEventListener("click", () => {
+      if (selectedMessage) setEdit(selectedMessage);
+      closeContextMenu();
+    });
+
+    contextDeleteBtn.addEventListener("click", deleteSelectedMessage);
+
+    contextCopyBtn.addEventListener("click", async () => {
+      if (!selectedMessage) return;
+      try {
+        await navigator.clipboard.writeText(selectedMessage.message || "");
+        showNotice("Message copied.", "success");
+      } catch {}
+      closeContextMenu();
+    });
+
+    contextCloseBtn.addEventListener("click", closeContextMenu);
+    document.addEventListener("click", (e) => {
+      if (!contextMenu.contains(e.target)) closeContextMenu();
+    });
+
     voiceCallBtn.addEventListener("click", openVoiceCall);
     videoCallBtn.addEventListener("click", openVideoCall);
 
