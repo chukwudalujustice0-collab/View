@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>Offline | View</title>
+  <meta name="theme-color" content="#07122a" />
+  <meta name="description" content="You are offline. Reconnect to continue using View." />
+  <link rel="manifest" href="/manifest.json" />
+  <style>
+    :root{
+      --bg:#061126;
+      --bg2:#0a1835;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.05);
+      --stroke:rgba(255,255,255,.08);
+      --text:#f8fbff;
+      --muted:#9db0cf;
+      --primary:#2d6bff;
+      --primary2:#5c8cff;
+      --green:#22c55e;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 20px 60px rgba(0,0,0,.30);
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Inter, Arial, sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
+        radial-gradient(circle at top left, rgba(0,255,200,.06), transparent 18%),
+        linear-gradient(180deg, #08142e 0%, #061126 55%, #050d1c 100%);
+      color:var(--text);
+    }
+
+    body{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px 16px;
+    }
+
+    .wrap{
+      width:min(100%, 760px);
+    }
+
+    .shell{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:32px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      backdrop-filter:blur(18px);
+    }
+
+    .hero{
+      position:relative;
+      padding:28px 22px 18px;
+      overflow:hidden;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.04)),
+        linear-gradient(135deg, rgba(45,107,255,.16), rgba(92,140,255,.06));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      top:-80px;
+      right:-70px;
+      width:190px;
+      height:190px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(92,140,255,.30), transparent 66%);
+      pointer-events:none;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:18px;
+      position:relative;
+      z-index:1;
+    }
+
+    .brand-logo{
+      width:60px;
+      height:60px;
+      min-width:60px;
+      border-radius:20px;
+      background:linear-gradient(135deg, var(--primary), var(--primary2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:28px;
+      font-weight:900;
+      box-shadow:0 14px 32px rgba(45,107,255,.30);
+    }
+
+    .brand-text h1{
+      font-size:34px;
+      font-weight:900;
+      letter-spacing:-.03em;
+      line-height:1;
+      margin-bottom:6px;
+    }
+
+    .brand-text p{
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .status-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:1;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:38px;
+      padding:0 14px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:800;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+    }
+
+    .dot{
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:var(--warning);
+      box-shadow:0 0 0 6px rgba(245,158,11,.12);
+    }
+
+    .content{
+      padding:24px 22px 22px;
+    }
+
+    .main-card{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:26px;
+      padding:24px 18px;
+      text-align:center;
+      margin-bottom:16px;
+    }
+
+    .offline-icon{
+      width:92px;
+      height:92px;
+      margin:0 auto 18px;
+      border-radius:28px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:42px;
+      color:#fff;
+      background:
+        linear-gradient(135deg, rgba(239,68,68,.18), rgba(245,158,11,.14)),
+        rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 18px 40px rgba(0,0,0,.18);
+    }
+
+    .main-card h2{
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      margin-bottom:10px;
+    }
+
+    .main-card p{
+      color:var(--muted);
+      font-size:15px;
+      line-height:1.8;
+      max-width:520px;
+      margin:0 auto;
+    }
+
+    .quick-actions{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .action-btn{
+      min-height:56px;
+      border:none;
+      border-radius:20px;
+      padding:0 16px;
+      cursor:pointer;
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      font-size:15px;
+      font-weight:800;
+      transition:.18s ease;
+    }
+
+    .action-btn.primary{
+      color:#fff;
+      background:linear-gradient(135deg, var(--primary), var(--primary2));
+      box-shadow:0 14px 32px rgba(45,107,255,.28);
+    }
+
+    .action-btn.secondary{
+      color:#fff;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .action-btn:active{
+      transform:scale(.985);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:12px;
+    }
+
+    .mini-card{
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.05);
+      padding:16px 12px;
+      text-decoration:none;
+      color:#fff;
+      min-height:112px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:8px;
+      transition:.18s ease;
+    }
+
+    .mini-card:active{
+      transform:scale(.985);
+    }
+
+    .mini-icon{
+      font-size:22px;
+      line-height:1;
+    }
+
+    .mini-title{
+      font-size:15px;
+      font-weight:900;
+    }
+
+    .mini-text{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .footer-note{
+      margin-top:16px;
+      padding:14px 16px;
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+      text-align:center;
+    }
+
+    .online-banner{
+      display:none;
+      margin-bottom:14px;
+      padding:13px 14px;
+      border-radius:18px;
+      background:rgba(34,197,94,.12);
+      border:1px solid rgba(34,197,94,.24);
+      color:#dcffe7;
+      font-size:14px;
+      font-weight:700;
+      text-align:center;
+    }
+
+    .online-banner.show{
+      display:block;
+    }
+
+    @media (max-width: 720px){
+      .brand-text h1{
+        font-size:29px;
+      }
+
+      .quick-actions{
+        grid-template-columns:1fr;
+      }
+
+      .grid{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="onlineBanner" class="online-banner">
+      Connection restored. Redirecting...
+    </div>
+
+    <section class="shell">
+      <div class="hero">
+        <div class="brand">
+          <div class="brand-logo">V</div>
+          <div class="brand-text">
+            <h1>View</h1>
+            <p>Social app by Ceetify</p>
+          </div>
+        </div>
+
+        <div class="status-row">
+          <div class="pill">
+            <span class="dot"></span>
+            <span>You are offline</span>
+          </div>
+          <div class="pill" id="networkText">Trying to reconnect...</div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="main-card">
+          <div class="offline-icon">📡</div>
+          <h2>No internet connection</h2>
+          <p>
+            View could not reach the network right now. You can retry,
+            open cached pages, or wait while we reconnect automatically.
+          </p>
+        </div>
+
+        <div class="quick-actions">
+          <button id="retryBtn" class="action-btn primary" type="button">
+            <span>↻</span>
+            <span>Retry Connection</span>
+          </button>
+
+          <a class="action-btn secondary" href="/home.html">
+            <span>⌂</span>
+            <span>Open Home</span>
+          </a>
+        </div>
+
+        <div class="grid">
+          <a class="mini-card" href="/chats.html">
+            <div class="mini-icon">💬</div>
+            <div class="mini-title">Chats</div>
+            <div class="mini-text">Open cached conversations and recent screens.</div>
+          </a>
+
+          <a class="mini-card" href="/notifications.html">
+            <div class="mini-icon">🔔</div>
+            <div class="mini-title">Notifications</div>
+            <div class="mini-text">Check your latest alerts and updates.</div>
+          </a>
+
+          <a class="mini-card" href="/profile.html">
+            <div class="mini-icon">👤</div>
+            <div class="mini-title">Profile</div>
+            <div class="mini-text">Open your cached profile and app settings.</div>
+          </a>
+        </div>
+
+        <div class="footer-note">
+          Once your connection is back, push notifications, chat sync, and live updates will continue automatically.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const retryBtn = document.getElementById("retryBtn");
+    const networkText = document.getElementById("networkText");
+    const onlineBanner = document.getElementById("onlineBanner");
+
+    function updateNetworkState() {
+      if (navigator.onLine) {
+        networkText.textContent = "Back online";
+        onlineBanner.classList.add("show");
+
+        setTimeout(() => {
+          const referrer = document.referrer || "";
+          if (referrer && referrer.startsWith(window.location.origin)) {
+            window.location.href = referrer;
+          } else {
+            window.location.href = "/home.html";
+          }
+        }, 900);
+      } else {
+        networkText.textContent = "Trying to reconnect...";
+        onlineBanner.classList.remove("show");
+      }
+    }
+
+    retryBtn.addEventListener("click", () => {
+      if (navigator.onLine) {
+        window.location.reload();
+      } else {
+        networkText.textContent = "Still offline. Please check your network.";
+        setTimeout(() => {
+          updateNetworkState();
+        }, 1500);
+      }
+    });
+
+    window.addEventListener("online", updateNetworkState);
+    window.addEventListener("offline", updateNetworkState);
+
+    updateNetworkState();
+  </script>
+</body>
+</html>
