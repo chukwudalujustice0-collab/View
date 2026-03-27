@@ -1046,6 +1046,12 @@
       });
     }
 
+    function appendMessageToUI(message) {
+      currentMessages.push(message);
+      currentMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      renderMessages();
+    }
+
     async function getSessionWithRetry(maxWaitMs = 3000) {
       const start = Date.now();
       while (Date.now() - start < maxWaitMs) {
@@ -1240,7 +1246,26 @@
 
       sendBtn.disabled = true;
 
+      const tempId = `temp-${Date.now()}`;
+
       try {
+        const tempMessage = {
+          id: tempId,
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          receiver_id: conversationIsGroup ? null : (otherUser?.id || null),
+          message_type: attachment ? attachment.type : "text",
+          message: cleanText || null,
+          media_url: attachment ? attachment.url : null,
+          file_name: attachment ? attachment.name : null,
+          file_size: attachment ? attachment.size : null,
+          mime_type: attachment ? attachment.mime : null,
+          created_at: new Date().toISOString(),
+          sender_name: "You"
+        };
+
+        appendMessageToUI(tempMessage);
+
         const payload = {
           conversation_id: conversationId,
           sender_id: currentUserId,
@@ -1253,11 +1278,21 @@
           mime_type: attachment ? attachment.mime : null
         };
 
-        const { error } = await supabaseClient
+        const { data, error } = await supabaseClient
           .from("messages")
-          .insert(payload);
+          .insert(payload)
+          .select()
+          .single();
 
         if (error) throw error;
+
+        currentMessages = currentMessages.filter(msg => msg.id !== tempId);
+        currentMessages.push({
+          ...data,
+          sender_name: "You"
+        });
+        currentMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        renderMessages();
 
         messageInput.value = "";
         fileInput.value = "";
@@ -1265,6 +1300,8 @@
         hideTypingVisible();
       } catch (error) {
         console.error("Send message error:", error);
+        currentMessages = currentMessages.filter(msg => msg.id !== tempId);
+        renderMessages();
         showNotice(error.message || "Could not send message.");
       } finally {
         sendBtn.disabled = false;
@@ -1293,35 +1330,105 @@
       });
     }
 
+    async function getSenderName(senderId) {
+      if (senderId === currentUserId) return "You";
+      if (!conversationIsGroup) return otherUser?.name || "User";
+
+      try {
+        const { data } = await supabaseClient
+          .from("profiles")
+          .select("*")
+          .eq("id", senderId)
+          .maybeSingle();
+
+        return getProfileDisplayName(data || {}, "User");
+      } catch {
+        return "User";
+      }
+    }
+
     function setupRealtimeMessages() {
-      if (messagesChannel) return;
+      if (messagesChannel) {
+        supabaseClient.removeChannel(messagesChannel);
+        messagesChannel = null;
+      }
 
       messagesChannel = supabaseClient
         .channel(`chat-room-${conversationId}`)
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${conversationId}`
-        }, async () => {
-          await refreshAll();
-        })
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "conversation_members",
-          filter: `conversation_id=eq.${conversationId}`
-        }, async () => {
-          await refreshAll();
-        })
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "profiles"
-        }, async () => {
-          await refreshAll();
-        })
-        .subscribe();
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+            filter: `conversation_id=eq.${conversationId}`
+          },
+          async (payload) => {
+            const newMessage = payload.new;
+            const exists = currentMessages.some(msg => msg.id === newMessage.id);
+            if (exists) return;
+
+            const senderName = await getSenderName(newMessage.sender_id);
+
+            currentMessages.push({
+              ...newMessage,
+              sender_name: senderName
+            });
+
+            currentMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            renderMessages();
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "messages",
+            filter: `conversation_id=eq.${conversationId}`
+          },
+          async () => {
+            await refreshAll();
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "messages",
+            filter: `conversation_id=eq.${conversationId}`
+          },
+          async () => {
+            await refreshAll();
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "conversation_members",
+            filter: `conversation_id=eq.${conversationId}`
+          },
+          async () => {
+            await refreshAll();
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "profiles"
+          },
+          async () => {
+            await refreshAll();
+          }
+        )
+        .subscribe((status) => {
+          console.log("messages realtime status:", status);
+        });
     }
 
     function setupTypingChannel() {
