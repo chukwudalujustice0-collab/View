@@ -85,7 +85,7 @@
       flex-wrap:wrap;
     }
 
-    .refresh-btn,.action-btn{
+    .refresh-btn{
       border:none;
       border-radius:999px;
       padding:10px 14px;
@@ -343,28 +343,22 @@
       followingCount.textContent = allUsers.filter(u => followingIds.has(u.id)).length;
     }
 
-    async function getActiveSession() {
-      const {
-        data: { session },
-        error
-      } = await supabaseClient.auth.getSession();
-
+    async function getLoggedInUser() {
+      const { data, error } = await supabaseClient.auth.getUser();
       if (error) throw error;
-      return session || null;
+      return data.user || null;
     }
 
-    async function requireSession() {
-      const session = await getActiveSession();
-
-      if (!session || !session.user) {
+    async function requireUser() {
+      const user = await getLoggedInUser();
+      if (!user) {
         showNotice("Please log in first.");
         setTimeout(() => {
           window.location.href = "login.html?next=explore.html";
         }, 1000);
         return null;
       }
-
-      return session;
+      return user;
     }
 
     async function loadFollowing() {
@@ -478,10 +472,10 @@
       try {
         clearNotice();
 
-        const session = await requireSession();
-        if (!session) return;
+        const user = await requireUser();
+        if (!user) return;
 
-        currentUserId = session.user.id;
+        currentUserId = user.id;
 
         if (followingIds.has(userId)) {
           const { error } = await supabaseClient
@@ -521,29 +515,55 @@
       try {
         clearNotice();
 
-        const session = await requireSession();
-        if (!session) return;
+        const user = await getLoggedInUser();
 
-        currentUserId = session.user.id;
-
-        if (!userId) {
-          throw new Error("User not found.");
+        if (!user) {
+          showNotice("User not authenticated");
+          setTimeout(() => {
+            window.location.href = "login.html?next=explore.html";
+          }, 1000);
+          return;
         }
 
-        if (userId === currentUserId) {
-          throw new Error("You cannot chat with yourself.");
+        const meUserId = user.id;
+
+        console.log("CURRENT USER ID:", meUserId);
+        console.log("CLICKED USER ID:", userId);
+
+        if (!meUserId) {
+          showNotice("Current user ID is missing");
+          return;
+        }
+
+        if (!userId) {
+          showNotice("Target user ID is missing");
+          return;
+        }
+
+        if (meUserId === userId) {
+          showNotice("You cannot chat with yourself");
+          return;
         }
 
         const { data, error } = await supabaseClient.rpc("get_or_create_conversation", {
+          me_user_id: meUserId,
           other_user_id: userId
         });
 
-        if (error) throw error;
-        if (!data) throw new Error("Could not start conversation.");
+        if (error) {
+          console.error("RPC ERROR:", error);
+          throw error;
+        }
+
+        if (!data) {
+          showNotice("Conversation not created");
+          return;
+        }
 
         window.location.href = `chat-room.html?id=${encodeURIComponent(data)}`;
-      } catch (error) {
-        showNotice(error.message || "Could not start chat.");
+      } catch (err) {
+        console.error(err);
+        showNotice(err.message || "Could not start chat.");
       }
     }
 
@@ -591,10 +611,10 @@
       try {
         clearNotice();
 
-        const session = await requireSession();
-        if (!session) return;
+        const user = await requireUser();
+        if (!user) return;
 
-        currentUserId = session.user.id;
+        currentUserId = user.id;
 
         await loadFollowing();
         await loadUsers();
@@ -634,3 +654,6 @@
   </script>
 </body>
 </html>
+
+Use this exact explore html. Upgrade it fully and give me the exact query to run that will begin conversation and make all arrive in real time   
+Make sure everything is complete
