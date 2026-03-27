@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Chats | View</title>
   <meta name="theme-color" content="#07122b" />
+  <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/push-helper.js"></script>
 
   <style>
     :root{
@@ -78,6 +80,8 @@
     }
 
     .hero{
+      position:relative;
+      overflow:hidden;
       background:
         linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
         linear-gradient(135deg, rgba(45,107,255,.16), rgba(92,140,255,.06));
@@ -87,8 +91,6 @@
       box-shadow:var(--shadow);
       backdrop-filter:blur(18px);
       margin-bottom:18px;
-      position:relative;
-      overflow:hidden;
     }
 
     .hero::after{
@@ -99,7 +101,7 @@
       width:180px;
       height:180px;
       border-radius:50%;
-      background:radial-gradient(circle, rgba(92,140,255,.26), transparent 65%);
+      background:radial-gradient(circle, rgba(92,140,255,.30), transparent 66%);
       pointer-events:none;
     }
 
@@ -195,6 +197,7 @@
       border-radius:20px;
       background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.08);
+      margin-bottom:14px;
       position:relative;
       z-index:1;
     }
@@ -212,43 +215,38 @@
       color:#9db1d1;
     }
 
-    .stats{
-      margin-top:14px;
-      display:grid;
-      grid-template-columns:1fr auto;
-      gap:12px;
+    .hero-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
       position:relative;
       z-index:1;
     }
 
-    .stat-card{
-      background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:22px;
-      padding:14px 15px;
-    }
-
-    .stat-label{
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:6px;
-    }
-
-    .stat-value{
-      font-size:17px;
-      font-weight:800;
-      display:flex;
+    .pill-btn,.primary-btn,.ghost-btn{
+      min-height:42px;
+      border:none;
+      border-radius:999px;
+      padding:0 14px;
+      cursor:pointer;
+      display:inline-flex;
       align-items:center;
+      justify-content:center;
       gap:8px;
-      flex-wrap:wrap;
+      font-size:13px;
+      font-weight:800;
     }
 
-    .live-dot{
-      width:9px;
-      height:9px;
-      border-radius:50%;
-      background:var(--green);
-      box-shadow:0 0 0 6px rgba(34,197,94,.12);
+    .pill-btn,.ghost-btn{
+      color:#fff;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .primary-btn{
+      color:#fff;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:0 12px 28px rgba(45,107,255,.28);
     }
 
     .panel{
@@ -267,6 +265,7 @@
       justify-content:space-between;
       gap:12px;
       margin-bottom:16px;
+      flex-wrap:wrap;
     }
 
     .panel-title h2{
@@ -281,32 +280,24 @@
       font-size:13px;
     }
 
-    .head-actions{
+    .stats{
       display:flex;
-      align-items:center;
       gap:10px;
+      flex-wrap:wrap;
     }
 
-    .ghost-btn,.primary-btn{
-      height:44px;
-      border:none;
+    .stat-chip{
+      min-height:38px;
+      padding:0 13px;
       border-radius:999px;
-      padding:0 16px;
-      font-size:13px;
-      font-weight:800;
-      cursor:pointer;
-    }
-
-    .ghost-btn{
-      color:#fff;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
       background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.08);
-    }
-
-    .primary-btn{
-      color:#fff;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:0 12px 28px rgba(45,107,255,.28);
+      color:#dce8ff;
+      font-size:12px;
+      font-weight:800;
     }
 
     .chat-list{
@@ -332,18 +323,6 @@
 
     .chat-item:hover{
       transform:translateY(-1px);
-    }
-
-    .chat-item::after{
-      content:"";
-      position:absolute;
-      right:-20px;
-      bottom:-70px;
-      width:150px;
-      height:150px;
-      border-radius:50%;
-      background:radial-gradient(circle, rgba(45,107,255,.12), transparent 70%);
-      pointer-events:none;
     }
 
     .avatar-wrap{
@@ -492,68 +471,18 @@
       margin-bottom:6px;
     }
 
-    .fab-ai{
-      position:fixed;
-      right:16px;
-      bottom:104px;
-      width:60px;
-      height:60px;
-      border:none;
-      border-radius:20px;
-      background:linear-gradient(135deg,#05d5ff,#2d6bff 55%,#8b5cf6);
-      color:#fff;
-      text-decoration:none;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:26px;
-      box-shadow:0 18px 40px rgba(45,107,255,.36);
-      z-index:60;
+    .spinner{
+      width:18px;
+      height:18px;
+      border:2px solid rgba(255,255,255,.24);
+      border-top-color:#fff;
+      border-radius:50%;
+      animation:spin .8s linear infinite;
+      display:inline-block;
     }
 
-    .bottom-nav{
-      position:fixed;
-      left:50%;
-      bottom:14px;
-      transform:translateX(-50%);
-      width:min(100%,820px);
-      max-width:calc(100% - 18px);
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:8px;
-      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
-      border-radius:28px;
-      background:rgba(7,18,43,.94);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 22px 56px rgba(0,0,0,.34);
-      backdrop-filter:blur(18px);
-      z-index:55;
-    }
-
-    .nav-btn{
-      min-height:62px;
-      border-radius:18px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:5px;
-      color:#90a5c7;
-      text-decoration:none;
-      font-size:12px;
-      font-weight:800;
-      text-align:center;
-    }
-
-    .nav-btn.active{
-      color:#fff;
-      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
-      border:1px solid rgba(45,107,255,.20);
-    }
-
-    .nav-icon{
-      font-size:21px;
-      line-height:1;
+    @keyframes spin{
+      to{transform:rotate(360deg)}
     }
 
     .sheet-backdrop{
@@ -655,18 +584,68 @@
       border-color:rgba(239,68,68,.18);
     }
 
-    .spinner{
-      width:18px;
-      height:18px;
-      border:2px solid rgba(255,255,255,.24);
-      border-top-color:#fff;
-      border-radius:50%;
-      animation:spin .8s linear infinite;
-      display:inline-block;
+    .fab-ai{
+      position:fixed;
+      right:16px;
+      bottom:104px;
+      width:60px;
+      height:60px;
+      border:none;
+      border-radius:20px;
+      background:linear-gradient(135deg,#05d5ff,#2d6bff 55%,#8b5cf6);
+      color:#fff;
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:26px;
+      box-shadow:0 18px 40px rgba(45,107,255,.36);
+      z-index:60;
     }
 
-    @keyframes spin{
-      to{transform:rotate(360deg)}
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      bottom:14px;
+      transform:translateX(-50%);
+      width:min(100%,820px);
+      max-width:calc(100% - 18px);
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:8px;
+      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+      border-radius:28px;
+      background:rgba(7,18,43,.94);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 22px 56px rgba(0,0,0,.34);
+      backdrop-filter:blur(18px);
+      z-index:55;
+    }
+
+    .nav-btn{
+      min-height:62px;
+      border-radius:18px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      color:#90a5c7;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:800;
+      text-align:center;
+    }
+
+    .nav-btn.active{
+      color:#fff;
+      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
+      border:1px solid rgba(45,107,255,.20);
+    }
+
+    .nav-icon{
+      font-size:21px;
+      line-height:1;
     }
 
     @media (max-width:640px){
@@ -675,21 +654,9 @@
         flex-direction:column;
         align-items:flex-start;
       }
-      .head-actions{
-        width:100%;
-      }
-      .ghost-btn,.primary-btn{
-        flex:1;
-      }
-      .stats{
-        grid-template-columns:1fr;
-      }
       .chat-top{
         flex-direction:column;
         align-items:flex-start;
-      }
-      .chat-time{
-        white-space:normal;
       }
     }
   </style>
@@ -709,11 +676,11 @@
         </div>
 
         <div class="top-actions">
-          <a id="notificationsBtn" class="icon-btn" href="notifications.html" aria-label="Notifications" title="Notifications">
+          <a class="icon-btn" href="notifications.html" aria-label="Notifications" title="Notifications">
             🔔
             <span id="notifDot" class="notif-dot"></span>
           </a>
-          <a id="profileBtn" class="icon-btn" href="profile.html" aria-label="Profile" title="Profile">👤</a>
+          <a class="icon-btn" href="profile.html" aria-label="Profile" title="Profile">👤</a>
         </div>
       </div>
 
@@ -722,16 +689,11 @@
         <input id="searchInput" type="text" placeholder="Search by name, message, or group..." />
       </div>
 
-      <div class="stats">
-        <div class="stat-card">
-          <div class="stat-label">Connection</div>
-          <div class="stat-value"><span class="live-dot"></span> Realtime connected</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-label">Visible Chats</div>
-          <div id="chatCount" class="stat-value">0 chats</div>
-        </div>
+      <div class="hero-actions">
+        <button id="enablePushBtn" class="primary-btn" type="button">Enable Notifications</button>
+        <button id="testPushBtn" class="pill-btn" type="button">Test Notification</button>
+        <button id="refreshBtn" class="ghost-btn" type="button">Refresh</button>
+        <button id="newChatBtn" class="pill-btn" type="button">New Chat</button>
       </div>
     </section>
 
@@ -742,9 +704,9 @@
           <p>Only conversations that belong to you appear here.</p>
         </div>
 
-        <div class="head-actions">
-          <button id="refreshBtn" class="ghost-btn" type="button">Refresh</button>
-          <button id="newChatBtn" class="primary-btn" type="button">New Chat</button>
+        <div class="stats">
+          <div id="chatCount" class="stat-chip">0 chats</div>
+          <div id="pushStatusChip" class="stat-chip">Push: checking...</div>
         </div>
       </div>
 
@@ -754,30 +716,26 @@
     </section>
   </div>
 
-  <a id="aiFab" class="fab-ai" href="ai-assistant.html" title="AI Assistant" aria-label="AI Assistant">✦</a>
+  <a class="fab-ai" href="ai-assistant.html" title="AI Assistant" aria-label="AI Assistant">✦</a>
 
   <nav class="bottom-nav">
-    <a id="navHome" class="nav-btn" href="home.html">
+    <a href="home.html" class="nav-btn">
       <span class="nav-icon">⌂</span>
       <span>Home</span>
     </a>
-
-    <a id="navExplore" class="nav-btn" href="explore.html">
+    <a href="explore.html" class="nav-btn">
       <span class="nav-icon">🔎</span>
       <span>Explore</span>
     </a>
-
-    <a id="navChats" class="nav-btn active" href="chats.html">
+    <a href="chats.html" class="nav-btn active">
       <span class="nav-icon">💬</span>
       <span>Chat</span>
     </a>
-
-    <a id="navCalls" class="nav-btn" href="calls.html">
+    <a href="calls.html" class="nav-btn">
       <span class="nav-icon">📞</span>
       <span>Call</span>
     </a>
-
-    <a id="navGroups" class="nav-btn" href="groups.html">
+    <a href="groups.html" class="nav-btn">
       <span class="nav-icon">👥</span>
       <span>Group</span>
     </a>
@@ -817,22 +775,6 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const VAPID_PUBLIC_KEY = "BCXhu5fvFT6k4ukbLKxcFybuhRom6XV3ZXv35uysrK00AaDneBctaY7WeSkEb_DJSfxJ6uCamC2RARgD-vEYbgo";
-
-    const ROUTES = {
-      login: "login.html",
-      notifications: "notifications.html",
-      profile: "profile.html",
-      publicProfile: "public-profile.html",
-      home: "home.html",
-      explore: "explore.html",
-      chats: "chats.html",
-      chatRoom: "chat-room.html",
-      calls: "calls.html",
-      groups: "groups.html",
-      ai: "ai-assistant.html",
-      sw: "/sw.js"
-    };
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -846,9 +788,12 @@
     const searchInput = document.getElementById("searchInput");
     const chatList = document.getElementById("chatList");
     const chatCount = document.getElementById("chatCount");
+    const notifDot = document.getElementById("notifDot");
     const refreshBtn = document.getElementById("refreshBtn");
     const newChatBtn = document.getElementById("newChatBtn");
-    const notifDot = document.getElementById("notifDot");
+    const enablePushBtn = document.getElementById("enablePushBtn");
+    const testPushBtn = document.getElementById("testPushBtn");
+    const pushStatusChip = document.getElementById("pushStatusChip");
 
     const optionsSheetBackdrop = document.getElementById("optionsSheetBackdrop");
     const sheetAvatar = document.getElementById("sheetAvatar");
@@ -1027,7 +972,7 @@
 
     function openChat(conversationId) {
       if (!conversationId) return;
-      window.location.href = `${ROUTES.chatRoom}?id=${encodeURIComponent(conversationId)}`;
+      window.location.href = `chat-room.html?id=${encodeURIComponent(conversationId)}`;
     }
 
     function openOptions(event, conversationId) {
@@ -1050,10 +995,10 @@
         : (isChatOnline(chat) ? "Online now" : "Chat options");
 
       if (chat.is_group) {
-        sheetProfileAction.href = `${ROUTES.groups}?id=${encodeURIComponent(chat.id)}`;
+        sheetProfileAction.href = `groups.html?id=${encodeURIComponent(chat.id)}`;
         sheetProfileAction.querySelector("span").textContent = "Open Group";
       } else {
-        sheetProfileAction.href = `${ROUTES.publicProfile}?id=${encodeURIComponent(chat.other_user_id || "")}`;
+        sheetProfileAction.href = `public-profile.html?id=${encodeURIComponent(chat.other_user_id || "")}`;
         sheetProfileAction.querySelector("span").textContent = "View User Profile";
       }
 
@@ -1083,7 +1028,7 @@
     async function requireSession() {
       const session = await getSessionWithRetry();
       if (!session?.user) {
-        window.location.href = `${ROUTES.login}?next=${encodeURIComponent(ROUTES.chats)}`;
+        window.location.href = `login.html?next=${encodeURIComponent("chats.html")}`;
         return null;
       }
       return session;
@@ -1156,7 +1101,7 @@
           .eq("is_read", false);
 
         if (!error) notifDot.classList.toggle("show", Number(count || 0) > 0);
-      } catch (err) {
+      } catch {
         notifDot.classList.remove("show");
       }
     }
@@ -1301,45 +1246,66 @@
       }
     }
 
-    function base64ToUint8Array(base64String) {
-      const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-      const rawData = atob(base64);
-      const outputArray = new Uint8Array(rawData.length);
-      for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
-      return outputArray;
+    async function updatePushStatusUI() {
+      try {
+        const status = await window.ViewPushHelper.checkPushStatus();
+
+        if (!status.supported) {
+          pushStatusChip.textContent = "Push: unsupported";
+          enablePushBtn.disabled = true;
+          return;
+        }
+
+        if (status.permission === "granted" && status.subscribed) {
+          pushStatusChip.textContent = "Push: enabled";
+          enablePushBtn.textContent = "Notifications Enabled";
+          enablePushBtn.disabled = true;
+        } else if (status.permission === "denied") {
+          pushStatusChip.textContent = "Push: blocked";
+          enablePushBtn.textContent = "Notifications Blocked";
+          enablePushBtn.disabled = true;
+        } else {
+          pushStatusChip.textContent = "Push: not enabled";
+          enablePushBtn.textContent = "Enable Notifications";
+          enablePushBtn.disabled = false;
+        }
+      } catch {
+        pushStatusChip.textContent = "Push: unavailable";
+      }
     }
 
-    async function registerPushNotifications() {
+    async function enablePushNotifications() {
       try {
-        if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+        enablePushBtn.disabled = true;
+        enablePushBtn.textContent = "Enabling...";
 
-        const registration = await navigator.serviceWorker.register(ROUTES.sw);
-        let subscription = await registration.pushManager.getSubscription();
+        await window.ViewPushHelper.initPushRegistration();
 
-        if (!subscription) {
-          subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: base64ToUint8Array(VAPID_PUBLIC_KEY)
-          });
-        }
-
-        const payload = {
-          user_id: currentUserId,
-          endpoint: subscription.endpoint,
-          subscription: subscription.toJSON(),
-          updated_at: new Date().toISOString()
-        };
-
-        const { error } = await supabaseClient
-          .from("push_subscriptions")
-          .upsert(payload, { onConflict: "endpoint" });
-
-        if (error) {
-          console.warn("Push subscription save warning:", error.message);
-        }
+        showNotice("Push notifications enabled successfully.", "success");
+        await updatePushStatusUI();
       } catch (error) {
-        console.warn("Push registration warning:", error?.message || error);
+        console.error("Push enable error:", error);
+        showNotice(error.message || "Could not enable push notifications.");
+        enablePushBtn.disabled = false;
+        enablePushBtn.textContent = "Enable Notifications";
+      }
+    }
+
+    async function testSystemNotification() {
+      try {
+        await window.ViewPushHelper.showLocalSystemNotification({
+          title: "View Test Notification",
+          body: "Push and system notifications are working.",
+          tag: "view-test-notification",
+          data: {
+            url: "/notifications.html"
+          }
+        });
+
+        showNotice("Test notification sent to your device.", "success");
+      } catch (error) {
+        console.error("Test notification error:", error);
+        showNotice(error.message || "Could not show test notification.");
       }
     }
 
@@ -1437,11 +1403,15 @@
     refreshBtn.addEventListener("click", async () => {
       await loadChats();
       await loadUnreadNotifications();
+      await updatePushStatusUI();
     });
 
     newChatBtn.addEventListener("click", () => {
-      window.location.href = ROUTES.explore;
+      window.location.href = "explore.html";
     });
+
+    enablePushBtn.addEventListener("click", enablePushNotifications);
+    testPushBtn.addEventListener("click", testSystemNotification);
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
@@ -1461,22 +1431,13 @@
         currentUser = session.user;
         currentUserId = session.user.id;
 
-        document.getElementById("notificationsBtn").href = ROUTES.notifications;
-        document.getElementById("profileBtn").href = ROUTES.profile;
-        document.getElementById("aiFab").href = ROUTES.ai;
-        document.getElementById("navHome").href = ROUTES.home;
-        document.getElementById("navExplore").href = ROUTES.explore;
-        document.getElementById("navChats").href = ROUTES.chats;
-        document.getElementById("navCalls").href = ROUTES.calls;
-        document.getElementById("navGroups").href = ROUTES.groups;
-
         await loadChats();
         await loadUnreadNotifications();
+        await updatePushStatusUI();
 
         subscribeRealtime();
         setupPresence();
         setupTypingChannel();
-        registerPushNotifications();
       } catch (error) {
         console.error("Init error:", error);
         showNotice(error.message || "Could not load chats.");
