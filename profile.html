@@ -2,98 +2,180 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Profile | View</title>
+  <meta name="theme-color" content="#07122a" />
+  <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
+    :root{
+      --bg:#061126;
+      --bg2:#0a1835;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.05);
+      --stroke:rgba(255,255,255,.08);
+      --text:#f8fbff;
+      --muted:#9db0cf;
+      --soft:#7f91af;
+      --primary:#2d6bff;
+      --primary2:#5c8cff;
+      --green:#22c55e;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --shadow:0 18px 50px rgba(0,0,0,.28);
+    }
+
     *{
       margin:0;
       padding:0;
       box-sizing:border-box;
-      font-family:Arial,sans-serif;
+      font-family:Inter,Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
+        radial-gradient(circle at top left, rgba(0,255,200,.06), transparent 18%),
+        linear-gradient(180deg,#08142e 0%,#061126 55%,#050d1c 100%);
+      color:var(--text);
     }
 
     body{
-      background:#f4f7fc;
-      color:#111827;
-      min-height:100vh;
-      padding:20px 16px 40px;
+      padding-bottom:130px;
     }
 
     .wrap{
-      max-width:560px;
+      width:min(100%,1000px);
       margin:0 auto;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:18px;
-    }
-
-    .topbar h1{
-      font-size:32px;
-      font-weight:800;
-    }
-
-    .icon-btn{
-      width:46px;
-      height:46px;
-      border:none;
-      border-radius:14px;
-      background:#fff;
-      box-shadow:0 8px 24px rgba(15,23,42,.08);
-      font-size:20px;
-      cursor:pointer;
+      padding:18px 16px 0;
     }
 
     .notice{
       display:none;
-      padding:12px 14px;
-      border-radius:14px;
       margin-bottom:16px;
+      padding:14px 16px;
+      border-radius:18px;
       font-size:14px;
-      line-height:1.5;
+      line-height:1.6;
+      border:1px solid transparent;
+      backdrop-filter:blur(10px);
     }
-
-    .notice.show{
-      display:block;
-    }
-
-    .notice.error{
-      background:#fee2e2;
-      color:#b91c1c;
-    }
-
-    .notice.success{
-      background:#dcfce7;
-      color:#15803d;
-    }
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#ffd9d9}
+    .notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffe8}
+    .notice.info{background:rgba(45,107,255,.14);border-color:rgba(45,107,255,.26);color:#dce8ff}
 
     .hero{
-      background:linear-gradient(135deg,#1d4ed8,#2563eb);
-      color:#fff;
-      border-radius:28px;
-      padding:24px 20px 22px;
-      box-shadow:0 14px 36px rgba(29,78,216,.22);
+      position:relative;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:32px;
+      box-shadow:var(--shadow);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
+        linear-gradient(135deg, rgba(45,107,255,.18), rgba(92,140,255,.08));
       margin-bottom:18px;
     }
 
-    .avatar{
-      width:88px;
-      height:88px;
-      border-radius:50%;
+    .cover{
+      min-height:200px;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,.16), transparent 20%),
+        radial-gradient(circle at 80% 0%, rgba(92,140,255,.34), transparent 25%),
+        linear-gradient(135deg, #17356f, #0c1e46 45%, #08142e 100%);
+      position:relative;
+    }
+
+    .top-overlay{
+      position:absolute;
+      top:14px;
+      left:14px;
+      right:14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      z-index:2;
+    }
+
+    .top-left,
+    .top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .icon-btn{
+      width:48px;
+      height:48px;
+      min-width:48px;
+      border:none;
+      border-radius:18px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
       display:flex;
       align-items:center;
       justify-content:center;
-      background:rgba(255,255,255,.18);
-      border:2px solid rgba(255,255,255,.28);
-      font-size:34px;
-      font-weight:800;
-      margin-bottom:14px;
+      text-decoration:none;
+      font-size:20px;
+      cursor:pointer;
+      box-shadow:0 10px 24px rgba(0,0,0,.18);
+      backdrop-filter:blur(10px);
+      position:relative;
+    }
+
+    .notif-dot{
+      position:absolute;
+      right:10px;
+      top:10px;
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:#ff4d67;
+      display:none;
+      box-shadow:0 0 0 4px rgba(255,77,103,.18);
+    }
+    .notif-dot.show{display:block}
+
+    .profile-main{
+      padding:0 18px 18px;
+      margin-top:-52px;
+      position:relative;
+      z-index:2;
+    }
+
+    .profile-head{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:16px;
+      align-items:end;
+      margin-bottom:16px;
+    }
+
+    .avatar-wrap{
+      width:112px;
+      height:112px;
+      position:relative;
+    }
+
+    .avatar{
+      width:112px;
+      height:112px;
+      border-radius:50%;
       overflow:hidden;
+      background:linear-gradient(135deg,var(--primary),#7da2ff);
+      border:4px solid rgba(8,20,46,.95);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:36px;
+      font-weight:900;
+      box-shadow:0 18px 40px rgba(0,0,0,.24);
     }
 
     .avatar img{
@@ -103,224 +185,825 @@
       display:block;
     }
 
-    .name{
-      font-size:28px;
-      font-weight:800;
-      margin-bottom:4px;
+    .verified-badge{
+      position:absolute;
+      right:4px;
+      bottom:6px;
+      width:32px;
+      height:32px;
+      border-radius:50%;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:14px;
+      font-weight:900;
+      border:3px solid rgba(8,20,46,.95);
     }
 
-    .handle{
-      color:#dbeafe;
+    .identity{
+      min-width:0;
+    }
+
+    .full-name{
+      font-size:30px;
+      line-height:1.05;
+      font-weight:900;
+      letter-spacing:-.04em;
+      margin-bottom:6px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .username{
+      color:#bfd0ea;
       font-size:15px;
       margin-bottom:10px;
     }
 
-    .meta{
-      color:#eff6ff;
+    .bio{
+      color:#dce8ff;
       font-size:14px;
-      line-height:1.6;
+      line-height:1.8;
+      margin-bottom:12px;
+      max-width:720px;
+    }
+
+    .identity-chips{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .chip{
+      min-height:36px;
+      padding:0 12px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#dce8ff;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .profile-actions{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-width:170px;
+    }
+
+    .primary-btn,.ghost-btn,.soft-btn{
+      min-height:44px;
+      border:none;
+      border-radius:18px;
+      padding:0 16px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      cursor:pointer;
+      text-decoration:none;
+      font-size:13px;
+      font-weight:800;
+      color:#fff;
+      white-space:nowrap;
+    }
+
+    .primary-btn{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:0 12px 28px rgba(45,107,255,.28);
+    }
+
+    .ghost-btn,.soft-btn{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .quick-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .quick-action{
+      flex:1 1 140px;
+      min-height:52px;
+      border:none;
+      border-radius:18px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-size:14px;
+      font-weight:800;
+      text-decoration:none;
+      cursor:pointer;
     }
 
     .stats{
       display:grid;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:repeat(4,1fr);
       gap:12px;
-      margin-top:18px;
-    }
-
-    .stat{
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.18);
-      border-radius:18px;
-      padding:14px 10px;
-      text-align:center;
-    }
-
-    .stat b{
-      display:block;
-      font-size:24px;
-      margin-bottom:4px;
-    }
-
-    .card{
-      background:#fff;
-      border-radius:24px;
-      padding:22px 18px;
-      box-shadow:0 10px 30px rgba(15,23,42,.08);
       margin-bottom:18px;
     }
 
-    .card h2{
-      font-size:20px;
-      font-weight:800;
-      margin-bottom:14px;
+    .stat-card{
+      border-radius:24px;
+      padding:16px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 12px 30px rgba(2,8,23,.16);
+      text-align:center;
     }
 
-    .menu{
+    .stat-value{
+      font-size:22px;
+      font-weight:900;
+      margin-bottom:6px;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .tab-btn{
+      min-height:42px;
+      padding:0 14px;
+      border:none;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .tab-btn.active{
+      background:rgba(45,107,255,.18);
+      border-color:rgba(45,107,255,.22);
+    }
+
+    .tab-panel{
+      display:none;
+    }
+
+    .tab-panel.active{
+      display:block;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:18px;
+      margin-bottom:18px;
+    }
+
+    .col-12{grid-column:span 12}
+    .col-8{grid-column:span 8}
+    .col-6{grid-column:span 6}
+    .col-4{grid-column:span 4}
+
+    .card{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:28px;
+      padding:18px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(16px);
+    }
+
+    .card-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+
+    .card-head h3{
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      margin-bottom:5px;
+    }
+
+    .card-head p{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .info-list{
       display:grid;
       gap:12px;
     }
 
-    .menu a,
-    .menu button{
-      width:100%;
-      text-decoration:none;
-      background:#fff;
-      border:1px solid #e5e7eb;
-      color:#111827;
-      min-height:60px;
-      border-radius:18px;
-      padding:0 16px;
+    .info-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      padding:14px;
+      border-radius:20px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      flex-wrap:wrap;
+    }
+
+    .info-copy h4{
+      font-size:15px;
+      font-weight:900;
+      margin-bottom:4px;
+    }
+
+    .info-copy p{
+      font-size:13px;
+      color:#bfd0ea;
+      line-height:1.7;
+      word-break:break-word;
+    }
+
+    .status-badge{
+      min-height:32px;
+      padding:0 12px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#dce8ff;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .status-badge.green{
+      background:rgba(34,197,94,.14);
+      border-color:rgba(34,197,94,.18);
+      color:#ddffe8;
+    }
+
+    .status-badge.pending{
+      background:rgba(245,158,11,.12);
+      border-color:rgba(245,158,11,.18);
+      color:#ffe6b8;
+    }
+
+    .activity-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .activity-item{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      padding:14px;
+      border-radius:20px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .activity-icon{
+      width:38px;
+      height:38px;
+      min-width:38px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(45,107,255,.14);
+      border:1px solid rgba(45,107,255,.18);
+      font-size:18px;
+    }
+
+    .activity-copy h4{
+      font-size:15px;
+      font-weight:900;
+      margin-bottom:4px;
+    }
+
+    .activity-copy p{
+      font-size:13px;
+      color:#bfd0ea;
+      line-height:1.7;
+    }
+
+    .link-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .link-row{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      font-size:17px;
-      font-weight:700;
-      cursor:pointer;
-      box-shadow:0 6px 18px rgba(15,23,42,.04);
-    }
-
-    .menu .danger{
-      color:#b91c1c;
-      background:#fef2f2;
-      border-color:#fecaca;
-    }
-
-    .left{
-      display:flex;
-      align-items:center;
       gap:12px;
+      padding:15px;
+      border-radius:20px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      text-decoration:none;
+      color:#fff;
     }
 
-    .emoji{
-      font-size:20px;
+    .link-row span:last-child{
+      color:#9db1d1;
+      font-size:18px;
     }
 
-    .sub{
-      font-size:13px;
-      color:#6b7280;
-      font-weight:500;
-      margin-top:2px;
-    }
-
-    .mini-list{
+    .footer-nav{
+      position:fixed;
+      left:50%;
+      bottom:14px;
+      transform:translateX(-50%);
+      width:min(100%,820px);
+      max-width:calc(100% - 18px);
       display:grid;
-      gap:10px;
+      grid-template-columns:repeat(5,1fr);
+      gap:8px;
+      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+      border-radius:28px;
+      background:rgba(7,18,43,.94);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 22px 56px rgba(0,0,0,.34);
+      backdrop-filter:blur(18px);
+      z-index:55;
     }
 
-    .mini-item{
-      padding:14px;
-      border:1px solid #e5e7eb;
-      border-radius:16px;
-      background:#fff;
+    .nav-btn{
+      min-height:62px;
+      border-radius:18px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      color:#90a5c7;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:800;
+      text-align:center;
     }
 
-    .mini-item b{
-      display:block;
-      margin-bottom:4px;
-      font-size:15px;
+    .nav-btn.active{
+      color:#fff;
+      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
+      border:1px solid rgba(45,107,255,.20);
     }
 
-    .mini-item span{
-      color:#6b7280;
-      font-size:13px;
-      line-height:1.5;
+    .nav-icon{
+      font-size:21px;
+      line-height:1;
     }
 
-    @media(max-width:520px){
-      .topbar h1{
-        font-size:28px;
-      }
-
-      .stats{
+    @media (max-width:980px){
+      .col-8,.col-6,.col-4{grid-column:span 12}
+      .profile-head{
         grid-template-columns:1fr;
+        align-items:start;
       }
+      .profile-actions{
+        flex-direction:row;
+        flex-wrap:wrap;
+      }
+    }
+
+    @media (max-width:700px){
+      .stats{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
+    @media (max-width:640px){
+      .wrap{padding:14px 12px 0}
+      .full-name{font-size:26px}
+      .quick-row{flex-direction:column}
+      .top-overlay{top:12px;left:12px;right:12px}
+      .top-left,.top-right{gap:8px}
+      .profile-actions{flex-direction:column}
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="topbar">
-      <h1>Profile</h1>
-      <button class="icon-btn" onclick="window.location.href='home.html'">⌂</button>
-    </div>
-
     <div id="notice" class="notice"></div>
 
     <section class="hero">
-      <div class="avatar" id="profileAvatar">V</div>
-      <div class="name" id="profileName">Loading...</div>
-      <div class="handle" id="profileHandle">@loading</div>
-      <div class="meta" id="profileMeta">Loading profile information...</div>
+      <div class="cover">
+        <div class="top-overlay">
+          <div class="top-left">
+            <a class="icon-btn" href="notifications.html" title="Notifications" aria-label="Notifications">
+              🔔
+              <span id="notifDot" class="notif-dot"></span>
+            </a>
+          </div>
 
-      <div class="stats">
-        <div class="stat">
-          <b id="statPosts">0</b>
-          <span>Posts</span>
+          <div class="top-right">
+            <a class="icon-btn" href="settings.html" title="Settings" aria-label="Settings">⚙️</a>
+          </div>
         </div>
-        <div class="stat">
-          <b id="statPlatforms">0</b>
-          <span>Connected</span>
+      </div>
+
+      <div class="profile-main">
+        <div class="profile-head">
+          <div class="avatar-wrap">
+            <div id="profileAvatar" class="avatar">U</div>
+            <div class="verified-badge">✓</div>
+          </div>
+
+          <div class="identity">
+            <div id="fullName" class="full-name">Your Full Name</div>
+            <div id="username" class="username">@username</div>
+            <div id="bio" class="bio">Your profile bio will appear here with a premium look and clean spacing.</div>
+
+            <div class="identity-chips">
+              <span id="planChip" class="chip">Plan: Free</span>
+              <span id="sellerChip" class="chip">Seller: Off</span>
+              <span id="profileStatusChip" class="chip">Profile Ready</span>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <a class="primary-btn" href="edit-profile.html">Edit Profile</a>
+            <a class="ghost-btn" href="dashboard.html">Dashboard</a>
+            <a class="soft-btn" href="settings.html">Settings</a>
+          </div>
         </div>
-        <div class="stat">
-          <b id="statDrafts">0</b>
-          <span>Drafts</span>
+
+        <div class="quick-row">
+          <a id="messageBtn" class="quick-action" href="chats.html">💬 Message</a>
+          <a id="voiceCallBtn" class="quick-action" href="calls.html">📞 Voice Call</a>
+          <a id="videoCallBtn" class="quick-action" href="calls.html">🎥 Video Call</a>
+          <a class="quick-action" href="wallet.html">💼 Wallet</a>
+        </div>
+
+        <div class="stats">
+          <div class="stat-card">
+            <div id="statPosts" class="stat-value">0</div>
+            <div class="stat-label">Posts / Content</div>
+          </div>
+          <div class="stat-card">
+            <div id="statChats" class="stat-value">0</div>
+            <div class="stat-label">Chats</div>
+          </div>
+          <div class="stat-card">
+            <div id="statCalls" class="stat-value">0</div>
+            <div class="stat-label">Calls</div>
+          </div>
+          <div class="stat-card">
+            <div id="statNotifications" class="stat-value">0</div>
+            <div class="stat-label">Alerts</div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="card">
-      <h2>Quick Actions</h2>
-      <div class="menu">
-        <a href="create-post.html">
-          <span>
-            <span class="left"><span class="emoji">➕</span><span>Create Post</span></span>
-            <div class="sub">Write and publish to View or Facebook</div>
-          </span>
-          <span>›</span>
-        </a>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="overview" type="button">Overview</button>
+      <button class="tab-btn" data-tab="about" type="button">About</button>
+      <button class="tab-btn" data-tab="activity" type="button">Activity</button>
+      <button class="tab-btn" data-tab="contact" type="button">Contact</button>
+    </div>
 
-        <a href="settings.html">
-          <span>
-            <span class="left"><span class="emoji">⚙️</span><span>Settings</span></span>
-            <div class="sub">Manage account settings and integrations</div>
-          </span>
-          <span>›</span>
-        </a>
+    <section id="tab-overview" class="tab-panel active">
+      <div class="grid">
+        <div class="card col-8">
+          <div class="card-head">
+            <div>
+              <h3>Profile Overview</h3>
+              <p>Your premium owner profile summary, identity snapshot, and quick personal details.</p>
+            </div>
+          </div>
 
-        <a href="connected-accounts.html">
-          <span>
-            <span class="left"><span class="emoji">🔗</span><span>Connected Accounts</span></span>
-            <div class="sub">Connect Facebook for cross-posting</div>
-          </span>
-          <span>›</span>
-        </a>
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Full Name</h4>
+                <p id="overviewName">Loading...</p>
+              </div>
+            </div>
 
-        <button class="danger" onclick="logoutUser()">
-          <span>
-            <span class="left"><span class="emoji">⇦</span><span>Logout</span></span>
-            <div class="sub">Sign out of your account</div>
-          </span>
-          <span>›</span>
-        </button>
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Bio</h4>
+                <p id="overviewBio">Loading...</p>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>About</h4>
+                <p id="overviewAbout">No additional about section added yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card col-4">
+          <div class="card-head">
+            <div>
+              <h3>Owner Tools</h3>
+              <p>Fast routes to your most important profile controls.</p>
+            </div>
+          </div>
+
+          <div class="link-list">
+            <a class="link-row" href="edit-profile.html">
+              <div>
+                <div>Edit Profile</div>
+                <div style="color:#bfd0ea;font-size:12px;line-height:1.7;">Update your account details and profile fields.</div>
+              </div>
+              <span>→</span>
+            </a>
+
+            <a class="link-row" href="dashboard.html">
+              <div>
+                <div>Open Dashboard</div>
+                <div style="color:#bfd0ea;font-size:12px;line-height:1.7;">Go to your publishing and management control center.</div>
+              </div>
+              <span>→</span>
+            </a>
+
+            <a class="link-row" href="connected-accounts.html">
+              <div>
+                <div>Connected Accounts</div>
+                <div style="color:#bfd0ea;font-size:12px;line-height:1.7;">Manage cross-posting platform connections.</div>
+              </div>
+              <span>→</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="card col-6">
+          <div class="card-head">
+            <div>
+              <h3>Marketplace & Shop</h3>
+              <p>Seller mode and public business status.</p>
+            </div>
+          </div>
+
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Seller Mode</h4>
+                <p id="sellerModeText">Checking seller mode...</p>
+              </div>
+              <span id="sellerBadge" class="status-badge">Off</span>
+            </div>
+
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Shop Visibility</h4>
+                <p id="shopVisibilityText">Checking visibility...</p>
+              </div>
+              <span id="shopBadge" class="status-badge pending">Setup</span>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;">
+            <a class="primary-btn" href="marketplace.html">Open Marketplace</a>
+          </div>
+        </div>
+
+        <div class="card col-6">
+          <div class="card-head">
+            <div>
+              <h3>Wallet & Subscription</h3>
+              <p>Plan and wallet access summary from profile view.</p>
+            </div>
+          </div>
+
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Subscription Plan</h4>
+                <p id="subscriptionText">Free Plan</p>
+              </div>
+              <span id="subscriptionBadge" class="status-badge">Free</span>
+            </div>
+
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Wallet Access</h4>
+                <p id="walletText">Wallet ready for quick access.</p>
+              </div>
+              <span class="status-badge green">Ready</span>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <a class="primary-btn" href="wallet.html">Wallet</a>
+            <a class="ghost-btn" href="subscription.html">Subscription</a>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="card">
-      <h2>Account Summary</h2>
-      <div class="mini-list">
-        <div class="mini-item">
-          <b id="summaryEmail">Email: Loading...</b>
-          <span>Your signed-in email address</span>
+    <section id="tab-about" class="tab-panel">
+      <div class="grid">
+        <div class="card col-6">
+          <div class="card-head">
+            <div>
+              <h3>About Me</h3>
+              <p>Your extended personal profile information.</p>
+            </div>
+          </div>
+
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>About</h4>
+                <p id="aboutText">Not added yet.</p>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Likes</h4>
+                <p id="likesText">Not added yet.</p>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Hobbies</h4>
+                <p id="hobbiesText">Not added yet.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="mini-item">
-          <b id="summaryFacebook">Facebook: Checking...</b>
-          <span>Shows whether Facebook cross-posting is connected</span>
+        <div class="card col-6">
+          <div class="card-head">
+            <div>
+              <h3>Personal Details</h3>
+              <p>Owner-visible profile details and identity fields.</p>
+            </div>
+          </div>
+
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Date of Birth</h4>
+                <p id="dobText">Not added yet.</p>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Location</h4>
+                <p id="locationText">Not added yet.</p>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Address</h4>
+                <p id="addressText">Not added yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-activity" class="tab-panel">
+      <div class="grid">
+        <div class="card col-12">
+          <div class="card-head">
+            <div>
+              <h3>Profile Activity</h3>
+              <p>Owner-side recent account actions and quick activity summary.</p>
+            </div>
+          </div>
+
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="activity-icon">📝</div>
+              <div class="activity-copy">
+                <h4>Profile Management</h4>
+                <p>Use Edit Profile to update name, username, bio, hobbies, location, and owner details.</p>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-icon">🔗</div>
+              <div class="activity-copy">
+                <h4>Connected Accounts</h4>
+                <p id="connectedActivityText">Connected account summary is loading...</p>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-icon">📤</div>
+              <div class="activity-copy">
+                <h4>Publishing & Dashboard</h4>
+                <p>Use the Dashboard button below to manage publishing, scheduled posts, analytics, and monetization.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-contact" class="tab-panel">
+      <div class="grid">
+        <div class="card col-6">
+          <div class="card-head">
+            <div>
+              <h3>Contact Info</h3>
+              <p>Owner-side contact details stored on your account.</p>
+            </div>
+          </div>
+
+          <div class="info-list">
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Email</h4>
+                <p id="emailText">Loading...</p>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Phone</h4>
+                <p id="phoneText">Not added yet.</p>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-copy">
+                <h4>Username</h4>
+                <p id="contactUsernameText">Loading...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card col-6">
+          <div class="card-head">
+            <div>
+              <h3>Quick Contact Actions</h3>
+              <p>Fast links for messaging and calling from your profile page.</p>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a id="contactMessageBtn" class="primary-btn" href="chats.html">Message</a>
+            <a id="contactVoiceBtn" class="ghost-btn" href="calls.html">Voice Call</a>
+            <a id="contactVideoBtn" class="soft-btn" href="calls.html">Video Call</a>
+          </div>
         </div>
       </div>
     </section>
   </div>
+
+  <nav class="footer-nav">
+    <a href="home.html" class="nav-btn">
+      <span class="nav-icon">⌂</span>
+      <span>Home</span>
+    </a>
+    <a href="explore.html" class="nav-btn">
+      <span class="nav-icon">🔎</span>
+      <span>Explore</span>
+    </a>
+    <a href="dashboard.html" class="nav-btn active">
+      <span class="nav-icon">📊</span>
+      <span>Dashboard</span>
+    </a>
+    <a href="chats.html" class="nav-btn">
+      <span class="nav-icon">💬</span>
+      <span>Chat</span>
+    </a>
+    <a href="profile.html" class="nav-btn">
+      <span class="nav-icon">👤</span>
+      <span>Profile</span>
+    </a>
+  </nav>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
@@ -334,22 +1017,93 @@
       }
     });
 
+    const noticeBox = document.getElementById("notice");
+    const notifDot = document.getElementById("notifDot");
+    const profileAvatar = document.getElementById("profileAvatar");
+    const fullName = document.getElementById("fullName");
+    const username = document.getElementById("username");
+    const bio = document.getElementById("bio");
+    const planChip = document.getElementById("planChip");
+    const sellerChip = document.getElementById("sellerChip");
+    const profileStatusChip = document.getElementById("profileStatusChip");
+
+    const overviewName = document.getElementById("overviewName");
+    const overviewBio = document.getElementById("overviewBio");
+    const overviewAbout = document.getElementById("overviewAbout");
+
+    const sellerModeText = document.getElementById("sellerModeText");
+    const sellerBadge = document.getElementById("sellerBadge");
+    const shopVisibilityText = document.getElementById("shopVisibilityText");
+    const shopBadge = document.getElementById("shopBadge");
+
+    const subscriptionText = document.getElementById("subscriptionText");
+    const subscriptionBadge = document.getElementById("subscriptionBadge");
+    const walletText = document.getElementById("walletText");
+
+    const aboutText = document.getElementById("aboutText");
+    const likesText = document.getElementById("likesText");
+    const hobbiesText = document.getElementById("hobbiesText");
+    const dobText = document.getElementById("dobText");
+    const locationText = document.getElementById("locationText");
+    const addressText = document.getElementById("addressText");
+
+    const connectedActivityText = document.getElementById("connectedActivityText");
+
+    const emailText = document.getElementById("emailText");
+    const phoneText = document.getElementById("phoneText");
+    const contactUsernameText = document.getElementById("contactUsernameText");
+
+    const statPosts = document.getElementById("statPosts");
+    const statChats = document.getElementById("statChats");
+    const statCalls = document.getElementById("statCalls");
+    const statNotifications = document.getElementById("statNotifications");
+
+    const tabButtons = [...document.querySelectorAll(".tab-btn")];
+    const tabPanels = [...document.querySelectorAll(".tab-panel")];
+
+    const messageBtn = document.getElementById("messageBtn");
+    const voiceCallBtn = document.getElementById("voiceCallBtn");
+    const videoCallBtn = document.getElementById("videoCallBtn");
+    const contactMessageBtn = document.getElementById("contactMessageBtn");
+    const contactVoiceBtn = document.getElementById("contactVoiceBtn");
+    const contactVideoBtn = document.getElementById("contactVideoBtn");
+
+    let currentUser = null;
+    let profileRow = null;
+
     function showNotice(message, type = "error") {
-      const box = document.getElementById("notice");
-      box.className = `notice show ${type}`;
-      box.textContent = message;
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+    }
+
+    function getDisplayName(profile = {}, fallback = "Your Full Name") {
+      const list = [
+        profile.full_name,
+        profile.display_name,
+        profile.username,
+        profile.name,
+        [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim()
+      ].filter(Boolean);
+      return list[0] || fallback;
+    }
+
+    function getAvatarUrl(profile = {}) {
+      return profile.avatar_url || profile.profile_picture || profile.photo_url || profile.image_url || "";
+    }
+
+    function getInitial(name) {
+      const safe = String(name || "U").trim();
+      return safe ? safe.charAt(0).toUpperCase() : "U";
     }
 
     async function getSessionWithRetry(maxWaitMs = 3000) {
       const start = Date.now();
-
       while (Date.now() - start < maxWaitMs) {
         const { data, error } = await supabaseClient.auth.getSession();
         if (error) throw error;
         if (data.session?.user) return data.session;
         await new Promise(resolve => setTimeout(resolve, 200));
       }
-
       return null;
     }
 
@@ -362,72 +1116,187 @@
       return session;
     }
 
+    function applyAvatar(url, name) {
+      if (url) {
+        profileAvatar.innerHTML = `<img src="${url}" alt="${name}">`;
+      } else {
+        profileAvatar.textContent = getInitial(name);
+      }
+    }
+
+    function setBadge(el, text, kind = "") {
+      el.textContent = text;
+      el.className = `status-badge ${kind}`.trim();
+    }
+
+    function fillText(el, value, fallback = "Not added yet.") {
+      el.textContent = value && String(value).trim() ? value : fallback;
+    }
+
+    async function loadNotificationCount() {
+      try {
+        const { count, error } = await supabaseClient
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", currentUser.id)
+          .eq("is_read", false);
+
+        if (!error) {
+          const total = Number(count || 0);
+          statNotifications.textContent = total;
+          notifDot.classList.toggle("show", total > 0);
+        }
+      } catch {
+        statNotifications.textContent = "0";
+      }
+    }
+
+    async function loadChatCount() {
+      try {
+        const { data, error } = await supabaseClient
+          .from("conversation_members")
+          .select("conversation_id")
+          .eq("user_id", currentUser.id);
+
+        if (!error) {
+          statChats.textContent = (data || []).length;
+        }
+      } catch {
+        statChats.textContent = "0";
+      }
+    }
+
+    async function loadCallCount() {
+      try {
+        const { count, error } = await supabaseClient
+          .from("calls")
+          .select("*", { count: "exact", head: true })
+          .or(`caller_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+
+        if (!error) {
+          statCalls.textContent = Number(count || 0);
+        }
+      } catch {
+        statCalls.textContent = "0";
+      }
+    }
+
+    async function loadPostCount() {
+      try {
+        const { count, error } = await supabaseClient
+          .from("scheduled_posts")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", currentUser.id);
+
+        if (!error) {
+          statPosts.textContent = Number(count || 0);
+          return;
+        }
+      } catch {}
+      statPosts.textContent = "0";
+    }
+
     async function loadProfile() {
-      const session = await requireSession();
-      if (!session) return;
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .maybeSingle();
 
-      const user = session.user;
+      if (error) throw error;
 
-      const email = user.email || "No email found";
-      const fullName =
-        user.user_metadata?.full_name ||
-        user.user_metadata?.name ||
-        email.split("@")[0] ||
-        "View User";
+      profileRow = data || {};
+      const settingsSource = profileRow.settings || profileRow.preferences || {};
+      const name = getDisplayName(profileRow, "Your Full Name");
+      const userName = profileRow.username ? `@${profileRow.username}` : "@username";
+      const avatarUrl = getAvatarUrl(profileRow);
 
-      const username =
-        user.user_metadata?.username ||
-        fullName.toLowerCase().replace(/\s+/g, "") ||
-        "viewuser";
+      fullName.textContent = name;
+      username.textContent = userName;
+      fillText(bio, profileRow.bio || profileRow.about, "Add a strong bio from Edit Profile.");
+      applyAvatar(avatarUrl, name);
 
-      document.getElementById("profileName").textContent = fullName;
-      document.getElementById("profileHandle").textContent = "@" + username;
-      document.getElementById("profileMeta").textContent = "Manage your posts, connected accounts, and settings.";
-      document.getElementById("summaryEmail").textContent = "Email: " + email;
+      overviewName.textContent = name;
+      fillText(overviewBio, profileRow.bio || profileRow.about, "No bio added yet.");
+      fillText(overviewAbout, profileRow.about || profileRow.bio, "No additional about section added yet.");
 
-      const avatar = document.getElementById("profileAvatar");
-      if (user.user_metadata?.avatar_url) {
-        avatar.innerHTML = `<img src="${user.user_metadata.avatar_url}" alt="Avatar">`;
-      } else {
-        avatar.textContent = fullName.charAt(0).toUpperCase();
-      }
+      fillText(aboutText, profileRow.about, "Not added yet.");
+      fillText(likesText, profileRow.likes, "Not added yet.");
+      fillText(hobbiesText, profileRow.hobbies, "Not added yet.");
+      fillText(dobText, profileRow.date_of_birth || profileRow.dob, "Not added yet.");
+      fillText(locationText, profileRow.location, "Not added yet.");
+      fillText(addressText, profileRow.address, "Not added yet.");
 
-      const [
-        postsResult,
-        connectedResult,
-        draftsResult,
-        fbResult
-      ] = await Promise.all([
-        supabaseClient.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id),
-        supabaseClient.from("connected_accounts").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "connected"),
-        supabaseClient.from("posts").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "draft"),
-        supabaseClient.from("connected_accounts").select("status, account_name").eq("user_id", user.id).eq("platform", "facebook").maybeSingle()
-      ]);
+      emailText.textContent = currentUser.email || profileRow.email || "Not available";
+      fillText(phoneText, profileRow.phone || profileRow.phone_number, "Not added yet.");
+      contactUsernameText.textContent = profileRow.username || "Not added yet.";
 
-      document.getElementById("statPosts").textContent = postsResult.count || 0;
-      document.getElementById("statPlatforms").textContent = connectedResult.count || 0;
-      document.getElementById("statDrafts").textContent = draftsResult.count || 0;
+      const plan = profileRow.subscription_plan || profileRow.plan_name || "Free";
+      planChip.textContent = `Plan: ${plan}`;
+      subscriptionText.textContent = `${plan} Plan`;
+      subscriptionBadge.textContent = plan;
 
-      if (fbResult.data && fbResult.data.status === "connected") {
-        document.getElementById("summaryFacebook").textContent =
-          "Facebook: Connected" + (fbResult.data.account_name ? " (" + fbResult.data.account_name + ")" : "");
-      } else {
-        document.getElementById("summaryFacebook").textContent = "Facebook: Not connected";
-      }
+      const sellerMode = !!settingsSource.marketplace_sellerMode;
+      const shopVisible = !!settingsSource.marketplace_shopVisible;
+
+      sellerChip.textContent = `Seller: ${sellerMode ? "On" : "Off"}`;
+      sellerModeText.textContent = sellerMode ? "Seller mode enabled" : "Seller mode disabled";
+      setBadge(sellerBadge, sellerMode ? "On" : "Off", sellerMode ? "green" : "");
+
+      shopVisibilityText.textContent = shopVisible ? "Shop is visible to users" : "Shop visibility not enabled";
+      setBadge(shopBadge, shopVisible ? "Visible" : "Setup", shopVisible ? "green" : "pending");
+
+      walletText.textContent = "Wallet is available from your profile shortcuts.";
+
+      const hasUsername = !!profileRow.username;
+      const hasBio = !!(profileRow.bio || profileRow.about);
+      const hasAvatar = !!avatarUrl;
+
+      profileStatusChip.textContent = hasUsername && hasBio && hasAvatar ? "Profile Ready" : "Complete Profile";
+
+      connectedActivityText.textContent =
+        "Use Connected Accounts to manage Facebook, Instagram, YouTube, TikTok, and other publishing connections.";
     }
 
-    async function logoutUser() {
-      const { error } = await supabaseClient.auth.signOut();
-      if (error) {
-        showNotice(error.message || "Could not log out.");
-        return;
-      }
-      window.location.href = "login.html";
+    function wireActions() {
+      messageBtn.href = "chats.html";
+      contactMessageBtn.href = "chats.html";
+      voiceCallBtn.href = "calls.html";
+      videoCallBtn.href = "calls.html";
+      contactVoiceBtn.href = "calls.html";
+      contactVideoBtn.href = "calls.html";
     }
 
-    loadProfile().catch(err => {
-      showNotice(err.message || "Could not load profile.");
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tab = btn.dataset.tab;
+        tabButtons.forEach(x => x.classList.remove("active"));
+        tabPanels.forEach(panel => panel.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(`tab-${tab}`).classList.add("active");
+      });
     });
+
+    async function init() {
+      try {
+        const session = await requireSession();
+        if (!session?.user) return;
+        currentUser = session.user;
+
+        await loadProfile();
+        wireActions();
+        await Promise.all([
+          loadNotificationCount(),
+          loadChatCount(),
+          loadCallCount(),
+          loadPostCount()
+        ]);
+      } catch (error) {
+        showNotice(error.message || "Could not load profile.");
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>
