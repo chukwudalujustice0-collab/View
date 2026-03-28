@@ -8,7 +8,9 @@
   />
   <title>Chat Room | View</title>
   <meta name="theme-color" content="#07122b" />
+  <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/push-helper.js"></script>
 
   <style>
     :root{
@@ -43,9 +45,7 @@
       color:var(--text);
     }
 
-    body{
-      padding-bottom:98px;
-    }
+    body{ padding-bottom:98px; }
 
     .wrap{
       width:min(100%,860px);
@@ -236,13 +236,8 @@
       margin-bottom:12px;
     }
 
-    .message-row.me{
-      justify-content:flex-end;
-    }
-
-    .message-row.them{
-      justify-content:flex-start;
-    }
+    .message-row.me{ justify-content:flex-end; }
+    .message-row.them{ justify-content:flex-start; }
 
     .bubble-wrap{
       max-width:min(80%, 520px);
@@ -336,7 +331,20 @@
       gap:7px;
       margin-top:7px;
       font-size:11px;
-      opacity:.9;
+      opacity:.92;
+    }
+
+    .tick{
+      font-weight:900;
+      letter-spacing:-1px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:16px;
+    }
+
+    .tick.read{
+      color:#b8f0ff;
     }
 
     .typing-bar{
@@ -349,9 +357,7 @@
       font-weight:700;
     }
 
-    .typing-bar.hidden{
-      visibility:hidden;
-    }
+    .typing-bar.hidden{ visibility:hidden; }
 
     .composer-shell{
       position:sticky;
@@ -422,9 +428,7 @@
       padding:4px 2px;
     }
 
-    textarea::placeholder{
-      color:#94a8c8;
-    }
+    textarea::placeholder{ color:#94a8c8; }
 
     .send-btn{
       width:54px;
@@ -448,9 +452,7 @@
       cursor:not-allowed;
     }
 
-    .hidden{
-      display:none !important;
-    }
+    .hidden{ display:none !important; }
 
     .empty{
       min-height:100%;
@@ -494,9 +496,7 @@
       padding:12px;
     }
 
-    .sheet-backdrop.show{
-      display:flex;
-    }
+    .sheet-backdrop.show{ display:flex; }
 
     .sheet{
       width:min(100%, 700px);
@@ -610,24 +610,18 @@
     }
 
     @keyframes spin{
-      to{transform:rotate(360deg)}
+      to{ transform:rotate(360deg); }
     }
 
     @media (max-width:640px){
-      .chat-title{
-        font-size:18px;
-      }
+      .chat-title{ font-size:18px; }
       .icon-btn{
         width:46px;
         height:46px;
         min-width:46px;
       }
-      .bubble-wrap{
-        max-width:88%;
-      }
-      .head-actions .icon-btn:nth-child(2){
-        display:none;
-      }
+      .bubble-wrap{ max-width:88%; }
+      .head-actions .icon-btn:nth-child(2){ display:none; }
     }
   </style>
 </head>
@@ -712,6 +706,21 @@
           <span>↗</span>
         </a>
 
+        <button id="sheetMuteAction" class="sheet-action" type="button">
+          <span>Mute Chat</span>
+          <span>🔕</span>
+        </button>
+
+        <button id="sheetBlockAction" class="sheet-action" type="button">
+          <span>Block User</span>
+          <span>⛔</span>
+        </button>
+
+        <button id="sheetClearAction" class="sheet-action" type="button">
+          <span>Clear Chat For Me</span>
+          <span>🧹</span>
+        </button>
+
         <button id="sheetRefreshAction" class="sheet-action" type="button">
           <span>Refresh Chat</span>
           <span>↻</span>
@@ -731,13 +740,17 @@
 
     const ROUTES = {
       chats: "chats.html",
-      profile: "profile.html",
       publicProfile: "public-profile.html",
       groups: "groups.html",
-      calls: "calls.html"
+      call: "call.html"
     };
 
     const MEDIA_BUCKET = "chat-media";
+    const MUTE_KEY = "view_muted_chat_map_v1";
+    const BLOCK_KEY = "view_blocked_user_map_v1";
+    const CLEAR_KEY = "view_cleared_chat_map_v1";
+
+    const EMOJIS = ["😀","😁","😂","🤣","😊","😍","🥳","😎","🔥","❤️","💯","🎉","✨","🙏","👍","💙","💚","🫶","📸","🎥","🚀"];
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -772,6 +785,9 @@
     const sheetTitle = document.getElementById("sheetTitle");
     const sheetSub = document.getElementById("sheetSub");
     const sheetProfileAction = document.getElementById("sheetProfileAction");
+    const sheetMuteAction = document.getElementById("sheetMuteAction");
+    const sheetBlockAction = document.getElementById("sheetBlockAction");
+    const sheetClearAction = document.getElementById("sheetClearAction");
     const sheetRefreshAction = document.getElementById("sheetRefreshAction");
     const sheetDeleteAction = document.getElementById("sheetDeleteAction");
 
@@ -790,8 +806,9 @@
     let presenceChannel = null;
     let typingChannel = null;
     let onlineUserIds = new Set();
-    let typingTimeout = null;
     let otherTypingTimeout = null;
+    let localTypingCooldown = null;
+    let knownMessageIds = new Set();
 
     function showNotice(message, type = "error") {
       noticeBox.className = `notice show ${type}`;
@@ -801,6 +818,30 @@
     function clearNotice() {
       noticeBox.className = "notice";
       noticeBox.textContent = "";
+    }
+
+    function getLocalMap(key) {
+      try { return JSON.parse(localStorage.getItem(key) || "{}"); }
+      catch { return {}; }
+    }
+
+    function setLocalMap(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function isMutedChat(id) {
+      const map = getLocalMap(MUTE_KEY);
+      return !!map[id];
+    }
+
+    function isBlockedUser(id) {
+      const map = getLocalMap(BLOCK_KEY);
+      return !!map[id];
+    }
+
+    function getClearTimestamp(id) {
+      const map = getLocalMap(CLEAR_KEY);
+      return map[id] || null;
     }
 
     function escapeHtml(value) {
@@ -879,6 +920,22 @@
       return message.file_name || "Attachment";
     }
 
+    function getTickHTML(message) {
+      const isMine = (message.sender_id || "") === currentUserId;
+      if (!isMine) return "";
+
+      if (String(message.id || "").startsWith("temp-")) {
+        return `<span class="tick">✓</span>`;
+      }
+
+      const wasRead = !!message.read_at || message.is_read === true;
+      if (wasRead) {
+        return `<span class="tick read">✓✓</span>`;
+      }
+
+      return `<span class="tick">✓✓</span>`;
+    }
+
     function setTypingVisible(text = "Typing...") {
       typingBar.textContent = text;
       typingBar.classList.remove("hidden");
@@ -887,41 +944,6 @@
     function hideTypingVisible() {
       typingBar.textContent = "Typing...";
       typingBar.classList.add("hidden");
-    }
-
-    function openOptionsSheet() {
-      if (!currentConversation) return;
-      const name = conversationIsGroup
-        ? (currentConversation.name || currentConversation.title || "Group")
-        : (otherUser?.name || "User");
-
-      const avatar = conversationIsGroup
-        ? (currentConversation.avatar_url || "")
-        : (otherUser?.avatar || "");
-
-      sheetAvatar.innerHTML = avatar
-        ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">`
-        : escapeHtml(getInitial(name));
-
-      sheetTitle.textContent = name;
-      sheetSub.textContent = conversationIsGroup
-        ? "Group conversation"
-        : (isOtherUserOnline() ? "Online now" : "Chat options");
-
-      if (conversationIsGroup) {
-        sheetProfileAction.href = `${ROUTES.groups}?id=${encodeURIComponent(conversationId)}`;
-        sheetProfileAction.querySelector("span").textContent = "Open Group";
-      } else {
-        sheetProfileAction.href = `${ROUTES.publicProfile}?id=${encodeURIComponent(otherUser?.id || "")}`;
-        sheetProfileAction.querySelector("span").textContent = "View User Profile";
-      }
-
-      optionsSheetBackdrop.classList.add("show");
-    }
-
-    function closeOptionsSheet(event) {
-      if (event && event.target && event.target !== optionsSheetBackdrop) return;
-      optionsSheetBackdrop.classList.remove("show");
     }
 
     function isOtherUserOnline() {
@@ -951,21 +973,30 @@
         onlineDot.classList.remove("show");
       } else {
         const name = otherUser?.name || "User";
-        const subtitle = isOtherUserOnline() ? "Online" : "Offline";
-        const avatar = otherUser?.avatar || "";
-
         chatTitle.textContent = name;
-        chatSubtitle.textContent = subtitle;
-        profileBtn.innerHTML = avatar
-          ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">`
+        chatSubtitle.textContent = isBlockedUser(otherUser?.id) ? "Blocked locally" : (isOtherUserOnline() ? "Online" : "Offline");
+        profileBtn.innerHTML = otherUser?.avatar
+          ? `<img src="${escapeHtml(otherUser.avatar)}" alt="${escapeHtml(name)}">`
           : escapeHtml(getInitial(name));
 
         onlineDot.classList.toggle("show", isOtherUserOnline());
       }
     }
 
+    function filterMessagesByClearState(messages) {
+      const clearStamp = getClearTimestamp(conversationId);
+      if (!clearStamp) return messages;
+      const clearTime = new Date(clearStamp).getTime();
+      return messages.filter(msg => {
+        const t = new Date(msg.created_at || 0).getTime();
+        return t > clearTime;
+      });
+    }
+
     function renderMessages() {
-      if (!currentMessages.length) {
+      const visibleMessages = filterMessagesByClearState(currentMessages);
+
+      if (!visibleMessages.length) {
         messagesScroll.innerHTML = `
           <div class="empty">
             <div class="empty-card">
@@ -980,7 +1011,7 @@
       let lastDay = "";
       let html = "";
 
-      currentMessages.forEach(message => {
+      visibleMessages.forEach(message => {
         const senderId = message.sender_id || "";
         const isMe = senderId === currentUserId;
         const day = formatDay(message.created_at);
@@ -1032,7 +1063,7 @@
                 ${text ? `<div class="bubble-text">${escapeHtml(text)}</div>` : ""}
                 <div class="bubble-meta">
                   <span>${escapeHtml(formatTime(message.created_at))}</span>
-                  ${isMe ? `<span>✓</span>` : ``}
+                  ${getTickHTML(message)}
                 </div>
               </div>
             </div>
@@ -1046,9 +1077,16 @@
       });
     }
 
-    function appendMessageToUI(message) {
-      currentMessages.push(message);
+    function appendOrReplaceMessage(message) {
+      const index = currentMessages.findIndex(m => m.id === message.id);
+      if (index >= 0) {
+        currentMessages[index] = { ...currentMessages[index], ...message };
+      } else {
+        currentMessages.push(message);
+      }
+
       currentMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      knownMessageIds = new Set(currentMessages.map(m => m.id).filter(Boolean));
       renderMessages();
     }
 
@@ -1066,7 +1104,7 @@
     async function requireSession() {
       const session = await getSessionWithRetry();
       if (!session?.user) {
-        window.location.href = `${ROUTES.chats}`;
+        window.location.href = ROUTES.chats;
         return null;
       }
       return session;
@@ -1130,6 +1168,44 @@
 
       if (error) throw error;
       currentMessages = data || [];
+      knownMessageIds = new Set(currentMessages.map(m => m.id).filter(Boolean));
+    }
+
+    async function tryMarkRead() {
+      const incomingUnread = currentMessages.filter(msg =>
+        (msg.sender_id || "") !== currentUserId &&
+        !msg.read_at &&
+        msg.is_read !== true &&
+        msg.id &&
+        !String(msg.id).startsWith("temp-")
+      );
+
+      if (!incomingUnread.length) return;
+
+      const ids = incomingUnread.map(m => m.id);
+      try {
+        const payload = {
+          is_read: true,
+          read_at: new Date().toISOString()
+        };
+
+        const { error } = await supabaseClient
+          .from("messages")
+          .update(payload)
+          .in("id", ids);
+
+        if (!error) {
+          currentMessages = currentMessages.map(msg => {
+            if (ids.includes(msg.id)) {
+              return { ...msg, is_read: true, read_at: payload.read_at };
+            }
+            return msg;
+          });
+          renderMessages();
+        }
+      } catch {
+        // keep silent to avoid breaking on schemas that do not fully support these columns
+      }
     }
 
     async function refreshAll() {
@@ -1192,6 +1268,7 @@
 
       updateHeader();
       renderMessages();
+      await tryMarkRead();
     }
 
     function detectFileType(file) {
@@ -1244,6 +1321,11 @@
       const cleanText = String(text || "").trim();
       if (!cleanText && !attachment) return;
 
+      if (!conversationIsGroup && otherUser?.id && isBlockedUser(otherUser.id)) {
+        showNotice("This user is blocked locally. Unblock from the menu first.", "info");
+        return;
+      }
+
       sendBtn.disabled = true;
 
       const tempId = `temp-${Date.now()}`;
@@ -1264,7 +1346,7 @@
           sender_name: "You"
         };
 
-        appendMessageToUI(tempMessage);
+        appendOrReplaceMessage(tempMessage);
 
         const payload = {
           conversation_id: conversationId,
@@ -1287,19 +1369,15 @@
         if (error) throw error;
 
         currentMessages = currentMessages.filter(msg => msg.id !== tempId);
-        currentMessages.push({
+        appendOrReplaceMessage({
           ...data,
           sender_name: "You"
         });
-        currentMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-        renderMessages();
 
         messageInput.value = "";
         fileInput.value = "";
         autoGrowTextarea();
-        hideTypingVisible();
       } catch (error) {
-        console.error("Send message error:", error);
         currentMessages = currentMessages.filter(msg => msg.id !== tempId);
         renderMessages();
         showNotice(error.message || "Could not send message.");
@@ -1325,8 +1403,8 @@
       messageInput.addEventListener("input", () => {
         autoGrowTextarea();
         broadcastTyping();
-        if (typingTimeout) clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => {}, 1600);
+        if (localTypingCooldown) clearTimeout(localTypingCooldown);
+        localTypingCooldown = setTimeout(() => {}, 1600);
       });
     }
 
@@ -1347,6 +1425,21 @@
       }
     }
 
+    async function maybeShowIncomingNotification(message) {
+      if (!window.ViewPushHelper) return;
+      if ((message.sender_id || "") === currentUserId) return;
+      if (isMutedChat(conversationId)) return;
+
+      try {
+        await window.ViewPushHelper.showLocalSystemNotification({
+          title: otherUser?.name || message.sender_name || "New message",
+          body: getMessageContent(message) || "Sent an attachment",
+          tag: `chat-${conversationId}`,
+          data: { url: `/chat-room.html?id=${conversationId}` }
+        });
+      } catch {}
+    }
+
     function setupRealtimeMessages() {
       if (messagesChannel) {
         supabaseClient.removeChannel(messagesChannel);
@@ -1365,18 +1458,16 @@
           },
           async (payload) => {
             const newMessage = payload.new;
-            const exists = currentMessages.some(msg => msg.id === newMessage.id);
-            if (exists) return;
+            if (!newMessage || knownMessageIds.has(newMessage.id)) return;
 
             const senderName = await getSenderName(newMessage.sender_id);
+            const hydrated = { ...newMessage, sender_name: senderName };
+            appendOrReplaceMessage(hydrated);
 
-            currentMessages.push({
-              ...newMessage,
-              sender_name: senderName
-            });
-
-            currentMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-            renderMessages();
+            if ((newMessage.sender_id || "") !== currentUserId) {
+              await tryMarkRead();
+              await maybeShowIncomingNotification(hydrated);
+            }
           }
         )
         .on(
@@ -1387,8 +1478,10 @@
             table: "messages",
             filter: `conversation_id=eq.${conversationId}`
           },
-          async () => {
-            await refreshAll();
+          async (payload) => {
+            const updated = payload.new;
+            if (!updated) return;
+            appendOrReplaceMessage(updated);
           }
         )
         .on(
@@ -1399,8 +1492,12 @@
             table: "messages",
             filter: `conversation_id=eq.${conversationId}`
           },
-          async () => {
-            await refreshAll();
+          async (payload) => {
+            const old = payload.old;
+            if (!old?.id) return;
+            currentMessages = currentMessages.filter(msg => msg.id !== old.id);
+            knownMessageIds.delete(old.id);
+            renderMessages();
           }
         )
         .on(
@@ -1415,20 +1512,7 @@
             await refreshAll();
           }
         )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "profiles"
-          },
-          async () => {
-            await refreshAll();
-          }
-        )
-        .subscribe((status) => {
-          console.log("messages realtime status:", status);
-        });
+        .subscribe();
     }
 
     function setupTypingChannel() {
@@ -1484,6 +1568,45 @@
         });
     }
 
+    function openOptionsSheet() {
+      if (!currentConversation) return;
+
+      const name = conversationIsGroup
+        ? (currentConversation.name || currentConversation.title || "Group")
+        : (otherUser?.name || "User");
+
+      const avatar = conversationIsGroup
+        ? (currentConversation.avatar_url || "")
+        : (otherUser?.avatar || "");
+
+      sheetAvatar.innerHTML = avatar
+        ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">`
+        : escapeHtml(getInitial(name));
+
+      sheetTitle.textContent = name;
+      sheetSub.textContent = conversationIsGroup
+        ? "Group conversation"
+        : (isOtherUserOnline() ? "Online now" : "Chat options");
+
+      if (conversationIsGroup) {
+        sheetProfileAction.href = `${ROUTES.groups}?id=${encodeURIComponent(conversationId)}`;
+        sheetProfileAction.querySelector("span").textContent = "Open Group";
+      } else {
+        sheetProfileAction.href = `${ROUTES.publicProfile}?id=${encodeURIComponent(otherUser?.id || "")}`;
+        sheetProfileAction.querySelector("span").textContent = "View User Profile";
+      }
+
+      sheetMuteAction.querySelector("span").textContent = isMutedChat(conversationId) ? "Unmute Chat" : "Mute Chat";
+      sheetBlockAction.querySelector("span").textContent = !conversationIsGroup && isBlockedUser(otherUser?.id || "") ? "Unblock User" : "Block User";
+
+      optionsSheetBackdrop.classList.add("show");
+    }
+
+    function closeOptionsSheet(event) {
+      if (event && event.target && event.target !== optionsSheetBackdrop) return;
+      optionsSheetBackdrop.classList.remove("show");
+    }
+
     async function deleteChatForMe() {
       const confirmDelete = window.confirm("Delete this chat from your list?");
       if (!confirmDelete) return;
@@ -1498,9 +1621,49 @@
         if (error) throw error;
         window.location.href = ROUTES.chats;
       } catch (error) {
-        console.error("Delete chat error:", error);
         showNotice(error.message || "Could not delete chat.");
       }
+    }
+
+    function toggleMuteChat() {
+      const map = getLocalMap(MUTE_KEY);
+      if (map[conversationId]) {
+        delete map[conversationId];
+        showNotice("Chat unmuted.", "success");
+      } else {
+        map[conversationId] = true;
+        showNotice("Chat muted.", "success");
+      }
+      setLocalMap(MUTE_KEY, map);
+      closeOptionsSheet({ target: optionsSheetBackdrop });
+    }
+
+    function toggleBlockUser() {
+      if (conversationIsGroup || !otherUser?.id) {
+        showNotice("Block is only available for direct chats.", "info");
+        return;
+      }
+
+      const map = getLocalMap(BLOCK_KEY);
+      if (map[otherUser.id]) {
+        delete map[otherUser.id];
+        showNotice("User unblocked locally.", "success");
+      } else {
+        map[otherUser.id] = true;
+        showNotice("User blocked locally.", "success");
+      }
+      setLocalMap(BLOCK_KEY, map);
+      updateHeader();
+      closeOptionsSheet({ target: optionsSheetBackdrop });
+    }
+
+    function clearChatForMe() {
+      const map = getLocalMap(CLEAR_KEY);
+      map[conversationId] = new Date().toISOString();
+      setLocalMap(CLEAR_KEY, map);
+      renderMessages();
+      showNotice("Chat cleared for you.", "success");
+      closeOptionsSheet({ target: optionsSheetBackdrop });
     }
 
     backBtn.addEventListener("click", () => {
@@ -1524,7 +1687,7 @@
         showNotice("User is not available for calling.", "info");
         return;
       }
-      window.location.href = `${ROUTES.calls}?user_id=${encodeURIComponent(otherUser.id)}&conversation_id=${encodeURIComponent(conversationId)}`;
+      window.location.href = `${ROUTES.call}?user=${encodeURIComponent(otherUser.id)}&conversation=${encodeURIComponent(conversationId)}&type=voice`;
     });
 
     videoBtn.addEventListener("click", () => {
@@ -1536,16 +1699,18 @@
         showNotice("User is not available for video.", "info");
         return;
       }
-      window.location.href = `${ROUTES.calls}?mode=video&user_id=${encodeURIComponent(otherUser.id)}&conversation_id=${encodeURIComponent(conversationId)}`;
+      window.location.href = `${ROUTES.call}?user=${encodeURIComponent(otherUser.id)}&conversation=${encodeURIComponent(conversationId)}&type=video`;
     });
 
     menuBtn.addEventListener("click", openOptionsSheet);
 
+    sheetMuteAction.addEventListener("click", toggleMuteChat);
+    sheetBlockAction.addEventListener("click", toggleBlockUser);
+    sheetClearAction.addEventListener("click", clearChatForMe);
     sheetRefreshAction.addEventListener("click", async () => {
       closeOptionsSheet({ target: optionsSheetBackdrop });
       await refreshAll();
     });
-
     sheetDeleteAction.addEventListener("click", async () => {
       closeOptionsSheet({ target: optionsSheetBackdrop });
       await deleteChatForMe();
@@ -1559,7 +1724,6 @@
         try {
           attachment = await uploadAttachment(fileInput.files[0]);
         } catch (error) {
-          console.error("Upload error:", error);
           showNotice(error.message || "Could not upload attachment.");
           return;
         }
@@ -1582,15 +1746,30 @@
     });
 
     emojiBtn.addEventListener("click", () => {
-      messageInput.value += "😊";
+      const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+      messageInput.value += emoji;
       autoGrowTextarea();
       messageInput.focus();
       broadcastTyping();
     });
 
+    messageInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        composerForm.requestSubmit();
+      }
+    });
+
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         closeOptionsSheet({ target: optionsSheetBackdrop });
+      }
+    });
+
+    window.addEventListener("focus", tryMarkRead);
+    messagesScroll.addEventListener("scroll", () => {
+      if (messagesScroll.scrollTop + messagesScroll.clientHeight >= messagesScroll.scrollHeight - 40) {
+        tryMarkRead();
       }
     });
 
@@ -1622,7 +1801,6 @@
         setupPresence();
         setupTypingEvents();
       } catch (error) {
-        console.error("Chat init error:", error);
         showNotice(error.message || "Could not load chat.");
         messagesScroll.innerHTML = `
           <div class="empty">
