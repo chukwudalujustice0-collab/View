@@ -2,484 +2,816 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Create Post | View</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#07122a" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    :root{
+      --bg:#061126;
+      --bg2:#0a1835;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.05);
+      --stroke:rgba(255,255,255,.08);
+      --text:#f8fbff;
+      --muted:#9db0cf;
+      --soft:#7f91af;
+      --primary:#2d6bff;
+      --primary2:#5c8cff;
+      --green:#22c55e;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --shadow:0 18px 50px rgba(0,0,0,.28);
+    }
+
     *{
       margin:0;
       padding:0;
       box-sizing:border-box;
-      font-family:Arial,sans-serif;
+      font-family:Inter,Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
     }
 
-    body{
-      background:#f4f7fc;
-      color:#111827;
-      min-height:100vh;
-      padding:20px 16px 40px;
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
+        radial-gradient(circle at top left, rgba(0,255,200,.06), transparent 18%),
+        linear-gradient(180deg,#08142e 0%,#061126 55%,#050d1c 100%);
+      color:var(--text);
     }
+
+    body{padding-bottom:120px}
 
     .wrap{
-      max-width:760px;
+      width:min(100%,980px);
       margin:0 auto;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:18px;
-    }
-
-    .back{
-      width:46px;
-      height:46px;
-      border:none;
-      border-radius:14px;
-      background:#fff;
-      box-shadow:0 8px 24px rgba(15,23,42,.08);
-      font-size:20px;
-      cursor:pointer;
-    }
-
-    .topbar h1{
-      font-size:32px;
-      font-weight:800;
+      padding:18px 16px 0;
     }
 
     .notice{
       display:none;
-      padding:12px 14px;
-      border-radius:14px;
       margin-bottom:16px;
+      padding:14px 16px;
+      border-radius:18px;
       font-size:14px;
       line-height:1.6;
+      border:1px solid transparent;
+      backdrop-filter:blur(10px);
     }
-
-    .notice.show{
-      display:block;
-    }
-
-    .notice.error{
-      background:#fee2e2;
-      color:#b91c1c;
-    }
-
-    .notice.success{
-      background:#dcfce7;
-      color:#15803d;
-    }
-
-    .notice.info{
-      background:#dbeafe;
-      color:#1d4ed8;
-    }
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#ffd9d9}
+    .notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffe8}
+    .notice.info{background:rgba(45,107,255,.14);border-color:rgba(45,107,255,.26);color:#dce8ff}
 
     .hero{
-      background:linear-gradient(135deg,#1d4ed8,#2563eb);
-      color:#fff;
-      border-radius:28px;
-      padding:22px 20px;
-      box-shadow:0 14px 36px rgba(29,78,216,.22);
+      position:relative;
+      overflow:hidden;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
+        linear-gradient(135deg, rgba(45,107,255,.16), rgba(92,140,255,.06));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:30px;
+      padding:18px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(18px);
       margin-bottom:18px;
     }
 
-    .hero h2{
-      font-size:24px;
-      font-weight:800;
-      margin-bottom:8px;
+    .hero::after{
+      content:"";
+      position:absolute;
+      top:-70px;
+      right:-70px;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(92,140,255,.30), transparent 66%);
+      pointer-events:none;
     }
 
-    .hero p{
-      color:#eff6ff;
-      font-size:14px;
-      line-height:1.6;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:1.2fr .8fr;
-      gap:18px;
-    }
-
-    .card{
-      background:#fff;
-      border-radius:24px;
-      padding:22px 18px;
-      box-shadow:0 10px 30px rgba(15,23,42,.08);
-      margin-bottom:18px;
-    }
-
-    .card h2{
-      font-size:20px;
-      font-weight:800;
-      margin-bottom:14px;
-    }
-
-    .group{
-      margin-bottom:14px;
-    }
-
-    .group label{
-      display:block;
-      font-size:14px;
-      font-weight:700;
-      margin-bottom:8px;
-    }
-
-    .group input,
-    .group textarea,
-    .group select{
-      width:100%;
-      border:1px solid #e5e7eb;
-      border-radius:14px;
-      padding:13px 14px;
-      font-size:15px;
-      background:#fff;
-      color:#111827;
-    }
-
-    .group textarea{
-      min-height:170px;
-      resize:vertical;
-      line-height:1.6;
-    }
-
-    .group input:focus,
-    .group textarea:focus,
-    .group select:focus{
-      outline:none;
-      border-color:#1d4ed8;
-      box-shadow:0 0 0 3px rgba(29,78,216,.08);
-    }
-
-    .row{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-    }
-
-    .check-grid{
-      display:grid;
-      gap:10px;
-    }
-
-    .check-item{
+    .topbar{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
       gap:12px;
-      padding:14px;
-      border:1px solid #e5e7eb;
-      border-radius:16px;
-      background:#fff;
+      margin-bottom:16px;
+      position:relative;
+      z-index:1;
+      flex-wrap:wrap;
     }
 
-    .check-left{
+    .top-left,.top-right{
       display:flex;
       align-items:center;
       gap:10px;
+      flex-wrap:wrap;
     }
 
-    .check-title{
-      font-weight:700;
-      font-size:15px;
-    }
-
-    .check-sub{
-      font-size:12px;
-      color:#6b7280;
-      margin-top:2px;
-    }
-
-    .status-pill{
-      min-height:30px;
-      padding:0 10px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:700;
+    .icon-btn,.primary-btn,.ghost-btn,.soft-btn,.danger-btn{
+      min-height:46px;
+      border:none;
+      border-radius:18px;
+      padding:0 16px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      background:#fee2e2;
-      color:#b91c1c;
-    }
-
-    .status-pill.connected{
-      background:#dcfce7;
-      color:#15803d;
-    }
-
-    .btns{
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr;
-      gap:12px;
-      margin-top:16px;
-    }
-
-    button.action-btn{
-      border:none;
-      border-radius:14px;
-      min-height:52px;
-      font-size:16px;
+      gap:8px;
+      text-decoration:none;
+      color:#fff;
+      font-size:13px;
       font-weight:800;
       cursor:pointer;
     }
 
-    .primary{
-      background:#1d4ed8;
-      color:#fff;
-    }
-
-    .secondary{
-      background:#eef2ff;
-      color:#1d4ed8;
-    }
-
-    .danger{
-      background:#fee2e2;
-      color:#b91c1c;
-    }
-
-    .preview-box{
-      border:1px dashed #c7d2fe;
-      border-radius:18px;
-      padding:16px;
-      background:#f8faff;
-    }
-
-    .preview-post{
-      background:#fff;
-      border-radius:18px;
-      padding:16px;
-      border:1px solid #e5e7eb;
-    }
-
-    .preview-head{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:12px;
-    }
-
-    .avatar{
+    .icon-btn{
       width:46px;
-      height:46px;
-      border-radius:50%;
+      min-width:46px;
+      padding:0;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 10px 24px rgba(0,0,0,.18);
+    }
+
+    .primary-btn{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:0 12px 28px rgba(45,107,255,.28);
+    }
+
+    .ghost-btn,.soft-btn{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .danger-btn{
+      background:rgba(239,68,68,.14);
+      border:1px solid rgba(239,68,68,.18);
+      color:#ffd9d9;
+    }
+
+    .brand h1{
+      font-size:32px;
+      font-weight:900;
+      line-height:1;
+      letter-spacing:-.03em;
+      margin-bottom:4px;
+    }
+
+    .brand p{
+      color:#bfd0ea;
+      font-size:13px;
+    }
+
+    .hero-row{
       display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero-chip{
+      min-height:36px;
+      padding:0 12px;
+      border-radius:999px;
+      display:inline-flex;
       align-items:center;
       justify-content:center;
-      background:#dbeafe;
-      color:#1d4ed8;
-      font-weight:800;
-      font-size:18px;
-    }
-
-    .preview-name{
-      font-weight:800;
-      font-size:15px;
-      margin-bottom:2px;
-    }
-
-    .preview-sub{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#dce8ff;
       font-size:12px;
-      color:#6b7280;
+      font-weight:800;
     }
 
-    .preview-content{
-      font-size:14px;
-      line-height:1.7;
-      white-space:pre-wrap;
-      margin-bottom:12px;
-      color:#111827;
-    }
-
-    .preview-image{
-      width:100%;
-      border-radius:16px;
-      border:1px solid #e5e7eb;
-      display:none;
-      margin-bottom:12px;
-      max-height:320px;
-      object-fit:cover;
-      background:#fff;
-    }
-
-    .mini-list{
+    .grid{
       display:grid;
-      gap:10px;
+      grid-template-columns:repeat(12,1fr);
+      gap:18px;
+      margin-bottom:18px;
     }
 
-    .mini-item{
-      padding:14px;
-      border:1px solid #e5e7eb;
-      border-radius:16px;
-      background:#fff;
+    .col-12{grid-column:span 12}
+    .col-8{grid-column:span 8}
+    .col-6{grid-column:span 6}
+    .col-4{grid-column:span 4}
+
+    .card{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:28px;
+      padding:18px 16px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(16px);
     }
 
-    .mini-item b{
-      display:block;
+    .card-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+
+    .card-head h2,.card-head h3{
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:-.02em;
       margin-bottom:4px;
-      font-size:15px;
     }
 
-    .mini-item span{
-      color:#6b7280;
+    .card-head p{
+      color:var(--muted);
       font-size:13px;
-      line-height:1.5;
+      line-height:1.7;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    .field label{
+      font-size:12px;
+      font-weight:800;
+      color:#dce8ff;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    .input,.textarea,.select{
+      width:100%;
+      min-height:54px;
+      border:none;
+      outline:none;
+      border-radius:18px;
+      padding:0 14px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      font-size:14px;
+    }
+
+    .textarea{
+      min-height:160px;
+      padding:14px;
+      resize:vertical;
+    }
+
+    .input::placeholder,.textarea::placeholder{
+      color:#92a6c5;
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .tool-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .mini-btn{
+      border:none;
+      border-radius:999px;
+      padding:10px 14px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#dce8ff;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .emoji-panel{
+      display:none;
+      gap:8px;
+      flex-wrap:wrap;
+      padding:12px;
+      border-radius:18px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      margin-top:10px;
+    }
+
+    .emoji-panel.show{display:flex}
+
+    .emoji-btn{
+      width:40px;
+      height:40px;
+      border:none;
+      border-radius:12px;
+      background:rgba(255,255,255,.08);
+      cursor:pointer;
+      font-size:20px;
+    }
+
+    .media-drop{
+      border:1.5px dashed rgba(255,255,255,.18);
+      background:rgba(255,255,255,.04);
+      border-radius:22px;
+      padding:20px 16px;
+      text-align:center;
+    }
+
+    .media-drop h4{
+      font-size:16px;
+      font-weight:900;
+      margin-bottom:6px;
+    }
+
+    .media-drop p{
+      font-size:13px;
+      color:#bfd0ea;
+      line-height:1.7;
+      margin-bottom:12px;
+    }
+
+    .hidden{display:none !important;}
+
+    .media-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .media-item{
+      position:relative;
+      border-radius:20px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.05);
+      min-height:180px;
+    }
+
+    .media-item img,.media-item video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      max-height:240px;
+    }
+
+    .media-badge{
+      position:absolute;
+      top:10px;
+      left:10px;
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(7,18,43,.78);
+      color:#fff;
+      font-size:11px;
+      font-weight:900;
+      border:1px solid rgba(255,255,255,.08);
+      z-index:2;
+    }
+
+    .remove-media{
+      position:absolute;
+      top:10px;
+      right:10px;
+      width:34px;
+      height:34px;
+      border:none;
+      border-radius:12px;
+      background:rgba(239,68,68,.88);
+      color:#fff;
+      font-size:16px;
+      font-weight:900;
+      cursor:pointer;
+      z-index:2;
+    }
+
+    .cross-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+
+    .platform-card{
+      border-radius:22px;
+      padding:16px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .platform-card.active{
+      border-color:rgba(45,107,255,.28);
+      background:rgba(45,107,255,.12);
+    }
+
+    .platform-meta h4{
+      font-size:15px;
+      font-weight:900;
+      margin-bottom:4px;
+    }
+
+    .platform-meta p{
+      font-size:12px;
+      color:#bfd0ea;
+      line-height:1.6;
+    }
+
+    .toggle{
+      width:52px;
+      height:30px;
+      background:rgba(255,255,255,.12);
+      border-radius:999px;
+      position:relative;
+      border:1px solid rgba(255,255,255,.08);
+      cursor:pointer;
+      flex-shrink:0;
+    }
+
+    .toggle::after{
+      content:"";
+      position:absolute;
+      top:3px;
+      left:3px;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      background:#fff;
+      transition:.18s ease;
+    }
+
+    .platform-card.active .toggle{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+    }
+
+    .platform-card.active .toggle::after{
+      left:25px;
+    }
+
+    .preview-shell{
+      border-radius:24px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      padding:16px;
+    }
+
+    .preview-title{
+      font-size:22px;
+      font-weight:900;
+      line-height:1.3;
+      margin-bottom:10px;
       word-break:break-word;
     }
 
-    @media(max-width:760px){
-      .grid{
-        grid-template-columns:1fr;
-      }
+    .preview-content{
+      color:#dce8ff;
+      font-size:14px;
+      line-height:1.8;
+      white-space:pre-wrap;
+      margin-bottom:12px;
+      word-break:break-word;
     }
 
-    @media(max-width:560px){
-      .topbar h1{
-        font-size:28px;
-      }
+    .preview-meta{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
 
-      .row{
-        grid-template-columns:1fr;
-      }
+    .preview-chip{
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.08);
+      color:#dce8ff;
+      font-size:11px;
+      font-weight:900;
+      border:1px solid rgba(255,255,255,.08);
+    }
 
-      .btns{
-        grid-template-columns:1fr;
-      }
+    .preview-gallery{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+
+    .preview-gallery img,.preview-gallery video{
+      width:100%;
+      max-height:220px;
+      object-fit:cover;
+      display:block;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .status-line{
+      font-size:13px;
+      color:#bfd0ea;
+      line-height:1.7;
+    }
+
+    .footer-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      bottom:14px;
+      transform:translateX(-50%);
+      width:min(760px, calc(100% - 20px));
+      background:rgba(7,18,43,.94);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px;
+      box-shadow:0 20px 50px rgba(15,23,42,.24);
+      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
+      z-index:50;
+      backdrop-filter:blur(18px);
+    }
+
+    .nav-btn{
+      text-decoration:none;
+      color:#90a5c7;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      min-height:58px;
+      border-radius:16px;
+      font-size:12px;
+      font-weight:800;
+      text-align:center;
+    }
+
+    .nav-btn.active{
+      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
+      color:#fff;
+      border:1px solid rgba(45,107,255,.20);
+    }
+
+    .nav-icon{font-size:20px;line-height:1}
+
+    @media(max-width:900px){
+      .col-8,.col-6,.col-4{grid-column:span 12}
+    }
+
+    @media(max-width:640px){
+      .wrap{padding:14px 12px 0}
+      .brand h1{font-size:28px}
+      .split,.cross-grid,.media-grid,.preview-gallery{grid-template-columns:1fr}
+      .topbar{flex-direction:column;align-items:flex-start}
+      .top-left,.top-right{width:100%}
+      .top-right .primary-btn,.top-right .ghost-btn,.top-right .soft-btn{flex:1}
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="topbar">
-      <button class="back" onclick="window.location.href='home.html'">←</button>
-      <h1>Create Post</h1>
-    </div>
-
     <div id="notice" class="notice"></div>
 
     <section class="hero">
-      <h2>Publish from one place</h2>
-      <p>Create a post for View and optionally send the same post to Facebook when your Facebook Page is connected.</p>
+      <div class="topbar">
+        <div class="top-left">
+          <a class="icon-btn" href="home.html" title="Back">←</a>
+          <div class="brand">
+            <h1>Create Post</h1>
+            <p>Compose premium posts, reels, schedules, drafts, and cross-posts</p>
+          </div>
+        </div>
+
+        <div class="top-right">
+          <a class="ghost-btn" href="drafts.html">Drafts</a>
+          <a class="ghost-btn" href="publish-history.html">History</a>
+          <a class="soft-btn" href="dashboard.html">Dashboard</a>
+        </div>
+      </div>
+
+      <div class="hero-row">
+        <span id="draftChip" class="hero-chip">Draft: not saved</span>
+        <span id="mediaChip" class="hero-chip">Media: 0 selected</span>
+        <span id="crossChip" class="hero-chip">Cross-post: none</span>
+      </div>
     </section>
 
-    <div class="grid">
-      <div>
-        <section class="card">
-          <h2>Post Content</h2>
+    <section class="grid">
+      <div class="card col-8">
+        <div class="card-head">
+          <div>
+            <h2>Post Composer</h2>
+            <p>Create a standard feed post, reel, or a scheduled post with premium controls.</p>
+          </div>
+        </div>
 
-          <div class="group">
-            <label for="postContent">Caption / Content</label>
-            <textarea id="postContent" placeholder="Write your post..."></textarea>
+        <div class="field">
+          <label for="titleInput">Post Title</label>
+          <input id="titleInput" class="input" type="text" placeholder="Enter a strong post title" />
+        </div>
+
+        <div class="field">
+          <label for="contentInput">Caption / Content</label>
+          <textarea id="contentInput" class="textarea" placeholder="Write your post..."></textarea>
+          <div class="tool-row">
+            <button id="emojiToggleBtn" class="mini-btn" type="button">😊 Emoji</button>
+            <button id="clearDraftBtn" class="mini-btn" type="button">🗑 Clear Draft</button>
+          </div>
+          <div id="emojiPanel" class="emoji-panel"></div>
+        </div>
+
+        <div class="split">
+          <div class="field">
+            <label for="linkInput">Link URL</label>
+            <input id="linkInput" class="input" type="url" placeholder="https://example.com" />
           </div>
 
-          <div class="row">
-            <div class="group">
-              <label for="imageUrl">Image / Media URL</label>
-              <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg" />
-            </div>
-
-            <div class="group">
-              <label for="linkUrl">Link URL</label>
-              <input type="url" id="linkUrl" placeholder="https://example.com" />
-            </div>
+          <div class="field">
+            <label for="locationInput">Location</label>
+            <input id="locationInput" class="input" type="text" placeholder="Add location" />
           </div>
+        </div>
 
-          <div class="group">
-            <label for="postVisibility">Visibility</label>
-            <select id="postVisibility">
+        <div class="split">
+          <div class="field">
+            <label for="visibilitySelect">Visibility</label>
+            <select id="visibilitySelect" class="select">
               <option value="public">Public</option>
+              <option value="followers">Followers</option>
               <option value="private">Private</option>
             </select>
           </div>
-        </section>
 
-        <section class="card">
-          <h2>Publish To</h2>
+          <div class="field">
+            <label for="statusSelect">Status</label>
+            <select id="statusSelect" class="select">
+              <option value="published">Publish Now</option>
+              <option value="draft">Save as Draft</option>
+              <option value="scheduled">Schedule</option>
+            </select>
+          </div>
+        </div>
 
-          <div class="check-grid">
-            <label class="check-item">
-              <span class="check-left">
-                <input type="checkbox" id="postToView" checked />
-                <span>
-                  <div class="check-title">View</div>
-                  <div class="check-sub">Required for in-app publishing</div>
-                </span>
-              </span>
-              <span class="status-pill connected">Ready</span>
-            </label>
+        <div class="field">
+          <label>Media Upload</label>
+          <div class="media-drop">
+            <h4>Upload Images or Videos</h4>
+            <p>Select multiple images or videos. The current backend stores the first uploaded media in the post row while the UI supports multiple selection and preview cleanly.</p>
+            <div class="tool-row" style="justify-content:center;">
+              <button id="pickMediaBtn" class="primary-btn" type="button">Choose Media</button>
+              <button id="removeAllMediaBtn" class="danger-btn" type="button">Remove All</button>
+            </div>
+            <input id="mediaInput" type="file" accept="image/*,video/*" multiple class="hidden" />
+          </div>
+          <div id="mediaGrid" class="media-grid"></div>
+        </div>
 
-            <label class="check-item">
-              <span class="check-left">
-                <input type="checkbox" id="postToFacebook" />
-                <span>
-                  <div class="check-title">Facebook</div>
-                  <div class="check-sub">Cross-post to your connected Page</div>
-                </span>
-              </span>
-              <span class="status-pill" id="facebookStatusPill">Checking...</span>
-            </label>
+        <div id="scheduleWrap" class="card" style="padding:14px;margin-top:8px;background:rgba(255,255,255,.05);">
+          <div class="card-head" style="margin-bottom:12px;">
+            <div>
+              <h3 style="font-size:18px;">Schedule Post</h3>
+              <p>Used when status is set to scheduled.</p>
+            </div>
           </div>
 
-          <div class="btns">
-            <button class="action-btn primary" id="publishBtn">Publish Now</button>
-            <button class="action-btn secondary" id="saveDraftBtn">Save Draft</button>
-            <button class="action-btn danger" id="clearBtn">Clear</button>
+          <div class="split">
+            <div class="field">
+              <label for="scheduleDate">Date</label>
+              <input id="scheduleDate" class="input" type="date" />
+            </div>
+            <div class="field">
+              <label for="scheduleTime">Time</label>
+              <input id="scheduleTime" class="input" type="time" />
+            </div>
           </div>
-        </section>
+        </div>
       </div>
 
-      <div>
-        <section class="card">
-          <h2>Live Preview</h2>
-
-          <div class="preview-box">
-            <div class="preview-post">
-              <div class="preview-head">
-                <div class="avatar" id="previewAvatar">V</div>
-                <div>
-                  <div class="preview-name" id="previewName">User</div>
-                  <div class="preview-sub" id="previewSub">Posting from View</div>
-                </div>
-              </div>
-
-              <div class="preview-content" id="previewContent">Your post preview will appear here.</div>
-              <img id="previewImage" class="preview-image" alt="Post preview image" />
-            </div>
+      <div class="card col-4">
+        <div class="card-head">
+          <div>
+            <h3>Cross-Post</h3>
+            <p>Select platforms to target after publish or schedule.</p>
           </div>
-        </section>
+          <a class="soft-btn" href="connected-accounts.html">Accounts</a>
+        </div>
 
-        <section class="card">
-          <h2>Publish Summary</h2>
-
-          <div class="mini-list">
-            <div class="mini-item">
-              <b>Facebook Connection</b>
-              <span id="facebookConnectionSummary">Checking connection...</span>
+        <div id="crossGrid" class="cross-grid">
+          <div class="platform-card" data-platform="tiktok">
+            <div class="platform-meta">
+              <h4>TikTok</h4>
+              <p>Short-form social video</p>
             </div>
-
-            <div class="mini-item">
-              <b>Selected Targets</b>
-              <span id="targetSummary">View</span>
-            </div>
-
-            <div class="mini-item">
-              <b>Last Action</b>
-              <span id="lastActionSummary">No action yet.</span>
-            </div>
+            <div class="toggle"></div>
           </div>
-        </section>
+
+          <div class="platform-card" data-platform="facebook">
+            <div class="platform-meta">
+              <h4>Facebook</h4>
+              <p>Page and social distribution</p>
+            </div>
+            <div class="toggle"></div>
+          </div>
+
+          <div class="platform-card" data-platform="instagram">
+            <div class="platform-meta">
+              <h4>Instagram</h4>
+              <p>Feed and creator reach</p>
+            </div>
+            <div class="toggle"></div>
+          </div>
+
+          <div class="platform-card" data-platform="youtube">
+            <div class="platform-meta">
+              <h4>YouTube</h4>
+              <p>Video distribution</p>
+            </div>
+            <div class="toggle"></div>
+          </div>
+
+          <div class="platform-card" data-platform="x">
+            <div class="platform-meta">
+              <h4>X</h4>
+              <p>Fast social publishing</p>
+            </div>
+            <div class="toggle"></div>
+          </div>
+        </div>
+
+        <div class="footer-actions">
+          <button id="saveDraftBtn" class="ghost-btn" type="button">Save Draft</button>
+          <button id="scheduleBtn" class="soft-btn" type="button">Schedule</button>
+          <button id="publishBtn" class="primary-btn" type="button">Publish Now</button>
+        </div>
       </div>
-    </div>
+
+      <div class="card col-12">
+        <div class="card-head">
+          <div>
+            <h3>Live Preview</h3>
+            <p>Preview how your post will feel before publishing.</p>
+          </div>
+        </div>
+
+        <div class="preview-shell">
+          <div id="previewTitle" class="preview-title">Your post title will appear here</div>
+          <div id="previewContent" class="preview-content">Your post content preview will appear here.</div>
+          <div id="previewMeta" class="preview-meta"></div>
+          <div id="previewGallery" class="preview-gallery"></div>
+          <div id="previewStatus" class="status-line">Ready to compose.</div>
+        </div>
+      </div>
+    </section>
   </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="home.html">
+      <span class="nav-icon">⌂</span>
+      <span>Home</span>
+    </a>
+    <a class="nav-btn" href="explore.html">
+      <span class="nav-icon">📰</span>
+      <span>News</span>
+    </a>
+    <a class="nav-btn active" href="create-post.html">
+      <span class="nav-icon">＋</span>
+      <span>Create</span>
+    </a>
+    <a class="nav-btn" href="video-feed.html">
+      <span class="nav-icon">🎥</span>
+      <span>Video</span>
+    </a>
+    <a class="nav-btn" href="more.html">
+      <span class="nav-icon">☰</span>
+      <span>More</span>
+    </a>
+  </nav>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const FACEBOOK_PUBLISH_API = "https://view-psi-lac.vercel.app/api/facebook-publish";
+    const MEDIA_BUCKET = "post-media";
+    const DRAFT_KEY = "view_create_post_draft_v2";
+    const EMOJIS = ["😀","😁","😂","🤣","😊","😍","🥳","😎","🔥","❤️","💯","🎉","✨","🙏","👍","💙","💚","🫶","📸","🎥","🚀","🌍","💼","📢"];
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -490,30 +822,41 @@
     });
 
     const noticeBox = document.getElementById("notice");
-    const postContent = document.getElementById("postContent");
-    const imageUrl = document.getElementById("imageUrl");
-    const linkUrl = document.getElementById("linkUrl");
-    const postVisibility = document.getElementById("postVisibility");
-    const postToView = document.getElementById("postToView");
-    const postToFacebook = document.getElementById("postToFacebook");
-    const facebookStatusPill = document.getElementById("facebookStatusPill");
+    const titleInput = document.getElementById("titleInput");
+    const contentInput = document.getElementById("contentInput");
+    const linkInput = document.getElementById("linkInput");
+    const locationInput = document.getElementById("locationInput");
+    const visibilitySelect = document.getElementById("visibilitySelect");
+    const statusSelect = document.getElementById("statusSelect");
+    const scheduleDate = document.getElementById("scheduleDate");
+    const scheduleTime = document.getElementById("scheduleTime");
+
+    const emojiToggleBtn = document.getElementById("emojiToggleBtn");
+    const emojiPanel = document.getElementById("emojiPanel");
+    const clearDraftBtn = document.getElementById("clearDraftBtn");
+
+    const pickMediaBtn = document.getElementById("pickMediaBtn");
+    const removeAllMediaBtn = document.getElementById("removeAllMediaBtn");
+    const mediaInput = document.getElementById("mediaInput");
+    const mediaGrid = document.getElementById("mediaGrid");
+
     const publishBtn = document.getElementById("publishBtn");
+    const scheduleBtn = document.getElementById("scheduleBtn");
     const saveDraftBtn = document.getElementById("saveDraftBtn");
-    const clearBtn = document.getElementById("clearBtn");
 
-    const previewAvatar = document.getElementById("previewAvatar");
-    const previewName = document.getElementById("previewName");
-    const previewSub = document.getElementById("previewSub");
+    const previewTitle = document.getElementById("previewTitle");
     const previewContent = document.getElementById("previewContent");
-    const previewImage = document.getElementById("previewImage");
+    const previewMeta = document.getElementById("previewMeta");
+    const previewGallery = document.getElementById("previewGallery");
+    const previewStatus = document.getElementById("previewStatus");
 
-    const facebookConnectionSummary = document.getElementById("facebookConnectionSummary");
-    const targetSummary = document.getElementById("targetSummary");
-    const lastActionSummary = document.getElementById("lastActionSummary");
+    const draftChip = document.getElementById("draftChip");
+    const mediaChip = document.getElementById("mediaChip");
+    const crossChip = document.getElementById("crossChip");
 
-    let currentSession = null;
     let currentUser = null;
-    let facebookConnected = false;
+    let mediaFiles = [];
+    let selectedPlatforms = new Set();
 
     function showNotice(message, type = "error") {
       noticeBox.className = `notice show ${type}`;
@@ -525,16 +868,63 @@
       noticeBox.textContent = "";
     }
 
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function isVideo(file) {
+      return file?.type?.startsWith("video/");
+    }
+
+    function isImage(file) {
+      return file?.type?.startsWith("image/");
+    }
+
+    function extractHashtags(text) {
+      return [...new Set((text.match(/#[\p{L}\p{N}_]+/gu) || []).map(x => x.trim()))].join(",");
+    }
+
+    function extractTaggedUsers(text) {
+      return [...new Set((text.match(/@[\p{L}\p{N}._-]+/gu) || []).map(x => x.trim()))].join(",");
+    }
+
+    function buildEmojiPanel() {
+      emojiPanel.innerHTML = EMOJIS.map(emoji => `
+        <button class="emoji-btn" type="button" data-emoji="${emoji}">${emoji}</button>
+      `).join("");
+
+      emojiPanel.querySelectorAll("[data-emoji]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          insertAtCursor(contentInput, btn.dataset.emoji);
+          updatePreview();
+          saveDraftLocal();
+        });
+      });
+    }
+
+    function insertAtCursor(el, text) {
+      const start = el.selectionStart || 0;
+      const end = el.selectionEnd || 0;
+      const value = el.value || "";
+      el.value = value.slice(0, start) + text + value.slice(end);
+      const newPos = start + text.length;
+      el.setSelectionRange(newPos, newPos);
+      el.focus();
+    }
+
     async function getSessionWithRetry(maxWaitMs = 3000) {
       const start = Date.now();
-
       while (Date.now() - start < maxWaitMs) {
         const { data, error } = await supabaseClient.auth.getSession();
         if (error) throw error;
         if (data.session?.user) return data.session;
         await new Promise(resolve => setTimeout(resolve, 200));
       }
-
       return null;
     }
 
@@ -547,209 +937,370 @@
       return session;
     }
 
-    function updatePreview() {
-      const content = postContent.value.trim();
-      const image = imageUrl.value.trim();
-
-      previewContent.textContent = content || "Your post preview will appear here.";
-
-      if (image) {
-        previewImage.src = image;
-        previewImage.style.display = "block";
-      } else {
-        previewImage.style.display = "none";
-        previewImage.removeAttribute("src");
-      }
-
-      const targets = [];
-      if (postToView.checked) targets.push("View");
-      if (postToFacebook.checked) targets.push("Facebook");
-      targetSummary.textContent = targets.length ? targets.join(", ") : "None selected";
-    }
-
-    async function loadUserAndConnections() {
-      currentSession = await requireSession();
-      if (!currentSession) return;
-
-      currentUser = currentSession.user;
-
-      const fullName =
-        currentUser.user_metadata?.full_name ||
-        currentUser.user_metadata?.name ||
-        currentUser.email?.split("@")[0] ||
-        "User";
-
-      previewName.textContent = fullName;
-      previewAvatar.textContent = fullName.charAt(0).toUpperCase();
-      previewSub.textContent = "Posting from View";
-
-      const { data, error } = await supabaseClient
-        .from("connected_accounts")
-        .select("status, account_name, page_id")
-        .eq("user_id", currentUser.id)
-        .eq("platform", "facebook")
-        .maybeSingle();
-
-      if (!error && data && data.status === "connected" && data.page_id) {
-        facebookConnected = true;
-        facebookStatusPill.textContent = "Connected";
-        facebookStatusPill.classList.add("connected");
-        facebookConnectionSummary.textContent =
-          "Connected to " + (data.account_name || "Facebook Page");
-      } else {
-        facebookConnected = false;
-        facebookStatusPill.textContent = "Not connected";
-        facebookStatusPill.classList.remove("connected");
-        facebookConnectionSummary.textContent =
-          "Facebook is not connected yet. Connect it first from Settings → Connected Accounts.";
-      }
-
-      updatePreview();
-    }
-
-    async function savePostToView(statusValue = "published") {
-      const content = postContent.value.trim();
-      const mediaUrl = imageUrl.value.trim();
-
-      const payload = {
-        user_id: currentUser.id,
-        content: content || null,
-        media_url: mediaUrl || null
+    function serializeDraft() {
+      return {
+        title: titleInput.value.trim(),
+        content: contentInput.value,
+        link_url: linkInput.value.trim(),
+        location: locationInput.value.trim(),
+        visibility: visibilitySelect.value,
+        status: statusSelect.value,
+        schedule_date: scheduleDate.value,
+        schedule_time: scheduleTime.value,
+        selected_platforms: [...selectedPlatforms],
+        saved_at: new Date().toISOString()
       };
-
-      const { data, error } = await supabaseClient
-        .from("posts")
-        .insert(payload)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
     }
 
-    async function publishToFacebook(postRow) {
-      const response = await fetch(FACEBOOK_PUBLISH_API, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + currentSession.access_token
-        },
-        body: JSON.stringify({
-          postId: postRow?.id || null,
-          message: postContent.value.trim(),
-          imageUrl: imageUrl.value.trim(),
-          link: linkUrl.value.trim()
-        })
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || result.error) {
-        throw new Error(result.error || "Facebook publish failed.");
-      }
-
-      return result;
+    function saveDraftLocal(showMessage = false) {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(serializeDraft()));
+      draftChip.textContent = "Draft: saved locally";
+      if (showMessage) showNotice("Draft saved locally.", "success");
     }
 
-    async function handlePublish() {
-      clearNotice();
-
-      if (!postToView.checked && !postToFacebook.checked) {
-        showNotice("Select at least one publish target.");
-        return;
-      }
-
-      if (!postContent.value.trim() && !imageUrl.value.trim() && !linkUrl.value.trim()) {
-        showNotice("Write something or add media/link before publishing.");
-        return;
-      }
-
-      if (postToFacebook.checked && !facebookConnected) {
-        showNotice("Facebook is not connected. Go to Settings → Connected Accounts first.");
-        return;
-      }
-
-      publishBtn.disabled = true;
-      publishBtn.textContent = "Publishing...";
-      lastActionSummary.textContent = "Publishing in progress...";
-
+    function loadDraftLocal() {
       try {
-        let viewPost = null;
-        let actionMessages = [];
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        const draft = JSON.parse(raw);
 
-        if (postToView.checked) {
-          viewPost = await savePostToView("published");
-          actionMessages.push("Published to View");
+        titleInput.value = draft.title || "";
+        contentInput.value = draft.content || "";
+        linkInput.value = draft.link_url || "";
+        locationInput.value = draft.location || "";
+        visibilitySelect.value = draft.visibility || "public";
+        statusSelect.value = draft.status || "published";
+        scheduleDate.value = draft.schedule_date || "";
+        scheduleTime.value = draft.schedule_time || "";
+
+        selectedPlatforms = new Set(draft.selected_platforms || []);
+        document.querySelectorAll(".platform-card").forEach(card => {
+          card.classList.toggle("active", selectedPlatforms.has(card.dataset.platform));
+        });
+
+        draftChip.textContent = "Draft: restored";
+      } catch {}
+    }
+
+    function clearDraftLocal() {
+      localStorage.removeItem(DRAFT_KEY);
+      titleInput.value = "";
+      contentInput.value = "";
+      linkInput.value = "";
+      locationInput.value = "";
+      visibilitySelect.value = "public";
+      statusSelect.value = "published";
+      scheduleDate.value = "";
+      scheduleTime.value = "";
+      mediaFiles = [];
+      selectedPlatforms = new Set();
+
+      document.querySelectorAll(".platform-card").forEach(card => card.classList.remove("active"));
+      renderMedia();
+      updatePreview();
+      draftChip.textContent = "Draft: cleared";
+      showNotice("Draft cleared.", "success");
+    }
+
+    function renderMedia() {
+      mediaChip.textContent = `Media: ${mediaFiles.length} selected`;
+
+      if (!mediaFiles.length) {
+        mediaGrid.innerHTML = "";
+        return;
+      }
+
+      mediaGrid.innerHTML = mediaFiles.map((file, index) => {
+        const url = URL.createObjectURL(file);
+        return `
+          <div class="media-item">
+            <span class="media-badge">${isVideo(file) ? "Video" : "Image"}</span>
+            <button class="remove-media" type="button" data-index="${index}">✕</button>
+            ${isVideo(file)
+              ? `<video src="${url}" controls playsinline></video>`
+              : `<img src="${url}" alt="Selected media">`
+            }
+          </div>
+        `;
+      }).join("");
+
+      mediaGrid.querySelectorAll(".remove-media").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const index = Number(btn.dataset.index);
+          mediaFiles.splice(index, 1);
+          renderMedia();
+          updatePreview();
+          saveDraftLocal();
+        });
+      });
+    }
+
+    function updatePreview() {
+      const title = titleInput.value.trim();
+      const content = contentInput.value.trim();
+      const location = locationInput.value.trim();
+      const link = linkInput.value.trim();
+
+      previewTitle.textContent = title || "Your post title will appear here";
+      previewContent.textContent = content || "Your post content preview will appear here.";
+
+      const hashtags = extractHashtags(content);
+      const tags = extractTaggedUsers(content);
+
+      const chips = [];
+      if (visibilitySelect.value) chips.push(`Visibility: ${visibilitySelect.value}`);
+      if (location) chips.push(`Location: ${location}`);
+      if (hashtags) chips.push(`Hashtags: ${hashtags}`);
+      if (tags) chips.push(`Tagged: ${tags}`);
+      if (link) chips.push("Link attached");
+      if (selectedPlatforms.size) chips.push(`Cross-post: ${[...selectedPlatforms].join(", ")}`);
+
+      previewMeta.innerHTML = chips.map(chip => `<span class="preview-chip">${escapeHtml(chip)}</span>`).join("");
+
+      previewGallery.innerHTML = mediaFiles.map(file => {
+        const url = URL.createObjectURL(file);
+        return isVideo(file)
+          ? `<video src="${url}" controls playsinline></video>`
+          : `<img src="${url}" alt="Preview media">`;
+      }).join("");
+
+      previewStatus.textContent = mediaFiles.some(isVideo)
+        ? "Video/reel content will appear in both home feed and video feed."
+        : "Standard post preview ready.";
+    }
+
+    function updateCrossChip() {
+      crossChip.textContent = selectedPlatforms.size
+        ? `Cross-post: ${[...selectedPlatforms].join(", ")}`
+        : "Cross-post: none";
+    }
+
+    async function uploadFirstMedia() {
+      if (!mediaFiles.length) return { media_url: null, media_type: null, cover_url: null };
+
+      const first = mediaFiles[0];
+      const ext = (first.name.split(".").pop() || "bin").toLowerCase();
+      const path = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { error: uploadError } = await supabaseClient
+        .storage
+        .from(MEDIA_BUCKET)
+        .upload(path, first, {
+          cacheControl: "3600",
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabaseClient
+        .storage
+        .from(MEDIA_BUCKET)
+        .getPublicUrl(path);
+
+      return {
+        media_url: data?.publicUrl || null,
+        media_type: isVideo(first) ? "video" : "image",
+        cover_url: isVideo(first) ? null : (data?.publicUrl || null)
+      };
+    }
+
+    function validatePost() {
+      const hasText = titleInput.value.trim() || contentInput.value.trim();
+      const hasMedia = mediaFiles.length > 0;
+      const hasLink = linkInput.value.trim();
+      return !!(hasText || hasMedia || hasLink);
+    }
+
+    async function publishNow() {
+      try {
+        clearNotice();
+        if (!validatePost()) {
+          showNotice("Add title, content, media, or link before publishing.", "info");
+          return;
         }
 
-        if (postToFacebook.checked) {
-          const fbResult = await publishToFacebook(viewPost);
-          actionMessages.push("Published to Facebook" + (fbResult.post_id ? ` (${fbResult.post_id})` : ""));
-        }
+        publishBtn.disabled = true;
+        publishBtn.textContent = "Publishing...";
 
-        showNotice(actionMessages.join(" • "), "success");
-        lastActionSummary.textContent = actionMessages.join(" • ");
+        const media = await uploadFirstMedia();
 
+        const payload = {
+          user_id: currentUser.id,
+          title: titleInput.value.trim() || null,
+          content: contentInput.value.trim() || null,
+          media_url: media.media_url,
+          media_type: media.media_type,
+          cover_url: media.cover_url,
+          hashtags: extractHashtags(contentInput.value),
+          tagged_users: extractTaggedUsers(contentInput.value),
+          location: locationInput.value.trim() || null,
+          visibility: visibilitySelect.value || "public",
+          status: "published",
+          link_url: linkInput.value.trim() || null,
+          published_at: new Date().toISOString()
+        };
+
+        const { error } = await supabaseClient
+          .from("posts")
+          .insert(payload);
+
+        if (error) throw error;
+
+        saveDraftLocal();
+        localStorage.removeItem(DRAFT_KEY);
+        showNotice("Post published successfully.", "success");
         setTimeout(() => {
-          window.location.href = "home.html";
-        }, 900);
+          window.location.href = "publish-history.html";
+        }, 700);
       } catch (error) {
-        showNotice(error.message || "Publishing failed.");
-        lastActionSummary.textContent = error.message || "Publishing failed.";
+        showNotice(error.message || "Could not publish post.");
       } finally {
         publishBtn.disabled = false;
         publishBtn.textContent = "Publish Now";
       }
     }
 
-    async function handleSaveDraft() {
-      clearNotice();
-
-      if (!postContent.value.trim() && !imageUrl.value.trim() && !linkUrl.value.trim()) {
-        showNotice("Write something or add media/link before saving draft.");
-        return;
-      }
-
-      saveDraftBtn.disabled = true;
-      saveDraftBtn.textContent = "Saving...";
-
+    async function schedulePostNow() {
       try {
-        await savePostToView("draft");
-        showNotice("Draft saved as a normal View post.", "success");
-        lastActionSummary.textContent = "Saved successfully.";
+        clearNotice();
+        if (!validatePost()) {
+          showNotice("Add title, content, media, or link before scheduling.", "info");
+          return;
+        }
+        if (!scheduleDate.value || !scheduleTime.value) {
+          showNotice("Choose schedule date and time first.", "info");
+          return;
+        }
+
+        scheduleBtn.disabled = true;
+        scheduleBtn.textContent = "Scheduling...";
+
+        const media = await uploadFirstMedia();
+        const scheduledFor = new Date(`${scheduleDate.value}T${scheduleTime.value}`);
+
+        const payload = {
+          user_id: currentUser.id,
+          title: titleInput.value.trim() || null,
+          content: contentInput.value.trim() || null,
+          media_url: media.media_url,
+          media_type: media.media_type,
+          hashtags: extractHashtags(contentInput.value),
+          tagged_users: extractTaggedUsers(contentInput.value),
+          scheduled_for: scheduledFor.toISOString()
+        };
+
+        const { error } = await supabaseClient
+          .from("scheduled_posts")
+          .insert(payload);
+
+        if (error) throw error;
+
+        saveDraftLocal();
+        localStorage.removeItem(DRAFT_KEY);
+        showNotice("Post scheduled successfully.", "success");
+        setTimeout(() => {
+          window.location.href = "scheduled-post.html";
+        }, 700);
       } catch (error) {
-        showNotice(error.message || "Could not save.");
-        lastActionSummary.textContent = error.message || "Could not save.";
+        showNotice(error.message || "Could not schedule post.");
       } finally {
-        saveDraftBtn.disabled = false;
-        saveDraftBtn.textContent = "Save Draft";
+        scheduleBtn.disabled = false;
+        scheduleBtn.textContent = "Schedule";
       }
     }
 
-    function clearForm() {
-      postContent.value = "";
-      imageUrl.value = "";
-      linkUrl.value = "";
-      postVisibility.value = "public";
-      postToView.checked = true;
-      postToFacebook.checked = false;
-      clearNotice();
-      lastActionSummary.textContent = "Form cleared.";
-      updatePreview();
+    function saveDraftNow() {
+      saveDraftLocal(true);
     }
 
-    [postContent, imageUrl, linkUrl, postVisibility, postToView, postToFacebook].forEach(el => {
-      el.addEventListener("input", updatePreview);
-      el.addEventListener("change", updatePreview);
+    function bindPlatformCards() {
+      document.querySelectorAll(".platform-card").forEach(card => {
+        card.addEventListener("click", () => {
+          const platform = card.dataset.platform;
+          if (selectedPlatforms.has(platform)) {
+            selectedPlatforms.delete(platform);
+            card.classList.remove("active");
+          } else {
+            selectedPlatforms.add(platform);
+            card.classList.add("active");
+          }
+          updateCrossChip();
+          updatePreview();
+          saveDraftLocal();
+        });
+      });
+    }
+
+    function bindInputs() {
+      [
+        titleInput, contentInput, linkInput, locationInput,
+        visibilitySelect, statusSelect, scheduleDate, scheduleTime
+      ].forEach(input => {
+        input.addEventListener("input", () => {
+          updatePreview();
+          saveDraftLocal();
+        });
+        input.addEventListener("change", () => {
+          updatePreview();
+          saveDraftLocal();
+        });
+      });
+    }
+
+    pickMediaBtn.addEventListener("click", () => mediaInput.click());
+
+    mediaInput.addEventListener("change", () => {
+      const incoming = [...mediaInput.files];
+      if (incoming.length) {
+        mediaFiles = [...mediaFiles, ...incoming];
+        renderMedia();
+        updatePreview();
+        saveDraftLocal();
+      }
+      mediaInput.value = "";
     });
 
-    publishBtn.addEventListener("click", handlePublish);
-    saveDraftBtn.addEventListener("click", handleSaveDraft);
-    clearBtn.addEventListener("click", clearForm);
-
-    loadUserAndConnections().catch(err => {
-      showNotice(err.message || "Could not load page.");
+    removeAllMediaBtn.addEventListener("click", () => {
+      mediaFiles = [];
+      renderMedia();
+      updatePreview();
+      saveDraftLocal();
     });
+
+    emojiToggleBtn.addEventListener("click", () => {
+      emojiPanel.classList.toggle("show");
+    });
+
+    clearDraftBtn.addEventListener("click", clearDraftLocal);
+    saveDraftBtn.addEventListener("click", saveDraftNow);
+    publishBtn.addEventListener("click", publishNow);
+    scheduleBtn.addEventListener("click", schedulePostNow);
+
+    async function init() {
+      try {
+        const session = await requireSession();
+        if (!session?.user) return;
+        currentUser = session.user;
+
+        buildEmojiPanel();
+        bindInputs();
+        bindPlatformCards();
+        loadDraftLocal();
+        updateCrossChip();
+        renderMedia();
+        updatePreview();
+
+        setInterval(() => {
+          if (document.visibilityState === "visible") {
+            saveDraftLocal();
+          }
+        }, 8000);
+      } catch (error) {
+        showNotice(error.message || "Could not initialize create post page.");
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>
