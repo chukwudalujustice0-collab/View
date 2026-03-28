@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Video Feed | View</title>
+  <meta name="theme-color" content="#07122b" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
@@ -14,6 +17,7 @@
       --card: rgba(255, 255, 255, 0.12);
       --border: rgba(255, 255, 255, 0.14);
       --shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+      --success: #22c55e;
     }
 
     * {
@@ -21,6 +25,7 @@
       padding: 0;
       box-sizing: border-box;
       font-family: Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html, body {
@@ -46,13 +51,36 @@
       color: inherit;
     }
 
+    .notice{
+      position:fixed;
+      top:14px;
+      left:50%;
+      transform:translateX(-50%);
+      width:min(92%,520px);
+      z-index:60;
+      display:none;
+      padding:12px 14px;
+      border-radius:16px;
+      font-size:14px;
+      line-height:1.5;
+      backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:var(--shadow);
+    }
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.16)}
+    .notice.success{background:rgba(34,197,94,.16)}
+    .notice.info{background:rgba(11,94,215,.18)}
+
     .feed-shell {
       position: relative;
       width: 100%;
       height: 100vh;
       overflow-y: auto;
       scroll-snap-type: y mandatory;
+      scrollbar-width: none;
     }
+    .feed-shell::-webkit-scrollbar{display:none}
 
     .video-slide {
       position: relative;
@@ -126,7 +154,20 @@
       backdrop-filter: blur(12px);
       box-shadow: var(--shadow);
       font-size: 16px;
+      position: relative;
     }
+
+    .notif-dot{
+      position:absolute;
+      top:8px;
+      right:8px;
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:#ff4d67;
+      display:none;
+    }
+    .notif-dot.show{display:block}
 
     .feed-title {
       text-align: center;
@@ -203,8 +244,19 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.3)),
-        radial-gradient(circle at top, rgba(255, 255, 255, 0.16), transparent 30%);
+        linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.3)),
+        radial-gradient(circle at top, rgba(255, 255, 255, 0.12), transparent 30%);
+      pointer-events:none;
+      z-index:1;
+    }
+
+    .video-player {
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      background:#000;
     }
 
     .video-placeholder {
@@ -218,6 +270,7 @@
       font-weight: 700;
       font-size: 18px;
       letter-spacing: 0.01em;
+      z-index:2;
     }
 
     .play-badge {
@@ -236,6 +289,7 @@
       font-size: 13px;
       font-weight: 700;
       backdrop-filter: blur(10px);
+      z-index:3;
     }
 
     .video-bottom {
@@ -245,7 +299,7 @@
       bottom: 0;
       padding: 22px 18px 22px;
       background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.58));
-      z-index: 2;
+      z-index: 3;
     }
 
     .creator-row {
@@ -263,16 +317,30 @@
       background: linear-gradient(135deg, #dbeafe, #f8fbff);
       border: 2px solid rgba(255, 255, 255, 0.16);
       flex-shrink: 0;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#0f172a;
+      font-weight:800;
+    }
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
     }
 
     .creator-meta h3 {
       font-size: 15px;
       margin-bottom: 2px;
+      font-weight:800;
     }
 
     .creator-meta p {
       font-size: 12px;
       color: var(--soft-text);
+      max-width:220px;
     }
 
     .follow-btn {
@@ -285,11 +353,24 @@
       margin-left: auto;
     }
 
+    .follow-btn.following{
+      background:rgba(34,197,94,.18);
+      color:#fff;
+      border:1px solid rgba(34,197,94,.24);
+    }
+
     .caption {
       font-size: 14px;
       line-height: 1.6;
       color: #ffffff;
       margin-bottom: 10px;
+      word-break:break-word;
+    }
+
+    .caption strong{
+      display:block;
+      font-size:16px;
+      margin-bottom:6px;
     }
 
     .caption span {
@@ -309,6 +390,10 @@
       color: var(--soft-text);
       font-size: 12px;
       font-weight: 700;
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
 
     .side-actions {
@@ -350,6 +435,16 @@
       color: var(--soft-text);
     }
 
+    .action-item.active .action-circle{
+      background:rgba(255,59,59,.18);
+      border-color:rgba(255,59,59,.24);
+    }
+
+    .action-item.saved .action-circle{
+      background:rgba(34,197,94,.18);
+      border-color:rgba(34,197,94,.24);
+    }
+
     .left-floating {
       position: absolute;
       left: 14px;
@@ -374,6 +469,7 @@
       font-weight: 700;
       color: #ffffff;
       width: fit-content;
+      max-width:220px;
     }
 
     .progress-rail {
@@ -420,6 +516,7 @@
       gap: 4px;
       font-size: 11px;
       color: var(--soft-text);
+      text-align:center;
     }
 
     .bottom-link.active {
@@ -493,231 +590,9 @@
   </style>
 </head>
 <body>
-  <main class="feed-shell">
-    <section class="video-slide">
-      <div class="video-glow"></div>
-      <div class="video-glow two"></div>
+  <div id="notice" class="notice"></div>
 
-      <header class="topbar">
-        <div class="topbar-left">
-          <button class="icon-btn" onclick="window.location.href='explore.html'">←</button>
-        </div>
-
-        <div class="feed-title">
-          <h1>View Videos</h1>
-          <p>Your world, your view</p>
-        </div>
-
-        <div class="topbar-right">
-          <button class="icon-btn" onclick="window.location.href='notifications.html'">🔔</button>
-        </div>
-      </header>
-
-      <div class="feed-tabs">
-        <button class="feed-tab active">For You</button>
-        <button class="feed-tab">Following</button>
-      </div>
-
-      <div class="left-floating">
-        <div class="floating-chip">🔥 Trending</div>
-        <div class="floating-chip">📈 24K Views</div>
-      </div>
-
-      <div class="progress-rail">
-        <div class="progress-fill"></div>
-      </div>
-
-      <div class="video-center">
-        <div class="video-frame">
-          <div class="play-badge">▶ Playing</div>
-          <div class="video-placeholder">
-            Cross-post walkthrough video
-          </div>
-
-          <div class="video-bottom">
-            <div class="creator-row">
-              <div class="avatar"></div>
-              <div class="creator-meta">
-                <h3>@ceetifymedia</h3>
-                <p>Business tools • Creator tips</p>
-              </div>
-              <button class="follow-btn">Follow</button>
-            </div>
-
-            <div class="caption">
-              Post once and manage your content smarter with <span>#ViewApp</span> and
-              <span>#CeetifyEcosystem</span>. This is how creators save time and grow faster.
-            </div>
-
-            <div class="audio-row">🎵 Original audio • View Creator Studio</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="side-actions">
-        <div class="action-item">
-          <div class="action-circle">❤️</div>
-          <span>18.4K</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">💬</div>
-          <span>620</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">🔁</div>
-          <span>312</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">🔖</div>
-          <span>Save</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">🚩</div>
-          <span>Report</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="video-slide alt-one">
-      <div class="video-glow"></div>
-      <div class="video-glow two"></div>
-
-      <div class="left-floating">
-        <div class="floating-chip">💼 Business</div>
-        <div class="floating-chip">🚀 Promo Tips</div>
-      </div>
-
-      <div class="progress-rail">
-        <div class="progress-fill" style="height: 62%;"></div>
-      </div>
-
-      <div class="video-center">
-        <div class="video-frame">
-          <div class="play-badge">▶ Playing</div>
-          <div class="video-placeholder">
-            Small business promo ideas
-          </div>
-
-          <div class="video-bottom">
-            <div class="creator-row">
-              <div class="avatar"></div>
-              <div class="creator-meta">
-                <h3>@viewgrowthlab</h3>
-                <p>Growth strategy • Business pages</p>
-              </div>
-              <button class="follow-btn">Follow</button>
-            </div>
-
-            <div class="caption">
-              3 quick ways to make your next promo stand out on View.
-              Use strong visuals, short captions, and smart platform selection.
-            </div>
-
-            <div class="audio-row">🎵 Promo beat • Business growth lab</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="side-actions">
-        <div class="action-item">
-          <div class="action-circle">❤️</div>
-          <span>9.8K</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">💬</div>
-          <span>248</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">🔁</div>
-          <span>146</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">🔖</div>
-          <span>Save</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">🚩</div>
-          <span>Report</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="video-slide alt-two">
-      <div class="video-glow"></div>
-      <div class="video-glow two"></div>
-
-      <div class="left-floating">
-        <div class="floating-chip">🤖 AI Help</div>
-        <div class="floating-chip">📊 Analytics</div>
-      </div>
-
-      <div class="progress-rail">
-        <div class="progress-fill" style="height: 86%;"></div>
-      </div>
-
-      <div class="video-center">
-        <div class="video-frame">
-          <div class="play-badge">▶ Playing</div>
-          <div class="video-placeholder">
-            Analytics explained simply
-          </div>
-
-          <div class="video-bottom">
-            <div class="creator-row">
-              <div class="avatar"></div>
-              <div class="creator-meta">
-                <h3>@viewai</h3>
-                <p>AI support • Performance insights</p>
-              </div>
-              <button class="follow-btn">Follow</button>
-            </div>
-
-            <div class="caption">
-              Your reach is rising because your audience is responding to short, direct content.
-              Use analytics and AI together to improve your next post.
-            </div>
-
-            <div class="audio-row">🎵 AI explainer • View Support</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="side-actions">
-        <div class="action-item">
-          <div class="action-circle">❤️</div>
-          <span>6.1K</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">💬</div>
-          <span>190</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">🔁</div>
-          <span>88</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">🔖</div>
-          <span>Save</span>
-        </div>
-
-        <div class="action-item">
-          <div class="action-circle">🚩</div>
-          <span>Report</span>
-        </div>
-      </div>
-    </section>
-  </main>
+  <main id="feedShell" class="feed-shell"></main>
 
   <nav class="bottom-nav">
     <a href="home.html" class="bottom-link">
@@ -732,14 +607,668 @@
       <span>➕</span>
       <span>Create</span>
     </a>
-    <a href="messages.html" class="bottom-link">
+    <a href="chats.html" class="bottom-link">
       <span>💬</span>
       <span>Chat</span>
     </a>
-    <a href="profile.html" class="bottom-link active">
+    <a href="video-feed.html" class="bottom-link active">
       <span>🎥</span>
       <span>Videos</span>
     </a>
   </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    const feedShell = document.getElementById("feedShell");
+    const noticeBox = document.getElementById("notice");
+
+    let currentUser = null;
+    let currentUserId = "";
+    let currentUserFollowing = new Set();
+    let allVideos = [];
+    let likesByPost = new Map();
+    let commentsPreviewByPost = new Map();
+    let observer = null;
+    let postsChannel = null;
+    let likesChannel = null;
+    let commentsChannel = null;
+    let followsChannel = null;
+    let notificationsChannel = null;
+    let currentFilter = "for_you";
+    let activeVideoId = null;
+
+    function showNotice(message, type = "error") {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        noticeBox.className = `notice ${type}`;
+      }, 2200);
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function getSavedPostsMap() {
+      try {
+        return JSON.parse(localStorage.getItem("view_saved_posts") || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function setSavedPostsMap(map) {
+      localStorage.setItem("view_saved_posts", JSON.stringify(map));
+    }
+
+    function isSaved(postId) {
+      const map = getSavedPostsMap();
+      return !!map[postId];
+    }
+
+    function getAuthorName(post) {
+      return post.full_name || post.username || "User";
+    }
+
+    function buildProfileUrl(userId) {
+      return userId === currentUserId
+        ? "profile.html"
+        : `public-profile.html?id=${encodeURIComponent(userId)}`;
+    }
+
+    function formatHashtags(value) {
+      const tags = String(value || "")
+        .split(",")
+        .map(x => x.trim())
+        .filter(Boolean);
+      return tags.map(tag => tag.startsWith("#") ? tag : `#${tag}`).join(" ");
+    }
+
+    function normalizePosts(rows) {
+      return (rows || []).map(post => ({
+        ...post,
+        full_name: post.profiles?.full_name || null,
+        username: post.profiles?.username || null,
+        avatar_url: post.profiles?.avatar_url || null
+      }));
+    }
+
+    function likeCount(postId) {
+      const item = likesByPost.get(postId);
+      return item ? item.count : 0;
+    }
+
+    function didLike(postId) {
+      const item = likesByPost.get(postId);
+      return item ? item.likedByMe : false;
+    }
+
+    function getCommentPreview(postId) {
+      return commentsPreviewByPost.get(postId) || null;
+    }
+
+    async function getSessionWithRetry(maxWaitMs = 3000) {
+      const start = Date.now();
+      while (Date.now() - start < maxWaitMs) {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (data.session?.user) return data.session;
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      return null;
+    }
+
+    async function requireSession() {
+      const session = await getSessionWithRetry();
+      if (!session?.user) {
+        window.location.href = "login.html?next=video-feed.html";
+        return null;
+      }
+      return session;
+    }
+
+    async function loadFollowing() {
+      currentUserFollowing = new Set();
+      try {
+        const { data, error } = await supabaseClient
+          .from("follows")
+          .select("following_id")
+          .eq("follower_id", currentUserId);
+
+        if (error) return;
+        (data || []).forEach(row => currentUserFollowing.add(row.following_id));
+      } catch {}
+    }
+
+    async function loadLikes(posts) {
+      likesByPost = new Map();
+      try {
+        const ids = posts.map(p => p.id).filter(Boolean);
+        if (!ids.length) return;
+
+        const { data, error } = await supabaseClient
+          .from("post_likes")
+          .select("post_id,user_id")
+          .in("post_id", ids);
+
+        if (error) return;
+
+        (data || []).forEach(row => {
+          if (!likesByPost.has(row.post_id)) {
+            likesByPost.set(row.post_id, { count: 0, likedByMe: false });
+          }
+          const item = likesByPost.get(row.post_id);
+          item.count += 1;
+          if (row.user_id === currentUserId) item.likedByMe = true;
+        });
+      } catch {}
+    }
+
+    async function loadCommentsPreview(posts) {
+      commentsPreviewByPost = new Map();
+      try {
+        const ids = posts.map(p => p.id).filter(Boolean);
+        if (!ids.length) return;
+
+        const { data, error } = await supabaseClient
+          .from("comments")
+          .select(`
+            id,
+            post_id,
+            content,
+            created_at,
+            user_id,
+            profiles:profiles!comments_user_id_fkey (
+              full_name,
+              username
+            )
+          `)
+          .in("post_id", ids)
+          .order("created_at", { ascending: false });
+
+        if (error) return;
+
+        (data || []).forEach(row => {
+          if (!commentsPreviewByPost.has(row.post_id)) {
+            commentsPreviewByPost.set(row.post_id, {
+              author: row.profiles?.full_name || row.profiles?.username || "User",
+              content: row.content || ""
+            });
+          }
+        });
+      } catch {}
+    }
+
+    async function loadNotificationsBadge() {
+      try {
+        const { count, error } = await supabaseClient
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", currentUserId)
+          .eq("is_read", false);
+
+        document.querySelectorAll(".notif-dot").forEach(dot => {
+          if (!error) dot.classList.toggle("show", Number(count || 0) > 0);
+        });
+      } catch {}
+    }
+
+    async function loadVideos() {
+      const { data, error } = await supabaseClient
+        .from("posts")
+        .select(`
+          id,
+          user_id,
+          title,
+          content,
+          media_url,
+          media_type,
+          hashtags,
+          location,
+          created_at,
+          profiles:profiles!posts_user_id_fkey (
+            full_name,
+            username,
+            avatar_url
+          )
+        `)
+        .eq("status", "published")
+        .eq("media_type", "video")
+        .not("media_url", "is", null)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        showNotice(error.message || "Could not load videos.");
+        return [];
+      }
+
+      const normalized = normalizePosts(data);
+      if (currentFilter === "following") {
+        return normalized.filter(post => currentUserFollowing.has(post.user_id));
+      }
+      return normalized;
+    }
+
+    function renderFeed(posts) {
+      if (!posts.length) {
+        feedShell.innerHTML = `
+          <section class="video-slide">
+            <div class="video-glow"></div>
+            <div class="video-glow two"></div>
+            <header class="topbar">
+              <div class="topbar-left">
+                <button class="icon-btn" onclick="window.location.href='explore.html'">←</button>
+              </div>
+              <div class="feed-title">
+                <h1>View Videos</h1>
+                <p>Your world, your view</p>
+              </div>
+              <div class="topbar-right">
+                <button class="icon-btn" onclick="window.location.href='notifications.html'">🔔<span class="notif-dot"></span></button>
+              </div>
+            </header>
+
+            <div class="feed-tabs">
+              <button class="feed-tab active">For You</button>
+              <button class="feed-tab">Following</button>
+            </div>
+
+            <div class="video-center">
+              <div class="video-frame">
+                <div class="video-placeholder">No videos yet</div>
+                <div class="video-bottom">
+                  <div class="caption">
+                    <strong>Nothing to watch yet</strong>
+                    Video and reel posts will appear here automatically.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+        return;
+      }
+
+      feedShell.innerHTML = posts.map((post, index) => {
+        const altClass = index % 3 === 1 ? "alt-one" : index % 3 === 2 ? "alt-two" : "";
+        const author = getAuthorName(post);
+        const avatar = post.avatar_url
+          ? `<img src="${escapeHtml(post.avatar_url)}" alt="${escapeHtml(author)}">`
+          : escapeHtml(author.charAt(0).toUpperCase());
+
+        const title = post.title ? `<strong>${escapeHtml(post.title)}</strong>` : "";
+        const captionText = escapeHtml(post.content || "");
+        const hashtags = formatHashtags(post.hashtags || "");
+        const commentPreview = getCommentPreview(post.id);
+        const isFollowing = currentUserFollowing.has(post.user_id);
+        const showFollow = post.user_id !== currentUserId && !isFollowing;
+        const saved = isSaved(post.id);
+        const liked = didLike(post.id);
+        const likes = likeCount(post.id);
+
+        return `
+          <section class="video-slide ${altClass}" data-post-id="${escapeHtml(post.id)}">
+            <div class="video-glow"></div>
+            <div class="video-glow two"></div>
+
+            <header class="topbar">
+              <div class="topbar-left">
+                <button class="icon-btn" onclick="window.location.href='explore.html'">←</button>
+              </div>
+
+              <div class="feed-title">
+                <h1>View Videos</h1>
+                <p>Your world, your view</p>
+              </div>
+
+              <div class="topbar-right">
+                <button class="icon-btn" onclick="window.location.href='notifications.html'">🔔<span class="notif-dot"></span></button>
+              </div>
+            </header>
+
+            <div class="feed-tabs">
+              <button class="feed-tab ${currentFilter === "for_you" ? "active" : ""}" onclick="switchVideoTab('for_you')">For You</button>
+              <button class="feed-tab ${currentFilter === "following" ? "active" : ""}" onclick="switchVideoTab('following')">Following</button>
+            </div>
+
+            <div class="left-floating">
+              <div class="floating-chip">🎥 Reel Post</div>
+              <div class="floating-chip">${post.location ? escapeHtml(post.location) : "View Video Feed"}</div>
+            </div>
+
+            <div class="progress-rail">
+              <div class="progress-fill" style="height:${Math.max(12, Math.min(96, ((index + 1) / posts.length) * 100))}%;"></div>
+            </div>
+
+            <div class="video-center">
+              <div class="video-frame">
+                <video
+                  class="video-player"
+                  src="${escapeHtml(post.media_url)}"
+                  playsinline
+                  loop
+                  preload="metadata"
+                  muted
+                  data-video-id="${escapeHtml(post.id)}"
+                ></video>
+
+                <div class="play-badge" id="badge-${escapeHtml(post.id)}">▶ Playing</div>
+
+                <div class="video-bottom">
+                  <div class="creator-row">
+                    <a class="avatar" href="${buildProfileUrl(post.user_id)}">${avatar}</a>
+                    <div class="creator-meta">
+                      <h3>${escapeHtml(author)}</h3>
+                      <p>${post.location ? escapeHtml(post.location) : "View creator"}</p>
+                    </div>
+                    ${showFollow ? `
+                      <button class="follow-btn" onclick="followUser('${escapeHtml(post.user_id)}', this)">Follow</button>
+                    ` : `
+                      <button class="follow-btn following">${post.user_id === currentUserId ? "You" : "Following"}</button>
+                    `}
+                  </div>
+
+                  <div class="caption">
+                    ${title}
+                    ${captionText}
+                    ${hashtags ? `<div style="margin-top:6px;"><span>${escapeHtml(hashtags)}</span></div>` : ""}
+                  </div>
+
+                  <div class="audio-row">${commentPreview ? `${escapeHtml(commentPreview.author)}: ${escapeHtml(commentPreview.content)}` : "Tap comment to view full discussion"}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="side-actions">
+              <button class="action-item ${liked ? "active" : ""}" onclick="toggleLike('${escapeHtml(post.id)}', this)">
+                <div class="action-circle">❤️</div>
+                <span>${likes}</span>
+              </button>
+
+              <button class="action-item" onclick="openComments('${escapeHtml(post.id)}')">
+                <div class="action-circle">💬</div>
+                <span>Comment</span>
+              </button>
+
+              <button class="action-item" onclick="sharePost('${escapeHtml(post.id)}', ${JSON.stringify((post.title || post.content || 'View video').slice(0, 80))})">
+                <div class="action-circle">🔁</div>
+                <span>Share</span>
+              </button>
+
+              <button class="action-item ${saved ? "saved" : ""}" onclick="toggleSave('${escapeHtml(post.id)}', this)">
+                <div class="action-circle">🔖</div>
+                <span>${saved ? "Saved" : "Save"}</span>
+              </button>
+
+              <button class="action-item" onclick="reportVideo()">
+                <div class="action-circle">🚩</div>
+                <span>Report</span>
+              </button>
+            </div>
+          </section>
+        `;
+      }).join("");
+
+      loadNotificationsBadge();
+      setupVideoObserver();
+    }
+
+    function setupVideoObserver() {
+      if (observer) observer.disconnect();
+
+      const videos = [...document.querySelectorAll(".video-player")];
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target;
+          const postId = video.dataset.videoId;
+          const badge = document.getElementById(`badge-${postId}`);
+
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.7) {
+            activeVideoId = postId;
+            videos.forEach(v => {
+              if (v !== video) {
+                v.pause();
+                const otherBadge = document.getElementById(`badge-${v.dataset.videoId}`);
+                if (otherBadge) otherBadge.textContent = "⏸ Paused";
+              }
+            });
+
+            video.play().catch(() => {});
+            if (badge) badge.textContent = "▶ Playing";
+          } else {
+            video.pause();
+            if (badge) badge.textContent = "⏸ Paused";
+          }
+        });
+      }, { threshold: [0.3, 0.7, 0.95] });
+
+      videos.forEach(video => observer.observe(video));
+    }
+
+    async function toggleLike(postId, btn) {
+      try {
+        const item = likesByPost.get(postId) || { count: 0, likedByMe: false };
+
+        if (item.likedByMe) {
+          const { error } = await supabaseClient
+            .from("post_likes")
+            .delete()
+            .eq("post_id", postId)
+            .eq("user_id", currentUserId);
+
+          if (error) throw error;
+          item.likedByMe = false;
+          item.count = Math.max(0, item.count - 1);
+        } else {
+          const { error } = await supabaseClient
+            .from("post_likes")
+            .insert({ post_id: postId, user_id: currentUserId });
+
+          if (error) throw error;
+          item.likedByMe = true;
+          item.count = item.count + 1;
+        }
+
+        likesByPost.set(postId, item);
+        btn.classList.toggle("active", item.likedByMe);
+        btn.querySelector("span").textContent = item.count;
+      } catch (error) {
+        showNotice(error.message || "Could not update like.");
+      }
+    }
+
+    function toggleSave(postId, btn) {
+      const map = getSavedPostsMap();
+      if (map[postId]) delete map[postId];
+      else map[postId] = { savedAt: new Date().toISOString() };
+      setSavedPostsMap(map);
+
+      const saved = !!map[postId];
+      btn.classList.toggle("saved", saved);
+      btn.querySelector("span").textContent = saved ? "Saved" : "Save";
+      showNotice(saved ? "Video saved." : "Video removed from saved posts.", "success");
+    }
+
+    async function sharePost(postId, text) {
+      const shareUrl = `${window.location.origin}/home.html?post=${encodeURIComponent(postId)}`;
+      const shareData = {
+        title: "View Video",
+        text: text || "Check out this video on View",
+        url: shareUrl
+      };
+
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+          return;
+        }
+      } catch (error) {
+        if (error && error.name === "AbortError") return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        showNotice("Video link copied.", "success");
+      } catch {
+        showNotice("Could not share video.");
+      }
+    }
+
+    function openComments(postId) {
+      window.location.href = `comments.html?post=${encodeURIComponent(postId)}`;
+    }
+
+    async function followUser(userId, btn) {
+      try {
+        const { error } = await supabaseClient
+          .from("follows")
+          .insert({
+            follower_id: currentUserId,
+            following_id: userId
+          });
+
+        if (error) throw error;
+        currentUserFollowing.add(userId);
+        btn.textContent = "Following";
+        btn.classList.add("following");
+        showNotice("User followed.", "success");
+      } catch (error) {
+        showNotice(error.message || "Could not follow user.");
+      }
+    }
+
+    function reportVideo() {
+      showNotice("Video reported successfully.", "success");
+    }
+
+    async function switchVideoTab(tab) {
+      currentFilter = tab;
+      await loadEverything();
+    }
+
+    async function loadEverything() {
+      const videos = await loadVideos();
+      allVideos = videos;
+      await Promise.all([
+        loadLikes(videos),
+        loadCommentsPreview(videos),
+        loadNotificationsBadge()
+      ]);
+      renderFeed(videos);
+    }
+
+    function subscribeRealtime() {
+      if (!postsChannel) {
+        postsChannel = supabaseClient
+          .channel("video-posts-live")
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "posts"
+          }, async () => {
+            await loadEverything();
+          })
+          .subscribe();
+      }
+
+      if (!likesChannel) {
+        likesChannel = supabaseClient
+          .channel("video-likes-live")
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "post_likes"
+          }, async () => {
+            await loadLikes(allVideos);
+            renderFeed(allVideos);
+          })
+          .subscribe();
+      }
+
+      if (!commentsChannel) {
+        commentsChannel = supabaseClient
+          .channel("video-comments-live")
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "comments"
+          }, async () => {
+            await loadCommentsPreview(allVideos);
+            renderFeed(allVideos);
+          })
+          .subscribe();
+      }
+
+      if (!followsChannel) {
+        followsChannel = supabaseClient
+          .channel("video-follows-live")
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "follows"
+          }, async () => {
+            await loadFollowing();
+            renderFeed(allVideos);
+          })
+          .subscribe();
+      }
+
+      if (!notificationsChannel) {
+        notificationsChannel = supabaseClient
+          .channel("video-notifications-live")
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${currentUserId}`
+          }, async () => {
+            await loadNotificationsBadge();
+          })
+          .subscribe();
+      }
+    }
+
+    window.toggleLike = toggleLike;
+    window.toggleSave = toggleSave;
+    window.sharePost = sharePost;
+    window.openComments = openComments;
+    window.followUser = followUser;
+    window.reportVideo = reportVideo;
+    window.switchVideoTab = switchVideoTab;
+
+    async function init() {
+      try {
+        const session = await requireSession();
+        if (!session?.user) return;
+
+        currentUser = session.user;
+        currentUserId = session.user.id;
+
+        await loadFollowing();
+        await loadEverything();
+        subscribeRealtime();
+      } catch (error) {
+        showNotice(error.message || "Could not load video feed.");
+      }
+    }
+
+    init();
+  </script>
 </body>
 </html>
