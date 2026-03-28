@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Connect Accounts | View</title>
+  <meta name="theme-color" content="#08111f" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --bg:#08111f;
+      --card:#101b31;
+      --line:rgba(255,255,255,.08);
+      --text:#f4f7ff;
+      --muted:#9fb1d7;
+      --primary:#2563eb;
+      --primary-2:#7c3aed;
+      --success:#10b981;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 14px 40px rgba(0,0,0,.28);
+      --safe-bottom:env(safe-area-inset-bottom);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    body{
+      padding:16px 14px 110px;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      background:none;
+      color:inherit;
+      font:inherit;
+      cursor:pointer;
+    }
+
+    .wrap{
+      width:min(100%, 820px);
+      margin:0 auto;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.5;
+      box-shadow:var(--shadow);
+    }
+    .notice.show{display:block}
+    .notice.error{background:rgba(127,29,29,.92);color:#fecaca}
+    .notice.success{background:rgba(5,46,22,.92);color:#d1fae5}
+    .notice.info{background:rgba(30,41,59,.95);color:#dbeafe}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      font-size:18px;
+    }
+
+    .title-box{
+      min-width:0;
+      flex:1;
+    }
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .section-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      margin-bottom:16px;
+    }
+
+    .section-head{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .section-head h3{
+      font-size:17px;
+      font-weight:800;
+    }
+
+    .section-body{
+      padding:10px;
+      display:grid;
+      gap:10px;
+    }
+
+    .account-card{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+    }
+
+    .account-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .account-icon{
+      width:52px;
+      height:52px;
+      min-width:52px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      font-weight:800;
+      color:#fff;
+      box-shadow:var(--shadow);
+    }
+
+    .facebook{background:linear-gradient(135deg,#1877f2,#0f5fd4)}
+    .instagram{background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4)}
+    .youtube{background:linear-gradient(135deg,#ff0000,#d70000)}
+    .tiktok{background:linear-gradient(135deg,#161616,#25f4ee)}
+    .whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
+    .xhandle{background:linear-gradient(135deg,#0f172a,#334155)}
+
+    .account-meta{
+      min-width:0;
+      flex:1;
+    }
+
+    .account-name{
+      font-size:15px;
+      font-weight:800;
+      margin-bottom:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .account-sub{
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .account-right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-shrink:0;
+    }
+
+    .status-badge{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:800;
+      border:1px solid transparent;
+      white-space:nowrap;
+    }
+
+    .status-connected{
+      background:rgba(16,185,129,.12);
+      border-color:rgba(16,185,129,.22);
+      color:#d1fae5;
+    }
+
+    .status-empty{
+      background:rgba(245,158,11,.12);
+      border-color:rgba(245,158,11,.22);
+      color:#fde68a;
+    }
+
+    .status-neutral{
+      background:rgba(255,255,255,.06);
+      border-color:var(--line);
+      color:var(--muted);
+    }
+
+    .go-btn,
+    .more-btn{
+      width:38px;
+      height:38px;
+      min-width:38px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      font-size:16px;
+    }
+
+    .more-wrap{
+      position:relative;
+    }
+
+    .more-menu{
+      position:absolute;
+      right:0;
+      top:46px;
+      min-width:170px;
+      display:none;
+      background:#0f1a30;
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      z-index:30;
+    }
+
+    .more-menu.show{
+      display:block;
+    }
+
+    .more-action{
+      width:100%;
+      min-height:44px;
+      padding:0 14px;
+      display:flex;
+      align-items:center;
+      text-align:left;
+      font-size:13px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+    }
+
+    .more-action:last-child{
+      border-bottom:none;
+    }
+
+    .danger-text{
+      color:#fecaca;
+    }
+
+    .empty-box{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:12px;
+      width:min(760px, calc(100% - 20px));
+      background:rgba(12,20,36,.95);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:8px 6px calc(8px + var(--safe-bottom));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
+      box-shadow:var(--shadow);
+      z-index:40;
+    }
+
+    .nav-btn{
+      min-height:56px;
+      border-radius:14px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
+      text-decoration:none;
+    }
+
+    .nav-btn.active{
+      background:rgba(37,99,235,.16);
+      color:#fff;
+    }
+
+    @media (max-width:560px){
+      .account-card{
+        align-items:flex-start;
+      }
+
+      .account-right{
+        align-self:center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <button class="icon-btn" onclick="history.back()" title="Back">←</button>
+        <div class="title-box">
+          <div class="title">Connect Accounts</div>
+          <div class="sub">Social platforms</div>
+        </div>
+      </div>
+
+      <button class="icon-btn" id="refreshBtn" title="Refresh">↻</button>
+    </header>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Platforms</h3>
+      </div>
+
+      <div class="section-body" id="accountsList"></div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="home.html">
+      <span>🏠</span>
+      <span>Home</span>
+    </a>
+
+    <a class="nav-btn" href="explore.html">
+      <span>🔎</span>
+      <span>Explore</span>
+    </a>
+
+    <a class="nav-btn" href="create-post.html">
+      <span>➕</span>
+      <span>Create</span>
+    </a>
+
+    <a class="nav-btn" href="profile.html">
+      <span>👤</span>
+      <span>Profile</span>
+    </a>
+
+    <a class="nav-btn active" href="connect-account.html">
+      <span>🔗</span>
+      <span>Connect</span>
+    </a>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
+
+    const noticeBox = document.getElementById("notice");
+    const accountsList = document.getElementById("accountsList");
+    const refreshBtn = document.getElementById("refreshBtn");
+
+    let currentUserId = "";
+    let connectionMap = {};
+
+    const PLATFORMS = [
+      {
+        key: "facebook",
+        name: "Facebook",
+        icon: "f",
+        iconClass: "facebook",
+        path: "facebook-connect.html"
+      },
+      {
+        key: "instagram",
+        name: "Instagram",
+        icon: "◎",
+        iconClass: "instagram",
+        path: "instagram-connect.html"
+      },
+      {
+        key: "youtube",
+        name: "YouTube",
+        icon: "▶",
+        iconClass: "youtube",
+        path: "youtube-connect.html"
+      },
+      {
+        key: "tiktok",
+        name: "TikTok",
+        icon: "♪",
+        iconClass: "tiktok",
+        path: "tiktok-connect.html"
+      },
+      {
+        key: "whatsapp",
+        name: "WhatsApp",
+        icon: "✆",
+        iconClass: "whatsapp",
+        path: "whatsapp-connect.html"
+      },
+      {
+        key: "x",
+        name: "X",
+        icon: "X",
+        iconClass: "xhandle",
+        path: "x-connect.html"
+      }
+    ];
+
+    function showNotice(message, type = "info") {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        noticeBox.className = "notice";
+        noticeBox.textContent = "";
+      }, 2400);
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function closeAllMenus() {
+      document.querySelectorAll(".more-menu").forEach(menu => menu.classList.remove("show"));
+    }
+
+    function toggleMenu(platform) {
+      closeAllMenus();
+      const menu = document.getElementById(`menu-${platform}`);
+      if (menu) menu.classList.toggle("show");
+    }
+
+    function getConnection(platform) {
+      return connectionMap[platform] || null;
+    }
+
+    function getStatusBadge(conn) {
+      if (!conn) {
+        return `<span class="status-badge status-empty">Not Connected</span>`;
+      }
+      return `<span class="status-badge status-connected">Connected</span>`;
+    }
+
+    function getSubText(item, conn) {
+      if (!conn) return item.name;
+      return conn.account_name || conn.account_handle || conn.account_email || "Connected";
+    }
+
+    function renderAccounts() {
+      if (!PLATFORMS.length) {
+        accountsList.innerHTML = `<div class="empty-box">No platforms available.</div>`;
+        return;
+      }
+
+      accountsList.innerHTML = PLATFORMS.map(item => {
+        const conn = getConnection(item.key);
+        const subText = getSubText(item, conn);
+
+        return `
+          <div class="account-card" data-platform="${item.key}">
+            <div class="account-left" onclick="openConnectPage('${item.path}')">
+              <div class="account-icon ${item.iconClass}">${item.icon}</div>
+              <div class="account-meta">
+                <div class="account-name">${escapeHtml(item.name)}</div>
+                <div class="account-sub">${escapeHtml(subText)}</div>
+              </div>
+            </div>
+
+            <div class="account-right">
+              ${getStatusBadge(conn)}
+              <button class="go-btn" onclick="openConnectPage('${item.path}')" title="Open">›</button>
+              <div class="more-wrap">
+                <button class="more-btn" onclick="event.stopPropagation(); toggleMenu('${item.key}')" title="More">⋯</button>
+                <div class="more-menu" id="menu-${item.key}">
+                  <button class="more-action" onclick="openConnectPage('${item.path}')">${conn ? "Manage" : "Connect"}</button>
+                  ${conn ? `<button class="more-action" onclick="reconnectPlatform('${item.key}', '${item.path}')">Reconnect</button>` : ""}
+                  ${conn ? `<button class="more-action danger-text" onclick="disconnectPlatform('${item.key}')">Disconnect</button>` : ""}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function openConnectPage(path) {
+      window.location.href = path;
+    }
+
+    async function loadConnections() {
+      try {
+        const { data, error } = await supabaseClient
+          .from("connected_accounts")
+          .select("id, platform, account_name, account_email, account_handle, is_connected")
+          .eq("user_id", currentUserId)
+          .eq("is_connected", true);
+
+        if (error) throw error;
+
+        connectionMap = {};
+        (data || []).forEach(row => {
+          connectionMap[row.platform] = row;
+        });
+
+        renderAccounts();
+      } catch (error) {
+        renderAccounts();
+        showNotice(error.message || "Could not load accounts.", "error");
+      }
+    }
+
+    async function disconnectPlatform(platform) {
+      closeAllMenus();
+
+      try {
+        const { error } = await supabaseClient
+          .from("connected_accounts")
+          .update({
+            is_connected: false,
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", currentUserId)
+          .eq("platform", platform);
+
+        if (error) throw error;
+
+        delete connectionMap[platform];
+        renderAccounts();
+        showNotice("Account disconnected.", "success");
+      } catch (error) {
+        showNotice(error.message || "Could not disconnect account.", "error");
+      }
+    }
+
+    function reconnectPlatform(platform, path) {
+      closeAllMenus();
+      openConnectPage(path);
+    }
+
+    async function init() {
+      try {
+        const { data, error } = await supabaseClient.auth.getUser();
+        if (error) throw error;
+
+        const user = data.user;
+        if (!user) {
+          window.location.href = "login.html?next=connect-account.html";
+          return;
+        }
+
+        currentUserId = user.id;
+        renderAccounts();
+        await loadConnections();
+      } catch (error) {
+        showNotice(error.message || "Could not load page.", "error");
+      }
+    }
+
+    refreshBtn.addEventListener("click", loadConnections);
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".more-wrap")) closeAllMenus();
+    });
+
+    let pressTimer = null;
+    document.addEventListener("touchstart", (e) => {
+      const card = e.target.closest(".account-card");
+      if (!card) return;
+
+      const platform = card.dataset.platform;
+      pressTimer = setTimeout(() => {
+        toggleMenu(platform);
+      }, 500);
+    }, { passive: true });
+
+    document.addEventListener("touchend", () => {
+      clearTimeout(pressTimer);
+    });
+
+    window.toggleMenu = toggleMenu;
+    window.openConnectPage = openConnectPage;
+    window.disconnectPlatform = disconnectPlatform;
+    window.reconnectPlatform = reconnectPlatform;
+
+    init();
+  </script>
+</body>
+</html>
