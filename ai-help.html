@@ -2,189 +2,143 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>AI Help | View</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0b5ed7" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>View AI</title>
 
   <style>
-    :root{
-      --primary:#0b5ed7;
-      --primary-dark:#083b8a;
-      --bg:#f5f8ff;
-      --card:#ffffff;
-      --text:#1f1f1f;
-      --soft:#6b7280;
-      --border:#e5e7eb;
-      --shadow:0 10px 30px rgba(0,0,0,.06);
-      --radius:18px;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #08111f;
+      color: white;
     }
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
-    button,input{font:inherit}
-    .topbar{
-      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
-      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;
-      align-items:center;gap:12px;flex-wrap:wrap
+
+    .container {
+      padding: 20px;
     }
-    .topbar-left{display:flex;align-items:center;gap:10px}
-    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
-    .page-title p{font-size:12px;color:var(--soft)}
-    .icon-btn,.primary-btn,.outline-btn,.chip{
-      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
     }
-    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
-    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
-    .outline-btn,.chip{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
-    .chip{min-height:38px;border-radius:999px;font-size:13px}
-    .container{
-      max-width:1120px;margin:0 auto;padding:18px 16px 0;display:grid;grid-template-columns:1fr .82fr;gap:20px
+
+    .title {
+      font-size: 22px;
+      font-weight: bold;
     }
-    .left-column,.right-column{display:grid;gap:18px;align-content:start}
-    .card{
-      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px
+
+    .card-grid {
+      display: grid;
+      gap: 15px;
     }
-    .section-head{
-      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap
+
+    .card {
+      background: #0f1c33;
+      border-radius: 16px;
+      padding: 20px;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.08);
     }
-    .section-head h2,.section-head h3{font-size:20px;margin-bottom:4px}
-    .section-head p{font-size:13px;color:var(--soft);line-height:1.5}
-    .quick-row{display:flex;gap:10px;flex-wrap:wrap}
-    .chat-box{
-      height:420px;overflow:auto;border:1px solid var(--border);border-radius:16px;background:#f8fbff;padding:14px;display:grid;gap:10px
+
+    .card:hover {
+      background: #14254a;
     }
-    .ai-msg{
-      max-width:78%;padding:12px 14px;border-radius:16px;font-size:14px;line-height:1.6
+
+    .card h3 {
+      margin: 0 0 8px;
     }
-    .ai-msg.user{
-      justify-self:end;background:#dcecff;border-top-right-radius:8px
+
+    .card p {
+      margin: 0;
+      font-size: 14px;
+      color: #9fb1d7;
     }
-    .ai-msg.ai{
-      justify-self:start;background:#fff;border:1px solid var(--border);border-top-left-radius:8px
+
+    .btn {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      width: 100%;
+      font-weight: bold;
+      cursor: pointer;
     }
-    .composer{
-      display:flex;gap:10px;margin-top:14px;flex-wrap:wrap
+
+    .primary {
+      background: #2563eb;
+      color: white;
     }
-    .composer input{
-      flex:1;min-width:220px;height:48px;border:1px solid var(--border);border-radius:14px;padding:0 14px;background:#fff
+
+    .secondary {
+      background: rgba(255,255,255,0.08);
+      color: white;
     }
-    .composer input:focus{outline:none;border-color:var(--primary)}
-    .tool-list{display:grid;gap:12px}
-    .tool-item{
-      border:1px solid var(--border);border-radius:16px;padding:14px;background:#fff
+
+    .nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #0b1730;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
     }
-    .tool-item h4{font-size:15px;margin-bottom:4px}
-    .tool-item p{font-size:13px;color:var(--soft);line-height:1.5}
-    .tip-box{
-      border:1px dashed rgba(11,94,215,.18);border-radius:16px;background:#f8fbff;padding:16px
+
+    .nav button {
+      background: none;
+      border: none;
+      color: #9fb1d7;
+      font-size: 12px;
     }
-    .tip-box h4{font-size:15px;margin-bottom:6px}
-    .tip-box p{font-size:13px;color:var(--soft);line-height:1.6}
-    .bottom-nav{
-      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
-      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
-    }
-    .bottom-link{
-      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:4px;font-size:11px;color:var(--soft)
-    }
-    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
-    @media(max-width:960px){.container{grid-template-columns:1fr}}
-    @media(max-width:760px){.bottom-nav{display:grid}}
-    @media(max-width:640px){
-      .container{padding:14px 12px 0}
-      .composer{flex-direction:column}
-      .composer input{min-width:100%}
+
+    .nav button.active {
+      color: white;
+      font-weight: bold;
     }
   </style>
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="icon-btn" onclick="window.location.href='dashboard.html'">←</button>
-      <div class="page-title">
-        <h1>AI Help</h1>
-        <p>Get help with captions, hashtags, analytics, and publishing support</p>
+
+  <div class="container">
+
+    <div class="header">
+      <div class="title">View AI</div>
+      <button onclick="location.href='profile.html'">👤</button>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- AI SUPPORT -->
+      <div class="card" onclick="location.href='ai-support.html'">
+        <h3>💬 AI Support</h3>
+        <p>Get help or fix issues</p>
+
+        <button class="btn primary">Open Support</button>
       </div>
-    </div>
-  </header>
 
-  <main class="container">
-    <div class="left-column">
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <h2>View AI Assistant</h2>
-            <p>Ask questions or use quick prompts below.</p>
-          </div>
-        </div>
+      <!-- CREATE WITH AI -->
+      <div class="card" onclick="location.href='create-with-ai.html'">
+        <h3>✨ Create With AI</h3>
+        <p>Build content and ideas</p>
 
-        <div class="quick-row" style="margin-bottom:14px;">
-          <button class="chip" data-ai-quick="Generate caption">Generate Caption</button>
-          <button class="chip" data-ai-quick="Suggest hashtags">Suggest Hashtags</button>
-          <button class="chip" data-ai-quick="Explain analytics">Explain Analytics</button>
-          <button class="chip" data-ai-quick="Fix failed publish">Fix Failed Publish</button>
-        </div>
+        <button class="btn secondary">Start Creating</button>
+      </div>
 
-        <div id="aiChatBox" class="chat-box">
-          <div class="ai-msg ai">Hi, I’m View AI. Ask me for better captions, post ideas, analytics explanations, or help with your publishing flow.</div>
-        </div>
-
-        <div class="composer">
-          <input type="text" id="aiInput" placeholder="Ask View AI anything..." />
-          <button class="primary-btn" id="sendAiBtn">Send</button>
-        </div>
-      </section>
     </div>
 
-    <aside class="right-column">
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <h3>What AI Can Help With</h3>
-            <p>Main support areas inside View.</p>
-          </div>
-        </div>
+  </div>
 
-        <div class="tool-list">
-          <article class="tool-item">
-            <h4>Content Writing</h4>
-            <p>Create captions, post angles, promo ideas, and clearer copy for different platforms.</p>
-          </article>
-          <article class="tool-item">
-            <h4>Analytics Guidance</h4>
-            <p>Explain what the numbers mean and what to improve for stronger performance.</p>
-          </article>
-          <article class="tool-item">
-            <h4>Publishing Help</h4>
-            <p>Get support when a post fails, stalls, or needs a better platform strategy.</p>
-          </article>
-        </div>
-      </section>
+  <!-- BOTTOM NAV -->
+  <div class="nav">
+    <button onclick="location.href='home.html'">Home</button>
+    <button onclick="location.href='explore.html'">Explore</button>
+    <button onclick="location.href='create-post.html'">Create</button>
+    <button class="active">AI</button>
+    <button onclick="location.href='profile.html'">Profile</button>
+  </div>
 
-      <section class="card">
-        <div class="tip-box">
-          <h4>AI tip</h4>
-          <p>
-            Ask short direct questions for faster help, or paste a draft caption and ask AI to rewrite it for Facebook, Instagram, or TikTok.
-          </p>
-        </div>
-      </section>
-    </aside>
-  </main>
-
-  <nav class="bottom-nav">
-    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
-    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
-    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
-    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
-    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
-  </nav>
-
-  <script src="config.js"></script>
-  <script src="utils.js"></script>
-  <script src="app.js"></script>
-  <script src="auth.js"></script>
-  <script src="ai-help.js"></script>
 </body>
-</html>
+</html>create
