@@ -2,504 +2,729 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Connected Accounts | View</title>
+  <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
+    :root{
+      --bg:#08111f;
+      --card:#101b31;
+      --line:rgba(255,255,255,.08);
+      --text:#f4f7ff;
+      --muted:#9fb1d7;
+      --primary:#2563eb;
+      --primary2:#7c3aed;
+      --success:#10b981;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 14px 40px rgba(0,0,0,.28);
+      --safe-bottom:env(safe-area-inset-bottom);
+    }
+
     *{
+      box-sizing:border-box;
       margin:0;
       padding:0;
-      box-sizing:border-box;
       font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:var(--bg);
+      color:var(--text);
     }
 
     body{
-      background:#f4f7fc;
-      color:#111827;
-      min-height:100vh;
-      padding:20px 16px 40px;
+      padding:16px 14px 110px;
     }
 
-    .wrap{
-      max-width:560px;
-      margin:0 auto;
+    a{
+      text-decoration:none;
+      color:inherit;
     }
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:18px;
-    }
-
-    .back{
-      width:46px;
-      height:46px;
+    button{
       border:none;
-      border-radius:14px;
-      background:#fff;
-      box-shadow:0 8px 24px rgba(15,23,42,.08);
-      font-size:20px;
+      outline:none;
+      background:none;
+      color:inherit;
+      font:inherit;
       cursor:pointer;
     }
 
-    .topbar h1{
-      font-size:32px;
-      font-weight:800;
+    .wrap{
+      width:min(100%, 860px);
+      margin:0 auto;
     }
 
     .notice{
       display:none;
+      margin-bottom:14px;
       padding:12px 14px;
       border-radius:14px;
-      margin-bottom:16px;
       font-size:14px;
-      line-height:1.6;
+      line-height:1.5;
+      box-shadow:var(--shadow);
+    }
+    .notice.show{display:block}
+    .notice.error{background:rgba(127,29,29,.92);color:#fecaca}
+    .notice.success{background:rgba(5,46,22,.92);color:#d1fae5}
+    .notice.info{background:rgba(30,41,59,.95);color:#dbeafe}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
     }
 
-    .notice.show{
-      display:block;
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
     }
 
-    .notice.error{
-      background:#fee2e2;
-      color:#b91c1c;
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      font-size:18px;
     }
 
-    .notice.success{
-      background:#dcfce7;
-      color:#15803d;
+    .title-box{
+      min-width:0;
+      flex:1;
     }
 
-    .notice.info{
-      background:#dbeafe;
-      color:#1d4ed8;
-    }
-
-    .hero{
-      background:linear-gradient(135deg,#1d4ed8,#2563eb);
-      color:#fff;
-      border-radius:28px;
-      padding:22px 20px;
-      box-shadow:0 14px 36px rgba(29,78,216,.22);
-      margin-bottom:18px;
-    }
-
-    .hero h2{
-      font-size:24px;
+    .title{
+      font-size:22px;
       font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-bottom:16px;
+    }
+
+    .stat-card,
+    .section-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+    }
+
+    .stat-card{
+      padding:14px;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:12px;
       margin-bottom:8px;
     }
 
-    .hero p{
-      color:#eff6ff;
-      font-size:14px;
-      line-height:1.6;
-    }
-
-    .card{
-      background:#fff;
-      border-radius:24px;
-      padding:22px 18px;
-      box-shadow:0 10px 30px rgba(15,23,42,.08);
-      margin-bottom:18px;
-    }
-
-    .head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .head h3{
+    .stat-value{
       font-size:22px;
       font-weight:800;
     }
 
-    .status{
-      display:inline-flex;
+    .section-head{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex;
       align-items:center;
-      justify-content:center;
-      min-height:36px;
-      padding:0 14px;
-      border-radius:999px;
-      font-size:13px;
-      font-weight:700;
-      background:#fee2e2;
-      color:#b91c1c;
-    }
-
-    .status.connected{
-      background:#dcfce7;
-      color:#15803d;
-    }
-
-    .desc{
-      color:#4b5563;
-      font-size:15px;
-      line-height:1.6;
-      margin-bottom:18px;
-    }
-
-    .meta-list{
-      display:grid;
+      justify-content:space-between;
       gap:10px;
-      margin-bottom:18px;
+      flex-wrap:wrap;
     }
 
-    .meta-item{
-      padding:14px;
-      border:1px solid #e5e7eb;
-      border-radius:16px;
-      background:#fff;
-    }
-
-    .meta-item b{
-      display:block;
-      margin-bottom:4px;
-      font-size:15px;
-    }
-
-    .meta-item span{
-      color:#6b7280;
-      font-size:13px;
-      line-height:1.5;
-      word-break:break-word;
-    }
-
-    .btns{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-    }
-
-    button.action-btn{
-      border:none;
-      border-radius:14px;
-      min-height:54px;
+    .section-head h3{
       font-size:17px;
       font-weight:800;
+    }
+
+    .section-tools{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      min-height:40px;
+      padding:0 14px;
+      border-radius:12px;
+      font-size:13px;
+      font-weight:700;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
       cursor:pointer;
     }
 
-    .connect{
-      background:#1d4ed8;
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      border-color:transparent;
       color:#fff;
     }
 
-    .disconnect{
-      background:#fee2e2;
-      color:#b91c1c;
+    .section-body{
+      padding:10px;
+      display:grid;
+      gap:10px;
     }
 
-    .subcard{
-      padding:16px;
-      border:1px solid #e5e7eb;
+    .account-card{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px;
       border-radius:18px;
-      background:#fff;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
     }
 
-    .subcard h4{
-      font-size:16px;
+    .account-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .account-icon{
+      width:52px;
+      height:52px;
+      min-width:52px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
       font-weight:800;
-      margin-bottom:6px;
+      color:#fff;
+      box-shadow:var(--shadow);
     }
 
-    .subcard p{
-      color:#6b7280;
+    .facebook{background:linear-gradient(135deg,#1877f2,#0f5fd4)}
+    .instagram{background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4)}
+    .youtube{background:linear-gradient(135deg,#ff0000,#d70000)}
+    .tiktok{background:linear-gradient(135deg,#161616,#25f4ee)}
+    .whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
+    .xhandle{background:linear-gradient(135deg,#0f172a,#334155)}
+
+    .account-meta{
+      min-width:0;
+      flex:1;
+    }
+
+    .account-name{
+      font-size:15px;
+      font-weight:800;
+      margin-bottom:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .account-sub{
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .account-right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-shrink:0;
+    }
+
+    .status-badge{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:800;
+      border:1px solid transparent;
+      white-space:nowrap;
+    }
+
+    .status-connected{
+      background:rgba(16,185,129,.12);
+      border-color:rgba(16,185,129,.22);
+      color:#d1fae5;
+    }
+
+    .status-expired{
+      background:rgba(245,158,11,.12);
+      border-color:rgba(245,158,11,.22);
+      color:#fde68a;
+    }
+
+    .status-disconnected{
+      background:rgba(239,68,68,.12);
+      border-color:rgba(239,68,68,.24);
+      color:#fecaca;
+    }
+
+    .go-btn,.more-btn{
+      width:38px;
+      height:38px;
+      min-width:38px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      font-size:16px;
+    }
+
+    .more-wrap{
+      position:relative;
+    }
+
+    .more-menu{
+      position:absolute;
+      right:0;
+      top:46px;
+      min-width:180px;
+      display:none;
+      background:#0f1a30;
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      z-index:30;
+    }
+
+    .more-menu.show{
+      display:block;
+    }
+
+    .more-action{
+      width:100%;
+      min-height:44px;
+      padding:0 14px;
+      display:flex;
+      align-items:center;
+      text-align:left;
+      font-size:13px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+    }
+
+    .more-action:last-child{
+      border-bottom:none;
+    }
+
+    .danger-text{
+      color:#fecaca;
+    }
+
+    .empty-box{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color:var(--muted);
       font-size:13px;
       line-height:1.6;
     }
 
-    @media(max-width:520px){
-      .topbar h1{
-        font-size:28px;
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:12px;
+      width:min(760px, calc(100% - 20px));
+      background:rgba(12,20,36,.95);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:8px 6px calc(8px + var(--safe-bottom));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
+      box-shadow:var(--shadow);
+      z-index:40;
+    }
+
+    .nav-btn{
+      min-height:56px;
+      border-radius:14px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
+      text-decoration:none;
+    }
+
+    .nav-btn.active{
+      background:rgba(37,99,235,.16);
+      color:#fff;
+    }
+
+    @media (max-width:760px){
+      .stats-grid{
+        grid-template-columns:1fr 1fr 1fr;
+      }
+    }
+
+    @media (max-width:560px){
+      .stats-grid{
+        grid-template-columns:1fr;
       }
 
-      .btns{
-        grid-template-columns:1fr;
+      .account-card{
+        align-items:flex-start;
+      }
+
+      .account-right{
+        align-self:center;
       }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="topbar">
-      <button class="back" onclick="window.location.href='settings.html'">←</button>
-      <h1>Connected Accounts</h1>
-    </div>
-
     <div id="notice" class="notice"></div>
 
-    <section class="hero">
-      <h2>Connect Facebook</h2>
-      <p>
-        Connect your Facebook account first. After this basic connection is stable,
-        we can safely upgrade it to full Facebook Page cross-posting.
-      </p>
-    </section>
-
-    <section class="card">
-      <div class="head">
-        <h3>Facebook</h3>
-        <div id="fbStatus" class="status">Not connected</div>
-      </div>
-
-      <p class="desc">
-        This step connects your Facebook identity to your View account and stores the
-        connection safely in your database.
-      </p>
-
-      <div class="meta-list">
-        <div class="meta-item">
-          <b>Connected Name</b>
-          <span id="fbAccountName">No account connected yet.</span>
-        </div>
-
-        <div class="meta-item">
-          <b>Facebook User ID</b>
-          <span id="fbUserId">No user connected yet.</span>
-        </div>
-
-        <div class="meta-item">
-          <b>Connection Status</b>
-          <span id="fbConnectionMeta">Waiting for connection.</span>
+    <header class="topbar">
+      <div class="top-left">
+        <button class="icon-btn" onclick="history.back()" title="Back">←</button>
+        <div class="title-box">
+          <div class="title">Connected Accounts</div>
+          <div class="sub">Manage platform access</div>
         </div>
       </div>
 
-      <div class="btns">
-        <button class="action-btn connect" id="connectBtn">Connect Facebook</button>
-        <button class="action-btn disconnect" id="disconnectBtn">Disconnect</button>
+      <button class="icon-btn" id="refreshBtn" title="Refresh">↻</button>
+    </header>
+
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Connected</div>
+        <div class="stat-value" id="statConnected">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Expired</div>
+        <div class="stat-value" id="statExpired">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Available</div>
+        <div class="stat-value" id="statAvailable">6</div>
       </div>
     </section>
 
-    <section class="card">
-      <div class="subcard">
-        <h4>Important</h4>
-        <p>
-          This version uses only the safe basic Facebook login scope. It avoids the
-          invalid-scope issue that was breaking your current connection flow.
-        </p>
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Accounts</h3>
+        <div class="section-tools">
+          <a class="btn" href="connect-account.html">Add</a>
+          <a class="btn primary" href="create-post.html">Create Post</a>
+        </div>
       </div>
+
+      <div class="section-body" id="accountsList"></div>
     </section>
   </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="home.html">
+      <span>🏠</span>
+      <span>Home</span>
+    </a>
+
+    <a class="nav-btn" href="explore.html">
+      <span>🔎</span>
+      <span>Explore</span>
+    </a>
+
+    <a class="nav-btn" href="dashboard.html">
+      <span>◫</span>
+      <span>Dashboard</span>
+    </a>
+
+    <a class="nav-btn active" href="connected-accounts.html">
+      <span>🔗</span>
+      <span>Accounts</span>
+    </a>
+
+    <a class="nav-btn" href="settings.html">
+      <span>⚙️</span>
+      <span>Settings</span>
+    </a>
+  </nav>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    const APP_ID = "921040053900296";
-    const VERCEL_BASE_URL = "https://view-psi-lac.vercel.app";
-    const REDIRECT_URI = "https://view-psi-lac.vercel.app/connected-accounts.html";
-    const FACEBOOK_CONNECT_API = `${VERCEL_BASE_URL}/api/facebook-connect`;
-
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        flowType: "pkce"
       }
     });
 
     const noticeBox = document.getElementById("notice");
-    const fbStatus = document.getElementById("fbStatus");
-    const fbAccountName = document.getElementById("fbAccountName");
-    const fbUserId = document.getElementById("fbUserId");
-    const fbConnectionMeta = document.getElementById("fbConnectionMeta");
-    const connectBtn = document.getElementById("connectBtn");
-    const disconnectBtn = document.getElementById("disconnectBtn");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const accountsList = document.getElementById("accountsList");
+    const statConnected = document.getElementById("statConnected");
+    const statExpired = document.getElementById("statExpired");
 
-    function showNotice(message, type = "error") {
+    let currentUserId = "";
+    let connectionMap = {};
+
+    const PLATFORMS = [
+      { key: "facebook", name: "Facebook", icon: "f", iconClass: "facebook", path: "facebook-connect.html" },
+      { key: "instagram", name: "Instagram", icon: "◎", iconClass: "instagram", path: "instagram-connect.html" },
+      { key: "youtube", name: "YouTube", icon: "▶", iconClass: "youtube", path: "youtube-connect.html" },
+      { key: "tiktok", name: "TikTok", icon: "♪", iconClass: "tiktok", path: "tiktok-connect.html" },
+      { key: "whatsapp", name: "WhatsApp", icon: "✆", iconClass: "whatsapp", path: "whatsapp-connect.html" },
+      { key: "x", name: "X", icon: "X", iconClass: "xhandle", path: "x-connect.html" }
+    ];
+
+    function showNotice(message, type = "info") {
       noticeBox.className = `notice show ${type}`;
-      noticeBox.textContent = message;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        noticeBox.className = "notice";
+        noticeBox.textContent = "";
+      }, 2400);
     }
 
-    function clearNotice() {
-      noticeBox.className = "notice";
-      noticeBox.textContent = "";
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
-    function setDisconnectedState() {
-      fbStatus.textContent = "Not connected";
-      fbStatus.classList.remove("connected");
-      fbAccountName.textContent = "No account connected yet.";
-      fbUserId.textContent = "No user connected yet.";
-      fbConnectionMeta.textContent = "Waiting for connection.";
+    function closeAllMenus() {
+      document.querySelectorAll(".more-menu").forEach(menu => menu.classList.remove("show"));
     }
 
-    function setConnectedState(accountName, userId) {
-      fbStatus.textContent = "Connected";
-      fbStatus.classList.add("connected");
-      fbAccountName.textContent = accountName || "Facebook connected";
-      fbUserId.textContent = userId || "User ID unavailable";
-      fbConnectionMeta.textContent = "Basic Facebook connection is active.";
+    function toggleMenu(platform) {
+      closeAllMenus();
+      const menu = document.getElementById(`menu-${platform}`);
+      if (menu) menu.classList.toggle("show");
     }
 
-    async function getSessionWithRetry(maxWaitMs = 3000) {
-      const start = Date.now();
+    function getConnection(platform) {
+      return connectionMap[platform] || null;
+    }
 
-      while (Date.now() - start < maxWaitMs) {
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (error) throw error;
-        if (data.session?.user) return data.session;
-        await new Promise(resolve => setTimeout(resolve, 200));
+    function getStatusHtml(conn) {
+      if (!conn) return `<span class="status-badge status-disconnected">Not Connected</span>`;
+      if (conn.is_connected && conn.token_expires_at && new Date(conn.token_expires_at) < new Date()) {
+        return `<span class="status-badge status-expired">Expired</span>`;
       }
-
-      return null;
+      return `<span class="status-badge status-connected">Connected</span>`;
     }
 
-    async function requireSession() {
-      const session = await getSessionWithRetry();
-      if (!session?.user) {
-        window.location.href = "login.html?next=connected-accounts.html";
-        return null;
+    function getSubText(item, conn) {
+      if (!conn) return item.name;
+      return conn.account_name || conn.account_handle || conn.account_email || "Connected";
+    }
+
+    function countExpired() {
+      return Object.values(connectionMap).filter(conn =>
+        conn?.is_connected &&
+        conn?.token_expires_at &&
+        new Date(conn.token_expires_at) < new Date()
+      ).length;
+    }
+
+    function renderStats() {
+      statConnected.textContent = Object.keys(connectionMap).length;
+      statExpired.textContent = countExpired();
+    }
+
+    function renderAccounts() {
+      accountsList.innerHTML = PLATFORMS.map(item => {
+        const conn = getConnection(item.key);
+        const subText = getSubText(item, conn);
+
+        return `
+          <div class="account-card" data-platform="${item.key}">
+            <div class="account-left" onclick="openConnectPage('${item.path}')">
+              <div class="account-icon ${item.iconClass}">${item.icon}</div>
+              <div class="account-meta">
+                <div class="account-name">${escapeHtml(item.name)}</div>
+                <div class="account-sub">${escapeHtml(subText)}</div>
+              </div>
+            </div>
+
+            <div class="account-right">
+              ${getStatusHtml(conn)}
+              <button class="go-btn" onclick="openConnectPage('${item.path}')" title="Open">›</button>
+              <div class="more-wrap">
+                <button class="more-btn" onclick="event.stopPropagation(); toggleMenu('${item.key}')" title="More">⋯</button>
+                <div class="more-menu" id="menu-${item.key}">
+                  <button class="more-action" onclick="openConnectPage('${item.path}')">${conn ? "Manage" : "Connect"}</button>
+                  ${conn ? `<button class="more-action" onclick="reconnectPlatform('${item.path}')">Reconnect</button>` : ""}
+                  ${conn ? `<button class="more-action danger-text" onclick="disconnectPlatform('${item.key}')">Disconnect</button>` : ""}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (!PLATFORMS.length) {
+        accountsList.innerHTML = `<div class="empty-box">No platforms available.</div>`;
       }
-      return session;
     }
 
-    function connectFacebook() {
-      clearNotice();
-
-      const oauthUrl =
-        "https://www.facebook.com/v20.0/dialog/oauth" +
-        `?client_id=${encodeURIComponent(APP_ID)}` +
-        `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-        `&state=${encodeURIComponent("view_facebook_connect")}` +
-        `&response_type=code` +
-        `&scope=${encodeURIComponent("public_profile")}`;
-
-      window.location.href = oauthUrl;
+    function openConnectPage(path) {
+      window.location.href = path;
     }
 
-    async function saveFacebookConnection(payload) {
-      const session = await requireSession();
-      if (!session) return false;
-
-      const user = session.user;
-      const facebookUser = payload.facebook_user || {};
-
-      const connectionRow = {
-        user_id: user.id,
-        platform: "facebook",
-        account_name: facebookUser.name || "Facebook",
-        account_handle: facebookUser.id || "",
-        status: "connected",
-        external_user_id: facebookUser.id || null,
-        updated_at: new Date().toISOString()
-      };
-
-      const { error } = await supabaseClient
-        .from("connected_accounts")
-        .upsert(connectionRow, { onConflict: "user_id,platform" });
-
-      if (error) {
-        showNotice(error.message || "Could not save Facebook connection.", "error");
-        return false;
-      }
-
-      setConnectedState(connectionRow.account_name, connectionRow.external_user_id);
-      showNotice("Facebook connected successfully.", "success");
-      return true;
+    function reconnectPlatform(path) {
+      closeAllMenus();
+      openConnectPage(path);
     }
 
-    async function handleFacebookRedirect() {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-
-      if (!code) return;
-
-      showNotice("Completing Facebook connection...", "info");
+    async function disconnectPlatform(platform) {
+      closeAllMenus();
 
       try {
-        const response = await fetch(
-          `${FACEBOOK_CONNECT_API}?code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`
-        );
-
-        const result = await response.json();
-
-        if (!response.ok || result.error) {
-          showNotice(
-            typeof result.error === "string"
-              ? result.error
-              : JSON.stringify(result.error || result),
-            "error"
-          );
-          return;
-        }
-
-        await saveFacebookConnection(result);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } catch (error) {
-        showNotice(error.message || "Facebook connection failed.", "error");
-      }
-    }
-
-    async function loadConnectedAccount() {
-      const session = await requireSession();
-      if (!session) return;
-
-      const user = session.user;
-
-      const { data, error } = await supabaseClient
-        .from("connected_accounts")
-        .select("status, account_name, external_user_id")
-        .eq("user_id", user.id)
-        .eq("platform", "facebook")
-        .maybeSingle();
-
-      if (error || !data || data.status !== "connected") {
-        setDisconnectedState();
-        return;
-      }
-
-      setConnectedState(data.account_name, data.external_user_id);
-    }
-
-    async function disconnectFacebook() {
-      const session = await requireSession();
-      if (!session) return;
-
-      try {
-        const user = session.user;
-
         const { error } = await supabaseClient
           .from("connected_accounts")
           .update({
-            status: "disconnected",
-            account_name: "",
-            account_handle: "",
-            external_user_id: null,
-            external_page_id: null,
-            page_id: null,
-            page_name: null,
-            access_token: null,
-            page_token: null,
+            is_connected: false,
             updated_at: new Date().toISOString()
           })
-          .eq("user_id", user.id)
-          .eq("platform", "facebook");
+          .eq("user_id", currentUserId)
+          .eq("platform", platform);
 
-        if (error) {
-          showNotice(error.message || "Could not disconnect Facebook.", "error");
-          return;
-        }
+        if (error) throw error;
 
-        setDisconnectedState();
-        showNotice("Facebook disconnected.", "success");
+        delete connectionMap[platform];
+        renderAccounts();
+        renderStats();
+        showNotice("Account disconnected.", "success");
       } catch (error) {
-        showNotice(error.message || "Could not disconnect Facebook.", "error");
+        showNotice(error.message || "Could not disconnect account.", "error");
       }
     }
 
-    connectBtn.addEventListener("click", connectFacebook);
-    disconnectBtn.addEventListener("click", disconnectFacebook);
+    async function loadConnections() {
+      try {
+        const { data, error } = await supabaseClient
+          .from("connected_accounts")
+          .select("id, platform, account_name, account_email, account_handle, is_connected, token_expires_at")
+          .eq("user_id", currentUserId)
+          .eq("is_connected", true);
 
-    window.onload = async function () {
-      await handleFacebookRedirect();
-      await loadConnectedAccount();
-    };
+        if (error) throw error;
+
+        connectionMap = {};
+        (data || []).forEach(row => {
+          connectionMap[row.platform] = row;
+        });
+
+        renderAccounts();
+        renderStats();
+      } catch (error) {
+        renderAccounts();
+        renderStats();
+        showNotice(error.message || "Could not load accounts.", "error");
+      }
+    }
+
+    async function init() {
+      try {
+        const { data, error } = await supabaseClient.auth.getUser();
+        if (error) throw error;
+
+        const user = data.user;
+        if (!user) {
+          window.location.href = "login.html?next=connected-accounts.html";
+          return;
+        }
+
+        currentUserId = user.id;
+        renderAccounts();
+        renderStats();
+        await loadConnections();
+      } catch (error) {
+        showNotice(error.message || "Could not load page.", "error");
+      }
+    }
+
+    refreshBtn.addEventListener("click", async () => {
+      await loadConnections();
+      showNotice("Accounts updated.", "success");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".more-wrap")) closeAllMenus();
+    });
+
+    let pressTimer = null;
+    document.addEventListener("touchstart", (e) => {
+      const card = e.target.closest(".account-card");
+      if (!card) return;
+      const platform = card.dataset.platform;
+      pressTimer = setTimeout(() => toggleMenu(platform), 500);
+    }, { passive: true });
+
+    document.addEventListener("touchend", () => {
+      clearTimeout(pressTimer);
+    });
+
+    window.toggleMenu = toggleMenu;
+    window.openConnectPage = openConnectPage;
+    window.disconnectPlatform = disconnectPlatform;
+    window.reconnectPlatform = reconnectPlatform;
+
+    init();
   </script>
 </body>
 </html>
