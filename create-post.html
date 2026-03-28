@@ -4,586 +4,538 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Create Post | View</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#07122a" />
+  <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root{
-      --bg:#061126;
-      --bg2:#0a1835;
-      --card:rgba(255,255,255,.08);
-      --card2:rgba(255,255,255,.05);
-      --stroke:rgba(255,255,255,.08);
-      --text:#f8fbff;
-      --muted:#9db0cf;
-      --soft:#7f91af;
-      --primary:#2d6bff;
-      --primary2:#5c8cff;
-      --green:#22c55e;
+      --bg:#08111f;
+      --card:#101b31;
+      --card-2:#14213d;
+      --line:rgba(255,255,255,.08);
+      --text:#f4f7ff;
+      --muted:#9fb1d7;
+      --primary:#2563eb;
+      --primary2:#7c3aed;
+      --success:#10b981;
       --danger:#ef4444;
-      --warning:#f59e0b;
-      --shadow:0 18px 50px rgba(0,0,0,.28);
+      --warn:#f59e0b;
+      --shadow:0 14px 40px rgba(0,0,0,.28);
+      --safe-bottom:env(safe-area-inset-bottom);
     }
 
     *{
+      box-sizing:border-box;
       margin:0;
       padding:0;
-      box-sizing:border-box;
-      font-family:Inter,Arial,sans-serif;
+      font-family:Arial,sans-serif;
       -webkit-tap-highlight-color:transparent;
     }
 
     html,body{
       min-height:100%;
-      background:
-        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
-        radial-gradient(circle at top left, rgba(0,255,200,.06), transparent 18%),
-        linear-gradient(180deg,#08142e 0%,#061126 55%,#050d1c 100%);
+      background:var(--bg);
       color:var(--text);
     }
 
-    body{padding-bottom:120px}
+    body{
+      padding:16px 14px 120px;
+    }
+
+    button,input,textarea,select{
+      font:inherit;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      background:none;
+      cursor:pointer;
+    }
 
     .wrap{
-      width:min(100%,980px);
+      width:min(100%, 820px);
       margin:0 auto;
-      padding:18px 16px 0;
     }
 
     .notice{
       display:none;
-      margin-bottom:16px;
-      padding:14px 16px;
-      border-radius:18px;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
       font-size:14px;
-      line-height:1.6;
-      border:1px solid transparent;
-      backdrop-filter:blur(10px);
+      line-height:1.55;
+      box-shadow:var(--shadow);
     }
     .notice.show{display:block}
-    .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#ffd9d9}
-    .notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffe8}
-    .notice.info{background:rgba(45,107,255,.14);border-color:rgba(45,107,255,.26);color:#dce8ff}
-
-    .hero{
-      position:relative;
-      overflow:hidden;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
-        linear-gradient(135deg, rgba(45,107,255,.16), rgba(92,140,255,.06));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:30px;
-      padding:18px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(18px);
-      margin-bottom:18px;
-    }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      top:-70px;
-      right:-70px;
-      width:180px;
-      height:180px;
-      border-radius:50%;
-      background:radial-gradient(circle, rgba(92,140,255,.30), transparent 66%);
-      pointer-events:none;
-    }
+    .notice.error{background:rgba(127,29,29,.92);color:#fecaca}
+    .notice.success{background:rgba(5,46,22,.92);color:#d1fae5}
+    .notice.info{background:rgba(30,41,59,.95);color:#dbeafe}
 
     .topbar{
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       justify-content:space-between;
       gap:12px;
       margin-bottom:16px;
-      position:relative;
-      z-index:1;
-      flex-wrap:wrap;
     }
 
-    .top-left,.top-right{
+    .top-left{
       display:flex;
       align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .icon-btn,.primary-btn,.ghost-btn,.soft-btn,.danger-btn{
-      min-height:46px;
-      border:none;
-      border-radius:18px;
-      padding:0 16px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      text-decoration:none;
-      color:#fff;
-      font-size:13px;
-      font-weight:800;
-      cursor:pointer;
+      gap:12px;
+      min-width:0;
+      flex:1;
     }
 
     .icon-btn{
       width:46px;
+      height:46px;
       min-width:46px;
-      padding:0;
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
-    }
-
-    .primary-btn{
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:0 12px 28px rgba(45,107,255,.28);
-    }
-
-    .ghost-btn,.soft-btn{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .danger-btn{
-      background:rgba(239,68,68,.14);
-      border:1px solid rgba(239,68,68,.18);
-      color:#ffd9d9;
-    }
-
-    .brand h1{
-      font-size:32px;
-      font-weight:900;
-      line-height:1;
-      letter-spacing:-.03em;
-      margin-bottom:4px;
-    }
-
-    .brand p{
-      color:#bfd0ea;
-      font-size:13px;
-    }
-
-    .hero-row{
+      border-radius:14px;
       display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      position:relative;
-      z-index:1;
-    }
-
-    .hero-chip{
-      min-height:36px;
-      padding:0 12px;
-      border-radius:999px;
-      display:inline-flex;
       align-items:center;
       justify-content:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      font-size:18px;
+      color:#fff;
+    }
+
+    .title-box{
+      min-width:0;
+      flex:1;
+    }
+
+    .title{
+      font-size:22px;
       font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(12,1fr);
-      gap:18px;
-      margin-bottom:18px;
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .col-12{grid-column:span 12}
-    .col-8{grid-column:span 8}
-    .col-6{grid-column:span 6}
-    .col-4{grid-column:span 4}
+    .publish-btn{
+      min-height:42px;
+      padding:0 14px;
+      border-radius:12px;
+      font-size:13px;
+      font-weight:700;
+      color:#fff;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:var(--shadow);
+    }
 
     .card{
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:28px;
-      padding:18px 16px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
       box-shadow:var(--shadow);
-      backdrop-filter:blur(16px);
+      margin-bottom:16px;
     }
 
     .card-head{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
+      gap:10px;
       flex-wrap:wrap;
     }
 
-    .card-head h2,.card-head h3{
-      font-size:22px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      margin-bottom:4px;
+    .card-head h3{
+      font-size:16px;
+      font-weight:800;
     }
 
-    .card-head p{
+    .card-body{
+      padding:14px;
+      display:grid;
+      gap:12px;
+    }
+
+    .profile-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .profile-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .avatar{
+      width:52px;
+      height:52px;
+      min-width:52px;
+      border-radius:16px;
+      overflow:hidden;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-weight:800;
+      font-size:18px;
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .profile-meta{
+      min-width:0;
+      flex:1;
+    }
+
+    .profile-name{
+      font-size:15px;
+      font-weight:800;
+      margin-bottom:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .profile-sub{
+      font-size:12px;
       color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .field{
       display:grid;
       gap:8px;
-      margin-bottom:14px;
     }
 
-    .field label{
-      font-size:12px;
-      font-weight:800;
-      color:#dce8ff;
-      text-transform:uppercase;
-      letter-spacing:.04em;
+    .label{
+      font-size:13px;
+      font-weight:700;
+      color:#dbeafe;
     }
 
-    .input,.textarea,.select{
+    .input,
+    .textarea,
+    .select,
+    .file-wrap{
       width:100%;
-      min-height:54px;
-      border:none;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      padding:14px;
       outline:none;
-      border-radius:18px;
-      padding:0 14px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#fff;
-      font-size:14px;
     }
 
     .textarea{
-      min-height:160px;
-      padding:14px;
+      min-height:150px;
       resize:vertical;
+      line-height:1.65;
     }
 
-    .input::placeholder,.textarea::placeholder{
-      color:#92a6c5;
+    .file-wrap{
+      padding:10px 12px;
     }
 
-    .split{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
+    .file-wrap input[type="file"]{
+      width:100%;
+      color:var(--muted);
     }
 
-    .tool-row{
+    .hint{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.55;
+    }
+
+    .platform-scroll{
       display:flex;
       gap:10px;
-      flex-wrap:wrap;
+      overflow:auto;
+      padding-bottom:2px;
+      scrollbar-width:none;
     }
 
-    .mini-btn{
-      border:none;
-      border-radius:999px;
-      padding:10px 14px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:13px;
-      font-weight:800;
-      cursor:pointer;
-    }
-
-    .emoji-panel{
+    .platform-scroll::-webkit-scrollbar{
       display:none;
-      gap:8px;
-      flex-wrap:wrap;
+    }
+
+    .platform-chip{
+      min-width:124px;
       padding:12px;
-      border-radius:18px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      margin-top:10px;
-    }
-
-    .emoji-panel.show{display:flex}
-
-    .emoji-btn{
-      width:40px;
-      height:40px;
-      border:none;
-      border-radius:12px;
-      background:rgba(255,255,255,.08);
-      cursor:pointer;
-      font-size:20px;
-    }
-
-    .media-drop{
-      border:1.5px dashed rgba(255,255,255,.18);
-      background:rgba(255,255,255,.04);
-      border-radius:22px;
-      padding:20px 16px;
-      text-align:center;
-    }
-
-    .media-drop h4{
-      font-size:16px;
-      font-weight:900;
-      margin-bottom:6px;
-    }
-
-    .media-drop p{
-      font-size:13px;
-      color:#bfd0ea;
-      line-height:1.7;
-      margin-bottom:12px;
-    }
-
-    .hidden{display:none !important;}
-
-    .media-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:12px;
-      margin-top:14px;
-    }
-
-    .media-item{
-      position:relative;
-      border-radius:20px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      border:1px solid var(--line);
       background:rgba(255,255,255,.05);
-      min-height:180px;
-    }
-
-    .media-item img,.media-item video{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-      max-height:240px;
-    }
-
-    .media-badge{
-      position:absolute;
-      top:10px;
-      left:10px;
-      min-height:28px;
-      padding:0 10px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(7,18,43,.78);
-      color:#fff;
-      font-size:11px;
-      font-weight:900;
-      border:1px solid rgba(255,255,255,.08);
-      z-index:2;
-    }
-
-    .remove-media{
-      position:absolute;
-      top:10px;
-      right:10px;
-      width:34px;
-      height:34px;
-      border:none;
-      border-radius:12px;
-      background:rgba(239,68,68,.88);
-      color:#fff;
-      font-size:16px;
-      font-weight:900;
-      cursor:pointer;
-      z-index:2;
-    }
-
-    .cross-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:12px;
-    }
-
-    .platform-card{
-      border-radius:22px;
-      padding:16px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:12px;
-    }
-
-    .platform-card.active{
-      border-color:rgba(45,107,255,.28);
-      background:rgba(45,107,255,.12);
-    }
-
-    .platform-meta h4{
-      font-size:15px;
-      font-weight:900;
-      margin-bottom:4px;
-    }
-
-    .platform-meta p{
-      font-size:12px;
-      color:#bfd0ea;
-      line-height:1.6;
-    }
-
-    .toggle{
-      width:52px;
-      height:30px;
-      background:rgba(255,255,255,.12);
-      border-radius:999px;
-      position:relative;
-      border:1px solid rgba(255,255,255,.08);
+      gap:10px;
       cursor:pointer;
-      flex-shrink:0;
-    }
-
-    .toggle::after{
-      content:"";
-      position:absolute;
-      top:3px;
-      left:3px;
-      width:22px;
-      height:22px;
-      border-radius:50%;
-      background:#fff;
       transition:.18s ease;
     }
 
-    .platform-card.active .toggle{
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
+    .platform-chip.active{
+      background:linear-gradient(135deg, rgba(37,99,235,.25), rgba(124,58,237,.18));
+      border-color:rgba(99,102,241,.55);
+      box-shadow:0 0 0 1px rgba(99,102,241,.35) inset;
     }
 
-    .platform-card.active .toggle::after{
-      left:25px;
+    .platform-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
     }
 
-    .preview-shell{
-      border-radius:24px;
+    .platform-icon{
+      width:36px;
+      height:36px;
+      min-width:36px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .facebook{background:linear-gradient(135deg,#1877f2,#0f5fd4)}
+    .instagram{background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4)}
+    .youtube{background:linear-gradient(135deg,#ff0000,#d70000)}
+    .tiktok{background:linear-gradient(135deg,#161616,#25f4ee)}
+    .whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
+    .viewapp{background:linear-gradient(135deg,var(--primary),var(--primary2))}
+    .xhandle{background:linear-gradient(135deg,#0f172a,#334155)}
+
+    .platform-meta{
+      min-width:0;
+    }
+
+    .platform-name{
+      font-size:13px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .platform-status{
+      font-size:11px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .platform-check{
+      width:20px;
+      height:20px;
+      min-width:20px;
+      border-radius:50%;
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      color:transparent;
+    }
+
+    .platform-chip.active .platform-check{
+      color:#fff;
+      border-color:rgba(255,255,255,.2);
+      background:rgba(255,255,255,.14);
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .actions-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .soft-btn{
+      min-height:42px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid var(--line);
       background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      padding:16px;
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .preview-box{
+      display:none;
+      padding:14px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      gap:12px;
     }
 
     .preview-title{
-      font-size:22px;
-      font-weight:900;
-      line-height:1.3;
-      margin-bottom:10px;
-      word-break:break-word;
+      font-size:16px;
+      font-weight:800;
+      display:none;
+      line-height:1.5;
     }
 
     .preview-content{
-      color:#dce8ff;
-      font-size:14px;
-      line-height:1.8;
       white-space:pre-wrap;
-      margin-bottom:12px;
-      word-break:break-word;
+      line-height:1.65;
+      font-size:14px;
     }
 
-    .preview-meta{
+    .preview-sticker{
+      font-size:40px;
+      line-height:1;
+      display:none;
+    }
+
+    .preview-media{
+      display:none;
+      width:100%;
+      max-height:360px;
+      object-fit:cover;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#0f172a;
+    }
+
+    .sticker-wrap{
       display:flex;
-      gap:8px;
+      gap:10px;
       flex-wrap:wrap;
-      margin-bottom:12px;
     }
 
-    .preview-chip{
-      min-height:30px;
-      padding:0 10px;
-      border-radius:999px;
+    .sticker-chip{
+      width:52px;
+      height:52px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:24px;
+      cursor:pointer;
+    }
+
+    .sticker-chip.active{
+      background:linear-gradient(135deg, rgba(37,99,235,.25), rgba(124,58,237,.18));
+      border-color:rgba(99,102,241,.55);
+    }
+
+    .bottom-bar{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:12px;
+      width:min(760px, calc(100% - 20px));
+      background:rgba(12,20,36,.95);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:10px;
+      display:flex;
+      gap:10px;
+      box-shadow:var(--shadow);
+      z-index:40;
+    }
+
+    .bottom-bar .soft-btn,
+    .bottom-bar .publish-btn{
+      flex:1;
+      min-height:48px;
+    }
+
+    .dropdown-wrap{
+      position:relative;
+    }
+
+    .menu-btn{
+      min-height:42px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      background:rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:11px;
-      font-weight:900;
-      border:1px solid rgba(255,255,255,.08);
+      gap:8px;
     }
 
-    .preview-gallery{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:10px;
-    }
-
-    .preview-gallery img,.preview-gallery video{
-      width:100%;
-      max-height:220px;
-      object-fit:cover;
-      display:block;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .status-line{
-      font-size:13px;
-      color:#bfd0ea;
-      line-height:1.7;
-    }
-
-    .footer-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:16px;
-    }
-
-    .bottom-nav{
-      position:fixed;
-      left:50%;
-      bottom:14px;
-      transform:translateX(-50%);
-      width:min(760px, calc(100% - 20px));
-      background:rgba(7,18,43,.94);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:24px;
-      box-shadow:0 20px 50px rgba(15,23,42,.24);
-      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:6px;
-      z-index:50;
-      backdrop-filter:blur(18px);
-    }
-
-    .nav-btn{
-      text-decoration:none;
-      color:#90a5c7;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      min-height:58px;
+    .dropdown-menu{
+      position:absolute;
+      top:50px;
+      right:0;
+      min-width:190px;
+      display:none;
+      background:#0f1a30;
+      border:1px solid var(--line);
       border-radius:16px;
-      font-size:12px;
-      font-weight:800;
-      text-align:center;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      z-index:50;
     }
 
-    .nav-btn.active{
-      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
-      color:#fff;
-      border:1px solid rgba(45,107,255,.20);
+    .dropdown-menu.show{
+      display:block;
     }
 
-    .nav-icon{font-size:20px;line-height:1}
-
-    @media(max-width:900px){
-      .col-8,.col-6,.col-4{grid-column:span 12}
+    .dropdown-item{
+      width:100%;
+      min-height:44px;
+      padding:0 14px;
+      display:flex;
+      align-items:center;
+      text-align:left;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      font-size:13px;
     }
 
-    @media(max-width:640px){
-      .wrap{padding:14px 12px 0}
-      .brand h1{font-size:28px}
-      .split,.cross-grid,.media-grid,.preview-gallery{grid-template-columns:1fr}
-      .topbar{flex-direction:column;align-items:flex-start}
-      .top-left,.top-right{width:100%}
-      .top-right .primary-btn,.top-right .ghost-btn,.top-right .soft-btn{flex:1}
+    .dropdown-item:last-child{
+      border-bottom:none;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    @media (max-width:640px){
+      .row{
+        grid-template-columns:1fr;
+      }
+
+      .publish-btn{
+        min-width:auto;
+      }
     }
   </style>
 </head>
@@ -591,281 +543,257 @@
   <div class="wrap">
     <div id="notice" class="notice"></div>
 
-    <section class="hero">
-      <div class="topbar">
-        <div class="top-left">
-          <a class="icon-btn" href="home.html" title="Back">←</a>
-          <div class="brand">
-            <h1>Create Post</h1>
-            <p>Compose premium posts, reels, schedules, drafts, and cross-posts</p>
-          </div>
-        </div>
-
-        <div class="top-right">
-          <a class="ghost-btn" href="drafts.html">Drafts</a>
-          <a class="ghost-btn" href="publish-history.html">History</a>
-          <a class="soft-btn" href="dashboard.html">Dashboard</a>
+    <header class="topbar">
+      <div class="top-left">
+        <button class="icon-btn" onclick="history.back()" title="Back">←</button>
+        <div class="title-box">
+          <div class="title">Create Post</div>
+          <div class="sub">New post</div>
         </div>
       </div>
 
-      <div class="hero-row">
-        <span id="draftChip" class="hero-chip">Draft: not saved</span>
-        <span id="mediaChip" class="hero-chip">Media: 0 selected</span>
-        <span id="crossChip" class="hero-chip">Cross-post: none</span>
+      <div class="actions-row">
+        <a class="icon-btn" href="drafts.html" title="Drafts">🗂</a>
+        <a class="icon-btn" href="publish-history.html" title="History">🕘</a>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="card-body">
+        <div class="profile-row">
+          <div class="profile-left">
+            <div class="avatar" id="profileAvatar">V</div>
+            <div class="profile-meta">
+              <div class="profile-name" id="profileName">Loading...</div>
+              <div class="profile-sub" id="profileSub">Please wait</div>
+            </div>
+          </div>
+
+          <div class="dropdown-wrap">
+            <button class="menu-btn" id="moreBtn">More ▾</button>
+            <div class="dropdown-menu" id="moreMenu">
+              <button class="dropdown-item" id="toggleStickerBtn">Stickers</button>
+              <button class="dropdown-item" onclick="window.location.href='connected-accounts.html'">Connected Accounts</button>
+              <button class="dropdown-item" onclick="window.location.href='scheduled-post.html'">Schedule</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="postTitle">Post Title</label>
+          <input class="input" id="postTitle" type="text" maxlength="120" placeholder="Optional title" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="postContent">Post</label>
+          <textarea class="textarea" id="postContent" placeholder="What's on your mind?"></textarea>
+        </div>
+
+        <div class="field">
+          <label class="label" for="mediaFile">Media</label>
+          <div class="file-wrap">
+            <input type="file" id="mediaFile" accept="image/*,video/*" />
+          </div>
+        </div>
+
+        <div class="field hidden" id="stickerSection">
+          <label class="label">Stickers</label>
+          <div class="sticker-wrap" id="stickerWrap">
+            <button class="sticker-chip" data-sticker="🔥">🔥</button>
+            <button class="sticker-chip" data-sticker="✨">✨</button>
+            <button class="sticker-chip" data-sticker="❤️">❤️</button>
+            <button class="sticker-chip" data-sticker="🎉">🎉</button>
+            <button class="sticker-chip" data-sticker="😍">😍</button>
+            <button class="sticker-chip" data-sticker="🚀">🚀</button>
+            <button class="sticker-chip" data-sticker="👏">👏</button>
+            <button class="sticker-chip" data-sticker="💯">💯</button>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="grid">
-      <div class="card col-8">
-        <div class="card-head">
-          <div>
-            <h2>Post Composer</h2>
-            <p>Create a standard feed post, reel, or a scheduled post with premium controls.</p>
-          </div>
+    <section class="card">
+      <div class="card-head">
+        <h3>Post To</h3>
+      </div>
+
+      <div class="card-body">
+        <div class="platform-scroll" id="platformsWrap">
+          <button class="platform-chip active" data-platform="view">
+            <div class="platform-left">
+              <div class="platform-icon viewapp">V</div>
+              <div class="platform-meta">
+                <div class="platform-name">View</div>
+                <div class="platform-status">Ready</div>
+              </div>
+            </div>
+            <div class="platform-check">✓</div>
+          </button>
+
+          <button class="platform-chip" data-platform="youtube">
+            <div class="platform-left">
+              <div class="platform-icon youtube">▶</div>
+              <div class="platform-meta">
+                <div class="platform-name">YouTube</div>
+                <div class="platform-status" id="status-youtube">Checking</div>
+              </div>
+            </div>
+            <div class="platform-check">✓</div>
+          </button>
+
+          <button class="platform-chip" data-platform="facebook">
+            <div class="platform-left">
+              <div class="platform-icon facebook">f</div>
+              <div class="platform-meta">
+                <div class="platform-name">Facebook</div>
+                <div class="platform-status" id="status-facebook">Checking</div>
+              </div>
+            </div>
+            <div class="platform-check">✓</div>
+          </button>
+
+          <button class="platform-chip" data-platform="instagram">
+            <div class="platform-left">
+              <div class="platform-icon instagram">◎</div>
+              <div class="platform-meta">
+                <div class="platform-name">Instagram</div>
+                <div class="platform-status" id="status-instagram">Checking</div>
+              </div>
+            </div>
+            <div class="platform-check">✓</div>
+          </button>
+
+          <button class="platform-chip" data-platform="tiktok">
+            <div class="platform-left">
+              <div class="platform-icon tiktok">♪</div>
+              <div class="platform-meta">
+                <div class="platform-name">TikTok</div>
+                <div class="platform-status" id="status-tiktok">Checking</div>
+              </div>
+            </div>
+            <div class="platform-check">✓</div>
+          </button>
+
+          <button class="platform-chip" data-platform="x">
+            <div class="platform-left">
+              <div class="platform-icon xhandle">X</div>
+              <div class="platform-meta">
+                <div class="platform-name">X</div>
+                <div class="platform-status" id="status-x">Checking</div>
+              </div>
+            </div>
+            <div class="platform-check">✓</div>
+          </button>
+
+          <button class="platform-chip" data-platform="whatsapp">
+            <div class="platform-left">
+              <div class="platform-icon whatsapp">✆</div>
+              <div class="platform-meta">
+                <div class="platform-name">WhatsApp</div>
+                <div class="platform-status" id="status-whatsapp">Checking</div>
+              </div>
+            </div>
+            <div class="platform-check">✓</div>
+          </button>
         </div>
 
-        <div class="field">
-          <label for="titleInput">Post Title</label>
-          <input id="titleInput" class="input" type="text" placeholder="Enter a strong post title" />
-        </div>
-
-        <div class="field">
-          <label for="contentInput">Caption / Content</label>
-          <textarea id="contentInput" class="textarea" placeholder="Write your post..."></textarea>
-          <div class="tool-row">
-            <button id="emojiToggleBtn" class="mini-btn" type="button">😊 Emoji</button>
-            <button id="clearDraftBtn" class="mini-btn" type="button">🗑 Clear Draft</button>
-          </div>
-          <div id="emojiPanel" class="emoji-panel"></div>
-        </div>
-
-        <div class="split">
+        <div class="row">
           <div class="field">
-            <label for="linkInput">Link URL</label>
-            <input id="linkInput" class="input" type="url" placeholder="https://example.com" />
-          </div>
-
-          <div class="field">
-            <label for="locationInput">Location</label>
-            <input id="locationInput" class="input" type="text" placeholder="Add location" />
-          </div>
-        </div>
-
-        <div class="split">
-          <div class="field">
-            <label for="visibilitySelect">Visibility</label>
-            <select id="visibilitySelect" class="select">
+            <label class="label" for="postPrivacy">Privacy</label>
+            <select class="select" id="postPrivacy">
               <option value="public">Public</option>
-              <option value="followers">Followers</option>
-              <option value="private">Private</option>
+              <option value="friends">Friends</option>
+              <option value="private">Only Me</option>
             </select>
           </div>
 
           <div class="field">
-            <label for="statusSelect">Status</label>
-            <select id="statusSelect" class="select">
-              <option value="published">Publish Now</option>
-              <option value="draft">Save as Draft</option>
-              <option value="scheduled">Schedule</option>
+            <label class="label" for="postType">Type</label>
+            <select class="select" id="postType">
+              <option value="text">Text</option>
+              <option value="image">Image</option>
+              <option value="video">Video</option>
             </select>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div class="field">
-          <label>Media Upload</label>
-          <div class="media-drop">
-            <h4>Upload Images or Videos</h4>
-            <p>Select multiple images or videos. The current backend stores the first uploaded media in the post row while the UI supports multiple selection and preview cleanly.</p>
-            <div class="tool-row" style="justify-content:center;">
-              <button id="pickMediaBtn" class="primary-btn" type="button">Choose Media</button>
-              <button id="removeAllMediaBtn" class="danger-btn" type="button">Remove All</button>
-            </div>
-            <input id="mediaInput" type="file" accept="image/*,video/*" multiple class="hidden" />
-          </div>
-          <div id="mediaGrid" class="media-grid"></div>
-        </div>
-
-        <div id="scheduleWrap" class="card" style="padding:14px;margin-top:8px;background:rgba(255,255,255,.05);">
-          <div class="card-head" style="margin-bottom:12px;">
-            <div>
-              <h3 style="font-size:18px;">Schedule Post</h3>
-              <p>Used when status is set to scheduled.</p>
-            </div>
-          </div>
-
-          <div class="split">
-            <div class="field">
-              <label for="scheduleDate">Date</label>
-              <input id="scheduleDate" class="input" type="date" />
-            </div>
-            <div class="field">
-              <label for="scheduleTime">Time</label>
-              <input id="scheduleTime" class="input" type="time" />
-            </div>
-          </div>
-        </div>
+    <section class="card">
+      <div class="card-head">
+        <h3>Preview</h3>
       </div>
 
-      <div class="card col-4">
-        <div class="card-head">
-          <div>
-            <h3>Cross-Post</h3>
-            <p>Select platforms to target after publish or schedule.</p>
-          </div>
-          <a class="soft-btn" href="connected-accounts.html">Accounts</a>
-        </div>
-
-        <div id="crossGrid" class="cross-grid">
-          <div class="platform-card" data-platform="tiktok">
-            <div class="platform-meta">
-              <h4>TikTok</h4>
-              <p>Short-form social video</p>
-            </div>
-            <div class="toggle"></div>
-          </div>
-
-          <div class="platform-card" data-platform="facebook">
-            <div class="platform-meta">
-              <h4>Facebook</h4>
-              <p>Page and social distribution</p>
-            </div>
-            <div class="toggle"></div>
-          </div>
-
-          <div class="platform-card" data-platform="instagram">
-            <div class="platform-meta">
-              <h4>Instagram</h4>
-              <p>Feed and creator reach</p>
-            </div>
-            <div class="toggle"></div>
-          </div>
-
-          <div class="platform-card" data-platform="youtube">
-            <div class="platform-meta">
-              <h4>YouTube</h4>
-              <p>Video distribution</p>
-            </div>
-            <div class="toggle"></div>
-          </div>
-
-          <div class="platform-card" data-platform="x">
-            <div class="platform-meta">
-              <h4>X</h4>
-              <p>Fast social publishing</p>
-            </div>
-            <div class="toggle"></div>
-          </div>
-        </div>
-
-        <div class="footer-actions">
-          <button id="saveDraftBtn" class="ghost-btn" type="button">Save Draft</button>
-          <button id="scheduleBtn" class="soft-btn" type="button">Schedule</button>
-          <button id="publishBtn" class="primary-btn" type="button">Publish Now</button>
-        </div>
-      </div>
-
-      <div class="card col-12">
-        <div class="card-head">
-          <div>
-            <h3>Live Preview</h3>
-            <p>Preview how your post will feel before publishing.</p>
-          </div>
-        </div>
-
-        <div class="preview-shell">
-          <div id="previewTitle" class="preview-title">Your post title will appear here</div>
-          <div id="previewContent" class="preview-content">Your post content preview will appear here.</div>
-          <div id="previewMeta" class="preview-meta"></div>
-          <div id="previewGallery" class="preview-gallery"></div>
-          <div id="previewStatus" class="status-line">Ready to compose.</div>
+      <div class="card-body">
+        <div class="preview-box" id="previewBox" style="display:grid;">
+          <div class="preview-title" id="previewTitle"></div>
+          <div class="preview-sticker" id="previewSticker"></div>
+          <div class="preview-content" id="previewContent">Your post preview will appear here.</div>
+          <img class="preview-media" id="previewImage" alt="Preview image" />
+          <video class="preview-media" id="previewVideo" controls playsinline></video>
         </div>
       </div>
     </section>
   </div>
 
-  <nav class="bottom-nav">
-    <a class="nav-btn" href="home.html">
-      <span class="nav-icon">⌂</span>
-      <span>Home</span>
-    </a>
-    <a class="nav-btn" href="explore.html">
-      <span class="nav-icon">📰</span>
-      <span>News</span>
-    </a>
-    <a class="nav-btn active" href="create-post.html">
-      <span class="nav-icon">＋</span>
-      <span>Create</span>
-    </a>
-    <a class="nav-btn" href="video-feed.html">
-      <span class="nav-icon">🎥</span>
-      <span>Video</span>
-    </a>
-    <a class="nav-btn" href="more.html">
-      <span class="nav-icon">☰</span>
-      <span>More</span>
-    </a>
-  </nav>
+  <div class="bottom-bar">
+    <button class="soft-btn" id="saveDraftBtn">Save Draft</button>
+    <button class="publish-btn" id="publishBtn">Publish Post</button>
+  </div>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const MEDIA_BUCKET = "post-media";
-    const DRAFT_KEY = "view_create_post_draft_v2";
-    const EMOJIS = ["😀","😁","😂","🤣","😊","😍","🥳","😎","🔥","❤️","💯","🎉","✨","🙏","👍","💙","💚","🫶","📸","🎥","🚀","🌍","💼","📢"];
+    const SMART_ACTION_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/smart-action";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        flowType: "pkce"
       }
     });
 
     const noticeBox = document.getElementById("notice");
-    const titleInput = document.getElementById("titleInput");
-    const contentInput = document.getElementById("contentInput");
-    const linkInput = document.getElementById("linkInput");
-    const locationInput = document.getElementById("locationInput");
-    const visibilitySelect = document.getElementById("visibilitySelect");
-    const statusSelect = document.getElementById("statusSelect");
-    const scheduleDate = document.getElementById("scheduleDate");
-    const scheduleTime = document.getElementById("scheduleTime");
+    const profileAvatar = document.getElementById("profileAvatar");
+    const profileName = document.getElementById("profileName");
+    const profileSub = document.getElementById("profileSub");
 
-    const emojiToggleBtn = document.getElementById("emojiToggleBtn");
-    const emojiPanel = document.getElementById("emojiPanel");
-    const clearDraftBtn = document.getElementById("clearDraftBtn");
-
-    const pickMediaBtn = document.getElementById("pickMediaBtn");
-    const removeAllMediaBtn = document.getElementById("removeAllMediaBtn");
-    const mediaInput = document.getElementById("mediaInput");
-    const mediaGrid = document.getElementById("mediaGrid");
-
-    const publishBtn = document.getElementById("publishBtn");
-    const scheduleBtn = document.getElementById("scheduleBtn");
-    const saveDraftBtn = document.getElementById("saveDraftBtn");
+    const postTitle = document.getElementById("postTitle");
+    const postContent = document.getElementById("postContent");
+    const mediaFile = document.getElementById("mediaFile");
+    const postPrivacy = document.getElementById("postPrivacy");
+    const postType = document.getElementById("postType");
 
     const previewTitle = document.getElementById("previewTitle");
+    const previewSticker = document.getElementById("previewSticker");
     const previewContent = document.getElementById("previewContent");
-    const previewMeta = document.getElementById("previewMeta");
-    const previewGallery = document.getElementById("previewGallery");
-    const previewStatus = document.getElementById("previewStatus");
+    const previewImage = document.getElementById("previewImage");
+    const previewVideo = document.getElementById("previewVideo");
 
-    const draftChip = document.getElementById("draftChip");
-    const mediaChip = document.getElementById("mediaChip");
-    const crossChip = document.getElementById("crossChip");
+    const publishBtn = document.getElementById("publishBtn");
+    const saveDraftBtn = document.getElementById("saveDraftBtn");
+    const toggleStickerBtn = document.getElementById("toggleStickerBtn");
+    const stickerSection = document.getElementById("stickerSection");
+    const stickerWrap = document.getElementById("stickerWrap");
+    const moreBtn = document.getElementById("moreBtn");
+    const moreMenu = document.getElementById("moreMenu");
 
     let currentUser = null;
-    let mediaFiles = [];
-    let selectedPlatforms = new Set();
+    let selectedPlatforms = new Set(["view"]);
+    let connectedPlatforms = new Set();
+    let selectedSticker = "";
+    let previewMediaUrl = "";
 
-    function showNotice(message, type = "error") {
+    function showNotice(message, type = "info") {
       noticeBox.className = `notice show ${type}`;
-      noticeBox.textContent = message;
-    }
-
-    function clearNotice() {
-      noticeBox.className = "notice";
-      noticeBox.textContent = "";
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        noticeBox.className = "notice";
+        noticeBox.textContent = "";
+      }, 2600);
     }
 
     function escapeHtml(value) {
@@ -877,428 +805,397 @@
         .replace(/'/g, "&#039;");
     }
 
-    function isVideo(file) {
-      return file?.type?.startsWith("video/");
+    function closeMenus() {
+      moreMenu.classList.remove("show");
     }
 
-    function isImage(file) {
-      return file?.type?.startsWith("image/");
+    function toggleMenu() {
+      moreMenu.classList.toggle("show");
     }
 
-    function extractHashtags(text) {
-      return [...new Set((text.match(/#[\p{L}\p{N}_]+/gu) || []).map(x => x.trim()))].join(",");
-    }
+    function setProfile(user, profile = null) {
+      const fullName =
+        profile?.full_name ||
+        user?.user_metadata?.full_name ||
+        user?.user_metadata?.name ||
+        user?.email?.split("@")[0] ||
+        "User";
 
-    function extractTaggedUsers(text) {
-      return [...new Set((text.match(/@[\p{L}\p{N}._-]+/gu) || []).map(x => x.trim()))].join(",");
-    }
+      const username =
+        profile?.username ||
+        user?.user_metadata?.username ||
+        user?.email ||
+        "View user";
 
-    function buildEmojiPanel() {
-      emojiPanel.innerHTML = EMOJIS.map(emoji => `
-        <button class="emoji-btn" type="button" data-emoji="${emoji}">${emoji}</button>
-      `).join("");
+      const avatarUrl =
+        profile?.avatar_url ||
+        user?.user_metadata?.avatar_url ||
+        user?.user_metadata?.picture ||
+        "";
 
-      emojiPanel.querySelectorAll("[data-emoji]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          insertAtCursor(contentInput, btn.dataset.emoji);
-          updatePreview();
-          saveDraftLocal();
-        });
-      });
-    }
+      profileName.textContent = fullName;
+      profileSub.textContent = username;
 
-    function insertAtCursor(el, text) {
-      const start = el.selectionStart || 0;
-      const end = el.selectionEnd || 0;
-      const value = el.value || "";
-      el.value = value.slice(0, start) + text + value.slice(end);
-      const newPos = start + text.length;
-      el.setSelectionRange(newPos, newPos);
-      el.focus();
-    }
-
-    async function getSessionWithRetry(maxWaitMs = 3000) {
-      const start = Date.now();
-      while (Date.now() - start < maxWaitMs) {
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (error) throw error;
-        if (data.session?.user) return data.session;
-        await new Promise(resolve => setTimeout(resolve, 200));
+      if (avatarUrl) {
+        profileAvatar.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(fullName)}">`;
+      } else {
+        profileAvatar.textContent = fullName.charAt(0).toUpperCase();
       }
-      return null;
     }
 
-    async function requireSession() {
-      const session = await getSessionWithRetry();
-      if (!session?.user) {
-        window.location.href = "login.html?next=create-post.html";
-        return null;
-      }
-      return session;
-    }
-
-    function serializeDraft() {
-      return {
-        title: titleInput.value.trim(),
-        content: contentInput.value,
-        link_url: linkInput.value.trim(),
-        location: locationInput.value.trim(),
-        visibility: visibilitySelect.value,
-        status: statusSelect.value,
-        schedule_date: scheduleDate.value,
-        schedule_time: scheduleTime.value,
-        selected_platforms: [...selectedPlatforms],
-        saved_at: new Date().toISOString()
-      };
-    }
-
-    function saveDraftLocal(showMessage = false) {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(serializeDraft()));
-      draftChip.textContent = "Draft: saved locally";
-      if (showMessage) showNotice("Draft saved locally.", "success");
-    }
-
-    function loadDraftLocal() {
+    async function loadProfile(user) {
       try {
-        const raw = localStorage.getItem(DRAFT_KEY);
-        if (!raw) return;
-        const draft = JSON.parse(raw);
+        const { data, error } = await supabaseClient
+          .from("profiles")
+          .select("full_name, username, avatar_url")
+          .eq("id", user.id)
+          .maybeSingle();
 
-        titleInput.value = draft.title || "";
-        contentInput.value = draft.content || "";
-        linkInput.value = draft.link_url || "";
-        locationInput.value = draft.location || "";
-        visibilitySelect.value = draft.visibility || "public";
-        statusSelect.value = draft.status || "published";
-        scheduleDate.value = draft.schedule_date || "";
-        scheduleTime.value = draft.schedule_time || "";
-
-        selectedPlatforms = new Set(draft.selected_platforms || []);
-        document.querySelectorAll(".platform-card").forEach(card => {
-          card.classList.toggle("active", selectedPlatforms.has(card.dataset.platform));
-        });
-
-        draftChip.textContent = "Draft: restored";
-      } catch {}
-    }
-
-    function clearDraftLocal() {
-      localStorage.removeItem(DRAFT_KEY);
-      titleInput.value = "";
-      contentInput.value = "";
-      linkInput.value = "";
-      locationInput.value = "";
-      visibilitySelect.value = "public";
-      statusSelect.value = "published";
-      scheduleDate.value = "";
-      scheduleTime.value = "";
-      mediaFiles = [];
-      selectedPlatforms = new Set();
-
-      document.querySelectorAll(".platform-card").forEach(card => card.classList.remove("active"));
-      renderMedia();
-      updatePreview();
-      draftChip.textContent = "Draft: cleared";
-      showNotice("Draft cleared.", "success");
-    }
-
-    function renderMedia() {
-      mediaChip.textContent = `Media: ${mediaFiles.length} selected`;
-
-      if (!mediaFiles.length) {
-        mediaGrid.innerHTML = "";
-        return;
+        if (error) throw error;
+        setProfile(user, data);
+      } catch {
+        setProfile(user, null);
       }
+    }
 
-      mediaGrid.innerHTML = mediaFiles.map((file, index) => {
-        const url = URL.createObjectURL(file);
-        return `
-          <div class="media-item">
-            <span class="media-badge">${isVideo(file) ? "Video" : "Image"}</span>
-            <button class="remove-media" type="button" data-index="${index}">✕</button>
-            ${isVideo(file)
-              ? `<video src="${url}" controls playsinline></video>`
-              : `<img src="${url}" alt="Selected media">`
-            }
-          </div>
-        `;
-      }).join("");
+    async function loadConnectedAccounts() {
+      if (!currentUser) return;
 
-      mediaGrid.querySelectorAll(".remove-media").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const index = Number(btn.dataset.index);
-          mediaFiles.splice(index, 1);
-          renderMedia();
-          updatePreview();
-          saveDraftLocal();
+      try {
+        const { data, error } = await supabaseClient
+          .from("connected_accounts")
+          .select("platform, is_connected")
+          .eq("user_id", currentUser.id)
+          .eq("is_connected", true);
+
+        if (error) throw error;
+
+        connectedPlatforms = new Set((data || []).map(item => item.platform));
+
+        ["youtube","facebook","instagram","tiktok","x","whatsapp"].forEach(platform => {
+          const label = document.getElementById(`status-${platform}`);
+          if (!label) return;
+          label.textContent = connectedPlatforms.has(platform) ? "Connected" : "Not Connected";
         });
+      } catch {
+        ["youtube","facebook","instagram","tiktok","x","whatsapp"].forEach(platform => {
+          const label = document.getElementById(`status-${platform}`);
+          if (label) label.textContent = "Unavailable";
+        });
+      }
+    }
+
+    function updatePlatformUI() {
+      document.querySelectorAll(".platform-chip").forEach(chip => {
+        const platform = chip.dataset.platform;
+        chip.classList.toggle("active", selectedPlatforms.has(platform));
       });
+
+      const selectedCount = selectedPlatforms.size;
+      publishBtn.textContent = selectedCount > 1 ? `Publish to ${selectedCount} Platforms` : "Publish Post";
     }
 
     function updatePreview() {
-      const title = titleInput.value.trim();
-      const content = contentInput.value.trim();
-      const location = locationInput.value.trim();
-      const link = linkInput.value.trim();
+      const title = postTitle.value.trim();
+      const content = postContent.value.trim();
 
-      previewTitle.textContent = title || "Your post title will appear here";
-      previewContent.textContent = content || "Your post content preview will appear here.";
+      previewTitle.style.display = title ? "block" : "none";
+      previewTitle.textContent = title || "";
 
-      const hashtags = extractHashtags(content);
-      const tags = extractTaggedUsers(content);
+      previewSticker.style.display = selectedSticker ? "block" : "none";
+      previewSticker.textContent = selectedSticker || "";
 
-      const chips = [];
-      if (visibilitySelect.value) chips.push(`Visibility: ${visibilitySelect.value}`);
-      if (location) chips.push(`Location: ${location}`);
-      if (hashtags) chips.push(`Hashtags: ${hashtags}`);
-      if (tags) chips.push(`Tagged: ${tags}`);
-      if (link) chips.push("Link attached");
-      if (selectedPlatforms.size) chips.push(`Cross-post: ${[...selectedPlatforms].join(", ")}`);
-
-      previewMeta.innerHTML = chips.map(chip => `<span class="preview-chip">${escapeHtml(chip)}</span>`).join("");
-
-      previewGallery.innerHTML = mediaFiles.map(file => {
-        const url = URL.createObjectURL(file);
-        return isVideo(file)
-          ? `<video src="${url}" controls playsinline></video>`
-          : `<img src="${url}" alt="Preview media">`;
-      }).join("");
-
-      previewStatus.textContent = mediaFiles.some(isVideo)
-        ? "Video/reel content will appear in both home feed and video feed."
-        : "Standard post preview ready.";
+      previewContent.textContent = content || "Your post preview will appear here.";
     }
 
-    function updateCrossChip() {
-      crossChip.textContent = selectedPlatforms.size
-        ? `Cross-post: ${[...selectedPlatforms].join(", ")}`
-        : "Cross-post: none";
+    function clearPreviewMedia() {
+      previewImage.style.display = "none";
+      previewImage.src = "";
+      previewVideo.style.display = "none";
+      previewVideo.src = "";
+      previewMediaUrl = "";
     }
 
-    async function uploadFirstMedia() {
-      if (!mediaFiles.length) return { media_url: null, media_type: null, cover_url: null };
+    function updatePreviewMedia(file) {
+      clearPreviewMedia();
+      if (!file) return;
 
-      const first = mediaFiles[0];
-      const ext = (first.name.split(".").pop() || "bin").toLowerCase();
-      const path = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      previewMediaUrl = URL.createObjectURL(file);
 
-      const { error: uploadError } = await supabaseClient
-        .storage
-        .from(MEDIA_BUCKET)
-        .upload(path, first, {
-          cacheControl: "3600",
-          upsert: false
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabaseClient
-        .storage
-        .from(MEDIA_BUCKET)
-        .getPublicUrl(path);
-
-      return {
-        media_url: data?.publicUrl || null,
-        media_type: isVideo(first) ? "video" : "image",
-        cover_url: isVideo(first) ? null : (data?.publicUrl || null)
-      };
+      if (file.type.startsWith("image/")) {
+        previewImage.src = previewMediaUrl;
+        previewImage.style.display = "block";
+      } else if (file.type.startsWith("video/")) {
+        previewVideo.src = previewMediaUrl;
+        previewVideo.style.display = "block";
+      }
     }
 
-    function validatePost() {
-      const hasText = titleInput.value.trim() || contentInput.value.trim();
-      const hasMedia = mediaFiles.length > 0;
-      const hasLink = linkInput.value.trim();
-      return !!(hasText || hasMedia || hasLink);
+    function validateSelectedPlatforms() {
+      if (!selectedPlatforms.size) {
+        showNotice("Select at least one platform.", "error");
+        return false;
+      }
+
+      for (const platform of selectedPlatforms) {
+        if (platform === "view") continue;
+        if (!connectedPlatforms.has(platform)) {
+          showNotice(`${platform.charAt(0).toUpperCase() + platform.slice(1)} is not connected.`, "error");
+          return false;
+        }
+      }
+
+      return true;
     }
 
-    async function publishNow() {
+    function validatePostRequirements() {
+      const file = mediaFile.files?.[0] || null;
+      const content = postContent.value.trim();
+      const type = postType.value;
+
+      if (!content && !file && !selectedSticker) {
+        showNotice("Add content, media, or sticker.", "error");
+        return false;
+      }
+
+      if (selectedPlatforms.has("youtube") && !file) {
+        showNotice("Video or media is required for YouTube posting.", "error");
+        return false;
+      }
+
+      if (selectedPlatforms.has("youtube") && file && !file.type.startsWith("video/")) {
+        showNotice("YouTube requires a video file.", "error");
+        return false;
+      }
+
+      if ((selectedPlatforms.has("instagram") || selectedPlatforms.has("tiktok")) && !file) {
+        showNotice("Media is required for the selected platform.", "error");
+        return false;
+      }
+
+      if (type === "image" && file && !file.type.startsWith("image/")) {
+        showNotice("Selected type is image, but media is not an image.", "error");
+        return false;
+      }
+
+      if (type === "video" && file && !file.type.startsWith("video/")) {
+        showNotice("Selected type is video, but media is not a video.", "error");
+        return false;
+      }
+
+      return true;
+    }
+
+    async function uploadMedia(file) {
+      if (!file || !currentUser) return null;
+
+      const extension = (file.name.split(".").pop() || "bin").toLowerCase();
+      const path = `${currentUser.id}/posts/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
+
+      const { error } = await supabaseClient.storage
+        .from("posts")
+        .upload(path, file, { upsert: false });
+
+      if (error) throw error;
+
+      const { data } = supabaseClient.storage.from("posts").getPublicUrl(path);
+      return data?.publicUrl || null;
+    }
+
+    async function saveDraft() {
       try {
-        clearNotice();
-        if (!validatePost()) {
-          showNotice("Add title, content, media, or link before publishing.", "info");
+        const title = postTitle.value.trim();
+        const content = postContent.value.trim();
+        const privacy = postPrivacy.value;
+        const type = postType.value;
+        const platforms = Array.from(selectedPlatforms);
+
+        if (!title && !content && !selectedSticker && !mediaFile.files?.[0]) {
+          showNotice("Nothing to save.", "error");
           return;
         }
 
-        publishBtn.disabled = true;
-        publishBtn.textContent = "Publishing...";
-
-        const media = await uploadFirstMedia();
-
-        const payload = {
-          user_id: currentUser.id,
-          title: titleInput.value.trim() || null,
-          content: contentInput.value.trim() || null,
-          media_url: media.media_url,
-          media_type: media.media_type,
-          cover_url: media.cover_url,
-          hashtags: extractHashtags(contentInput.value),
-          tagged_users: extractTaggedUsers(contentInput.value),
-          location: locationInput.value.trim() || null,
-          visibility: visibilitySelect.value || "public",
-          status: "published",
-          link_url: linkInput.value.trim() || null,
-          published_at: new Date().toISOString()
+        const draft = {
+          id: `draft_${Date.now()}`,
+          title,
+          content,
+          privacy,
+          type,
+          sticker: selectedSticker,
+          platforms,
+          created_at: new Date().toISOString()
         };
 
-        const { error } = await supabaseClient
+        const existing = JSON.parse(localStorage.getItem("view_post_drafts") || "[]");
+        existing.unshift(draft);
+        localStorage.setItem("view_post_drafts", JSON.stringify(existing.slice(0, 50)));
+
+        showNotice("Draft saved.", "success");
+      } catch {
+        showNotice("Could not save draft.", "error");
+      }
+    }
+
+    async function publishPost() {
+      if (!currentUser) {
+        window.location.href = "login.html?next=create-post.html";
+        return;
+      }
+
+      if (!validateSelectedPlatforms()) return;
+      if (!validatePostRequirements()) return;
+
+      publishBtn.disabled = true;
+      saveDraftBtn.disabled = true;
+
+      try {
+        const title = postTitle.value.trim();
+        const content = postContent.value.trim();
+        const privacy = postPrivacy.value;
+        const type = postType.value;
+        const file = mediaFile.files?.[0] || null;
+        const platforms = Array.from(selectedPlatforms);
+
+        let mediaUrl = null;
+        if (file) {
+          mediaUrl = await uploadMedia(file);
+        }
+
+        const postPayload = {
+          user_id: currentUser.id,
+          title: title || null,
+          content: content || null,
+          media_url: mediaUrl,
+          type,
+          privacy,
+          sticker: selectedSticker || null
+        };
+
+        const { data: postRow, error: postError } = await supabaseClient
           .from("posts")
-          .insert(payload);
+          .insert(postPayload)
+          .select()
+          .single();
 
-        if (error) throw error;
+        if (postError) throw postError;
 
-        saveDraftLocal();
-        localStorage.removeItem(DRAFT_KEY);
-        showNotice("Post published successfully.", "success");
+        await fetch(SMART_ACTION_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            action: "publish_post",
+            post_id: postRow.id,
+            platforms,
+            title: title || null,
+            content: content || null,
+            media_url: mediaUrl,
+            type,
+            privacy,
+            sticker: selectedSticker || null
+          })
+        });
+
+        showNotice("Post published.", "success");
+
         setTimeout(() => {
           window.location.href = "publish-history.html";
-        }, 700);
+        }, 900);
       } catch (error) {
-        showNotice(error.message || "Could not publish post.");
+        showNotice(error.message || "Publish failed.", "error");
       } finally {
         publishBtn.disabled = false;
-        publishBtn.textContent = "Publish Now";
+        saveDraftBtn.disabled = false;
       }
     }
 
-    async function schedulePostNow() {
-      try {
-        clearNotice();
-        if (!validatePost()) {
-          showNotice("Add title, content, media, or link before scheduling.", "info");
-          return;
-        }
-        if (!scheduleDate.value || !scheduleTime.value) {
-          showNotice("Choose schedule date and time first.", "info");
-          return;
-        }
+    function handlePlatformSelect(chip) {
+      const platform = chip.dataset.platform;
 
-        scheduleBtn.disabled = true;
-        scheduleBtn.textContent = "Scheduling...";
-
-        const media = await uploadFirstMedia();
-        const scheduledFor = new Date(`${scheduleDate.value}T${scheduleTime.value}`);
-
-        const payload = {
-          user_id: currentUser.id,
-          title: titleInput.value.trim() || null,
-          content: contentInput.value.trim() || null,
-          media_url: media.media_url,
-          media_type: media.media_type,
-          hashtags: extractHashtags(contentInput.value),
-          tagged_users: extractTaggedUsers(contentInput.value),
-          scheduled_for: scheduledFor.toISOString()
-        };
-
-        const { error } = await supabaseClient
-          .from("scheduled_posts")
-          .insert(payload);
-
-        if (error) throw error;
-
-        saveDraftLocal();
-        localStorage.removeItem(DRAFT_KEY);
-        showNotice("Post scheduled successfully.", "success");
-        setTimeout(() => {
-          window.location.href = "scheduled-post.html";
-        }, 700);
-      } catch (error) {
-        showNotice(error.message || "Could not schedule post.");
-      } finally {
-        scheduleBtn.disabled = false;
-        scheduleBtn.textContent = "Schedule";
+      if (platform === "view") {
+        selectedPlatforms.add("view");
+        updatePlatformUI();
+        return;
       }
-    }
 
-    function saveDraftNow() {
-      saveDraftLocal(true);
-    }
-
-    function bindPlatformCards() {
-      document.querySelectorAll(".platform-card").forEach(card => {
-        card.addEventListener("click", () => {
-          const platform = card.dataset.platform;
-          if (selectedPlatforms.has(platform)) {
-            selectedPlatforms.delete(platform);
-            card.classList.remove("active");
-          } else {
-            selectedPlatforms.add(platform);
-            card.classList.add("active");
-          }
-          updateCrossChip();
-          updatePreview();
-          saveDraftLocal();
-        });
-      });
-    }
-
-    function bindInputs() {
-      [
-        titleInput, contentInput, linkInput, locationInput,
-        visibilitySelect, statusSelect, scheduleDate, scheduleTime
-      ].forEach(input => {
-        input.addEventListener("input", () => {
-          updatePreview();
-          saveDraftLocal();
-        });
-        input.addEventListener("change", () => {
-          updatePreview();
-          saveDraftLocal();
-        });
-      });
-    }
-
-    pickMediaBtn.addEventListener("click", () => mediaInput.click());
-
-    mediaInput.addEventListener("change", () => {
-      const incoming = [...mediaInput.files];
-      if (incoming.length) {
-        mediaFiles = [...mediaFiles, ...incoming];
-        renderMedia();
-        updatePreview();
-        saveDraftLocal();
+      if (selectedPlatforms.has(platform)) {
+        selectedPlatforms.delete(platform);
+      } else {
+        selectedPlatforms.add(platform);
       }
-      mediaInput.value = "";
-    });
 
-    removeAllMediaBtn.addEventListener("click", () => {
-      mediaFiles = [];
-      renderMedia();
-      updatePreview();
-      saveDraftLocal();
-    });
+      if (!selectedPlatforms.size) {
+        selectedPlatforms.add("view");
+      }
 
-    emojiToggleBtn.addEventListener("click", () => {
-      emojiPanel.classList.toggle("show");
-    });
-
-    clearDraftBtn.addEventListener("click", clearDraftLocal);
-    saveDraftBtn.addEventListener("click", saveDraftNow);
-    publishBtn.addEventListener("click", publishNow);
-    scheduleBtn.addEventListener("click", schedulePostNow);
+      updatePlatformUI();
+    }
 
     async function init() {
       try {
-        const session = await requireSession();
-        if (!session?.user) return;
-        currentUser = session.user;
+        const { data, error } = await supabaseClient.auth.getUser();
+        if (error) throw error;
 
-        buildEmojiPanel();
-        bindInputs();
-        bindPlatformCards();
-        loadDraftLocal();
-        updateCrossChip();
-        renderMedia();
+        if (!data.user) {
+          window.location.href = "login.html?next=create-post.html";
+          return;
+        }
+
+        currentUser = data.user;
+        await loadProfile(currentUser);
+        await loadConnectedAccounts();
+        updatePlatformUI();
         updatePreview();
-
-        setInterval(() => {
-          if (document.visibilityState === "visible") {
-            saveDraftLocal();
-          }
-        }, 8000);
       } catch (error) {
-        showNotice(error.message || "Could not initialize create post page.");
+        showNotice(error.message || "Could not load page.", "error");
       }
     }
+
+    document.querySelectorAll(".platform-chip").forEach(chip => {
+      chip.addEventListener("click", () => handlePlatformSelect(chip));
+    });
+
+    stickerWrap.querySelectorAll(".sticker-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const sticker = chip.dataset.sticker;
+        if (selectedSticker === sticker) {
+          selectedSticker = "";
+          chip.classList.remove("active");
+        } else {
+          stickerWrap.querySelectorAll(".sticker-chip").forEach(item => item.classList.remove("active"));
+          selectedSticker = sticker;
+          chip.classList.add("active");
+        }
+        updatePreview();
+      });
+    });
+
+    postTitle.addEventListener("input", updatePreview);
+    postContent.addEventListener("input", updatePreview);
+
+    mediaFile.addEventListener("change", () => {
+      updatePreviewMedia(mediaFile.files?.[0] || null);
+    });
+
+    toggleStickerBtn.addEventListener("click", () => {
+      stickerSection.classList.toggle("hidden");
+      closeMenus();
+    });
+
+    moreBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleMenu();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".dropdown-wrap")) closeMenus();
+    });
+
+    saveDraftBtn.addEventListener("click", saveDraft);
+    publishBtn.addEventListener("click", publishPost);
 
     init();
   </script>
