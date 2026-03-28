@@ -11,7 +11,6 @@
     :root{
       --bg:#08111f;
       --card:#101b31;
-      --card-2:#14213d;
       --line:rgba(255,255,255,.08);
       --text:#f4f7ff;
       --muted:#9fb1d7;
@@ -233,12 +232,6 @@
       color:#fff;
     }
 
-    .btn.success{
-      background:rgba(16,185,129,.12);
-      border-color:rgba(16,185,129,.24);
-      color:#d1fae5;
-    }
-
     .btn.danger{
       background:rgba(239,68,68,.12);
       border-color:rgba(239,68,68,.24);
@@ -414,6 +407,19 @@
       line-height:1.7;
     }
 
+    .debug-box{
+      display:none;
+      padding:12px;
+      border-radius:14px;
+      border:1px dashed rgba(255,255,255,.12);
+      background:rgba(255,255,255,.03);
+      color:#cbd5e1;
+      font-size:12px;
+      line-height:1.6;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
     @media (max-width:820px){
       .grid{
         grid-template-columns:1fr;
@@ -455,7 +461,6 @@
       <h2>YouTube connection</h2>
       <p>
         Connect your Google account, confirm your YouTube channel, and upload videos directly from View.
-        This page uses your Supabase Google session with YouTube upload permission.
       </p>
     </section>
 
@@ -463,11 +468,11 @@
       <section class="section-card">
         <div class="section-head">
           <h3>Account connection</h3>
-          <p>Connect Google, check your channel, or refresh your current session.</p>
+          <p>Connect Google, check your channel, or refresh your session.</p>
         </div>
 
         <div class="section-body">
-          <div class="status-box" id="statusBox">
+          <div class="status-box">
             <span class="dot" id="statusDot"></span>
             <span id="statusText">Checking session...</span>
           </div>
@@ -490,8 +495,10 @@
           </div>
 
           <div class="footer-note">
-            Use a Google account that has access to a YouTube channel and is allowed in your Google OAuth test users if your app is still in testing mode.
+            If provider token is missing after login, log out and reconnect with fresh Google consent.
           </div>
+
+          <div id="debugBox" class="debug-box"></div>
         </div>
       </section>
 
@@ -553,7 +560,7 @@
           <div class="result" id="resultBox"></div>
 
           <div class="footer-note">
-            This version uploads directly from the browser using the Google provider token stored in your Supabase session.
+            This version uploads from the browser using the Google provider token stored in your Supabase session.
           </div>
         </div>
       </section>
@@ -563,6 +570,7 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const LIVE_REDIRECT_URL = "https://view.ceetice.com/youtube-connect.html";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -594,6 +602,7 @@
     const progressFill = document.getElementById("progressFill");
     const progressText = document.getElementById("progressText");
     const resultBox = document.getElementById("resultBox");
+    const debugBox = document.getElementById("debugBox");
 
     const videoFile = document.getElementById("videoFile");
     const titleInput = document.getElementById("title");
@@ -611,7 +620,7 @@
       showNotice._timer = setTimeout(() => {
         noticeBox.className = "notice";
         noticeBox.textContent = "";
-      }, 2600);
+      }, 3000);
     }
 
     function setStatus(type, message) {
@@ -653,17 +662,38 @@
         .replaceAll("'", "&#039;");
     }
 
+    function renderDebug(sessionData) {
+      const debug = {
+        current_url: window.location.href,
+        expected_redirect: LIVE_REDIRECT_URL,
+        has_session: !!sessionData?.session,
+        session_user_email: sessionData?.session?.user?.email || null,
+        provider_token_exists: !!sessionData?.session?.provider_token,
+        provider_refresh_token_exists: !!sessionData?.session?.provider_refresh_token,
+        access_token_exists: !!sessionData?.session?.access_token,
+        user_provider: sessionData?.session?.user?.app_metadata?.provider || null,
+        providers: sessionData?.session?.user?.app_metadata?.providers || [],
+      };
+
+      console.log("YOUTUBE CONNECT DEBUG:", debug);
+      debugBox.style.display = "block";
+      debugBox.textContent = JSON.stringify(debug, null, 2);
+    }
+
     async function connectGoogleYouTube() {
       hideResult();
 
       try {
-        const redirectTo = window.location.origin + window.location.pathname;
-
         const { error } = await supabaseClient.auth.signInWithOAuth({
           provider: "google",
           options: {
-            redirectTo,
-            scopes: "openid email profile https://www.googleapis.com/auth/youtube.upload"
+            redirectTo: LIVE_REDIRECT_URL,
+            scopes: "openid email profile https://www.googleapis.com/auth/youtube.upload",
+            queryParams: {
+              access_type: "offline",
+              prompt: "consent",
+              include_granted_scopes: "true"
+            }
           }
         });
 
@@ -684,6 +714,8 @@
         currentSession = data?.session || null;
         providerToken = currentSession?.provider_token || null;
 
+        renderDebug(data);
+
         if (!currentSession) {
           channelBox.style.display = "none";
           setStatus("warn", "No active session. Connect Google / YouTube first.");
@@ -692,16 +724,21 @@
 
         if (!providerToken) {
           channelBox.style.display = "none";
-          setStatus("err", "Google session found, but provider token is missing.");
+          setStatus("err", "No Google provider token available.");
           showResult(
-            `Your session does not include a Google provider token.<br><br>
-            <span class="small">Log out, then reconnect your Google account with the YouTube upload scope.</span>`,
+            `Google login returned, but the Google provider token is missing.<br><br>
+             <span class="small">Fix steps:</span><br>
+             <span class="small">1. Click Logout below.</span><br>
+             <span class="small">2. Reconnect and approve consent again.</span><br>
+             <span class="small">3. Make sure Google OAuth includes youtube.upload scope.</span><br>
+             <span class="small">4. Make sure your app is using the live redirect URL only.</span>`,
             true
           );
           return;
         }
 
         setStatus("ok", "Google session active. You can now check channel or upload.");
+        showNotice("Google / YouTube session ready.", "success");
       } catch (error) {
         console.error(error);
         setStatus("err", "Failed to read session");
@@ -883,6 +920,7 @@
         providerToken = null;
         currentSession = null;
         channelBox.style.display = "none";
+        debugBox.style.display = "none";
         setStatus("warn", "Logged out successfully.");
         showNotice("Logged out.", "success");
       } catch (error) {
