@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>More | View</title>
+  <meta name="theme-color" content="#08111f" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --bg:#08111f;
+      --card:#101b31;
+      --card2:#14213d;
+      --line:rgba(255,255,255,.08);
+      --text:#f4f7ff;
+      --muted:#9fb1d7;
+      --primary:#2563eb;
+      --shadow:0 14px 40px rgba(0,0,0,.28);
+      --safe-bottom:env(safe-area-inset-bottom);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      background:var(--bg);
+      color:var(--text);
+      min-height:100%;
+    }
+
+    body{
+      padding-bottom:98px;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      background:none;
+      color:inherit;
+      font:inherit;
+      cursor:pointer;
+    }
+
+    .wrap{
+      max-width:760px;
+      margin:0 auto;
+      padding:16px 14px 20px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      font-size:18px;
+    }
+
+    .title-box{
+      min-width:0;
+    }
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .profile-card,
+    .section-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .profile-card{
+      padding:16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:16px;
+    }
+
+    .profile-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .avatar{
+      width:56px;
+      height:56px;
+      min-width:56px;
+      border-radius:50%;
+      background:#1d4ed8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      font-weight:800;
+      color:#fff;
+      overflow:hidden;
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .profile-meta{
+      min-width:0;
+      flex:1;
+    }
+
+    .profile-name{
+      font-size:16px;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      margin-bottom:4px;
+    }
+
+    .profile-sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .mini-chip{
+      min-height:36px;
+      padding:0 12px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.07);
+      border:1px solid var(--line);
+      color:#dbeafe;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .shortcut-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-bottom:16px;
+    }
+
+    .shortcut{
+      background:var(--card2);
+      border:1px solid var(--line);
+      border-radius:18px;
+      min-height:94px;
+      padding:14px 10px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      text-align:center;
+      box-shadow:var(--shadow);
+    }
+
+    .shortcut-icon{
+      font-size:22px;
+      line-height:1;
+    }
+
+    .shortcut-label{
+      font-size:12px;
+      font-weight:700;
+      color:#e5edff;
+      line-height:1.35;
+    }
+
+    .section-card{
+      margin-bottom:16px;
+      overflow:hidden;
+    }
+
+    .section-head{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .section-head h3{
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .menu-list{
+      display:grid;
+    }
+
+    .menu-item{
+      min-height:56px;
+      padding:0 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+    }
+
+    .menu-item:last-child{
+      border-bottom:none;
+    }
+
+    .menu-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .menu-icon{
+      width:34px;
+      height:34px;
+      min-width:34px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.07);
+      font-size:15px;
+    }
+
+    .menu-label{
+      font-size:14px;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .menu-arrow{
+      color:var(--muted);
+      font-size:16px;
+      line-height:1;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:12px;
+      width:min(760px, calc(100% - 20px));
+      background:rgba(12,20,36,.95);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:8px 6px calc(8px + var(--safe-bottom));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
+      box-shadow:var(--shadow);
+      z-index:40;
+    }
+
+    .nav-btn{
+      min-height:56px;
+      border-radius:14px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
+    }
+
+    .nav-btn.active{
+      background:rgba(37,99,235,.16);
+      color:#fff;
+    }
+
+    @media (max-width:640px){
+      .shortcut-grid{
+        grid-template-columns:repeat(3,1fr);
+      }
+    }
+
+    @media (max-width:420px){
+      .shortcut-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="top-left">
+        <button class="icon-btn" onclick="history.back()" title="Back">←</button>
+        <div class="title-box">
+          <div class="title">More</div>
+          <div class="sub">Tools, pages and extra features</div>
+        </div>
+      </div>
+
+      <a class="icon-btn" href="profile.html" title="Profile">👤</a>
+    </header>
+
+    <section class="profile-card">
+      <div class="profile-left">
+        <a class="avatar" id="profileAvatar" href="profile.html">V</a>
+        <div class="profile-meta">
+          <div id="profileName" class="profile-name">View User</div>
+          <div id="profileSub" class="profile-sub">Open your account tools</div>
+        </div>
+      </div>
+
+      <a class="mini-chip" href="dashboard.html">Dashboard</a>
+    </section>
+
+    <section class="shortcut-grid">
+      <a class="shortcut" href="dashboard.html">
+        <div class="shortcut-icon">📊</div>
+        <div class="shortcut-label">Dashboard</div>
+      </a>
+
+      <a class="shortcut" href="settings.html">
+        <div class="shortcut-icon">⚙️</div>
+        <div class="shortcut-label">Settings</div>
+      </a>
+
+      <a class="shortcut" href="wallet.html">
+        <div class="shortcut-icon">💳</div>
+        <div class="shortcut-label">Wallet</div>
+      </a>
+
+      <a class="shortcut" href="marketplace.html">
+        <div class="shortcut-icon">🛒</div>
+        <div class="shortcut-label">Marketplace</div>
+      </a>
+
+      <a class="shortcut" href="view-ai.html">
+        <div class="shortcut-icon">✨</div>
+        <div class="shortcut-label">View AI</div>
+      </a>
+
+      <a class="shortcut" href="saved-posts.html">
+        <div class="shortcut-icon">🔖</div>
+        <div class="shortcut-label">Saved Posts</div>
+      </a>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Account</h3>
+      </div>
+
+      <div class="menu-list">
+        <a class="menu-item" href="profile.html">
+          <div class="menu-left">
+            <div class="menu-icon">👤</div>
+            <div class="menu-label">Profile</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="edit-profile.html">
+          <div class="menu-left">
+            <div class="menu-icon">✏️</div>
+            <div class="menu-label">Edit Profile</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="public-profile.html">
+          <div class="menu-left">
+            <div class="menu-icon">🌐</div>
+            <div class="menu-label">Public Profile</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="settings.html">
+          <div class="menu-left">
+            <div class="menu-icon">⚙️</div>
+            <div class="menu-label">Settings</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="notifications.html">
+          <div class="menu-left">
+            <div class="menu-icon">🔔</div>
+            <div class="menu-label">Notifications</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="saved-posts.html">
+          <div class="menu-left">
+            <div class="menu-icon">🔖</div>
+            <div class="menu-label">Saved Posts</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Content</h3>
+      </div>
+
+      <div class="menu-list">
+        <a class="menu-item" href="create-post.html">
+          <div class="menu-left">
+            <div class="menu-icon">➕</div>
+            <div class="menu-label">Create Post</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="post-with-ai.html">
+          <div class="menu-left">
+            <div class="menu-icon">📝</div>
+            <div class="menu-label">Post With AI</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="create-with-ai.html">
+          <div class="menu-left">
+            <div class="menu-icon">✨</div>
+            <div class="menu-label">Create With AI</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="drafts.html">
+          <div class="menu-left">
+            <div class="menu-icon">📂</div>
+            <div class="menu-label">Drafts</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="scheduled-posts.html">
+          <div class="menu-left">
+            <div class="menu-icon">⏰</div>
+            <div class="menu-label">Scheduled Posts</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="publish-history.html">
+          <div class="menu-left">
+            <div class="menu-icon">📤</div>
+            <div class="menu-label">Publish History</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="analytics.html">
+          <div class="menu-left">
+            <div class="menu-icon">📈</div>
+            <div class="menu-label">Analytics</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="video-feed.html">
+          <div class="menu-left">
+            <div class="menu-icon">🎥</div>
+            <div class="menu-label">Video Feed</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Social</h3>
+      </div>
+
+      <div class="menu-list">
+        <a class="menu-item" href="friends.html">
+          <div class="menu-left">
+            <div class="menu-icon">👥</div>
+            <div class="menu-label">Friends</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="chats.html">
+          <div class="menu-left">
+            <div class="menu-icon">💬</div>
+            <div class="menu-label">Chats</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="groups.html">
+          <div class="menu-left">
+            <div class="menu-icon">👨‍👩‍👧‍👦</div>
+            <div class="menu-label">Groups</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="calls.html">
+          <div class="menu-left">
+            <div class="menu-icon">📞</div>
+            <div class="menu-label">Calls</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="marketplace.html">
+          <div class="menu-left">
+            <div class="menu-icon">🛍️</div>
+            <div class="menu-label">Marketplace</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Business & Growth</h3>
+      </div>
+
+      <div class="menu-list">
+        <a class="menu-item" href="wallet.html">
+          <div class="menu-left">
+            <div class="menu-icon">💳</div>
+            <div class="menu-label">Wallet</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="connected-accounts.html">
+          <div class="menu-left">
+            <div class="menu-icon">🔗</div>
+            <div class="menu-label">Connected Accounts</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="cross-posting.html">
+          <div class="menu-left">
+            <div class="menu-icon">🔄</div>
+            <div class="menu-label">Cross Posting</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="subscription.html">
+          <div class="menu-left">
+            <div class="menu-icon">⭐</div>
+            <div class="menu-label">Subscription</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="payments.html">
+          <div class="menu-left">
+            <div class="menu-icon">💰</div>
+            <div class="menu-label">Payments</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="monetization.html">
+          <div class="menu-left">
+            <div class="menu-icon">📊</div>
+            <div class="menu-label">Monetization</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="promotions.html">
+          <div class="menu-left">
+            <div class="menu-icon">📣</div>
+            <div class="menu-label">Promotions</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="creator-tools.html">
+          <div class="menu-left">
+            <div class="menu-icon">🛠️</div>
+            <div class="menu-label">Creator Tools</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="business-tools.html">
+          <div class="menu-left">
+            <div class="menu-icon">🏢</div>
+            <div class="menu-label">Business Tools</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Support</h3>
+      </div>
+
+      <div class="menu-list">
+        <a class="menu-item" href="view-ai.html">
+          <div class="menu-left">
+            <div class="menu-icon">✨</div>
+            <div class="menu-label">View AI</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="ai-support.html">
+          <div class="menu-left">
+            <div class="menu-icon">💬</div>
+            <div class="menu-label">AI Support</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="help-center.html">
+          <div class="menu-left">
+            <div class="menu-icon">❓</div>
+            <div class="menu-label">Help Center</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="faqs.html">
+          <div class="menu-left">
+            <div class="menu-icon">📘</div>
+            <div class="menu-label">FAQs</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="privacy.html">
+          <div class="menu-left">
+            <div class="menu-icon">🔒</div>
+            <div class="menu-label">Privacy</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="terms.html">
+          <div class="menu-left">
+            <div class="menu-icon">📄</div>
+            <div class="menu-label">Terms</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="report-problem.html">
+          <div class="menu-left">
+            <div class="menu-icon">🚩</div>
+            <div class="menu-label">Report a Problem</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Future Features</h3>
+      </div>
+
+      <div class="menu-list">
+        <a class="menu-item" href="jobs.html">
+          <div class="menu-left">
+            <div class="menu-icon">💼</div>
+            <div class="menu-label">Jobs</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="events.html">
+          <div class="menu-left">
+            <div class="menu-icon">📅</div>
+            <div class="menu-label">Events</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="live.html">
+          <div class="menu-left">
+            <div class="menu-icon">🔴</div>
+            <div class="menu-label">Live</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="music.html">
+          <div class="menu-left">
+            <div class="menu-icon">🎵</div>
+            <div class="menu-label">Music</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="shop-manager.html">
+          <div class="menu-left">
+            <div class="menu-icon">🏬</div>
+            <div class="menu-label">Shop Manager</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="verification.html">
+          <div class="menu-left">
+            <div class="menu-icon">✔️</div>
+            <div class="menu-label">Verification</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="creator-studio.html">
+          <div class="menu-left">
+            <div class="menu-icon">🎬</div>
+            <div class="menu-label">Creator Studio</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="insights-pro.html">
+          <div class="menu-left">
+            <div class="menu-icon">📡</div>
+            <div class="menu-label">Insights Pro</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="ads-manager.html">
+          <div class="menu-left">
+            <div class="menu-icon">📢</div>
+            <div class="menu-label">Ads Manager</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+
+        <a class="menu-item" href="referral-program.html">
+          <div class="menu-left">
+            <div class="menu-icon">🤝</div>
+            <div class="menu-label">Referral Program</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="home.html">
+      <span>🏠</span>
+      <span>Home</span>
+    </a>
+
+    <a class="nav-btn" href="explore.html">
+      <span>📰</span>
+      <span>News</span>
+    </a>
+
+    <a class="nav-btn" href="video-feed.html">
+      <span>🎥</span>
+      <span>Video</span>
+    </a>
+
+    <a class="nav-btn" href="marketplace.html">
+      <span>🛒</span>
+      <span>Market</span>
+    </a>
+
+    <a class="nav-btn active" href="more.html">
+      <span>☰</span>
+      <span>More</span>
+    </a>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    const profileAvatar = document.getElementById("profileAvatar");
+    const profileName = document.getElementById("profileName");
+    const profileSub = document.getElementById("profileSub");
+
+    async function loadMiniProfile() {
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const user = session?.user;
+
+        if (!user) {
+          profileName.textContent = "View User";
+          profileSub.textContent = "Open your account tools";
+          profileAvatar.textContent = "V";
+          return;
+        }
+
+        const displayName =
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
+          user.email?.split("@")[0] ||
+          "User";
+
+        const avatarUrl =
+          user.user_metadata?.avatar_url ||
+          user.user_metadata?.picture ||
+          "";
+
+        profileName.textContent = displayName;
+        profileSub.textContent = user.email || "Open your account tools";
+
+        if (avatarUrl) {
+          profileAvatar.innerHTML = `<img src="${avatarUrl}" alt="${displayName}">`;
+        } else {
+          profileAvatar.textContent = displayName.charAt(0).toUpperCase();
+        }
+      } catch (error) {
+        profileName.textContent = "View User";
+        profileSub.textContent = "Open your account tools";
+        profileAvatar.textContent = "V";
+      }
+    }
+
+    loadMiniProfile();
+  </script>
+</body>
+</html>
