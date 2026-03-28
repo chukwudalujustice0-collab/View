@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Connect Accounts | View</title>
+  <title>Connected Accounts | View</title>
   <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -15,7 +15,7 @@
       --text:#f4f7ff;
       --muted:#9fb1d7;
       --primary:#2563eb;
-      --primary-2:#7c3aed;
+      --primary2:#7c3aed;
       --success:#10b981;
       --warn:#f59e0b;
       --danger:#ef4444;
@@ -56,7 +56,7 @@
     }
 
     .wrap{
-      width:min(100%, 820px);
+      width:min(100%, 860px);
       margin:0 auto;
     }
 
@@ -126,12 +126,34 @@
       text-overflow:ellipsis;
     }
 
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-bottom:16px;
+    }
+
+    .stat-card,
     .section-card{
       background:var(--card);
       border:1px solid var(--line);
-      border-radius:22px;
+      border-radius:20px;
       box-shadow:var(--shadow);
-      margin-bottom:16px;
+    }
+
+    .stat-card{
+      padding:14px;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:8px;
+    }
+
+    .stat-value{
+      font-size:22px;
+      font-weight:800;
     }
 
     .section-head{
@@ -141,11 +163,37 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
+      flex-wrap:wrap;
     }
 
     .section-head h3{
       font-size:17px;
       font-weight:800;
+    }
+
+    .section-tools{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      min-height:40px;
+      padding:0 14px;
+      border-radius:12px;
+      font-size:13px;
+      font-weight:700;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      cursor:pointer;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      border-color:transparent;
+      color:#fff;
     }
 
     .section-body{
@@ -243,20 +291,19 @@
       color:#d1fae5;
     }
 
-    .status-empty{
+    .status-expired{
       background:rgba(245,158,11,.12);
       border-color:rgba(245,158,11,.22);
       color:#fde68a;
     }
 
-    .status-neutral{
-      background:rgba(255,255,255,.06);
-      border-color:var(--line);
-      color:var(--muted);
+    .status-disconnected{
+      background:rgba(239,68,68,.12);
+      border-color:rgba(239,68,68,.24);
+      color:#fecaca;
     }
 
-    .go-btn,
-    .more-btn{
+    .go-btn,.more-btn{
       width:38px;
       height:38px;
       min-width:38px;
@@ -277,7 +324,7 @@
       position:absolute;
       right:0;
       top:46px;
-      min-width:170px;
+      min-width:180px;
       display:none;
       background:#0f1a30;
       border:1px solid var(--line);
@@ -356,7 +403,17 @@
       color:#fff;
     }
 
+    @media (max-width:760px){
+      .stats-grid{
+        grid-template-columns:1fr 1fr 1fr;
+      }
+    }
+
     @media (max-width:560px){
+      .stats-grid{
+        grid-template-columns:1fr;
+      }
+
       .account-card{
         align-items:flex-start;
       }
@@ -375,17 +432,36 @@
       <div class="top-left">
         <button class="icon-btn" onclick="history.back()" title="Back">←</button>
         <div class="title-box">
-          <div class="title">Connect Accounts</div>
-          <div class="sub">Social platforms</div>
+          <div class="title">Connected Accounts</div>
+          <div class="sub">Manage platform access</div>
         </div>
       </div>
 
       <button class="icon-btn" id="refreshBtn" title="Refresh">↻</button>
     </header>
 
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Connected</div>
+        <div class="stat-value" id="statConnected">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Expired</div>
+        <div class="stat-value" id="statExpired">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Available</div>
+        <div class="stat-value" id="statAvailable">6</div>
+      </div>
+    </section>
+
     <section class="section-card">
       <div class="section-head">
-        <h3>Platforms</h3>
+        <h3>Accounts</h3>
+        <div class="section-tools">
+          <a class="btn" href="connect-account.html">Add</a>
+          <a class="btn primary" href="create-post.html">Create Post</a>
+        </div>
       </div>
 
       <div class="section-body" id="accountsList"></div>
@@ -403,19 +479,19 @@
       <span>Explore</span>
     </a>
 
-    <a class="nav-btn" href="create-post.html">
-      <span>➕</span>
-      <span>Create</span>
+    <a class="nav-btn" href="dashboard.html">
+      <span>◫</span>
+      <span>Dashboard</span>
     </a>
 
-    <a class="nav-btn" href="profile.html">
-      <span>👤</span>
-      <span>Profile</span>
-    </a>
-
-    <a class="nav-btn active" href="connect-account.html">
+    <a class="nav-btn active" href="connected-accounts.html">
       <span>🔗</span>
-      <span>Connect</span>
+      <span>Accounts</span>
+    </a>
+
+    <a class="nav-btn" href="settings.html">
+      <span>⚙️</span>
+      <span>Settings</span>
     </a>
   </nav>
 
@@ -433,55 +509,21 @@
     });
 
     const noticeBox = document.getElementById("notice");
-    const accountsList = document.getElementById("accountsList");
     const refreshBtn = document.getElementById("refreshBtn");
+    const accountsList = document.getElementById("accountsList");
+    const statConnected = document.getElementById("statConnected");
+    const statExpired = document.getElementById("statExpired");
 
     let currentUserId = "";
     let connectionMap = {};
 
     const PLATFORMS = [
-      {
-        key: "facebook",
-        name: "Facebook",
-        icon: "f",
-        iconClass: "facebook",
-        path: "facebook-connect.html"
-      },
-      {
-        key: "instagram",
-        name: "Instagram",
-        icon: "◎",
-        iconClass: "instagram",
-        path: "instagram-connect.html"
-      },
-      {
-        key: "youtube",
-        name: "YouTube",
-        icon: "▶",
-        iconClass: "youtube",
-        path: "youtube-connect.html"
-      },
-      {
-        key: "tiktok",
-        name: "TikTok",
-        icon: "♪",
-        iconClass: "tiktok",
-        path: "tiktok-connect.html"
-      },
-      {
-        key: "whatsapp",
-        name: "WhatsApp",
-        icon: "✆",
-        iconClass: "whatsapp",
-        path: "whatsapp-connect.html"
-      },
-      {
-        key: "x",
-        name: "X",
-        icon: "X",
-        iconClass: "xhandle",
-        path: "x-connect.html"
-      }
+      { key: "facebook", name: "Facebook", icon: "f", iconClass: "facebook", path: "facebook-connect.html" },
+      { key: "instagram", name: "Instagram", icon: "◎", iconClass: "instagram", path: "instagram-connect.html" },
+      { key: "youtube", name: "YouTube", icon: "▶", iconClass: "youtube", path: "youtube-connect.html" },
+      { key: "tiktok", name: "TikTok", icon: "♪", iconClass: "tiktok", path: "tiktok-connect.html" },
+      { key: "whatsapp", name: "WhatsApp", icon: "✆", iconClass: "whatsapp", path: "whatsapp-connect.html" },
+      { key: "x", name: "X", icon: "X", iconClass: "xhandle", path: "x-connect.html" }
     ];
 
     function showNotice(message, type = "info") {
@@ -517,9 +559,10 @@
       return connectionMap[platform] || null;
     }
 
-    function getStatusBadge(conn) {
-      if (!conn) {
-        return `<span class="status-badge status-empty">Not Connected</span>`;
+    function getStatusHtml(conn) {
+      if (!conn) return `<span class="status-badge status-disconnected">Not Connected</span>`;
+      if (conn.is_connected && conn.token_expires_at && new Date(conn.token_expires_at) < new Date()) {
+        return `<span class="status-badge status-expired">Expired</span>`;
       }
       return `<span class="status-badge status-connected">Connected</span>`;
     }
@@ -529,12 +572,20 @@
       return conn.account_name || conn.account_handle || conn.account_email || "Connected";
     }
 
-    function renderAccounts() {
-      if (!PLATFORMS.length) {
-        accountsList.innerHTML = `<div class="empty-box">No platforms available.</div>`;
-        return;
-      }
+    function countExpired() {
+      return Object.values(connectionMap).filter(conn =>
+        conn?.is_connected &&
+        conn?.token_expires_at &&
+        new Date(conn.token_expires_at) < new Date()
+      ).length;
+    }
 
+    function renderStats() {
+      statConnected.textContent = Object.keys(connectionMap).length;
+      statExpired.textContent = countExpired();
+    }
+
+    function renderAccounts() {
       accountsList.innerHTML = PLATFORMS.map(item => {
         const conn = getConnection(item.key);
         const subText = getSubText(item, conn);
@@ -550,13 +601,13 @@
             </div>
 
             <div class="account-right">
-              ${getStatusBadge(conn)}
+              ${getStatusHtml(conn)}
               <button class="go-btn" onclick="openConnectPage('${item.path}')" title="Open">›</button>
               <div class="more-wrap">
                 <button class="more-btn" onclick="event.stopPropagation(); toggleMenu('${item.key}')" title="More">⋯</button>
                 <div class="more-menu" id="menu-${item.key}">
                   <button class="more-action" onclick="openConnectPage('${item.path}')">${conn ? "Manage" : "Connect"}</button>
-                  ${conn ? `<button class="more-action" onclick="reconnectPlatform('${item.key}', '${item.path}')">Reconnect</button>` : ""}
+                  ${conn ? `<button class="more-action" onclick="reconnectPlatform('${item.path}')">Reconnect</button>` : ""}
                   ${conn ? `<button class="more-action danger-text" onclick="disconnectPlatform('${item.key}')">Disconnect</button>` : ""}
                 </div>
               </div>
@@ -564,32 +615,19 @@
           </div>
         `;
       }).join("");
+
+      if (!PLATFORMS.length) {
+        accountsList.innerHTML = `<div class="empty-box">No platforms available.</div>`;
+      }
     }
 
     function openConnectPage(path) {
       window.location.href = path;
     }
 
-    async function loadConnections() {
-      try {
-        const { data, error } = await supabaseClient
-          .from("connected_accounts")
-          .select("id, platform, account_name, account_email, account_handle, is_connected")
-          .eq("user_id", currentUserId)
-          .eq("is_connected", true);
-
-        if (error) throw error;
-
-        connectionMap = {};
-        (data || []).forEach(row => {
-          connectionMap[row.platform] = row;
-        });
-
-        renderAccounts();
-      } catch (error) {
-        renderAccounts();
-        showNotice(error.message || "Could not load accounts.", "error");
-      }
+    function reconnectPlatform(path) {
+      closeAllMenus();
+      openConnectPage(path);
     }
 
     async function disconnectPlatform(platform) {
@@ -609,15 +647,35 @@
 
         delete connectionMap[platform];
         renderAccounts();
+        renderStats();
         showNotice("Account disconnected.", "success");
       } catch (error) {
         showNotice(error.message || "Could not disconnect account.", "error");
       }
     }
 
-    function reconnectPlatform(platform, path) {
-      closeAllMenus();
-      openConnectPage(path);
+    async function loadConnections() {
+      try {
+        const { data, error } = await supabaseClient
+          .from("connected_accounts")
+          .select("id, platform, account_name, account_email, account_handle, is_connected, token_expires_at")
+          .eq("user_id", currentUserId)
+          .eq("is_connected", true);
+
+        if (error) throw error;
+
+        connectionMap = {};
+        (data || []).forEach(row => {
+          connectionMap[row.platform] = row;
+        });
+
+        renderAccounts();
+        renderStats();
+      } catch (error) {
+        renderAccounts();
+        renderStats();
+        showNotice(error.message || "Could not load accounts.", "error");
+      }
     }
 
     async function init() {
@@ -627,19 +685,23 @@
 
         const user = data.user;
         if (!user) {
-          window.location.href = "login.html?next=connect-account.html";
+          window.location.href = "login.html?next=connected-accounts.html";
           return;
         }
 
         currentUserId = user.id;
         renderAccounts();
+        renderStats();
         await loadConnections();
       } catch (error) {
         showNotice(error.message || "Could not load page.", "error");
       }
     }
 
-    refreshBtn.addEventListener("click", loadConnections);
+    refreshBtn.addEventListener("click", async () => {
+      await loadConnections();
+      showNotice("Accounts updated.", "success");
+    });
 
     document.addEventListener("click", (e) => {
       if (!e.target.closest(".more-wrap")) closeAllMenus();
@@ -649,11 +711,8 @@
     document.addEventListener("touchstart", (e) => {
       const card = e.target.closest(".account-card");
       if (!card) return;
-
       const platform = card.dataset.platform;
-      pressTimer = setTimeout(() => {
-        toggleMenu(platform);
-      }, 500);
+      pressTimer = setTimeout(() => toggleMenu(platform), 500);
     }, { passive: true });
 
     document.addEventListener("touchend", () => {
