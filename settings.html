@@ -4,96 +4,76 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Settings | View</title>
-  <meta name="theme-color" content="#07122a" />
-  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/push-helper.js"></script>
 
   <style>
     :root{
-      --bg:#061126;
-      --bg2:#0a1835;
-      --card:rgba(255,255,255,.08);
-      --card2:rgba(255,255,255,.05);
-      --stroke:rgba(255,255,255,.08);
-      --text:#f8fbff;
-      --muted:#9db0cf;
-      --soft:#7f91af;
-      --primary:#2d6bff;
-      --primary2:#5c8cff;
-      --green:#22c55e;
+      --bg:#08111f;
+      --card:#101b31;
+      --card-2:#14213d;
+      --line:rgba(255,255,255,.08);
+      --text:#f4f7ff;
+      --muted:#9fb1d7;
+      --primary:#2563eb;
+      --primary-2:#7c3aed;
+      --success:#10b981;
       --danger:#ef4444;
-      --warning:#f59e0b;
-      --shadow:0 18px 50px rgba(0,0,0,.28);
+      --warn:#f59e0b;
+      --shadow:0 14px 40px rgba(0,0,0,.28);
+      --safe-bottom:env(safe-area-inset-bottom);
     }
 
     *{
+      box-sizing:border-box;
       margin:0;
       padding:0;
-      box-sizing:border-box;
-      font-family:Inter,Arial,sans-serif;
+      font-family:Arial,sans-serif;
       -webkit-tap-highlight-color:transparent;
     }
 
     html,body{
       min-height:100%;
-      background:
-        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
-        radial-gradient(circle at top left, rgba(0,255,200,.06), transparent 18%),
-        linear-gradient(180deg,#08142e 0%,#061126 55%,#050d1c 100%);
+      background:var(--bg);
       color:var(--text);
     }
 
     body{
-      padding-bottom:118px;
+      padding:16px 14px 110px;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      background:none;
+      color:inherit;
+      font:inherit;
+      cursor:pointer;
     }
 
     .wrap{
-      width:min(100%,1040px);
+      width:min(100%, 820px);
       margin:0 auto;
-      padding:18px 16px 0;
     }
 
     .notice{
       display:none;
-      margin-bottom:16px;
-      padding:14px 16px;
-      border-radius:18px;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
       font-size:14px;
-      line-height:1.6;
-      border:1px solid transparent;
-      backdrop-filter:blur(10px);
+      line-height:1.5;
+      box-shadow:var(--shadow);
     }
     .notice.show{display:block}
-    .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#ffd9d9}
-    .notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffe8}
-    .notice.info{background:rgba(45,107,255,.14);border-color:rgba(45,107,255,.26);color:#dce8ff}
-
-    .hero{
-      position:relative;
-      overflow:hidden;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
-        linear-gradient(135deg, rgba(45,107,255,.16), rgba(92,140,255,.06));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:30px;
-      padding:18px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(18px);
-      margin-bottom:18px;
-    }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      top:-70px;
-      right:-70px;
-      width:180px;
-      height:180px;
-      border-radius:50%;
-      background:radial-gradient(circle, rgba(92,140,255,.30), transparent 66%);
-      pointer-events:none;
-    }
+    .notice.error{background:rgba(127,29,29,.92);color:#fecaca}
+    .notice.success{background:rgba(5,46,22,.92);color:#d1fae5}
+    .notice.info{background:rgba(30,41,59,.95);color:#dbeafe}
 
     .topbar{
       display:flex;
@@ -101,100 +81,91 @@
       justify-content:space-between;
       gap:12px;
       margin-bottom:16px;
-      position:relative;
-      z-index:1;
-      flex-wrap:wrap;
     }
 
-    .brand-wrap{
+    .top-left{
       display:flex;
       align-items:center;
       gap:12px;
       min-width:0;
+      flex:1;
     }
 
     .icon-btn{
-      width:48px;
-      height:48px;
-      min-width:48px;
-      border:none;
-      border-radius:18px;
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.08);
-      color:#fff;
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
       display:flex;
       align-items:center;
       justify-content:center;
-      text-decoration:none;
-      font-size:20px;
-      cursor:pointer;
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      font-size:18px;
     }
 
-    .brand-logo{
-      width:52px;
-      height:52px;
-      min-width:52px;
-      border-radius:18px;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#fff;
-      font-size:24px;
-      font-weight:900;
-      box-shadow:0 12px 28px rgba(45,107,255,.30);
+    .title-box{
+      min-width:0;
+      flex:1;
     }
 
-    .brand-text h1{
-      font-size:31px;
-      font-weight:900;
-      letter-spacing:-.03em;
-      line-height:1;
-      margin-bottom:5px;
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .brand-text p{
-      font-size:13px;
+    .sub{
       color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .top-actions{
+    .profile-card,
+    .section-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      margin-bottom:16px;
+    }
+
+    .profile-card{
+      padding:16px;
       display:flex;
       align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
+      justify-content:space-between;
+      gap:12px;
     }
 
-    .hero-profile{
-      display:grid;
-      grid-template-columns:auto 1fr auto;
-      gap:16px;
+    .profile-left{
+      display:flex;
       align-items:center;
-      position:relative;
-      z-index:1;
-    }
-
-    .avatar-wrap{
-      position:relative;
-      width:98px;
-      height:98px;
+      gap:12px;
+      min-width:0;
+      flex:1;
     }
 
     .avatar{
-      width:98px;
-      height:98px;
-      border-radius:50%;
+      width:58px;
+      height:58px;
+      min-width:58px;
+      border-radius:18px;
       overflow:hidden;
-      background:linear-gradient(135deg,var(--primary),#7da2ff);
+      background:linear-gradient(135deg,var(--primary),var(--primary-2));
       display:flex;
       align-items:center;
       justify-content:center;
+      font-weight:800;
+      font-size:20px;
       color:#fff;
-      font-size:34px;
-      font-weight:900;
-      box-shadow:0 16px 34px rgba(45,107,255,.28);
-      border:3px solid rgba(255,255,255,.10);
+      box-shadow:var(--shadow);
     }
 
     .avatar img{
@@ -204,361 +175,242 @@
       display:block;
     }
 
-    .avatar-edit{
-      position:absolute;
-      right:-2px;
-      bottom:-2px;
-      width:38px;
-      height:38px;
-      border:none;
-      border-radius:14px;
-      background:#fff;
-      color:#111827;
-      font-size:16px;
-      font-weight:900;
-      cursor:pointer;
-      box-shadow:0 10px 24px rgba(0,0,0,.22);
-    }
-
-    .hero-meta h2{
-      font-size:28px;
-      font-weight:900;
-      letter-spacing:-.03em;
-      margin-bottom:6px;
-    }
-
-    .hero-meta p{
-      color:#bfd0ea;
-      font-size:14px;
-      line-height:1.8;
-      margin-bottom:10px;
-    }
-
-    .hero-chips{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .chip{
-      min-height:36px;
-      padding:0 12px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:12px;
-      font-weight:800;
-    }
-
-    .hero-buttons{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:stretch;
-    }
-
-    .primary-btn,.ghost-btn,.soft-btn{
-      min-height:44px;
-      border:none;
-      border-radius:18px;
-      padding:0 16px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      cursor:pointer;
-      text-decoration:none;
-      font-size:13px;
-      font-weight:800;
-      color:#fff;
-    }
-
-    .primary-btn{
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:0 12px 28px rgba(45,107,255,.28);
-    }
-
-    .ghost-btn,.soft-btn{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(12,1fr);
-      gap:18px;
-      margin-bottom:18px;
-    }
-
-    .col-12{grid-column:span 12}
-    .col-6{grid-column:span 6}
-    .col-4{grid-column:span 4}
-    .col-8{grid-column:span 8}
-
-    .card{
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:28px;
-      padding:18px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(16px);
-    }
-
-    .card-head{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
-      flex-wrap:wrap;
-    }
-
-    .card-head h3{
-      font-size:23px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      margin-bottom:5px;
-    }
-
-    .card-head p{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
-    }
-
-    .form-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:14px;
-    }
-
-    .field{
-      display:grid;
-      gap:8px;
-    }
-
-    .field.full{
-      grid-column:1 / -1;
-    }
-
-    .field label{
-      font-size:12px;
-      font-weight:800;
-      color:#dce8ff;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-    }
-
-    .input, .select, .textarea{
-      width:100%;
-      min-height:52px;
-      border:none;
-      outline:none;
-      border-radius:18px;
-      padding:0 14px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#fff;
-      font-size:14px;
-    }
-
-    .textarea{
-      min-height:118px;
-      padding:14px;
-      resize:vertical;
-    }
-
-    .input::placeholder, .textarea::placeholder{
-      color:#92a6c5;
-    }
-
-    .inline-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:16px;
-    }
-
-    .setting-list{
-      display:grid;
-      gap:12px;
-    }
-
-    .setting-item{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:14px;
-      border-radius:20px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .setting-copy{
+    .profile-meta{
       min-width:0;
       flex:1;
     }
 
-    .setting-copy h4{
-      font-size:15px;
-      font-weight:900;
+    .profile-name{
+      font-size:17px;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
       margin-bottom:4px;
     }
 
-    .setting-copy p{
-      font-size:12px;
-      color:#bfd0ea;
-      line-height:1.6;
+    .profile-sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .toggle{
-      width:54px;
-      height:32px;
-      border-radius:999px;
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.08);
-      position:relative;
-      cursor:pointer;
-      flex-shrink:0;
+    .section-head{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
     }
 
-    .toggle::after{
-      content:"";
-      position:absolute;
-      top:3px;
-      left:3px;
-      width:24px;
-      height:24px;
-      border-radius:50%;
-      background:#fff;
-      transition:.18s ease;
+    .section-head h3{
+      font-size:17px;
+      font-weight:800;
     }
 
-    .toggle.active{
-      background:rgba(45,107,255,.30);
-      border-color:rgba(45,107,255,.24);
-    }
-
-    .toggle.active::after{
-      transform:translateX(22px);
-    }
-
-    .link-list{
+    .menu-list{
+      padding:10px;
       display:grid;
-      gap:12px;
+      gap:8px;
     }
 
-    .link-row{
+    .menu-item{
+      width:100%;
+      min-height:60px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      padding:15px;
-      border-radius:20px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
+      padding:0 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
       text-decoration:none;
-      color:#fff;
     }
 
-    .link-row span:last-child{
-      color:#9db1d1;
-      font-size:18px;
+    .menu-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+      text-align:left;
+    }
+
+    .menu-icon{
+      width:40px;
+      height:40px;
+      min-width:40px;
+      border-radius:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:17px;
+    }
+
+    .menu-text{
+      min-width:0;
+      flex:1;
+    }
+
+    .menu-title{
+      font-size:14px;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .menu-sub{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .menu-right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-shrink:0;
     }
 
     .status-badge{
-      min-height:30px;
+      min-height:28px;
       padding:0 10px;
       border-radius:999px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       font-size:11px;
-      font-weight:900;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
+      font-weight:800;
+      border:1px solid transparent;
+      white-space:nowrap;
     }
 
-    .status-badge.connected{
-      background:rgba(34,197,94,.14);
-      border-color:rgba(34,197,94,.18);
-      color:#ddffe8;
+    .status-connected{
+      background:rgba(16,185,129,.12);
+      border-color:rgba(16,185,129,.22);
+      color:#d1fae5;
     }
 
-    .status-badge.pending{
+    .status-empty{
       background:rgba(245,158,11,.12);
-      border-color:rgba(245,158,11,.18);
-      color:#ffe6b8;
+      border-color:rgba(245,158,11,.22);
+      color:#fde68a;
     }
 
-    .small-note{
+    .status-neutral{
+      background:rgba(255,255,255,.06);
+      border-color:var(--line);
       color:var(--muted);
-      font-size:12px;
-      line-height:1.7;
-      margin-top:10px;
+    }
+
+    .more-wrap{
+      position:relative;
+    }
+
+    .more-btn{
+      width:38px;
+      height:38px;
+      min-width:38px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      font-size:18px;
+    }
+
+    .more-menu{
+      position:absolute;
+      right:0;
+      top:46px;
+      min-width:170px;
+      display:none;
+      background:#0f1a30;
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      z-index:30;
+    }
+
+    .more-menu.show{
+      display:block;
+    }
+
+    .more-action{
+      width:100%;
+      min-height:44px;
+      padding:0 14px;
+      display:flex;
+      align-items:center;
+      text-align:left;
+      font-size:13px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+    }
+
+    .more-action:last-child{
+      border-bottom:none;
+    }
+
+    .danger-text{
+      color:#fecaca;
     }
 
     .bottom-nav{
       position:fixed;
       left:50%;
-      bottom:14px;
       transform:translateX(-50%);
-      width:min(100%,820px);
-      max-width:calc(100% - 18px);
+      bottom:12px;
+      width:min(760px, calc(100% - 20px));
+      background:rgba(12,20,36,.95);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:8px 6px calc(8px + var(--safe-bottom));
       display:grid;
       grid-template-columns:repeat(5,1fr);
-      gap:8px;
-      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
-      border-radius:28px;
-      background:rgba(7,18,43,.94);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 22px 56px rgba(0,0,0,.34);
-      backdrop-filter:blur(18px);
-      z-index:55;
+      gap:6px;
+      box-shadow:var(--shadow);
+      z-index:40;
     }
 
     .nav-btn{
-      min-height:62px;
-      border-radius:18px;
+      min-height:56px;
+      border-radius:14px;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
-      gap:5px;
-      color:#90a5c7;
+      gap:4px;
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
       text-decoration:none;
-      font-size:12px;
-      font-weight:800;
-      text-align:center;
     }
 
     .nav-btn.active{
+      background:rgba(37,99,235,.16);
       color:#fff;
-      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
-      border:1px solid rgba(45,107,255,.20);
     }
 
-    .nav-icon{font-size:21px;line-height:1}
+    @media (max-width:560px){
+      .profile-card{
+        align-items:flex-start;
+      }
 
-    @media (max-width:980px){
-      .col-6,.col-4,.col-8{grid-column:span 12}
-      .hero-profile{grid-template-columns:1fr}
-      .hero-buttons{flex-direction:row;flex-wrap:wrap}
-    }
-
-    @media (max-width:640px){
-      .wrap{padding:14px 12px 0}
-      .brand-text h1{font-size:28px}
-      .form-grid{grid-template-columns:1fr}
-      .topbar{align-items:flex-start}
-      .hero-buttons{flex-direction:column}
+      .profile-right{
+        align-self:center;
+      }
     }
   </style>
 </head>
@@ -566,634 +418,231 @@
   <div class="wrap">
     <div id="notice" class="notice"></div>
 
-    <section class="hero">
-      <div class="topbar">
-        <div class="brand-wrap">
-          <a class="icon-btn" href="home.html" title="Back">←</a>
-          <div class="brand-logo">⚙️</div>
-          <div class="brand-text">
-            <h1>Settings</h1>
-            <p>Account, privacy, cross-posting, marketplace, subscription, payments, and app controls</p>
-          </div>
-        </div>
-
-        <div class="top-actions">
-          <a class="icon-btn" href="notifications.html" title="Notifications">🔔</a>
-          <a class="icon-btn" href="profile.html" title="Profile">👤</a>
+    <header class="topbar">
+      <div class="top-left">
+        <button class="icon-btn" onclick="history.back()" title="Back">←</button>
+        <div class="title-box">
+          <div class="title">Settings</div>
+          <div class="sub">Manage account and app</div>
         </div>
       </div>
 
-      <div class="hero-profile">
-        <div class="avatar-wrap">
-          <div id="profileAvatar" class="avatar">U</div>
-          <button id="changeAvatarBtn" class="avatar-edit" type="button" title="Change photo">✎</button>
-          <input id="avatarInput" type="file" accept="image/*" hidden />
-        </div>
+      <a class="icon-btn" href="profile.html" title="Profile">👤</a>
+    </header>
 
-        <div class="hero-meta">
-          <h2 id="heroName">Your Account</h2>
-          <p id="heroSub">Manage your View identity, privacy, preferences, connections, and monetization settings.</p>
-          <div class="hero-chips">
-            <span id="sessionChip" class="chip">Session: checking...</span>
-            <span id="pushChip" class="chip">Push: checking...</span>
-            <span id="installChip" class="chip">Install: checking...</span>
-          </div>
+    <section class="profile-card">
+      <div class="profile-left">
+        <div class="avatar" id="profileAvatar">V</div>
+        <div class="profile-meta">
+          <div class="profile-name" id="profileName">Loading...</div>
+          <div class="profile-sub" id="profileSub">Please wait</div>
         </div>
+      </div>
 
-        <div class="hero-buttons">
-          <button id="saveProfileBtnTop" class="primary-btn" type="button">Save Profile</button>
-          <a class="ghost-btn" href="profile.html">Open Profile</a>
-          <button id="logoutBtn" class="soft-btn" type="button">Logout</button>
-        </div>
+      <div class="profile-right">
+        <a class="icon-btn" href="edit-profile.html" title="Edit Profile">✎</a>
       </div>
     </section>
 
-    <section class="grid">
-      <div class="card col-8">
-        <div class="card-head">
-          <div>
-            <h3>Account & Profile</h3>
-            <p>Change username, profile photo, bio, phone, and date of birth.</p>
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <div class="field">
-            <label for="fullNameInput">Full Name</label>
-            <input id="fullNameInput" class="input" type="text" placeholder="Enter full name" />
-          </div>
-
-          <div class="field">
-            <label for="usernameInput">Username</label>
-            <input id="usernameInput" class="input" type="text" placeholder="Enter username" />
-          </div>
-
-          <div class="field">
-            <label for="emailInput">Email</label>
-            <input id="emailInput" class="input" type="email" placeholder="Email address" disabled />
-          </div>
-
-          <div class="field">
-            <label for="phoneInput">Phone</label>
-            <input id="phoneInput" class="input" type="tel" placeholder="Phone number" />
-          </div>
-
-          <div class="field">
-            <label for="dobInput">Date of Birth</label>
-            <input id="dobInput" class="input" type="date" />
-          </div>
-
-          <div class="field">
-            <label for="passwordInput">Change Password</label>
-            <input id="passwordInput" class="input" type="password" placeholder="New password" />
-          </div>
-
-          <div class="field full">
-            <label for="bioInput">Bio</label>
-            <textarea id="bioInput" class="textarea" placeholder="Tell people about yourself..."></textarea>
-          </div>
-        </div>
-
-        <div class="inline-actions">
-          <button id="saveProfileBtn" class="primary-btn" type="button">Save Changes</button>
-          <button id="changePasswordBtn" class="ghost-btn" type="button">Update Password</button>
-          <a class="soft-btn" href="profile.html">Preview Profile</a>
-        </div>
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Account</h3>
       </div>
 
-      <div class="card col-4">
-        <div class="card-head">
-          <div>
-            <h3>Account Status</h3>
-            <p>Quick identity and app session overview.</p>
-          </div>
-        </div>
-
-        <div class="setting-list">
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>User ID</h4>
-              <p id="userIdText">Loading...</p>
+      <div class="menu-list">
+        <a class="menu-item" href="edit-profile.html">
+          <div class="menu-left">
+            <div class="menu-icon">👤</div>
+            <div class="menu-text">
+              <div class="menu-title">Edit Profile</div>
+              <div class="menu-sub">Name, bio, photo</div>
             </div>
           </div>
+          <div class="menu-right">›</div>
+        </a>
 
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Session</h4>
-              <p id="sessionText">Checking session...</p>
+        <a class="menu-item" href="dashboard.html">
+          <div class="menu-left">
+            <div class="menu-icon">◫</div>
+            <div class="menu-text">
+              <div class="menu-title">Dashboard</div>
+              <div class="menu-sub">Overview</div>
             </div>
           </div>
+          <div class="menu-right">›</div>
+        </a>
 
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Push Status</h4>
-              <p id="pushText">Checking push support...</p>
+        <a class="menu-item" href="public-profile.html">
+          <div class="menu-left">
+            <div class="menu-icon">🌐</div>
+            <div class="menu-text">
+              <div class="menu-title">Public Profile</div>
+              <div class="menu-sub">Preview</div>
             </div>
           </div>
+          <div class="menu-right">›</div>
+        </a>
+      </div>
+    </section>
 
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>App Install</h4>
-              <p id="installText">Checking installability...</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="inline-actions">
-          <button id="installBtn" class="ghost-btn" type="button">Install App</button>
-          <button id="testNotificationBtn" class="soft-btn" type="button">Test Notification</button>
-        </div>
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Connections</h3>
       </div>
 
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Privacy</h3>
-            <p>Control who can see, message, call, and interact with you.</p>
-          </div>
-        </div>
-
-        <div class="setting-list">
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Private Account</h4>
-              <p>Only approved followers can see your full content.</p>
+      <div class="menu-list">
+        <a class="menu-item" href="connect-account.html">
+          <div class="menu-left">
+            <div class="menu-icon">🔗</div>
+            <div class="menu-text">
+              <div class="menu-title">Connect Accounts</div>
+              <div class="menu-sub">Social platforms</div>
             </div>
-            <button class="toggle" data-setting="privacy_privateAccount" type="button"></button>
           </div>
+          <div class="menu-right">
+            <span id="connectStatusBadge" class="status-badge status-neutral">Checking</span>
+            <span>›</span>
+          </div>
+        </a>
+      </div>
+    </section>
 
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Read Receipts</h4>
-              <p>Show when you’ve read messages.</p>
-            </div>
-            <button class="toggle" data-setting="privacy_readReceipts" type="button"></button>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Online Visibility</h4>
-              <p>Let others see when you are online.</p>
-            </div>
-            <button class="toggle" data-setting="privacy_onlineVisible" type="button"></button>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Allow Calls</h4>
-              <p>Permit other users to call you.</p>
-            </div>
-            <button class="toggle" data-setting="privacy_allowCalls" type="button"></button>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Allow Direct Messages</h4>
-              <p>Permit new direct conversations from users.</p>
-            </div>
-            <button class="toggle" data-setting="privacy_allowMessages" type="button"></button>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Allow Group Invites</h4>
-              <p>Let others add you into groups.</p>
-            </div>
-            <button class="toggle" data-setting="privacy_allowGroupInvites" type="button"></button>
-          </div>
-        </div>
+    <section class="section-card">
+      <div class="section-head">
+        <h3>App</h3>
       </div>
 
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Notifications</h3>
-            <p>Control alerts, sound, vibration, and device notification behavior.</p>
-          </div>
-        </div>
-
-        <div class="setting-list">
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Push Notifications</h4>
-              <p>Enable device notifications for View.</p>
+      <div class="menu-list">
+        <a class="menu-item" href="notifications.html">
+          <div class="menu-left">
+            <div class="menu-icon">🔔</div>
+            <div class="menu-text">
+              <div class="menu-title">Notifications</div>
+              <div class="menu-sub">Alerts and updates</div>
             </div>
-            <button class="toggle" data-setting="notifications_pushEnabled" type="button"></button>
           </div>
+          <div class="menu-right">›</div>
+        </a>
 
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Message Alerts</h4>
-              <p>Receive alerts when new messages arrive.</p>
+        <a class="menu-item" href="privacy.html">
+          <div class="menu-left">
+            <div class="menu-icon">🔒</div>
+            <div class="menu-text">
+              <div class="menu-title">Privacy</div>
+              <div class="menu-sub">Visibility and control</div>
             </div>
-            <button class="toggle" data-setting="notifications_messageAlerts" type="button"></button>
           </div>
+          <div class="menu-right">›</div>
+        </a>
 
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Call Alerts</h4>
-              <p>Receive incoming and missed call alerts.</p>
+        <a class="menu-item" href="subscription.html">
+          <div class="menu-left">
+            <div class="menu-icon">★</div>
+            <div class="menu-text">
+              <div class="menu-title">Subscription</div>
+              <div class="menu-sub">Plans and billing</div>
             </div>
-            <button class="toggle" data-setting="notifications_callAlerts" type="button"></button>
           </div>
+          <div class="menu-right">›</div>
+        </a>
 
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Group Alerts</h4>
-              <p>Receive updates from groups you belong to.</p>
+        <a class="menu-item" href="payments.html">
+          <div class="menu-left">
+            <div class="menu-icon">💳</div>
+            <div class="menu-text">
+              <div class="menu-title">Payments</div>
+              <div class="menu-sub">Methods and activity</div>
             </div>
-            <button class="toggle" data-setting="notifications_groupAlerts" type="button"></button>
           </div>
+          <div class="menu-right">›</div>
+        </a>
+      </div>
+    </section>
 
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Sound</h4>
-              <p>Play alert sounds when notifications arrive.</p>
-            </div>
-            <button class="toggle" data-setting="notifications_sound" type="button"></button>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Vibration</h4>
-              <p>Use vibration for supported alerts on this device.</p>
-            </div>
-            <button class="toggle" data-setting="notifications_vibration" type="button"></button>
-          </div>
-        </div>
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Support</h3>
       </div>
 
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Calls</h3>
-            <p>Choose ringtone, camera preference, and call behavior.</p>
-          </div>
-        </div>
-
-        <div class="setting-list">
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Ringtone</h4>
-              <p>Play ringtone for incoming calls while app is open.</p>
+      <div class="menu-list">
+        <a class="menu-item" href="help-support.html">
+          <div class="menu-left">
+            <div class="menu-icon">❓</div>
+            <div class="menu-text">
+              <div class="menu-title">Help & Support</div>
+              <div class="menu-sub">Contact and help center</div>
             </div>
-            <button class="toggle" data-setting="calls_ringtone" type="button"></button>
           </div>
+          <div class="menu-right">›</div>
+        </a>
 
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Auto Speaker for Video</h4>
-              <p>Prefer speaker output for video calls.</p>
+        <a class="menu-item" href="ai-support.html">
+          <div class="menu-left">
+            <div class="menu-icon">✦</div>
+            <div class="menu-text">
+              <div class="menu-title">AI Support</div>
+              <div class="menu-sub">Quick assistance</div>
             </div>
-            <button class="toggle" data-setting="calls_autoSpeakerVideo" type="button"></button>
           </div>
+          <div class="menu-right">›</div>
+        </a>
+      </div>
+    </section>
 
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Call Notifications</h4>
-              <p>Show incoming call prompts while browsing View.</p>
-            </div>
-            <button class="toggle" data-setting="calls_callNotifications" type="button"></button>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Missed Call Reminders</h4>
-              <p>Keep missed calls visible in your notifications list.</p>
-            </div>
-            <button class="toggle" data-setting="calls_missedCallReminders" type="button"></button>
-          </div>
-        </div>
-
-        <div class="small-note">
-          Camera side preference can be applied later inside active call screens.
-        </div>
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Session</h3>
       </div>
 
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Chat</h3>
-            <p>Customize messaging behavior and local chat experience.</p>
-          </div>
-        </div>
-
-        <div class="setting-list">
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Media Auto Download</h4>
-              <p>Allow media to download automatically on this device.</p>
+      <div class="menu-list">
+        <div class="menu-item" style="cursor:default;">
+          <div class="menu-left">
+            <div class="menu-icon">⋯</div>
+            <div class="menu-text">
+              <div class="menu-title">More</div>
+              <div class="menu-sub">Additional actions</div>
             </div>
-            <button class="toggle" data-setting="chat_mediaAutoDownload" type="button"></button>
           </div>
 
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Save Drafts</h4>
-              <p>Preserve unfinished chat drafts locally.</p>
+          <div class="menu-right">
+            <div class="more-wrap">
+              <button class="more-btn" id="moreBtn" title="More">⋯</button>
+              <div class="more-menu" id="moreMenu">
+                <button class="more-action" onclick="goToPage('terms.html')">Terms</button>
+                <button class="more-action" onclick="goToPage('faq.html')">FAQs</button>
+                <button class="more-action" onclick="goToPage('about.html')">About</button>
+                <button class="more-action danger-text" id="logoutAction">Logout</button>
+              </div>
             </div>
-            <button class="toggle" data-setting="chat_saveDrafts" type="button"></button>
           </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Enter to Send</h4>
-              <p>Use Enter key to send on supported devices.</p>
-            </div>
-            <button class="toggle" data-setting="chat_enterToSend" type="button"></button>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Message Preview</h4>
-              <p>Show message text previews in chat list and alerts.</p>
-            </div>
-            <button class="toggle" data-setting="chat_messagePreview" type="button"></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Cross-Posting</h3>
-            <p>Manage account connections and posting preferences for external platforms.</p>
-          </div>
-        </div>
-
-        <div class="setting-list">
-          <a class="link-row" href="facebook-connect.html">
-            <div>
-              <div>Facebook</div>
-              <div class="small-note">Connect or reconnect Facebook publishing.</div>
-            </div>
-            <span class="status-badge pending">Setup</span>
-          </a>
-
-          <a class="link-row" href="instagram-connect.html">
-            <div>
-              <div>Instagram</div>
-              <div class="small-note">Connect Instagram for cross-posting media and captions.</div>
-            </div>
-            <span class="status-badge pending">Setup</span>
-          </a>
-
-          <a class="link-row" href="youtube-connect.html">
-            <div>
-              <div>YouTube</div>
-              <div class="small-note">Connect YouTube account for video publishing.</div>
-            </div>
-            <span class="status-badge pending">Setup</span>
-          </a>
-
-          <a class="link-row" href="tiktok-connect.html">
-            <div>
-              <div>TikTok</div>
-              <div class="small-note">Connect TikTok account for short-form publishing.</div>
-            </div>
-            <span class="status-badge pending">Setup</span>
-          </a>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Auto Cross-Post</h4>
-              <p>Automatically publish selected posts to connected platforms.</p>
-            </div>
-            <button class="toggle" data-setting="crosspost_autoCrossPost" type="button"></button>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Sync Captions</h4>
-              <p>Reuse your View caption when cross-posting.</p>
-            </div>
-            <button class="toggle" data-setting="crosspost_syncCaptions" type="button"></button>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Sync Hashtags</h4>
-              <p>Include your View hashtags when cross-posting externally.</p>
-            </div>
-            <button class="toggle" data-setting="crosspost_syncHashtags" type="button"></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Marketplace</h3>
-            <p>Seller mode, shop visibility, and marketplace communication preferences.</p>
-          </div>
-        </div>
-
-        <div class="setting-list">
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Seller Mode</h4>
-              <p>Turn your account into a marketplace seller profile.</p>
-            </div>
-            <button class="toggle" data-setting="marketplace_sellerMode" type="button"></button>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Shop Visibility</h4>
-              <p>Allow your marketplace store to appear publicly.</p>
-            </div>
-            <button class="toggle" data-setting="marketplace_shopVisible" type="button"></button>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Buyer Auto Reply</h4>
-              <p>Send instant response prompts to new buyer messages.</p>
-            </div>
-            <button class="toggle" data-setting="marketplace_buyerAutoReply" type="button"></button>
-          </div>
-        </div>
-
-        <div class="link-list" style="margin-top:14px;">
-          <a class="link-row" href="marketplace.html">
-            <div>
-              <div>Open Marketplace</div>
-              <div class="small-note">Manage products and shop presence.</div>
-            </div>
-            <span>→</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Subscription</h3>
-            <p>Manage plan, billing cycle, and premium View features.</p>
-          </div>
-        </div>
-
-        <div class="setting-list">
-          <div class="setting-item">
-            <div class="setting-copy">
-              <h4>Current Plan</h4>
-              <p id="subscriptionPlanText">Free Plan</p>
-            </div>
-            <span class="status-badge">Free</span>
-          </div>
-
-          <a class="link-row" href="subscription.html">
-            <div>
-              <div>Manage Subscription</div>
-              <div class="small-note">Upgrade, review benefits, and manage renewal.</div>
-            </div>
-            <span>→</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Payments</h3>
-            <p>Manage payment preferences, payout setup, and wallet-related access.</p>
-          </div>
-        </div>
-
-        <div class="setting-list">
-          <a class="link-row" href="payments.html">
-            <div>
-              <div>Payment Methods</div>
-              <div class="small-note">Saved cards, default method, and billing preferences.</div>
-            </div>
-            <span>→</span>
-          </a>
-
-          <a class="link-row" href="payments.html#payouts">
-            <div>
-              <div>Payout Account</div>
-              <div class="small-note">Manage seller payout destination and settlement setup.</div>
-            </div>
-            <span>→</span>
-          </a>
-
-          <a class="link-row" href="payments.html#history">
-            <div>
-              <div>Billing & History</div>
-              <div class="small-note">Transaction history, invoices, and payment logs.</div>
-            </div>
-            <span>→</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>App & PWA</h3>
-            <p>Install, cache, notification testing, and service worker actions.</p>
-          </div>
-        </div>
-
-        <div class="link-list">
-          <button id="installBtnInline" class="link-row" type="button">
-            <div>
-              <div>Install View App</div>
-              <div class="small-note">Install View for a more native app experience.</div>
-            </div>
-            <span>↓</span>
-          </button>
-
-          <button id="refreshWorkerBtn" class="link-row" type="button">
-            <div>
-              <div>Refresh App Worker</div>
-              <div class="small-note">Refresh service worker and reload latest cached assets.</div>
-            </div>
-            <span>↻</span>
-          </button>
-
-          <button id="clearCacheBtn" class="link-row" type="button">
-            <div>
-              <div>Clear Local App Cache</div>
-              <div class="small-note">Remove local View preference cache on this device.</div>
-            </div>
-            <span>⌫</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Help, FAQ & Legal</h3>
-            <p>Open help resources and legal information from one place.</p>
-          </div>
-        </div>
-
-        <div class="link-list">
-          <a class="link-row" href="help.html">
-            <div>
-              <div>Help Center</div>
-              <div class="small-note">Troubleshooting, walkthroughs, and platform guidance.</div>
-            </div>
-            <span>→</span>
-          </a>
-
-          <a class="link-row" href="faq.html">
-            <div>
-              <div>FAQs</div>
-              <div class="small-note">Answers to the most common View questions.</div>
-            </div>
-            <span>→</span>
-          </a>
-
-          <a class="link-row" href="support.html">
-            <div>
-              <div>Support</div>
-              <div class="small-note">Contact support and report account or feature issues.</div>
-            </div>
-            <span>→</span>
-          </a>
-
-          <a class="link-row" href="terms.html">
-            <div>
-              <div>Terms of Use</div>
-              <div class="small-note">Read View terms and platform usage rules.</div>
-            </div>
-            <span>→</span>
-          </a>
-
-          <a class="link-row" href="privacy-policy.html">
-            <div>
-              <div>Privacy Policy</div>
-              <div class="small-note">How your data is handled inside View.</div>
-            </div>
-            <span>→</span>
-          </a>
         </div>
       </div>
     </section>
   </div>
 
   <nav class="bottom-nav">
-    <a href="home.html" class="nav-btn">
-      <span class="nav-icon">⌂</span>
+    <a class="nav-btn" href="home.html">
+      <span>🏠</span>
       <span>Home</span>
     </a>
-    <a href="explore.html" class="nav-btn">
-      <span class="nav-icon">🔎</span>
+
+    <a class="nav-btn" href="explore.html">
+      <span>🔎</span>
       <span>Explore</span>
     </a>
-    <a href="chats.html" class="nav-btn">
-      <span class="nav-icon">💬</span>
-      <span>Chat</span>
+
+    <a class="nav-btn" href="create-post.html">
+      <span>➕</span>
+      <span>Create</span>
     </a>
-    <a href="calls.html" class="nav-btn">
-      <span class="nav-icon">📞</span>
-      <span>Call</span>
+
+    <a class="nav-btn" href="profile.html">
+      <span>👤</span>
+      <span>Profile</span>
     </a>
-    <a href="settings.html" class="nav-btn active">
-      <span class="nav-icon">⚙️</span>
+
+    <a class="nav-btn active" href="settings.html">
+      <span>⚙️</span>
       <span>Settings</span>
     </a>
   </nav>
@@ -1201,101 +650,39 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const SETTINGS_KEY = "view_settings_local_v1";
-    const AVATAR_BUCKET = "avatars";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        flowType: "pkce"
       }
     });
 
     const noticeBox = document.getElementById("notice");
     const profileAvatar = document.getElementById("profileAvatar");
-    const heroName = document.getElementById("heroName");
-    const heroSub = document.getElementById("heroSub");
-    const sessionChip = document.getElementById("sessionChip");
-    const pushChip = document.getElementById("pushChip");
-    const installChip = document.getElementById("installChip");
-    const userIdText = document.getElementById("userIdText");
-    const sessionText = document.getElementById("sessionText");
-    const pushText = document.getElementById("pushText");
-    const installText = document.getElementById("installText");
+    const profileName = document.getElementById("profileName");
+    const profileSub = document.getElementById("profileSub");
+    const connectStatusBadge = document.getElementById("connectStatusBadge");
+    const moreBtn = document.getElementById("moreBtn");
+    const moreMenu = document.getElementById("moreMenu");
+    const logoutAction = document.getElementById("logoutAction");
 
-    const fullNameInput = document.getElementById("fullNameInput");
-    const usernameInput = document.getElementById("usernameInput");
-    const emailInput = document.getElementById("emailInput");
-    const phoneInput = document.getElementById("phoneInput");
-    const dobInput = document.getElementById("dobInput");
-    const passwordInput = document.getElementById("passwordInput");
-    const bioInput = document.getElementById("bioInput");
+    let currentUserId = "";
 
-    const saveProfileBtn = document.getElementById("saveProfileBtn");
-    const saveProfileBtnTop = document.getElementById("saveProfileBtnTop");
-    const changePasswordBtn = document.getElementById("changePasswordBtn");
-    const changeAvatarBtn = document.getElementById("changeAvatarBtn");
-    const avatarInput = document.getElementById("avatarInput");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const installBtn = document.getElementById("installBtn");
-    const installBtnInline = document.getElementById("installBtnInline");
-    const testNotificationBtn = document.getElementById("testNotificationBtn");
-    const refreshWorkerBtn = document.getElementById("refreshWorkerBtn");
-    const clearCacheBtn = document.getElementById("clearCacheBtn");
-    const subscriptionPlanText = document.getElementById("subscriptionPlanText");
-
-    const toggleButtons = [...document.querySelectorAll("[data-setting]")];
-
-    let currentUser = null;
-    let profileRow = null;
-    let deferredInstallPrompt = null;
-    let localSettings = {
-      privacy_privateAccount: false,
-      privacy_readReceipts: true,
-      privacy_onlineVisible: true,
-      privacy_allowCalls: true,
-      privacy_allowMessages: true,
-      privacy_allowGroupInvites: true,
-
-      notifications_pushEnabled: false,
-      notifications_messageAlerts: true,
-      notifications_callAlerts: true,
-      notifications_groupAlerts: true,
-      notifications_sound: true,
-      notifications_vibration: true,
-
-      calls_ringtone: true,
-      calls_autoSpeakerVideo: true,
-      calls_callNotifications: true,
-      calls_missedCallReminders: true,
-
-      chat_mediaAutoDownload: true,
-      chat_saveDrafts: true,
-      chat_enterToSend: false,
-      chat_messagePreview: true,
-
-      crosspost_autoCrossPost: false,
-      crosspost_syncCaptions: true,
-      crosspost_syncHashtags: true,
-
-      marketplace_sellerMode: false,
-      marketplace_shopVisible: true,
-      marketplace_buyerAutoReply: false
-    };
-
-    function showNotice(message, type = "error") {
+    function showNotice(message, type = "info") {
       noticeBox.className = `notice show ${type}`;
       noticeBox.textContent = message || "";
-    }
-
-    function clearNotice() {
-      noticeBox.className = "notice";
-      noticeBox.textContent = "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        noticeBox.className = "notice";
+        noticeBox.textContent = "";
+      }, 2400);
     }
 
     function escapeHtml(value) {
-      return String(value ?? "")
+      return String(value || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -1303,388 +690,87 @@
         .replace(/'/g, "&#039;");
     }
 
-    function getInitial(name) {
-      const safe = String(name || "U").trim();
-      return safe ? safe.charAt(0).toUpperCase() : "U";
+    function goToPage(page) {
+      window.location.href = page;
     }
 
-    function getDisplayName(profile = {}, fallback = "Your Account") {
-      const list = [
-        profile.full_name,
-        profile.display_name,
-        profile.username,
-        profile.name,
-        [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim()
-      ].filter(Boolean);
-      return list[0] || fallback;
+    function toggleMoreMenu() {
+      moreMenu.classList.toggle("show");
     }
 
-    function getAvatarUrl(profile = {}) {
-      return profile.avatar_url || profile.profile_picture || profile.photo_url || profile.image_url || "";
+    function closeMoreMenu() {
+      moreMenu.classList.remove("show");
     }
 
-    function loadLocalSettings() {
-      try {
-        const raw = localStorage.getItem(SETTINGS_KEY);
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        localSettings = { ...localSettings, ...parsed };
-      } catch {}
-    }
+    function setProfile(user, profile = null) {
+      const fullName =
+        profile?.full_name ||
+        user?.user_metadata?.full_name ||
+        user?.user_metadata?.name ||
+        user?.email?.split("@")[0] ||
+        "User";
 
-    function saveLocalSettings() {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(localSettings));
-    }
+      const username =
+        profile?.username ||
+        user?.user_metadata?.username ||
+        user?.email ||
+        "View user";
 
-    function renderToggles() {
-      toggleButtons.forEach(btn => {
-        const key = btn.dataset.setting;
-        btn.classList.toggle("active", !!localSettings[key]);
-      });
-    }
+      const avatarUrl =
+        profile?.avatar_url ||
+        user?.user_metadata?.avatar_url ||
+        user?.user_metadata?.picture ||
+        "";
 
-    function setAvatar(url, name) {
-      if (url) {
-        profileAvatar.innerHTML = `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}">`;
+      profileName.textContent = fullName;
+      profileSub.textContent = username;
+
+      if (avatarUrl) {
+        profileAvatar.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(fullName)}">`;
       } else {
-        profileAvatar.textContent = getInitial(name);
+        profileAvatar.textContent = fullName.charAt(0).toUpperCase();
       }
     }
 
-    function applyProfileToUI(profile = {}) {
-      const displayName = getDisplayName(profile, "Your Account");
-      const username = profile.username || "";
-      const bio = profile.bio || profile.about || "";
-      const phone = profile.phone || profile.phone_number || "";
-      const dob = profile.date_of_birth || profile.dob || "";
-      const avatar = getAvatarUrl(profile);
-
-      heroName.textContent = displayName;
-      heroSub.textContent = username ? `@${username}` : "Manage your View identity and app preferences.";
-      fullNameInput.value = profile.full_name || profile.display_name || profile.name || "";
-      usernameInput.value = username;
-      emailInput.value = currentUser?.email || profile.email || "";
-      phoneInput.value = phone;
-      dobInput.value = dob ? String(dob).slice(0, 10) : "";
-      bioInput.value = bio;
-      setAvatar(avatar, displayName);
-    }
-
-    async function getSessionWithRetry(maxWaitMs = 3000) {
-      const start = Date.now();
-      while (Date.now() - start < maxWaitMs) {
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (error) throw error;
-        if (data.session?.user) return data.session;
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-      return null;
-    }
-
-    async function requireSession() {
-      const session = await getSessionWithRetry();
-      if (!session?.user) {
-        window.location.href = "login.html?next=settings.html";
-        return null;
-      }
-      return session;
-    }
-
-    async function loadProfile() {
-      const { data, error } = await supabaseClient
-        .from("profiles")
-        .select("*")
-        .eq("id", currentUser.id)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      profileRow = data || {};
-      applyProfileToUI(profileRow);
-
-      userIdText.textContent = currentUser.id;
-      sessionText.textContent = "Active session";
-      sessionChip.textContent = "Session: active";
-
-      const settingsSource = profileRow.settings || profileRow.preferences || null;
-      if (settingsSource && typeof settingsSource === "object") {
-        localSettings = { ...localSettings, ...settingsSource };
-        saveLocalSettings();
-      }
-
-      subscriptionPlanText.textContent =
-        profileRow.subscription_plan ||
-        profileRow.plan_name ||
-        "Free Plan";
-
-      renderToggles();
-    }
-
-    async function updatePushStatus() {
+    async function loadProfile(user) {
       try {
-        const status = await window.ViewPushHelper.checkPushStatus();
+        const { data, error } = await supabaseClient
+          .from("profiles")
+          .select("full_name, username, avatar_url")
+          .eq("id", user.id)
+          .maybeSingle();
 
-        if (!status.supported) {
-          pushChip.textContent = "Push: unsupported";
-          pushText.textContent = "Notifications unsupported on this device.";
-          return;
-        }
-
-        if (status.permission === "granted" && status.subscribed) {
-          pushChip.textContent = "Push: enabled";
-          pushText.textContent = "Notifications active on this device.";
-          localSettings.notifications_pushEnabled = true;
-        } else if (status.permission === "denied") {
-          pushChip.textContent = "Push: blocked";
-          pushText.textContent = "Notifications blocked in browser settings.";
-          localSettings.notifications_pushEnabled = false;
-        } else {
-          pushChip.textContent = "Push: ready";
-          pushText.textContent = "Notifications can be enabled.";
-          localSettings.notifications_pushEnabled = false;
-        }
-
-        saveLocalSettings();
-        renderToggles();
+        if (error) throw error;
+        setProfile(user, data);
       } catch {
-        pushChip.textContent = "Push: unavailable";
-        pushText.textContent = "Push status could not be checked.";
+        setProfile(user, null);
       }
     }
 
-    function updateInstallStatus() {
-      const installed =
-        window.matchMedia("(display-mode: standalone)").matches ||
-        window.navigator.standalone === true;
-
-      if (installed) {
-        installChip.textContent = "Install: done";
-        installText.textContent = "View is installed on this device.";
-      } else if (deferredInstallPrompt) {
-        installChip.textContent = "Install: available";
-        installText.textContent = "Install prompt is available.";
-      } else {
-        installChip.textContent = "Install: pending";
-        installText.textContent = "Install depends on browser support and engagement.";
-      }
-    }
-
-    async function saveProfileChanges() {
-      try {
-        const fullName = fullNameInput.value.trim();
-        const username = usernameInput.value.trim();
-        const phone = phoneInput.value.trim();
-        const dob = dobInput.value.trim();
-        const bio = bioInput.value.trim();
-
-        if (!profileRow) profileRow = {};
-
-        const payload = {};
-
-        const keys = new Set(Object.keys(profileRow || {}));
-
-        if (keys.has("full_name")) payload.full_name = fullName;
-        else if (keys.has("display_name")) payload.display_name = fullName;
-        else if (keys.has("name")) payload.name = fullName;
-
-        if (keys.has("username")) payload.username = username;
-        if (keys.has("phone")) payload.phone = phone;
-        else if (keys.has("phone_number")) payload.phone_number = phone;
-
-        if (keys.has("date_of_birth")) payload.date_of_birth = dob || null;
-        else if (keys.has("dob")) payload.dob = dob || null;
-
-        if (keys.has("bio")) payload.bio = bio;
-        else if (keys.has("about")) payload.about = bio;
-
-        if (Object.keys(payload).length) {
-          const { error } = await supabaseClient
-            .from("profiles")
-            .update(payload)
-            .eq("id", currentUser.id);
-
-          if (error) throw error;
-        }
-
-        profileRow = { ...profileRow, ...payload };
-        applyProfileToUI(profileRow);
-        showNotice("Profile updated successfully.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not save profile changes.");
-      }
-    }
-
-    async function updatePassword() {
-      const password = passwordInput.value.trim();
-      if (!password) {
-        showNotice("Enter a new password first.", "info");
-        return;
-      }
-
-      if (password.length < 6) {
-        showNotice("Password should be at least 6 characters.", "info");
-        return;
-      }
+    async function loadConnectedAccountsStatus() {
+      if (!currentUserId) return;
 
       try {
-        const { error } = await supabaseClient.auth.updateUser({ password });
-        if (error) throw error;
-        passwordInput.value = "";
-        showNotice("Password updated successfully.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not update password.");
-      }
-    }
-
-    async function uploadAvatar(file) {
-      if (!file) return;
-      try {
-        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-        const path = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-        const { error: uploadError } = await supabaseClient
-          .storage
-          .from(AVATAR_BUCKET)
-          .upload(path, file, {
-            cacheControl: "3600",
-            upsert: false
-          });
-
-        if (uploadError) throw uploadError;
-
-        const { data } = supabaseClient
-          .storage
-          .from(AVATAR_BUCKET)
-          .getPublicUrl(path);
-
-        const publicUrl = data?.publicUrl || "";
-        if (!publicUrl) throw new Error("Avatar URL could not be generated.");
-
-        const payload = {};
-        const keys = new Set(Object.keys(profileRow || {}));
-
-        if (keys.has("avatar_url")) payload.avatar_url = publicUrl;
-        else if (keys.has("profile_picture")) payload.profile_picture = publicUrl;
-        else if (keys.has("photo_url")) payload.photo_url = publicUrl;
-        else if (keys.has("image_url")) payload.image_url = publicUrl;
-
-        if (!Object.keys(payload).length) {
-          showNotice("Avatar upload succeeded, but no avatar column was found in profiles.", "info");
-          return;
-        }
-
-        const { error } = await supabaseClient
-          .from("profiles")
-          .update(payload)
-          .eq("id", currentUser.id);
+        const { data, error } = await supabaseClient
+          .from("connected_accounts")
+          .select("platform, is_connected")
+          .eq("user_id", currentUserId)
+          .eq("is_connected", true);
 
         if (error) throw error;
 
-        profileRow = { ...profileRow, ...payload };
-        applyProfileToUI(profileRow);
-        showNotice("Profile picture updated successfully.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not upload profile picture.");
-      }
-    }
+        const connectedCount = (data || []).length;
 
-    async function saveAdvancedSettingsToProfile() {
-      try {
-        if (!profileRow) return;
-
-        const keys = new Set(Object.keys(profileRow || {}));
-        const payload = {};
-
-        if (keys.has("settings")) {
-          payload.settings = { ...(profileRow.settings || {}), ...localSettings };
-        } else if (keys.has("preferences")) {
-          payload.preferences = { ...(profileRow.preferences || {}), ...localSettings };
-        }
-
-        if (!Object.keys(payload).length) return;
-
-        const { error } = await supabaseClient
-          .from("profiles")
-          .update(payload)
-          .eq("id", currentUser.id);
-
-        if (error) throw error;
-        profileRow = { ...profileRow, ...payload };
-      } catch (error) {
-        console.warn("Advanced settings DB save warning:", error.message);
-      }
-    }
-
-    async function toggleSetting(key) {
-      localSettings[key] = !localSettings[key];
-      saveLocalSettings();
-      renderToggles();
-
-      if (key === "notifications_pushEnabled" && localSettings[key]) {
-        try {
-          await window.ViewPushHelper.initPushRegistration();
-          showNotice("Push notifications enabled.", "success");
-        } catch (error) {
-          localSettings[key] = false;
-          saveLocalSettings();
-          renderToggles();
-          showNotice(error.message || "Could not enable push notifications.");
-        }
-      }
-
-      await saveAdvancedSettingsToProfile();
-    }
-
-    async function installApp() {
-      if (deferredInstallPrompt) {
-        deferredInstallPrompt.prompt();
-        const result = await deferredInstallPrompt.userChoice;
-        if (result.outcome === "accepted") {
-          showNotice("View is being installed.", "success");
+        if (connectedCount > 0) {
+          connectStatusBadge.className = "status-badge status-connected";
+          connectStatusBadge.textContent = `${connectedCount} Connected`;
         } else {
-          showNotice("Install prompt dismissed.", "info");
+          connectStatusBadge.className = "status-badge status-empty";
+          connectStatusBadge.textContent = "Not Connected";
         }
-        deferredInstallPrompt = null;
-        updateInstallStatus();
-        return;
-      }
-
-      showNotice("Install prompt is not available yet on this device.", "info");
-    }
-
-    async function testNotification() {
-      try {
-        await window.ViewPushHelper.showLocalSystemNotification({
-          title: "View Test Notification",
-          body: "Your View notification setup is working.",
-          tag: "view-settings-test",
-          data: { url: "/notifications.html" }
-        });
-        showNotice("Test notification sent.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not send test notification.");
-      }
-    }
-
-    async function refreshWorker() {
-      try {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        for (const reg of regs) {
-          await reg.update();
-          reg.waiting?.postMessage({ type: "SKIP_WAITING" });
-        }
-        showNotice("App worker refreshed.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not refresh worker.");
-      }
-    }
-
-    function clearLocalCache() {
-      try {
-        localStorage.removeItem(SETTINGS_KEY);
-        showNotice("Local settings cache cleared on this device.", "success");
-      } catch (error) {
-        showNotice("Could not clear local cache.");
+      } catch {
+        connectStatusBadge.className = "status-badge status-neutral";
+        connectStatusBadge.textContent = "Unavailable";
       }
     }
 
@@ -1692,65 +778,65 @@
       try {
         const { error } = await supabaseClient.auth.signOut();
         if (error) throw error;
-        window.location.href = "login.html";
+
+        showNotice("Logged out.", "success");
+        setTimeout(() => {
+          window.location.href = "login.html";
+        }, 700);
       } catch (error) {
-        showNotice(error.message || "Could not logout.");
+        showNotice(error.message || "Logout failed.", "error");
       }
     }
-
-    changeAvatarBtn.addEventListener("click", () => avatarInput.click());
-    avatarInput.addEventListener("change", async () => {
-      const file = avatarInput.files?.[0];
-      if (file) await uploadAvatar(file);
-    });
-
-    saveProfileBtn.addEventListener("click", saveProfileChanges);
-    saveProfileBtnTop.addEventListener("click", saveProfileChanges);
-    changePasswordBtn.addEventListener("click", updatePassword);
-    logoutBtn.addEventListener("click", logout);
-    installBtn.addEventListener("click", installApp);
-    installBtnInline.addEventListener("click", installApp);
-    testNotificationBtn.addEventListener("click", testNotification);
-    refreshWorkerBtn.addEventListener("click", refreshWorker);
-    clearCacheBtn.addEventListener("click", clearLocalCache);
-
-    toggleButtons.forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const key = btn.dataset.setting;
-        await toggleSetting(key);
-      });
-    });
-
-    window.addEventListener("beforeinstallprompt", (event) => {
-      event.preventDefault();
-      deferredInstallPrompt = event;
-      updateInstallStatus();
-    });
-
-    window.addEventListener("appinstalled", () => {
-      deferredInstallPrompt = null;
-      updateInstallStatus();
-      showNotice("View installed successfully.", "success");
-    });
 
     async function init() {
       try {
-        loadLocalSettings();
-        renderToggles();
+        const { data, error } = await supabaseClient.auth.getUser();
+        if (error) throw error;
 
-        const session = await requireSession();
-        if (!session?.user) return;
+        const user = data.user;
+        if (!user) {
+          window.location.href = "login.html?next=settings.html";
+          return;
+        }
 
-        currentUser = session.user;
-        emailInput.value = currentUser.email || "";
-
-        await loadProfile();
-        await updatePushStatus();
-        updateInstallStatus();
+        currentUserId = user.id;
+        await loadProfile(user);
+        await loadConnectedAccountsStatus();
       } catch (error) {
-        showNotice(error.message || "Could not initialize settings.");
+        showNotice(error.message || "Could not load settings.", "error");
       }
     }
+
+    moreBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleMoreMenu();
+    });
+
+    logoutAction.addEventListener("click", logout);
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".more-wrap")) closeMoreMenu();
+    });
+
+    document.addEventListener("contextmenu", (e) => {
+      const item = e.target.closest(".menu-item");
+      if (!item) return;
+      e.preventDefault();
+      if (item.querySelector(".more-wrap")) toggleMoreMenu();
+    });
+
+    let pressTimer = null;
+    document.addEventListener("touchstart", (e) => {
+      const item = e.target.closest(".menu-item");
+      if (!item || !item.querySelector(".more-wrap")) return;
+      pressTimer = setTimeout(() => {
+        toggleMoreMenu();
+      }, 500);
+    }, { passive: true });
+
+    document.addEventListener("touchend", () => {
+      clearTimeout(pressTimer);
+    });
 
     init();
   </script>
