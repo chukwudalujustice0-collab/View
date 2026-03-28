@@ -10,16 +10,18 @@
   <style>
     :root{
       --bg:#08111f;
-      --card:#101b31;
+      --panel:#0f1b33;
+      --panel-2:#14213d;
       --line:rgba(255,255,255,.08);
       --text:#f4f7ff;
       --muted:#9fb1d7;
       --primary:#2563eb;
       --primary-2:#7c3aed;
       --success:#10b981;
-      --danger:#ef4444;
       --warn:#f59e0b;
-      --shadow:0 14px 40px rgba(0,0,0,.28);
+      --danger:#ef4444;
+      --shadow:0 16px 42px rgba(0,0,0,.28);
+      --radius:22px;
     }
 
     *{
@@ -32,12 +34,15 @@
 
     html,body{
       min-height:100%;
-      background:var(--bg);
+      background:
+        radial-gradient(circle at top right, rgba(37,99,235,.12), transparent 25%),
+        radial-gradient(circle at bottom left, rgba(124,58,237,.10), transparent 25%),
+        var(--bg);
       color:var(--text);
     }
 
     body{
-      padding:16px 14px 30px;
+      padding:16px 14px 34px;
     }
 
     a{
@@ -55,23 +60,36 @@
     }
 
     .wrap{
-      width:min(100%, 820px);
+      width:min(100%, 860px);
       margin:0 auto;
     }
 
     .notice{
       display:none;
       margin-bottom:14px;
-      padding:12px 14px;
-      border-radius:14px;
+      padding:13px 14px;
+      border-radius:16px;
       font-size:14px;
-      line-height:1.5;
+      line-height:1.55;
       box-shadow:var(--shadow);
+      border:1px solid transparent;
     }
     .notice.show{display:block}
-    .notice.error{background:rgba(127,29,29,.92);color:#fecaca}
-    .notice.success{background:rgba(5,46,22,.92);color:#d1fae5}
-    .notice.info{background:rgba(30,41,59,.95);color:#dbeafe}
+    .notice.error{
+      background:rgba(127,29,29,.92);
+      border-color:rgba(239,68,68,.18);
+      color:#fecaca;
+    }
+    .notice.success{
+      background:rgba(5,46,22,.92);
+      border-color:rgba(16,185,129,.18);
+      color:#d1fae5;
+    }
+    .notice.info{
+      background:rgba(30,41,59,.95);
+      border-color:rgba(255,255,255,.08);
+      color:#dbeafe;
+    }
 
     .topbar{
       display:flex;
@@ -90,10 +108,10 @@
     }
 
     .icon-btn{
-      width:46px;
-      height:46px;
-      min-width:46px;
-      border-radius:14px;
+      width:48px;
+      height:48px;
+      min-width:48px;
+      border-radius:16px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -109,7 +127,7 @@
     }
 
     .title{
-      font-size:22px;
+      font-size:24px;
       font-weight:800;
       margin-bottom:3px;
       white-space:nowrap;
@@ -126,10 +144,10 @@
     }
 
     .hero,
-    .section-card{
-      background:var(--card);
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.035));
       border:1px solid var(--line);
-      border-radius:22px;
+      border-radius:var(--radius);
       box-shadow:var(--shadow);
       margin-bottom:16px;
     }
@@ -139,7 +157,7 @@
     }
 
     .hero h2{
-      font-size:22px;
+      font-size:23px;
       margin-bottom:8px;
     }
 
@@ -155,24 +173,24 @@
       gap:16px;
     }
 
-    .section-head{
-      padding:14px 16px;
+    .card-head{
+      padding:15px 16px;
       border-bottom:1px solid var(--line);
     }
 
-    .section-head h3{
+    .card-head h3{
       font-size:17px;
       font-weight:800;
       margin-bottom:4px;
     }
 
-    .section-head p{
+    .card-head p{
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
     }
 
-    .section-body{
+    .card-body{
       padding:14px;
       display:grid;
       gap:12px;
@@ -182,7 +200,7 @@
       display:flex;
       align-items:center;
       gap:10px;
-      min-height:50px;
+      min-height:52px;
       padding:12px 14px;
       background:rgba(255,255,255,.05);
       border:1px solid var(--line);
@@ -215,15 +233,16 @@
     }
 
     .btn{
-      min-height:44px;
+      min-height:46px;
       padding:0 14px;
-      border-radius:12px;
+      border-radius:14px;
       font-size:13px;
       font-weight:700;
       border:1px solid var(--line);
       background:rgba(255,255,255,.06);
       color:var(--text);
       cursor:pointer;
+      transition:.18s ease;
     }
 
     .btn.primary{
@@ -238,9 +257,21 @@
       color:#fecaca;
     }
 
+    .btn:hover{transform:translateY(-1px)}
     .btn:disabled{
       opacity:.55;
       cursor:not-allowed;
+      transform:none;
+    }
+
+    .tips{
+      padding:12px 13px;
+      border-radius:16px;
+      background:rgba(37,99,235,.08);
+      border:1px solid rgba(37,99,235,.16);
+      color:#dbeafe;
+      font-size:12px;
+      line-height:1.6;
     }
 
     .channel-box{
@@ -260,9 +291,9 @@
     }
 
     .channel-thumb{
-      width:58px;
-      height:58px;
-      min-width:58px;
+      width:60px;
+      height:60px;
+      min-width:60px;
       border-radius:16px;
       object-fit:cover;
       background:#0f172a;
@@ -277,7 +308,7 @@
     .channel-name{
       font-size:15px;
       font-weight:800;
-      margin-bottom:4px;
+      margin-bottom:5px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
@@ -302,7 +333,7 @@
       color:#d1fae5;
       font-size:12px;
       font-weight:700;
-      margin-top:10px;
+      margin-top:8px;
     }
 
     .field{
@@ -353,7 +384,7 @@
     .hint{
       color:var(--muted);
       font-size:12px;
-      line-height:1.5;
+      line-height:1.55;
       margin-top:2px;
     }
 
@@ -391,20 +422,17 @@
       border:1px solid var(--line);
       background:rgba(255,255,255,.04);
       font-size:14px;
-      line-height:1.6;
+      line-height:1.65;
       word-break:break-word;
     }
 
-    .small{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.6;
+    .result strong{
+      color:#fff;
     }
 
-    .footer-note{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.7;
+    .result a{
+      color:#93c5fd;
+      text-decoration:underline;
     }
 
     .debug-box{
@@ -420,7 +448,7 @@
       word-break:break-word;
     }
 
-    @media (max-width:820px){
+    @media (max-width:860px){
       .grid{
         grid-template-columns:1fr;
       }
@@ -437,6 +465,10 @@
 
       .row{
         grid-template-columns:1fr;
+      }
+
+      .title{
+        font-size:21px;
       }
     }
   </style>
@@ -459,19 +491,17 @@
 
     <section class="hero">
       <h2>YouTube connection</h2>
-      <p>
-        Connect your Google account, confirm your YouTube channel, and upload videos directly from View.
-      </p>
+      <p>Connect your Google account, confirm your YouTube channel, and upload videos directly from View.</p>
     </section>
 
     <div class="grid">
-      <section class="section-card">
-        <div class="section-head">
+      <section class="card">
+        <div class="card-head">
           <h3>Account connection</h3>
-          <p>Connect Google, check your channel, or refresh your session.</p>
+          <p>Sign in, confirm the session, and load your channel.</p>
         </div>
 
-        <div class="section-body">
+        <div class="card-body">
           <div class="status-box">
             <span class="dot" id="statusDot"></span>
             <span id="statusText">Checking session...</span>
@@ -481,6 +511,10 @@
             <button class="btn primary" id="connectBtn">Connect Google / YouTube</button>
             <button class="btn" id="channelBtn">Check Channel</button>
             <button class="btn danger" id="logoutBtn">Logout</button>
+          </div>
+
+          <div class="tips">
+            If you return from Google and the channel still does not load, tap <strong>Refresh</strong> once. If the provider token is missing, log out and reconnect again.
           </div>
 
           <div class="channel-box" id="channelBox">
@@ -494,22 +528,19 @@
             <div class="pill">YouTube connected</div>
           </div>
 
-          <div class="footer-note">
-            If provider token is missing after login, log out and reconnect with fresh Google consent.
-          </div>
-
-          <div id="debugBox" class="debug-box"></div>
+          <div class="result" id="connectionResult"></div>
+          <div class="debug-box" id="debugBox"></div>
         </div>
       </section>
 
-      <section class="section-card">
-        <div class="section-head">
+      <section class="card">
+        <div class="card-head">
           <h3>Upload video</h3>
           <p>Choose your file, enter details, and upload to YouTube.</p>
         </div>
 
-        <div class="section-body">
-          <form id="uploadForm" class="section-body" style="padding:0;">
+        <div class="card-body">
+          <form id="uploadForm" class="card-body" style="padding:0;">
             <div class="field">
               <label for="videoFile">Video file</label>
               <div class="file-wrap">
@@ -557,11 +588,7 @@
             <div class="progress-text" id="progressText">Preparing upload...</div>
           </div>
 
-          <div class="result" id="resultBox"></div>
-
-          <div class="footer-note">
-            This version uploads from the browser using the Google provider token stored in your Supabase session.
-          </div>
+          <div class="result" id="uploadResult"></div>
         </div>
       </section>
     </div>
@@ -571,6 +598,7 @@
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
     const LIVE_REDIRECT_URL = "https://view.ceetice.com/youtube-connect.html";
+    const YT_TOKEN_KEY = "view_youtube_provider_token";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -601,7 +629,9 @@
     const uploadProgress = document.getElementById("uploadProgress");
     const progressFill = document.getElementById("progressFill");
     const progressText = document.getElementById("progressText");
-    const resultBox = document.getElementById("resultBox");
+
+    const connectionResult = document.getElementById("connectionResult");
+    const uploadResult = document.getElementById("uploadResult");
     const debugBox = document.getElementById("debugBox");
 
     const videoFile = document.getElementById("videoFile");
@@ -620,7 +650,7 @@
       showNotice._timer = setTimeout(() => {
         noticeBox.className = "notice";
         noticeBox.textContent = "";
-      }, 3000);
+      }, 3200);
     }
 
     function setStatus(type, message) {
@@ -630,16 +660,35 @@
       if (type === "err") statusDot.classList.add("err");
     }
 
-    function showResult(html, isError = false) {
-      resultBox.style.display = "block";
-      resultBox.innerHTML = html;
-      resultBox.style.borderColor = isError ? "rgba(239,68,68,.25)" : "rgba(255,255,255,.08)";
-      resultBox.style.background = isError ? "rgba(239,68,68,.08)" : "rgba(255,255,255,.04)";
+    function escapeHtml(str = "") {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
-    function hideResult() {
-      resultBox.style.display = "none";
-      resultBox.innerHTML = "";
+    function setResult(target, html = "", type = "info") {
+      if (!html) {
+        target.style.display = "none";
+        target.innerHTML = "";
+        return;
+      }
+
+      target.style.display = "block";
+      target.innerHTML = html;
+
+      if (type === "error") {
+        target.style.background = "rgba(239,68,68,.08)";
+        target.style.borderColor = "rgba(239,68,68,.22)";
+      } else if (type === "success") {
+        target.style.background = "rgba(16,185,129,.08)";
+        target.style.borderColor = "rgba(16,185,129,.20)";
+      } else {
+        target.style.background = "rgba(255,255,255,.04)";
+        target.style.borderColor = "rgba(255,255,255,.08)";
+      }
     }
 
     function setUploading(on, percent = 0, text = "") {
@@ -653,13 +702,27 @@
       refreshBtn.disabled = on;
     }
 
-    function escapeHtml(str = "") {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    function saveProviderToken(token) {
+      if (!token) return;
+      providerToken = token;
+      try {
+        localStorage.setItem(YT_TOKEN_KEY, token);
+      } catch {}
+    }
+
+    function loadSavedProviderToken() {
+      try {
+        return localStorage.getItem(YT_TOKEN_KEY) || null;
+      } catch {
+        return null;
+      }
+    }
+
+    function clearSavedProviderToken() {
+      providerToken = null;
+      try {
+        localStorage.removeItem(YT_TOKEN_KEY);
+      } catch {}
     }
 
     function renderDebug(sessionData) {
@@ -668,11 +731,12 @@
         expected_redirect: LIVE_REDIRECT_URL,
         has_session: !!sessionData?.session,
         session_user_email: sessionData?.session?.user?.email || null,
-        provider_token_exists: !!sessionData?.session?.provider_token,
+        provider_token_exists_in_session: !!sessionData?.session?.provider_token,
+        provider_token_exists_in_storage: !!loadSavedProviderToken(),
         provider_refresh_token_exists: !!sessionData?.session?.provider_refresh_token,
         access_token_exists: !!sessionData?.session?.access_token,
         user_provider: sessionData?.session?.user?.app_metadata?.provider || null,
-        providers: sessionData?.session?.user?.app_metadata?.providers || [],
+        providers: sessionData?.session?.user?.app_metadata?.providers || []
       };
 
       console.log("YOUTUBE CONNECT DEBUG:", debug);
@@ -681,7 +745,7 @@
     }
 
     async function connectGoogleYouTube() {
-      hideResult();
+      setResult(connectionResult, "", "info");
 
       try {
         const { error } = await supabaseClient.auth.signInWithOAuth({
@@ -699,59 +763,92 @@
 
         if (error) throw error;
       } catch (error) {
-        setStatus("err", error.message || "Google sign-in failed");
-        showResult(`<strong>Connection failed:</strong><br>${escapeHtml(error.message || "Unknown error")}`, true);
+        setStatus("err", "Google sign-in failed.");
+        setResult(
+          connectionResult,
+          `<strong>Could not start Google sign-in.</strong><br>${escapeHtml(error.message || "Unknown error")}`,
+          "error"
+        );
       }
     }
 
     async function refreshSessionState() {
-      hideResult();
+      setResult(connectionResult, "", "info");
 
       try {
         const { data, error } = await supabaseClient.auth.getSession();
         if (error) throw error;
 
         currentSession = data?.session || null;
-        providerToken = currentSession?.provider_token || null;
+
+        if (currentSession?.provider_token) {
+          saveProviderToken(currentSession.provider_token);
+        } else {
+          providerToken = loadSavedProviderToken();
+        }
 
         renderDebug(data);
 
         if (!currentSession) {
           channelBox.style.display = "none";
-          setStatus("warn", "No active session. Connect Google / YouTube first.");
+          setStatus("warn", "No active Google session.");
+          setResult(
+            connectionResult,
+            `<strong>You are not connected yet.</strong><br>Tap <strong>Connect Google / YouTube</strong> to begin.`,
+            "info"
+          );
           return;
         }
 
         if (!providerToken) {
           channelBox.style.display = "none";
-          setStatus("err", "No Google provider token available.");
-          showResult(
-            `Google login returned, but the Google provider token is missing.<br><br>
-             <span class="small">Fix steps:</span><br>
-             <span class="small">1. Click Logout below.</span><br>
-             <span class="small">2. Reconnect and approve consent again.</span><br>
-             <span class="small">3. Make sure Google OAuth includes youtube.upload scope.</span><br>
-             <span class="small">4. Make sure your app is using the live redirect URL only.</span>`,
-            true
+          setStatus("err", "Session returned but provider token is missing.");
+          setResult(
+            connectionResult,
+            `<strong>Google sign-in returned, but YouTube access is not ready.</strong><br><br>
+             This usually means Google returned to the page without a usable provider token.<br><br>
+             <strong>Try this:</strong><br>
+             1. Tap <strong>Logout</strong><br>
+             2. Tap <strong>Connect Google / YouTube</strong> again<br>
+             3. Tap <strong>Continue</strong> on the Google consent screen<br>
+             4. After returning here, tap <strong>Refresh</strong> once`,
+            "error"
           );
           return;
         }
 
-        setStatus("ok", "Google session active. You can now check channel or upload.");
-        showNotice("Google / YouTube session ready.", "success");
+        setStatus("ok", "Google / YouTube session ready.");
+        setResult(
+          connectionResult,
+          `<strong>Connection session is ready.</strong><br>You can now tap <strong>Check Channel</strong> or upload a video.`,
+          "success"
+        );
       } catch (error) {
         console.error(error);
-        setStatus("err", "Failed to read session");
-        showResult(`<strong>Session error:</strong><br>${escapeHtml(error.message || "Unknown error")}`, true);
+        setStatus("err", "Failed to read session.");
+        setResult(
+          connectionResult,
+          `<strong>Could not read your session.</strong><br>${escapeHtml(error.message || "Unknown error")}`,
+          "error"
+        );
       }
     }
 
     async function checkYouTubeChannel() {
-      hideResult();
+      setResult(connectionResult, "", "info");
+
+      if (!providerToken) {
+        providerToken = loadSavedProviderToken();
+      }
 
       if (!providerToken) {
         setStatus("err", "No Google provider token available.");
-        showResult("Connect your Google / YouTube account first.", true);
+        setResult(
+          connectionResult,
+          `<strong>No Google provider token is available.</strong><br>
+           Reconnect your Google account, then return here and tap <strong>Refresh</strong>.`,
+          "error"
+        );
         return;
       }
 
@@ -774,7 +871,7 @@
         }
 
         if (!data.items || !data.items.length) {
-          throw new Error("No YouTube channel found for this account.");
+          throw new Error("No YouTube channel found for this Google account.");
         }
 
         const item = data.items[0];
@@ -788,27 +885,40 @@
         channelMeta.textContent = `Subscribers: ${item?.statistics?.subscriberCount || 0} • Videos: ${item?.statistics?.videoCount || 0}`;
         channelBox.style.display = "grid";
 
-        setStatus("ok", "YouTube channel connected successfully.");
+        setStatus("ok", "YouTube channel loaded.");
         showNotice("Channel loaded successfully.", "success");
-        showResult(
+        setResult(
+          connectionResult,
           `<strong>Connected channel:</strong><br>${escapeHtml(item?.snippet?.title || "Unnamed Channel")}`,
-          false
+          "success"
         );
       } catch (error) {
         console.error(error);
         channelBox.style.display = "none";
-        setStatus("err", "Could not fetch YouTube channel");
-        showResult(`<strong>Channel check failed:</strong><br>${escapeHtml(error.message || "Unknown error")}`, true);
+        setStatus("err", "Could not load YouTube channel.");
+        setResult(
+          connectionResult,
+          `<strong>Channel check failed.</strong><br>${escapeHtml(error.message || "Unknown error")}`,
+          "error"
+        );
       }
     }
 
     async function uploadToYouTube(event) {
       event.preventDefault();
-      hideResult();
+      setResult(uploadResult, "", "info");
 
       if (!providerToken) {
-        setStatus("err", "Connect your Google / YouTube account first.");
-        showResult("No Google provider token found.", true);
+        providerToken = loadSavedProviderToken();
+      }
+
+      if (!providerToken) {
+        setStatus("err", "You are not fully connected.");
+        setResult(
+          uploadResult,
+          `<strong>Upload cannot start yet.</strong><br>No Google provider token was found. Connect your Google / YouTube account first.`,
+          "error"
+        );
         return;
       }
 
@@ -819,12 +929,12 @@
       const categoryId = categoryIdInput.value.trim() || "22";
 
       if (!file) {
-        showResult("Please choose a video file.", true);
+        setResult(uploadResult, `<strong>Please choose a video file.</strong>`, "error");
         return;
       }
 
       if (!title) {
-        showResult("Please enter a title.", true);
+        setResult(uploadResult, `<strong>Please enter a title.</strong>`, "error");
         return;
       }
 
@@ -894,10 +1004,12 @@
         const vid = data?.id || "";
         const watchUrl = vid ? `https://www.youtube.com/watch?v=${vid}` : "";
 
-        showResult(
+        setResult(
+          uploadResult,
           `<strong>Upload successful.</strong><br><br>
-          <span class="small">Video ID:</span> ${escapeHtml(vid)}<br>
-          ${watchUrl ? `<span class="small">Watch URL:</span> <a href="${watchUrl}" target="_blank" style="color:#8ab4ff">${watchUrl}</a>` : ""}`
+           <span class="small">Video ID:</span> ${escapeHtml(vid)}<br>
+           ${watchUrl ? `<span class="small">Watch URL:</span> <a href="${watchUrl}" target="_blank">${watchUrl}</a>` : ""}`,
+          "success"
         );
 
         showNotice("Video uploaded successfully.", "success");
@@ -905,27 +1017,41 @@
       } catch (error) {
         console.error(error);
         setUploading(false, 0, "");
-        setStatus("err", "YouTube upload failed");
-        showResult(`<strong>Upload failed:</strong><br>${escapeHtml(error.message || "Unknown error")}`, true);
+        setStatus("err", "YouTube upload failed.");
+        setResult(
+          uploadResult,
+          `<strong>Upload failed.</strong><br>${escapeHtml(error.message || "Unknown error")}`,
+          "error"
+        );
       }
     }
 
     async function logout() {
-      hideResult();
+      setResult(connectionResult, "", "info");
+      setResult(uploadResult, "", "info");
 
       try {
         const { error } = await supabaseClient.auth.signOut();
         if (error) throw error;
 
-        providerToken = null;
         currentSession = null;
+        clearSavedProviderToken();
         channelBox.style.display = "none";
         debugBox.style.display = "none";
         setStatus("warn", "Logged out successfully.");
+        setResult(
+          connectionResult,
+          `<strong>You have been logged out.</strong><br>Connect your Google / YouTube account again when ready.`,
+          "info"
+        );
         showNotice("Logged out.", "success");
       } catch (error) {
-        setStatus("err", error.message || "Logout failed");
-        showResult(`<strong>Logout failed:</strong><br>${escapeHtml(error.message || "Unknown error")}`, true);
+        setStatus("err", "Logout failed.");
+        setResult(
+          connectionResult,
+          `<strong>Logout failed.</strong><br>${escapeHtml(error.message || "Unknown error")}`,
+          "error"
+        );
       }
     }
 
@@ -935,11 +1061,16 @@
     refreshBtn.addEventListener("click", refreshSessionState);
     uploadForm.addEventListener("submit", uploadToYouTube);
 
-    supabaseClient.auth.onAuthStateChange(async () => {
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      if (session?.provider_token) {
+        saveProviderToken(session.provider_token);
+      }
+      console.log("AUTH EVENT:", event, session);
       await refreshSessionState();
     });
 
     window.addEventListener("load", async () => {
+      providerToken = loadSavedProviderToken();
       await refreshSessionState();
     });
   </script>
