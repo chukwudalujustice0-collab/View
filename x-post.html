@@ -2,19 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
-  <title>Post to X | View</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>X Post Diagnostic | View</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root{
       --bg:#07101f;
       --bg2:#0d1a31;
       --card:rgba(255,255,255,.08);
-      --card2:rgba(255,255,255,.05);
       --line:rgba(255,255,255,.12);
       --text:#f8fbff;
       --muted:#9fb0c9;
@@ -24,503 +19,87 @@
       --danger:#ef4444;
       --warning:#f59e0b;
       --shadow:0 20px 60px rgba(0,0,0,.35);
-      --radius:24px;
-      --safe-bottom:env(safe-area-inset-bottom);
     }
-
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-      -webkit-tap-highlight-color:transparent;
-    }
-
-    html, body{
-      min-height:100%;
-      font-family:Arial, sans-serif;
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{
+      min-height:100vh;
+      font-family:Arial,sans-serif;
       color:var(--text);
       background:
         radial-gradient(circle at top right, rgba(29,155,240,.15), transparent 24%),
         radial-gradient(circle at bottom left, rgba(79,70,229,.14), transparent 24%),
         linear-gradient(180deg, var(--bg), var(--bg2));
-    }
-
-    body{
-      padding:18px 14px calc(110px + var(--safe-bottom));
-    }
-
-    .wrap{
-      width:min(100%, 760px);
-      margin:0 auto;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:18px;
-    }
-
-    .logo{
-      width:54px;
-      height:54px;
-      border-radius:18px;
-      display:grid;
-      place-items:center;
-      font-size:28px;
-      font-weight:800;
-      color:#fff;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.04)),
-        linear-gradient(135deg,#111827,#000);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:var(--shadow);
-      flex:none;
-    }
-
-    .brand h1{
-      font-size:1.2rem;
-      margin-bottom:4px;
-    }
-
-    .brand p{
-      color:var(--muted);
-      font-size:.95rem;
-      line-height:1.4;
-    }
-
-    .hero,
-    .card{
-      border:1px solid var(--line);
-      background:var(--card);
-      backdrop-filter:blur(14px);
-      border-radius:30px;
-      box-shadow:var(--shadow);
-    }
-
-    .hero{
-      padding:22px;
-      margin-bottom:18px;
-      position:relative;
-      overflow:hidden;
-    }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      width:220px;
-      height:220px;
-      right:-80px;
-      bottom:-100px;
-      border-radius:50%;
-      background:radial-gradient(circle, rgba(255,255,255,.10), transparent 66%);
-      pointer-events:none;
-    }
-
-    .hero h2{
-      font-size:1.45rem;
-      margin-bottom:10px;
-    }
-
-    .hero p{
-      color:var(--muted);
-      line-height:1.6;
-      font-size:.96rem;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:1.12fr .88fr;
-      gap:18px;
-    }
-
-    .card{
-      padding:20px;
-    }
-
-    .section-title{
-      font-size:1.04rem;
-      margin-bottom:14px;
-    }
-
-    .status{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      border:1px solid var(--line);
-      background:var(--card2);
-      border-radius:18px;
-      padding:14px;
-      margin-bottom:14px;
-      min-height:62px;
-    }
-
-    .status-dot{
-      width:12px;
-      height:12px;
-      border-radius:50%;
-      margin-top:4px;
-      background:var(--warning);
-      box-shadow:0 0 0 5px rgba(245,158,11,.15);
-      flex:none;
-    }
-
-    .status-dot.good{
-      background:var(--success);
-      box-shadow:0 0 0 5px rgba(25,195,125,.16);
-    }
-
-    .status-dot.bad{
-      background:var(--danger);
-      box-shadow:0 0 0 5px rgba(239,68,68,.16);
-    }
-
-    .status-text{
-      line-height:1.5;
-      font-size:.95rem;
-    }
-
-    .connected-box{
-      display:none;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      border-radius:20px;
-      padding:14px;
-      margin-bottom:14px;
-    }
-
-    .connected-title{
-      font-weight:700;
-      margin-bottom:6px;
-    }
-
-    .connected-sub{
-      color:var(--muted);
-      font-size:.92rem;
-      line-height:1.5;
-      word-break:break-word;
-    }
-
-    .field{
-      margin-bottom:14px;
-    }
-
-    .label-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:8px;
-    }
-
-    label{
-      font-size:.94rem;
-      color:#e8eefb;
-      font-weight:700;
-    }
-
-    .count{
-      color:var(--muted);
-      font-size:.86rem;
-      font-weight:700;
-    }
-
-    textarea{
-      width:100%;
-      min-height:180px;
-      resize:vertical;
-      border:none;
-      outline:none;
-      border-radius:20px;
       padding:16px;
-      font-size:1rem;
-      line-height:1.6;
-      color:var(--text);
-      background:rgba(255,255,255,.06);
+    }
+    .wrap{max-width:760px;margin:0 auto}
+    .card{
+      background:var(--card);
       border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      margin-bottom:16px;
+      backdrop-filter:blur(14px);
     }
-
-    textarea::placeholder{
-      color:#90a0ba;
+    h1{font-size:1.3rem;margin-bottom:8px}
+    p{color:var(--muted);line-height:1.55}
+    textarea{
+      width:100%;min-height:140px;margin-top:12px;border:none;outline:none;
+      border-radius:16px;padding:14px;font-size:1rem;line-height:1.5;
+      background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)
     }
-
-    .hint{
-      color:var(--muted);
-      font-size:.85rem;
-      line-height:1.5;
-      margin-top:8px;
-    }
-
-    .btn-row{
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr;
-      gap:12px;
-      margin-top:14px;
-    }
-
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
     button{
-      border:none;
-      outline:none;
-      cursor:pointer;
-      border-radius:18px;
-      padding:14px 14px;
-      font-size:.97rem;
-      font-weight:800;
-      transition:transform .15s ease, opacity .2s ease, box-shadow .2s ease;
-      min-height:54px;
+      border:none;cursor:pointer;border-radius:16px;padding:14px;
+      font-weight:800;font-size:.96rem;color:#fff
     }
-
-    button:active{
-      transform:scale(.98);
+    .primary{background:linear-gradient(135deg,var(--primary),var(--primary2))}
+    .success{background:linear-gradient(135deg,#16a34a,#19c37d)}
+    .secondary{background:rgba(255,255,255,.06);border:1px solid var(--line)}
+    .danger{background:linear-gradient(135deg,#dc2626,#ef4444)}
+    .status{
+      margin-top:14px;padding:14px;border-radius:16px;
+      border:1px solid var(--line);background:rgba(255,255,255,.04);line-height:1.55
     }
-
-    button:disabled{
-      opacity:.65;
-      cursor:not-allowed;
+    .good{border-color:rgba(25,195,125,.28);background:rgba(25,195,125,.10)}
+    .bad{border-color:rgba(239,68,68,.28);background:rgba(239,68,68,.10)}
+    .info{border-color:rgba(29,155,240,.28);background:rgba(29,155,240,.10)}
+    .mono{
+      margin-top:12px;background:rgba(0,0,0,.22);border:1px solid var(--line);
+      border-radius:14px;padding:12px;white-space:pre-wrap;word-break:break-word;
+      font-family:monospace;font-size:.82rem;max-height:320px;overflow:auto
     }
-
-    .btn-primary{
-      color:#fff;
-      background:linear-gradient(135deg, var(--primary), var(--primary2));
-      box-shadow:0 14px 30px rgba(29,155,240,.22);
-    }
-
-    .btn-secondary{
-      color:#fff;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-    }
-
-    .btn-success{
-      color:#fff;
-      background:linear-gradient(135deg,#16a34a,#19c37d);
-      box-shadow:0 14px 30px rgba(25,195,125,.22);
-    }
-
-    .feedback{
-      display:none;
-      margin-top:16px;
-      padding:15px 16px;
-      border-radius:18px;
-      line-height:1.6;
-      font-size:.94rem;
-      word-break:break-word;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-    }
-
-    .feedback.success{
-      display:block;
-      color:#d8fff0;
-      border-color:rgba(25,195,125,.25);
-      background:rgba(25,195,125,.10);
-    }
-
-    .feedback.error{
-      display:block;
-      color:#ffe2e2;
-      border-color:rgba(239,68,68,.28);
-      background:rgba(239,68,68,.10);
-    }
-
-    .feedback.info{
-      display:block;
-      color:#d8ebff;
-      border-color:rgba(29,155,240,.25);
-      background:rgba(29,155,240,.10);
-    }
-
-    .loading{
-      display:none;
-      align-items:center;
-      gap:10px;
-      margin-top:14px;
-      color:var(--muted);
-      font-size:.92rem;
-    }
-
-    .spinner{
-      width:18px;
-      height:18px;
-      border:2px solid rgba(255,255,255,.18);
-      border-top-color:#fff;
-      border-radius:50%;
-      animation:spin .8s linear infinite;
-    }
-
-    @keyframes spin{
-      to{ transform:rotate(360deg); }
-    }
-
-    .tip-list{
-      display:grid;
-      gap:12px;
-    }
-
-    .tip{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      border-radius:18px;
-      padding:14px;
-    }
-
-    .tip strong{
-      display:block;
-      margin-bottom:6px;
-      font-size:.95rem;
-    }
-
-    .tip p{
-      color:var(--muted);
-      line-height:1.55;
-      font-size:.9rem;
-    }
-
-    .result-block{
-      margin-top:12px;
-      padding:12px;
-      border-radius:14px;
-      background:rgba(0,0,0,.20);
-      font-family:monospace;
-      font-size:.82rem;
-      white-space:pre-wrap;
-      word-break:break-word;
-      overflow:auto;
-      max-height:240px;
-    }
-
-    .footer-note{
-      margin-top:16px;
-      color:var(--muted);
-      font-size:.82rem;
-      line-height:1.5;
-    }
-
-    @media (max-width: 860px){
-      .grid{
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (max-width: 560px){
-      body{
-        padding:14px 12px calc(100px + var(--safe-bottom));
-      }
-
-      .hero,
-      .card{
-        border-radius:24px;
-      }
-
-      .btn-row{
-        grid-template-columns:1fr;
-      }
-
-      .topbar{
-        align-items:flex-start;
-      }
-
-      .brand h1{
-        font-size:1.08rem;
-      }
-
-      .brand p{
-        font-size:.9rem;
-      }
-
-      textarea{
-        min-height:150px;
-      }
+    .small{font-size:.88rem;color:var(--muted)}
+    @media (max-width:640px){
+      .row,.row3{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="topbar">
-      <div class="logo">𝕏</div>
-      <div class="brand">
-        <h1>View × X Post</h1>
-        <p>Responsive posting page with active buttons, visible feedback, and live diagnostics.</p>
-      </div>
+    <div class="card">
+      <h1>X Post Diagnostic</h1>
+      <p>This page tests your session, your connected X account, function reachability, and actual posting.</p>
     </div>
 
-    <section class="hero">
-      <h2>Post directly to X</h2>
-      <p>
-        This page checks your View login, confirms your connected X account, then sends your post to the
-        <strong>x-post</strong> edge function using your live session token.
-      </p>
-    </section>
+    <div class="card">
+      <label for="postText" class="small">Post text</label>
+      <textarea id="postText" maxlength="280">Hello from View app 🚀</textarea>
 
-    <div class="grid">
-      <section class="card">
-        <h3 class="section-title">Create post</h3>
+      <div class="row3">
+        <button class="secondary" id="btnSession">Check Session</button>
+        <button class="secondary" id="btnAccount">Check X Account</button>
+        <button class="secondary" id="btnReach">Test Function Reach</button>
+      </div>
 
-        <div class="status">
-          <div class="status-dot" id="statusDot"></div>
-          <div class="status-text" id="statusText">Loading page state...</div>
-        </div>
+      <div class="row">
+        <button class="success" id="btnDemo">Use Demo Text</button>
+        <button class="primary" id="btnPost">Post to X</button>
+      </div>
 
-        <div class="connected-box" id="connectedBox">
-          <div class="connected-title" id="connectedTitle">Connected X account</div>
-          <div class="connected-sub" id="connectedSub">@username</div>
-        </div>
-
-        <div class="field">
-          <div class="label-row">
-            <label for="postText">Post text</label>
-            <div class="count" id="charCount">0 / 280</div>
-          </div>
-
-          <textarea
-            id="postText"
-            maxlength="280"
-            placeholder="Write something to post on X..."
-          ></textarea>
-
-          <div class="hint">
-            Your post is sent with a signed-in View session. If something fails, the exact error will appear below.
-          </div>
-        </div>
-
-        <div class="btn-row">
-          <button class="btn-primary" id="postBtn" type="button">Post to X</button>
-          <button class="btn-secondary" id="checkBtn" type="button">Check Connection</button>
-          <button class="btn-success" id="demoBtn" type="button">Use Demo Text</button>
-        </div>
-
-        <div class="loading" id="loadingBox">
-          <div class="spinner"></div>
-          <span id="loadingText">Working...</span>
-        </div>
-
-        <div class="feedback" id="feedbackBox"></div>
-
-        <div class="footer-note">
-          Buttons are wired with click listeners and also show loading state, success messages, and detailed error responses.
-        </div>
-      </section>
-
-      <section class="card">
-        <h3 class="section-title">Live diagnostics</h3>
-
-        <div class="tip-list">
-          <div class="tip">
-            <strong>Connection status</strong>
-            <p id="diagSession">Checking session...</p>
-          </div>
-
-          <div class="tip">
-            <strong>Connected account</strong>
-            <p id="diagAccount">Checking X account...</p>
-          </div>
-
-          <div class="tip">
-            <strong>Last response</strong>
-            <div class="result-block" id="lastResponse">No response yet.</div>
-          </div>
-        </div>
-      </section>
+      <div id="status" class="status info">Ready.</div>
+      <div id="output" class="mono">No output yet.</div>
     </div>
   </div>
 
@@ -528,279 +107,195 @@
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
     const X_POST_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/x-post";
-
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const statusDot = document.getElementById("statusDot");
-    const statusText = document.getElementById("statusText");
-    const connectedBox = document.getElementById("connectedBox");
-    const connectedTitle = document.getElementById("connectedTitle");
-    const connectedSub = document.getElementById("connectedSub");
+    const statusBox = document.getElementById("status");
+    const outputBox = document.getElementById("output");
     const postText = document.getElementById("postText");
-    const charCount = document.getElementById("charCount");
-    const feedbackBox = document.getElementById("feedbackBox");
-    const loadingBox = document.getElementById("loadingBox");
-    const loadingText = document.getElementById("loadingText");
-    const lastResponse = document.getElementById("lastResponse");
-    const diagSession = document.getElementById("diagSession");
-    const diagAccount = document.getElementById("diagAccount");
-
-    const postBtn = document.getElementById("postBtn");
-    const checkBtn = document.getElementById("checkBtn");
-    const demoBtn = document.getElementById("demoBtn");
-
-    let currentUser = null;
-    let currentAccount = null;
 
     function setStatus(type, text) {
-      statusText.textContent = text;
-      statusDot.className = "status-dot";
-      if (type === "good") statusDot.classList.add("good");
-      if (type === "bad") statusDot.classList.add("bad");
+      statusBox.className = "status " + type;
+      statusBox.textContent = text;
     }
 
-    function showFeedback(type, html) {
-      feedbackBox.className = "feedback " + type;
-      feedbackBox.innerHTML = html;
-    }
-
-    function hideFeedback() {
-      feedbackBox.className = "feedback";
-      feedbackBox.innerHTML = "";
-    }
-
-    function setLoading(isLoading, text = "Working...") {
-      loadingBox.style.display = isLoading ? "flex" : "none";
-      loadingText.textContent = text;
-      postBtn.disabled = isLoading;
-      checkBtn.disabled = isLoading;
-      demoBtn.disabled = isLoading;
-    }
-
-    function updateCount() {
-      charCount.textContent = `${postText.value.length} / 280`;
-    }
-
-    function safeJsonStringify(value) {
+    function setOutput(value) {
       try {
-        return JSON.stringify(value, null, 2);
-      } catch (e) {
-        return String(value);
+        outputBox.textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+      } catch {
+        outputBox.textContent = String(value);
       }
-    }
-
-    function setLastResponse(value) {
-      lastResponse.textContent = typeof value === "string" ? value : safeJsonStringify(value);
     }
 
     async function getSession() {
       const { data, error } = await supabaseClient.auth.getSession();
-      if (error) throw error;
-      return data.session || null;
+      return { session: data?.session || null, error };
     }
 
-    async function getUser() {
-      const { data, error } = await supabaseClient.auth.getUser();
-      if (error) throw error;
-      return data.user || null;
+    async function checkSession() {
+      setStatus("info", "Checking session...");
+      const { session, error } = await getSession();
+
+      if (error) {
+        setStatus("bad", "Session check failed.");
+        setOutput(error);
+        return null;
+      }
+
+      if (!session) {
+        setStatus("bad", "No active View session.");
+        setOutput("No session found. Log in to View first.");
+        return null;
+      }
+
+      setStatus("good", "View session found.");
+      setOutput({
+        user_id: session.user?.id,
+        email: session.user?.email || null,
+        has_access_token: !!session.access_token,
+        access_token_preview: session.access_token ? session.access_token.slice(0, 30) + "..." : null
+      });
+      return session;
     }
 
-    async function getConnectedAccount(userId) {
-      const { data, error } = await supabaseClient
-        .from("connected_accounts")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("platform", "x")
-        .maybeSingle();
+    async function checkAccount() {
+      setStatus("info", "Checking connected X account...");
+      const { session, error } = await getSession();
 
-      if (error) throw error;
-      return data;
-    }
-
-    function renderConnectedAccount(account) {
-      if (!account) {
-        connectedBox.style.display = "none";
+      if (error || !session) {
+        setStatus("bad", "No active session for account lookup.");
+        setOutput(error || "No session");
         return;
       }
 
-      connectedBox.style.display = "block";
-      connectedTitle.textContent = account.account_name || "Connected X account";
-      connectedSub.textContent = account.account_handle
-        ? `@${account.account_handle}`
-        : "Handle not available";
-    }
+      const { data, error: dbError } = await supabaseClient
+        .from("connected_accounts")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .eq("platform", "x")
+        .maybeSingle();
 
-    async function checkConnection() {
-      hideFeedback();
-      setLoading(true, "Checking connection...");
-
-      try {
-        const session = await getSession();
-        currentUser = await getUser();
-
-        if (!session || !currentUser) {
-          setStatus("bad", "No active View session. Please log in first.");
-          diagSession.textContent = "No active session found.";
-          diagAccount.textContent = "Cannot check account without login.";
-          renderConnectedAccount(null);
-          showFeedback("error", "You are not logged in to View.");
-          setLastResponse("No active session.");
-          return;
-        }
-
-        diagSession.textContent = `Logged in user: ${currentUser.email || currentUser.id}`;
-
-        currentAccount = await getConnectedAccount(currentUser.id);
-
-        if (!currentAccount) {
-          setStatus("bad", "No connected X account found.");
-          diagAccount.textContent = "No X account row found in connected_accounts.";
-          renderConnectedAccount(null);
-          showFeedback("error", "Your X account is not connected yet.");
-          setLastResponse("No connected X account.");
-          return;
-        }
-
-        setStatus("good", "X account ready for posting.");
-        diagAccount.textContent = `Connected handle: ${currentAccount.account_handle || "unknown"} | Status: ${currentAccount.status || "connected"}`;
-        renderConnectedAccount(currentAccount);
-        showFeedback("success", "X account connected successfully and ready.");
-        setLastResponse(currentAccount);
-      } catch (err) {
-        console.error(err);
-        setStatus("bad", "Failed to check connection.");
-        diagSession.textContent = "Connection check failed.";
-        diagAccount.textContent = "Connection check failed.";
-        showFeedback("error", `Connection check failed: ${escapeHtml(err.message || "Unknown error")}`);
-        setLastResponse(err.message || "Unknown error");
-      } finally {
-        setLoading(false);
+      if (dbError) {
+        setStatus("bad", "Database lookup failed.");
+        setOutput(dbError);
+        return;
       }
+
+      if (!data) {
+        setStatus("bad", "No X account row found.");
+        setOutput("No row in connected_accounts for this user and platform=x");
+        return;
+      }
+
+      setStatus("good", "Connected X account found.");
+      setOutput(data);
     }
 
-    async function postToX() {
-      hideFeedback();
-      setLoading(true, "Sending post to X...");
+    async function testReachability() {
+      setStatus("info", "Testing function reachability...");
+      const { session, error } = await getSession();
+
+      if (error || !session) {
+        setStatus("bad", "No active session for function test.");
+        setOutput(error || "No session");
+        return;
+      }
 
       try {
-        const text = postText.value.trim();
-
-        if (!text) {
-          showFeedback("error", "Please enter text before posting.");
-          setLastResponse("Attempt blocked: empty text.");
-          return;
-        }
-
-        if (text.length > 280) {
-          showFeedback("error", "Your post is above 280 characters.");
-          setLastResponse("Attempt blocked: text length > 280.");
-          return;
-        }
-
-        const session = await getSession();
-        if (!session) {
-          setStatus("bad", "No active View session.");
-          showFeedback("error", "You are not logged in. Please log in again.");
-          setLastResponse("No session returned from Supabase.");
-          return;
-        }
-
-        const jwt = session.access_token;
-        if (!jwt) {
-          showFeedback("error", "Session found, but JWT is missing.");
-          setLastResponse("Session missing access_token.");
-          return;
-        }
-
         const res = await fetch(X_POST_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${jwt}`
+            "Authorization": `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ text: "diagnostic ping" })
+        });
+
+        const raw = await res.text();
+        let parsed;
+        try { parsed = raw ? JSON.parse(raw) : {}; } catch { parsed = raw; }
+
+        setOutput({
+          http_status: res.status,
+          response: parsed
+        });
+
+        if (!res.ok) {
+          setStatus("bad", "Function reached, but request failed.");
+        } else {
+          setStatus("good", "Function reached successfully.");
+        }
+      } catch (err) {
+        setStatus("bad", "Browser could not fetch x-post at all.");
+        setOutput({
+          error: err.message || String(err),
+          hint: "This usually means CORS/preflight blocking, wrong function deployment, or Verify JWT still ON."
+        });
+      }
+    }
+
+    async function postToX() {
+      setStatus("info", "Posting to X...");
+      const { session, error } = await getSession();
+
+      if (error || !session) {
+        setStatus("bad", "No active session for posting.");
+        setOutput(error || "No session");
+        return;
+      }
+
+      const text = postText.value.trim();
+      if (!text) {
+        setStatus("bad", "Enter text first.");
+        setOutput("Textarea is empty.");
+        return;
+      }
+
+      try {
+        const res = await fetch(X_POST_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`
           },
           body: JSON.stringify({ text })
         });
 
         const raw = await res.text();
-        let json;
+        let parsed;
+        try { parsed = raw ? JSON.parse(raw) : {}; } catch { parsed = raw; }
 
-        try {
-          json = raw ? JSON.parse(raw) : {};
-        } catch (e) {
-          json = { raw };
-        }
-
-        setLastResponse({
+        setOutput({
           http_status: res.status,
-          response: json
+          response: parsed
         });
 
         if (!res.ok) {
-          const message =
-            json?.error ||
-            json?.message ||
-            json?.x_response?.detail ||
-            "Failed to post to X";
-
-          const details = json?.x_response
-            ? `<div class="result-block">${escapeHtml(safeJsonStringify(json.x_response))}</div>`
-            : "";
-
-          showFeedback(
-            "error",
-            `<strong>Post failed:</strong> ${escapeHtml(message)}${details}`
-          );
+          setStatus("bad", "Post request failed.");
           return;
         }
 
-        showFeedback(
-          "success",
-          `<strong>Posted successfully.</strong><br><br>
-           Tweet ID: ${escapeHtml(json?.data?.id || "Not returned")}`
-        );
-
-        postText.value = "";
-        updateCount();
+        setStatus("good", "Posted successfully.");
       } catch (err) {
-        console.error(err);
-        showFeedback("error", `Request failed: ${escapeHtml(err.message || "Unknown error")}`);
-        setLastResponse(err.message || "Unknown error");
-      } finally {
-        setLoading(false, "Working...");
+        setStatus("bad", "Browser-level fetch failure.");
+        setOutput({
+          error: err.message || String(err),
+          hint: "If this still says Failed to fetch, x-post is still blocked before response reaches browser."
+        });
       }
     }
 
-    function escapeHtml(str = "") {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    postText.addEventListener("input", updateCount);
-
-    postBtn.addEventListener("click", () => {
-      console.log("Post button clicked");
-      postToX();
-    });
-
-    checkBtn.addEventListener("click", () => {
-      console.log("Check button clicked");
-      checkConnection();
-    });
-
-    demoBtn.addEventListener("click", () => {
+    document.getElementById("btnSession").addEventListener("click", checkSession);
+    document.getElementById("btnAccount").addEventListener("click", checkAccount);
+    document.getElementById("btnReach").addEventListener("click", testReachability);
+    document.getElementById("btnDemo").addEventListener("click", () => {
       postText.value = "Hello from View app 🚀";
-      updateCount();
-      showFeedback("info", "Demo text inserted.");
-      setLastResponse("Demo text added to textarea.");
+      setStatus("info", "Demo text inserted.");
+      setOutput("Demo text inserted into textarea.");
     });
+    document.getElementById("btnPost").addEventListener("click", postToX);
 
     window.addEventListener("load", async () => {
-      updateCount();
-      await checkConnection();
+      await checkSession();
     });
   </script>
 </body>
