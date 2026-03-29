@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+const { createClient } = require("@supabase/supabase-js");
 
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -6,7 +6,7 @@ function setCors(res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   setCors(res);
 
   if (req.method === "OPTIONS") {
@@ -17,19 +17,10 @@ export default async function handler(req, res) {
     const SUPABASE_URL = process.env.SUPABASE_URL_VALUE;
     const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
-    if (!SUPABASE_URL) {
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
       return res.status(500).json({
         ok: false,
-        step: "env",
-        error: "Missing SUPABASE_URL_VALUE"
-      });
-    }
-
-    if (!SUPABASE_KEY) {
-      return res.status(500).json({
-        ok: false,
-        step: "env",
-        error: "Missing SUPABASE_SERVICE_KEY"
+        error: "Missing Supabase env variables"
       });
     }
 
@@ -37,27 +28,26 @@ export default async function handler(req, res) {
 
     const { data, error } = await supabase
       .from("post_publish_jobs")
-      .select("id, status, platform, created_at")
+      .select("*")
       .limit(5);
 
     if (error) {
       return res.status(500).json({
         ok: false,
-        step: "query",
         error: error.message
       });
     }
 
     return res.status(200).json({
       ok: true,
-      message: "Worker test passed",
-      rows: data || []
+      message: "Function working",
+      jobs: data
     });
-  } catch (error) {
+
+  } catch (err) {
     return res.status(500).json({
       ok: false,
-      step: "catch",
-      error: error.message || "Unknown error"
+      error: err.message
     });
   }
-}
+};
