@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Connected Accounts | View</title>
+  <title>Connect Accounts | View</title>
   <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -56,7 +56,7 @@
     }
 
     .wrap{
-      width:min(100%, 860px);
+      width:min(100%, 840px);
       margin:0 auto;
     }
 
@@ -126,34 +126,12 @@
       text-overflow:ellipsis;
     }
 
-    .stats-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
-      margin-bottom:16px;
-    }
-
-    .stat-card,
     .section-card{
       background:var(--card);
       border:1px solid var(--line);
-      border-radius:20px;
+      border-radius:22px;
       box-shadow:var(--shadow);
-    }
-
-    .stat-card{
-      padding:14px;
-    }
-
-    .stat-label{
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:8px;
-    }
-
-    .stat-value{
-      font-size:22px;
-      font-weight:800;
+      margin-bottom:16px;
     }
 
     .section-head{
@@ -163,37 +141,11 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      flex-wrap:wrap;
     }
 
     .section-head h3{
       font-size:17px;
       font-weight:800;
-    }
-
-    .section-tools{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      min-height:40px;
-      padding:0 14px;
-      border-radius:12px;
-      font-size:13px;
-      font-weight:700;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      cursor:pointer;
-    }
-
-    .btn.primary{
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      border-color:transparent;
-      color:#fff;
     }
 
     .section-body{
@@ -220,6 +172,7 @@
       gap:12px;
       min-width:0;
       flex:1;
+      cursor:pointer;
     }
 
     .account-icon{
@@ -291,16 +244,10 @@
       color:#d1fae5;
     }
 
-    .status-expired{
+    .status-disconnected{
       background:rgba(245,158,11,.12);
       border-color:rgba(245,158,11,.22);
       color:#fde68a;
-    }
-
-    .status-disconnected{
-      background:rgba(239,68,68,.12);
-      border-color:rgba(239,68,68,.24);
-      color:#fecaca;
     }
 
     .go-btn,.more-btn{
@@ -324,7 +271,7 @@
       position:absolute;
       right:0;
       top:46px;
-      min-width:180px;
+      min-width:170px;
       display:none;
       background:#0f1a30;
       border:1px solid var(--line);
@@ -355,16 +302,6 @@
 
     .danger-text{
       color:#fecaca;
-    }
-
-    .empty-box{
-      padding:14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.04);
-      border:1px solid var(--line);
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.6;
     }
 
     .bottom-nav{
@@ -403,21 +340,10 @@
       color:#fff;
     }
 
-    @media (max-width:760px){
-      .stats-grid{
-        grid-template-columns:1fr 1fr 1fr;
-      }
-    }
-
     @media (max-width:560px){
-      .stats-grid{
-        grid-template-columns:1fr;
-      }
-
       .account-card{
         align-items:flex-start;
       }
-
       .account-right{
         align-self:center;
       }
@@ -432,67 +358,28 @@
       <div class="top-left">
         <button class="icon-btn" onclick="history.back()" title="Back">←</button>
         <div class="title-box">
-          <div class="title">Connected Accounts</div>
-          <div class="sub">Manage platform access</div>
+          <div class="title">Connect Accounts</div>
+          <div class="sub">Platforms</div>
         </div>
       </div>
 
       <button class="icon-btn" id="refreshBtn" title="Refresh">↻</button>
     </header>
 
-    <section class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Connected</div>
-        <div class="stat-value" id="statConnected">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Expired</div>
-        <div class="stat-value" id="statExpired">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Available</div>
-        <div class="stat-value" id="statAvailable">6</div>
-      </div>
-    </section>
-
     <section class="section-card">
       <div class="section-head">
-        <h3>Accounts</h3>
-        <div class="section-tools">
-          <a class="btn" href="connect-account.html">Add</a>
-          <a class="btn primary" href="create-post.html">Create Post</a>
-        </div>
+        <h3>Platforms</h3>
       </div>
-
       <div class="section-body" id="accountsList"></div>
     </section>
   </div>
 
   <nav class="bottom-nav">
-    <a class="nav-btn" href="home.html">
-      <span>🏠</span>
-      <span>Home</span>
-    </a>
-
-    <a class="nav-btn" href="explore.html">
-      <span>🔎</span>
-      <span>Explore</span>
-    </a>
-
-    <a class="nav-btn" href="dashboard.html">
-      <span>◫</span>
-      <span>Dashboard</span>
-    </a>
-
-    <a class="nav-btn active" href="connected-accounts.html">
-      <span>🔗</span>
-      <span>Accounts</span>
-    </a>
-
-    <a class="nav-btn" href="settings.html">
-      <span>⚙️</span>
-      <span>Settings</span>
-    </a>
+    <a class="nav-btn" href="home.html"><span>🏠</span><span>Home</span></a>
+    <a class="nav-btn" href="explore.html"><span>🔎</span><span>Explore</span></a>
+    <a class="nav-btn" href="create-post.html"><span>➕</span><span>Create</span></a>
+    <a class="nav-btn" href="profile.html"><span>👤</span><span>Profile</span></a>
+    <a class="nav-btn active" href="connect-account.html"><span>🔗</span><span>Connect</span></a>
   </nav>
 
   <script>
@@ -509,10 +396,8 @@
     });
 
     const noticeBox = document.getElementById("notice");
-    const refreshBtn = document.getElementById("refreshBtn");
     const accountsList = document.getElementById("accountsList");
-    const statConnected = document.getElementById("statConnected");
-    const statExpired = document.getElementById("statExpired");
+    const refreshBtn = document.getElementById("refreshBtn");
 
     let currentUserId = "";
     let connectionMap = {};
@@ -536,15 +421,6 @@
       }, 2400);
     }
 
-    function escapeHtml(value) {
-      return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
     function closeAllMenus() {
       document.querySelectorAll(".more-menu").forEach(menu => menu.classList.remove("show"));
     }
@@ -559,30 +435,50 @@
       return connectionMap[platform] || null;
     }
 
-    function getStatusHtml(conn) {
-      if (!conn) return `<span class="status-badge status-disconnected">Not Connected</span>`;
-      if (conn.is_connected && conn.token_expires_at && new Date(conn.token_expires_at) < new Date()) {
-        return `<span class="status-badge status-expired">Expired</span>`;
+    function getStatusBadge(conn) {
+      if (!conn || conn.status !== "connected") {
+        return `<span class="status-badge status-disconnected">Not Connected</span>`;
       }
       return `<span class="status-badge status-connected">Connected</span>`;
     }
 
     function getSubText(item, conn) {
       if (!conn) return item.name;
-      return conn.account_name || conn.account_handle || conn.account_email || "Connected";
+      return conn.account_name || conn.account_handle || conn.external_user_id || "Connected";
     }
 
-    function countExpired() {
-      return Object.values(connectionMap).filter(conn =>
-        conn?.is_connected &&
-        conn?.token_expires_at &&
-        new Date(conn.token_expires_at) < new Date()
-      ).length;
+    function openConnectPage(path) {
+      window.location.href = path;
     }
 
-    function renderStats() {
-      statConnected.textContent = Object.keys(connectionMap).length;
-      statExpired.textContent = countExpired();
+    async function disconnectPlatform(platform) {
+      closeAllMenus();
+
+      try {
+        const { error } = await supabaseClient
+          .from("connected_accounts")
+          .update({
+            status: "disconnected",
+            access_token: null,
+            refresh_token: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", currentUserId)
+          .eq("platform", platform);
+
+        if (error) throw error;
+
+        delete connectionMap[platform];
+        renderAccounts();
+        showNotice("Account disconnected.", "success");
+      } catch (error) {
+        showNotice(error.message || "Could not disconnect account.", "error");
+      }
+    }
+
+    function reconnectPlatform(path) {
+      closeAllMenus();
+      openConnectPage(path);
     }
 
     function renderAccounts() {
@@ -595,13 +491,13 @@
             <div class="account-left" onclick="openConnectPage('${item.path}')">
               <div class="account-icon ${item.iconClass}">${item.icon}</div>
               <div class="account-meta">
-                <div class="account-name">${escapeHtml(item.name)}</div>
-                <div class="account-sub">${escapeHtml(subText)}</div>
+                <div class="account-name">${item.name}</div>
+                <div class="account-sub">${subText}</div>
               </div>
             </div>
 
             <div class="account-right">
-              ${getStatusHtml(conn)}
+              ${getStatusBadge(conn)}
               <button class="go-btn" onclick="openConnectPage('${item.path}')" title="Open">›</button>
               <div class="more-wrap">
                 <button class="more-btn" onclick="event.stopPropagation(); toggleMenu('${item.key}')" title="More">⋯</button>
@@ -615,65 +511,25 @@
           </div>
         `;
       }).join("");
-
-      if (!PLATFORMS.length) {
-        accountsList.innerHTML = `<div class="empty-box">No platforms available.</div>`;
-      }
-    }
-
-    function openConnectPage(path) {
-      window.location.href = path;
-    }
-
-    function reconnectPlatform(path) {
-      closeAllMenus();
-      openConnectPage(path);
-    }
-
-    async function disconnectPlatform(platform) {
-      closeAllMenus();
-
-      try {
-        const { error } = await supabaseClient
-          .from("connected_accounts")
-          .update({
-            is_connected: false,
-            updated_at: new Date().toISOString()
-          })
-          .eq("user_id", currentUserId)
-          .eq("platform", platform);
-
-        if (error) throw error;
-
-        delete connectionMap[platform];
-        renderAccounts();
-        renderStats();
-        showNotice("Account disconnected.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not disconnect account.", "error");
-      }
     }
 
     async function loadConnections() {
       try {
         const { data, error } = await supabaseClient
           .from("connected_accounts")
-          .select("id, platform, account_name, account_email, account_handle, is_connected, token_expires_at")
-          .eq("user_id", currentUserId)
-          .eq("is_connected", true);
+          .select("id, user_id, platform, account_name, account_handle, status, access_token, refresh_token, token_expires_at, external_user_id, external_page_id")
+          .eq("user_id", currentUserId);
 
         if (error) throw error;
 
         connectionMap = {};
         (data || []).forEach(row => {
-          connectionMap[row.platform] = row;
+          if (row.status === "connected") connectionMap[row.platform] = row;
         });
 
         renderAccounts();
-        renderStats();
       } catch (error) {
         renderAccounts();
-        renderStats();
         showNotice(error.message || "Could not load accounts.", "error");
       }
     }
@@ -685,23 +541,19 @@
 
         const user = data.user;
         if (!user) {
-          window.location.href = "login.html?next=connected-accounts.html";
+          window.location.href = "login.html?next=connect-account.html";
           return;
         }
 
         currentUserId = user.id;
         renderAccounts();
-        renderStats();
         await loadConnections();
       } catch (error) {
         showNotice(error.message || "Could not load page.", "error");
       }
     }
 
-    refreshBtn.addEventListener("click", async () => {
-      await loadConnections();
-      showNotice("Accounts updated.", "success");
-    });
+    refreshBtn.addEventListener("click", loadConnections);
 
     document.addEventListener("click", (e) => {
       if (!e.target.closest(".more-wrap")) closeAllMenus();
