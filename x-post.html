@@ -265,6 +265,12 @@
       margin-bottom:6px;
     }
 
+    code{
+      background:rgba(255,255,255,.06);
+      padding:2px 6px;
+      border-radius:8px;
+    }
+
     a{
       color:#8ec5ff;
     }
@@ -290,7 +296,7 @@
       <h2>Publish to X</h2>
       <p>
         This page checks your View session, confirms your X account is connected, and sends your
-        post text to the <strong>x-post</strong> edge function.
+        post text to the <strong>x-post</strong> edge function with your logged-in JWT.
       </p>
     </section>
 
@@ -337,7 +343,8 @@
 
           <div class="tip">
             <strong>If posting fails</strong>
-            Most common causes are missing write permission in your X app or an expired token.
+            Most common causes are missing write permission in your X app, expired token, or your
+            edge function not receiving the user JWT.
           </div>
 
           <div class="tip">
@@ -479,11 +486,13 @@
           return;
         }
 
-        const { data: sessionData } = await supabaseClient.auth.getSession();
+        const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError) throw sessionError;
+
         const jwt = sessionData?.session?.access_token;
 
         if (!jwt) {
-          showResult("No active View session found.", true);
+          showResult("No active View session found. Please login again.", true);
           return;
         }
 
@@ -499,7 +508,13 @@
           body: JSON.stringify({ text })
         });
 
-        const json = await res.json();
+        const raw = await res.text();
+        let json = {};
+        try {
+          json = raw ? JSON.parse(raw) : {};
+        } catch {
+          json = { error: raw || "Invalid server response" };
+        }
 
         if (!res.ok) {
           throw new Error(json.error || "Failed to post to X");
