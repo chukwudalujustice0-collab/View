@@ -220,6 +220,7 @@
       gap:12px;
       min-width:0;
       flex:1;
+      cursor:pointer;
     }
 
     .account-icon{
@@ -357,16 +358,6 @@
       color:#fecaca;
     }
 
-    .empty-box{
-      padding:14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.04);
-      border:1px solid var(--line);
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.6;
-    }
-
     .bottom-nav{
       position:fixed;
       left:50%;
@@ -413,11 +404,9 @@
       .stats-grid{
         grid-template-columns:1fr;
       }
-
       .account-card{
         align-items:flex-start;
       }
-
       .account-right{
         align-self:center;
       }
@@ -469,30 +458,11 @@
   </div>
 
   <nav class="bottom-nav">
-    <a class="nav-btn" href="home.html">
-      <span>🏠</span>
-      <span>Home</span>
-    </a>
-
-    <a class="nav-btn" href="explore.html">
-      <span>🔎</span>
-      <span>Explore</span>
-    </a>
-
-    <a class="nav-btn" href="dashboard.html">
-      <span>◫</span>
-      <span>Dashboard</span>
-    </a>
-
-    <a class="nav-btn active" href="connected-accounts.html">
-      <span>🔗</span>
-      <span>Accounts</span>
-    </a>
-
-    <a class="nav-btn" href="settings.html">
-      <span>⚙️</span>
-      <span>Settings</span>
-    </a>
+    <a class="nav-btn" href="home.html"><span>🏠</span><span>Home</span></a>
+    <a class="nav-btn" href="explore.html"><span>🔎</span><span>Explore</span></a>
+    <a class="nav-btn" href="dashboard.html"><span>◫</span><span>Dashboard</span></a>
+    <a class="nav-btn active" href="connected-accounts.html"><span>🔗</span><span>Accounts</span></a>
+    <a class="nav-btn" href="settings.html"><span>⚙️</span><span>Settings</span></a>
   </nav>
 
   <script>
@@ -536,15 +506,6 @@
       }, 2400);
     }
 
-    function escapeHtml(value) {
-      return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
     function closeAllMenus() {
       document.querySelectorAll(".more-menu").forEach(menu => menu.classList.remove("show"));
     }
@@ -560,21 +521,25 @@
     }
 
     function getStatusHtml(conn) {
-      if (!conn) return `<span class="status-badge status-disconnected">Not Connected</span>`;
-      if (conn.is_connected && conn.token_expires_at && new Date(conn.token_expires_at) < new Date()) {
+      if (!conn || conn.status !== "connected") {
+        return `<span class="status-badge status-disconnected">Not Connected</span>`;
+      }
+
+      if (conn.token_expires_at && new Date(conn.token_expires_at) < new Date()) {
         return `<span class="status-badge status-expired">Expired</span>`;
       }
+
       return `<span class="status-badge status-connected">Connected</span>`;
     }
 
     function getSubText(item, conn) {
       if (!conn) return item.name;
-      return conn.account_name || conn.account_handle || conn.account_email || "Connected";
+      return conn.account_name || conn.account_handle || conn.external_user_id || "Connected";
     }
 
     function countExpired() {
       return Object.values(connectionMap).filter(conn =>
-        conn?.is_connected &&
+        conn?.status === "connected" &&
         conn?.token_expires_at &&
         new Date(conn.token_expires_at) < new Date()
       ).length;
@@ -583,42 +548,6 @@
     function renderStats() {
       statConnected.textContent = Object.keys(connectionMap).length;
       statExpired.textContent = countExpired();
-    }
-
-    function renderAccounts() {
-      accountsList.innerHTML = PLATFORMS.map(item => {
-        const conn = getConnection(item.key);
-        const subText = getSubText(item, conn);
-
-        return `
-          <div class="account-card" data-platform="${item.key}">
-            <div class="account-left" onclick="openConnectPage('${item.path}')">
-              <div class="account-icon ${item.iconClass}">${item.icon}</div>
-              <div class="account-meta">
-                <div class="account-name">${escapeHtml(item.name)}</div>
-                <div class="account-sub">${escapeHtml(subText)}</div>
-              </div>
-            </div>
-
-            <div class="account-right">
-              ${getStatusHtml(conn)}
-              <button class="go-btn" onclick="openConnectPage('${item.path}')" title="Open">›</button>
-              <div class="more-wrap">
-                <button class="more-btn" onclick="event.stopPropagation(); toggleMenu('${item.key}')" title="More">⋯</button>
-                <div class="more-menu" id="menu-${item.key}">
-                  <button class="more-action" onclick="openConnectPage('${item.path}')">${conn ? "Manage" : "Connect"}</button>
-                  ${conn ? `<button class="more-action" onclick="reconnectPlatform('${item.path}')">Reconnect</button>` : ""}
-                  ${conn ? `<button class="more-action danger-text" onclick="disconnectPlatform('${item.key}')">Disconnect</button>` : ""}
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      if (!PLATFORMS.length) {
-        accountsList.innerHTML = `<div class="empty-box">No platforms available.</div>`;
-      }
     }
 
     function openConnectPage(path) {
@@ -637,7 +566,9 @@
         const { error } = await supabaseClient
           .from("connected_accounts")
           .update({
-            is_connected: false,
+            status: "disconnected",
+            access_token: null,
+            refresh_token: null,
             updated_at: new Date().toISOString()
           })
           .eq("user_id", currentUserId)
@@ -654,19 +585,50 @@
       }
     }
 
+    function renderAccounts() {
+      accountsList.innerHTML = PLATFORMS.map(item => {
+        const conn = getConnection(item.key);
+        const subText = getSubText(item, conn);
+
+        return `
+          <div class="account-card" data-platform="${item.key}">
+            <div class="account-left" onclick="openConnectPage('${item.path}')">
+              <div class="account-icon ${item.iconClass}">${item.icon}</div>
+              <div class="account-meta">
+                <div class="account-name">${item.name}</div>
+                <div class="account-sub">${subText}</div>
+              </div>
+            </div>
+
+            <div class="account-right">
+              ${getStatusHtml(conn)}
+              <button class="go-btn" onclick="openConnectPage('${item.path}')" title="Open">›</button>
+              <div class="more-wrap">
+                <button class="more-btn" onclick="event.stopPropagation(); toggleMenu('${item.key}')" title="More">⋯</button>
+                <div class="more-menu" id="menu-${item.key}">
+                  <button class="more-action" onclick="openConnectPage('${item.path}')">${conn ? "Manage" : "Connect"}</button>
+                  ${conn ? `<button class="more-action" onclick="reconnectPlatform('${item.path}')">Reconnect</button>` : ""}
+                  ${conn ? `<button class="more-action danger-text" onclick="disconnectPlatform('${item.key}')">Disconnect</button>` : ""}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
     async function loadConnections() {
       try {
         const { data, error } = await supabaseClient
           .from("connected_accounts")
-          .select("id, platform, account_name, account_email, account_handle, is_connected, token_expires_at")
-          .eq("user_id", currentUserId)
-          .eq("is_connected", true);
+          .select("id, user_id, platform, account_name, account_handle, status, access_token, refresh_token, token_expires_at, external_user_id, external_page_id")
+          .eq("user_id", currentUserId);
 
         if (error) throw error;
 
         connectionMap = {};
         (data || []).forEach(row => {
-          connectionMap[row.platform] = row;
+          if (row.status === "connected") connectionMap[row.platform] = row;
         });
 
         renderAccounts();
