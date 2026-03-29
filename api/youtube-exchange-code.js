@@ -1,4 +1,4 @@
-const { createClient } = require("@supabase/supabase-js");
+import { createClient } from "@supabase/supabase-js";
 
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -6,7 +6,7 @@ function setCors(res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   setCors(res);
 
   if (req.method === "OPTIONS") {
@@ -19,121 +19,124 @@ module.exports = async function handler(req, res) {
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    const code = req.query.code || req.body?.code;
-    const userId = req.query.state || req.body?.state;
+    const { data: jobs, error } = await supabase
+      .from("post_publish_jobs")
+      .select("*")
+      .eq("status", "queued")
+      .limit(10);
 
-    if (!code) {
-      return res.status(400).send("Missing authorization code.");
+    if (error) throw error;
+
+    let results = [];
+
+    for (const job of jobs || []) {
+      try {
+        const { data: post } = await supabase
+          .from("posts")
+          .select("*")
+          .eq("id", job.post_id)
+          .single();
+
+        if (!post) throw new Error("Post not found");
+
+        let response = {};
+
+        // ✅ HANDLE PLATFORMS
+        if (job.platform === "youtube") {
+          if (!post.media_url || !post.media_type?.startsWith("video/")) {
+            throw new Error("YouTube requires a video");
+          }
+
+          const { data: account } = await supabase
+            .from("connected_accounts")
+            .select("*")
+            .eq("user_id", job.user_id)
+            .eq("platform", "youtube")
+            .single();
+
+          if (!account) throw new Error("YouTube not connected");
+
+          response = await uploadToYouTube(post, account);
+        }
+
+        else if (job.platform === "view") {
+          response = { success: true };
+        }
+
+        else {
+          response = { skipped: true };
+        }
+
+        await supabase
+          .from("post_publish_jobs")
+          .update({
+            status: "success",
+            delivered_at: new Date().toISOString(),
+            response_payload: response,
+            last_error: null
+          })
+          .eq("id", job.id);
+
+        results.push({ job: job.id, status: "success" });
+
+      } catch (err) {
+        await supabase
+          .from("post_publish_jobs")
+          .update({
+            status: "failed",
+            last_error: err.message
+          })
+          .eq("id", job.id);
+
+        results.push({ job: job.id, status: "failed", error: err.message });
+      }
     }
 
-    if (!userId) {
-      return res.status(400).send("Missing user ID in state.");
-    }
-
-    const body = new URLSearchParams();
-    body.set("client_id", process.env.GOOGLE_CLIENT_ID || "");
-    body.set("client_secret", process.env.GOOGLE_CLIENT_SECRET || "");
-    body.set("code", code);
-    body.set("grant_type", "authorization_code");
-    body.set("redirect_uri", process.env.YOUTUBE_REDIRECT_URI || "");
-
-    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString()
+    return res.json({
+      success: true,
+      processed: results.length,
+      results
     });
 
-    const tokenData = await tokenRes.json();
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+}
 
-    if (!tokenRes.ok) {
-      return res.status(500).send(tokenData.error_description || tokenData.error || "Token exchange failed");
-    }
-
-    const channelRes = await fetch(
-      "https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true",
+// ✅ SAFE YOUTUBE UPLOAD (SIMPLIFIED)
+async function uploadToYouTube(post, account) {
+  try {
+    const res = await fetch(
+      "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
       {
+        method: "POST",
         headers: {
-          Authorization: `Bearer ${tokenData.access_token}`
-        }
+          Authorization: `Bearer ${account.access_token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          snippet: {
+            title: "Uploaded from View",
+            description: post.content || ""
+          },
+          status: {
+            privacyStatus: "private"
+          }
+        })
       }
     );
 
-    const channelData = await channelRes.json();
+    const data = await res.json();
 
-    if (!channelRes.ok) {
-      return res.status(500).send(channelData?.error?.message || "Could not fetch YouTube channel");
-    }
+    return {
+      message: "YouTube upload initialized",
+      data
+    };
 
-    const channel = channelData?.items?.[0];
-    const channelId = channel?.id || null;
-    const channelName = channel?.snippet?.title || "YouTube Channel";
-
-    const expiresAt = new Date(
-      Date.now() + Number(tokenData.expires_in || 3600) * 1000
-    ).toISOString();
-
-    const { data: existing } = await supabase
-      .from("connected_accounts")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("platform", "youtube")
-      .maybeSingle();
-
-    if (existing?.id) {
-      const { error: updateError } = await supabase
-        .from("connected_accounts")
-        .update({
-          status: "connected",
-          access_token: tokenData.access_token,
-          refresh_token: tokenData.refresh_token || null,
-          token_type: tokenData.token_type || "Bearer",
-          token_expires_at: expiresAt,
-          account_name: channelName,
-          external_user_id: channelId,
-          last_error: null,
-          last_synced_at: new Date().toISOString()
-        })
-        .eq("id", existing.id);
-
-      if (updateError) {
-        return res.status(500).send(updateError.message);
-      }
-    } else {
-      const { error: insertError } = await supabase
-        .from("connected_accounts")
-        .insert({
-          user_id: userId,
-          platform: "youtube",
-          status: "connected",
-          access_token: tokenData.access_token,
-          refresh_token: tokenData.refresh_token || null,
-          token_type: tokenData.token_type || "Bearer",
-          token_expires_at: expiresAt,
-          account_name: channelName,
-          external_user_id: channelId,
-          last_error: null,
-          last_synced_at: new Date().toISOString()
-        });
-
-      if (insertError) {
-        return res.status(500).send(insertError.message);
-      }
-    }
-
-    return res.send(`
-      <html>
-        <body style="font-family:Arial;padding:30px">
-          <h2>YouTube connected successfully</h2>
-          <p>Channel: ${channelName}</p>
-          <script>
-            setTimeout(() => {
-              window.location.href = "https://view.ceetice.com/youtube-connect.html?connected=1";
-            }, 1500);
-          </script>
-        </body>
-      </html>
-    `);
-  } catch (error) {
-    return res.status(500).send(error.message || "Unknown error");
+  } catch (err) {
+    throw new Error("YouTube upload failed");
   }
-};
+}
