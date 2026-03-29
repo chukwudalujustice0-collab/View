@@ -1,91 +1,765 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-serve(async (req) => {
-
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
-  try {
-    const body = await req.json();
-    const { text } = body;
-
-    if (!text) {
-      return new Response(JSON.stringify({ error: "No text provided" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Post to X | View</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg:#06101f;
+      --bg2:#0c1930;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.05);
+      --line:rgba(255,255,255,.12);
+      --text:#f8fbff;
+      --muted:#9fb1ca;
+      --primary:#1d9bf0;
+      --primary2:#4f46e5;
+      --success:#19c37d;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+      --safe-bottom:env(safe-area-inset-bottom);
     }
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "No auth" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      -webkit-tap-highlight-color:transparent;
     }
 
-    // 🔥 GET USER TOKEN FROM YOUR DATABASE
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-    const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: { Authorization: authHeader },
-    });
-
-    const user = await userRes.json();
-
-    const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/connected_accounts?user_id=eq.${user.id}&platform=eq.x`, {
-      headers: {
-        apikey: SERVICE_ROLE,
-        Authorization: `Bearer ${SERVICE_ROLE}`,
-      },
-    });
-
-    const accounts = await dbRes.json();
-
-    if (!accounts.length) {
-      return new Response(JSON.stringify({ error: "No X account connected" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    html,body{
+      min-height:100%;
+      font-family:Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(29,155,240,.14), transparent 24%),
+        radial-gradient(circle at bottom left, rgba(79,70,229,.14), transparent 24%),
+        linear-gradient(180deg,var(--bg),var(--bg2));
     }
 
-    const account = accounts[0];
+    body{
+      padding:16px 12px calc(110px + var(--safe-bottom));
+    }
 
-    // 🚀 POST TO X API
-    const xRes = await fetch("https://api.twitter.com/2/tweets", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${account.access_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        text: text
-      }),
+    .wrap{
+      width:min(100%,780px);
+      margin:0 auto;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .logo{
+      width:56px;
+      height:56px;
+      border-radius:18px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,#0b0f19,#000);
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:var(--shadow);
+      font-size:28px;
+      font-weight:800;
+      flex:none;
+    }
+
+    .brand h1{
+      font-size:1.18rem;
+      margin-bottom:4px;
+    }
+
+    .brand p{
+      font-size:.92rem;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .hero,.card{
+      border:1px solid var(--line);
+      background:var(--card);
+      backdrop-filter:blur(14px);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+    }
+
+    .hero{
+      padding:22px;
+      margin-bottom:18px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      width:220px;
+      height:220px;
+      right:-90px;
+      bottom:-100px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.10), transparent 66%);
+      pointer-events:none;
+    }
+
+    .hero h2{
+      font-size:1.42rem;
+      margin-bottom:10px;
+    }
+
+    .hero p{
+      color:var(--muted);
+      line-height:1.6;
+      font-size:.95rem;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:18px;
+    }
+
+    .card{
+      padding:20px;
+    }
+
+    .section-title{
+      font-size:1.04rem;
+      margin-bottom:14px;
+    }
+
+    .status{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      border:1px solid var(--line);
+      background:var(--card2);
+      border-radius:18px;
+      padding:14px;
+      margin-bottom:14px;
+      min-height:62px;
+    }
+
+    .status-dot{
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      margin-top:4px;
+      background:var(--warning);
+      box-shadow:0 0 0 5px rgba(245,158,11,.14);
+      flex:none;
+    }
+
+    .status-dot.good{
+      background:var(--success);
+      box-shadow:0 0 0 5px rgba(25,195,125,.16);
+    }
+
+    .status-dot.bad{
+      background:var(--danger);
+      box-shadow:0 0 0 5px rgba(239,68,68,.16);
+    }
+
+    .status-text{
+      line-height:1.55;
+      font-size:.95rem;
+    }
+
+    .connected{
+      display:none;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      border-radius:18px;
+      padding:14px;
+      margin-bottom:14px;
+    }
+
+    .connected-title{
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    .connected-sub{
+      color:var(--muted);
+      font-size:.92rem;
+      line-height:1.5;
+      word-break:break-word;
+    }
+
+    .field{
+      margin-bottom:14px;
+    }
+
+    .field-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:8px;
+    }
+
+    label{
+      font-size:.94rem;
+      font-weight:700;
+      color:#eaf0ff;
+    }
+
+    .count{
+      font-size:.85rem;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    textarea{
+      width:100%;
+      min-height:180px;
+      resize:vertical;
+      border:none;
+      outline:none;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:16px;
+      font-size:1rem;
+      line-height:1.6;
+    }
+
+    textarea::placeholder{
+      color:#90a0ba;
+    }
+
+    .hint{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:.84rem;
+      line-height:1.5;
+    }
+
+    .btn-row{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+
+    button{
+      min-height:54px;
+      border:none;
+      border-radius:18px;
+      cursor:pointer;
+      font-size:.96rem;
+      font-weight:800;
+      color:#fff;
+      transition:transform .15s ease, opacity .2s ease;
+    }
+
+    button:active{
+      transform:scale(.98);
+    }
+
+    button:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:0 14px 30px rgba(29,155,240,.2);
+    }
+
+    .btn-secondary{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+    }
+
+    .btn-success{
+      background:linear-gradient(135deg,#16a34a,#19c37d);
+      box-shadow:0 14px 30px rgba(25,195,125,.2);
+    }
+
+    .loading{
+      display:none;
+      align-items:center;
+      gap:10px;
+      margin-top:14px;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .spinner{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      border:2px solid rgba(255,255,255,.18);
+      border-top-color:#fff;
+      animation:spin .8s linear infinite;
+    }
+
+    @keyframes spin{
+      to{transform:rotate(360deg)}
+    }
+
+    .feedback{
+      display:none;
+      margin-top:16px;
+      padding:15px 16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      line-height:1.6;
+      font-size:.94rem;
+      word-break:break-word;
+    }
+
+    .feedback.success{
+      display:block;
+      color:#e1fff2;
+      background:rgba(25,195,125,.10);
+      border-color:rgba(25,195,125,.26);
+    }
+
+    .feedback.error{
+      display:block;
+      color:#ffe1e1;
+      background:rgba(239,68,68,.10);
+      border-color:rgba(239,68,68,.26);
+    }
+
+    .feedback.info{
+      display:block;
+      color:#ddebff;
+      background:rgba(29,155,240,.10);
+      border-color:rgba(29,155,240,.26);
+    }
+
+    .tip-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .tip{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      border-radius:18px;
+      padding:14px;
+    }
+
+    .tip strong{
+      display:block;
+      margin-bottom:6px;
+      font-size:.95rem;
+    }
+
+    .tip p{
+      color:var(--muted);
+      line-height:1.55;
+      font-size:.9rem;
+    }
+
+    .result{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      background:rgba(0,0,0,.20);
+      border:1px solid var(--line);
+      font-family:monospace;
+      font-size:.82rem;
+      white-space:pre-wrap;
+      word-break:break-word;
+      max-height:280px;
+      overflow:auto;
+    }
+
+    @media (max-width: 860px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 560px){
+      .hero,.card{
+        border-radius:24px;
+      }
+
+      .btn-row{
+        grid-template-columns:1fr;
+      }
+
+      textarea{
+        min-height:150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="logo">𝕏</div>
+      <div class="brand">
+        <h1>View × X Post</h1>
+        <p>Responsive X posting page with active buttons, live diagnostics, and full feedback.</p>
+      </div>
+    </div>
+
+    <section class="hero">
+      <h2>Publish to X</h2>
+      <p>
+        This page checks your View session, checks your connected X account, and sends your post
+        to the <strong>x-post</strong> edge function.
+      </p>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h3 class="section-title">Create post</h3>
+
+        <div class="status">
+          <div class="status-dot" id="statusDot"></div>
+          <div class="status-text" id="statusText">Loading page state...</div>
+        </div>
+
+        <div class="connected" id="connectedBox">
+          <div class="connected-title" id="connectedTitle">Connected X account</div>
+          <div class="connected-sub" id="connectedSub">@username</div>
+        </div>
+
+        <div class="field">
+          <div class="field-row">
+            <label for="postText">Post text</label>
+            <div class="count" id="charCount">0 / 280</div>
+          </div>
+
+          <textarea
+            id="postText"
+            maxlength="280"
+            placeholder="Write something to post on X..."
+          ></textarea>
+
+          <div class="hint">
+            The exact result from your function or X API will appear below.
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-primary" id="postBtn" type="button">Post to X</button>
+          <button class="btn-secondary" id="checkBtn" type="button">Check Connection</button>
+          <button class="btn-success" id="demoBtn" type="button">Use Demo Text</button>
+        </div>
+
+        <div class="loading" id="loadingBox">
+          <div class="spinner"></div>
+          <span id="loadingText">Working...</span>
+        </div>
+
+        <div class="feedback" id="feedbackBox"></div>
+      </section>
+
+      <section class="card">
+        <h3 class="section-title">Diagnostics</h3>
+
+        <div class="tip-list">
+          <div class="tip">
+            <strong>Session</strong>
+            <p id="diagSession">Checking session...</p>
+          </div>
+
+          <div class="tip">
+            <strong>X account</strong>
+            <p id="diagAccount">Checking connected X account...</p>
+          </div>
+
+          <div class="tip">
+            <strong>Last response</strong>
+            <div class="result" id="lastResponse">No response yet.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const X_POST_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/x-post";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const statusDot = document.getElementById("statusDot");
+    const statusText = document.getElementById("statusText");
+    const connectedBox = document.getElementById("connectedBox");
+    const connectedTitle = document.getElementById("connectedTitle");
+    const connectedSub = document.getElementById("connectedSub");
+    const postText = document.getElementById("postText");
+    const charCount = document.getElementById("charCount");
+    const loadingBox = document.getElementById("loadingBox");
+    const loadingText = document.getElementById("loadingText");
+    const feedbackBox = document.getElementById("feedbackBox");
+    const lastResponse = document.getElementById("lastResponse");
+    const diagSession = document.getElementById("diagSession");
+    const diagAccount = document.getElementById("diagAccount");
+    const postBtn = document.getElementById("postBtn");
+    const checkBtn = document.getElementById("checkBtn");
+    const demoBtn = document.getElementById("demoBtn");
+
+    let currentUser = null;
+    let currentAccount = null;
+
+    function setStatus(type, text) {
+      statusText.textContent = text;
+      statusDot.className = "status-dot";
+      if (type === "good") statusDot.classList.add("good");
+      if (type === "bad") statusDot.classList.add("bad");
+    }
+
+    function showFeedback(type, html) {
+      feedbackBox.className = "feedback " + type;
+      feedbackBox.innerHTML = html;
+    }
+
+    function hideFeedback() {
+      feedbackBox.className = "feedback";
+      feedbackBox.innerHTML = "";
+    }
+
+    function setLoading(isLoading, text = "Working...") {
+      loadingBox.style.display = isLoading ? "flex" : "none";
+      loadingText.textContent = text;
+      postBtn.disabled = isLoading;
+      checkBtn.disabled = isLoading;
+      demoBtn.disabled = isLoading;
+    }
+
+    function setLastResponse(value) {
+      try {
+        lastResponse.textContent = typeof value === "string"
+          ? value
+          : JSON.stringify(value, null, 2);
+      } catch (e) {
+        lastResponse.textContent = String(value);
+      }
+    }
+
+    function updateCount() {
+      charCount.textContent = `${postText.value.length} / 280`;
+    }
+
+    function escapeHtml(str = "") {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function getSession() {
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) throw error;
+      return data.session || null;
+    }
+
+    async function getUser() {
+      const { data, error } = await supabaseClient.auth.getUser();
+      if (error) throw error;
+      return data.user || null;
+    }
+
+    async function getConnectedAccount(userId) {
+      const { data, error } = await supabaseClient
+        .from("connected_accounts")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("platform", "x")
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    }
+
+    function renderAccount(account) {
+      if (!account) {
+        connectedBox.style.display = "none";
+        return;
+      }
+
+      connectedBox.style.display = "block";
+      connectedTitle.textContent = account.account_name || "Connected X account";
+      connectedSub.textContent = account.account_handle
+        ? `@${account.account_handle}`
+        : "Handle not available";
+    }
+
+    async function checkConnection() {
+      hideFeedback();
+      setLoading(true, "Checking connection...");
+
+      try {
+        const session = await getSession();
+        currentUser = await getUser();
+
+        if (!session || !currentUser) {
+          setStatus("bad", "No active View session.");
+          diagSession.textContent = "No active session found.";
+          diagAccount.textContent = "Cannot check X account without login.";
+          renderAccount(null);
+          showFeedback("error", "You are not logged in to View.");
+          setLastResponse("No active session.");
+          return;
+        }
+
+        diagSession.textContent = `Logged in as: ${currentUser.email || currentUser.id}`;
+
+        currentAccount = await getConnectedAccount(currentUser.id);
+
+        if (!currentAccount) {
+          setStatus("bad", "No connected X account found.");
+          diagAccount.textContent = "No X row found in connected_accounts.";
+          renderAccount(null);
+          showFeedback("error", "Your X account is not connected yet.");
+          setLastResponse("No connected X account.");
+          return;
+        }
+
+        renderAccount(currentAccount);
+        setStatus("good", "X account ready.");
+        diagAccount.textContent = `Connected handle: ${currentAccount.account_handle || "unknown"} | Status: ${currentAccount.status || "connected"}`;
+        showFeedback("success", "X account connected and ready for posting.");
+        setLastResponse(currentAccount);
+      } catch (err) {
+        console.error(err);
+        setStatus("bad", "Connection check failed.");
+        diagSession.textContent = "Session check failed.";
+        diagAccount.textContent = "Account check failed.";
+        showFeedback("error", `Connection check failed: ${escapeHtml(err.message || "Unknown error")}`);
+        setLastResponse(err.message || "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function postToX() {
+      hideFeedback();
+      setLoading(true, "Posting to X...");
+
+      try {
+        const text = postText.value.trim();
+
+        if (!text) {
+          showFeedback("error", "Please enter text before posting.");
+          setLastResponse("Post blocked: empty text.");
+          return;
+        }
+
+        if (text.length > 280) {
+          showFeedback("error", "Post exceeds 280 characters.");
+          setLastResponse("Post blocked: text too long.");
+          return;
+        }
+
+        const session = await getSession();
+        if (!session) {
+          setStatus("bad", "No active View session.");
+          showFeedback("error", "Please log in again.");
+          setLastResponse("No session returned.");
+          return;
+        }
+
+        const jwt = session.access_token;
+        if (!jwt) {
+          showFeedback("error", "Session found but JWT missing.");
+          setLastResponse("Session missing access token.");
+          return;
+        }
+
+        const res = await fetch(X_POST_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${jwt}`
+          },
+          body: JSON.stringify({ text })
+        });
+
+        const raw = await res.text();
+        let json;
+        try {
+          json = raw ? JSON.parse(raw) : {};
+        } catch (e) {
+          json = { raw };
+        }
+
+        setLastResponse({
+          http_status: res.status,
+          response: json
+        });
+
+        if (!res.ok) {
+          const message =
+            json?.error ||
+            json?.message ||
+            json?.x_response?.detail ||
+            "Failed to post to X";
+
+          showFeedback("error", `<strong>Post failed:</strong> ${escapeHtml(message)}`);
+          return;
+        }
+
+        const tweetId =
+          json?.x_response?.data?.id ||
+          json?.data?.id ||
+          json?.response?.data?.id ||
+          null;
+
+        const tweetText =
+          json?.x_response?.data?.text ||
+          json?.data?.text ||
+          text;
+
+        showFeedback(
+          "success",
+          `<strong>Posted successfully.</strong><br><br>
+           ${tweetId ? `Tweet ID: ${escapeHtml(tweetId)}<br>` : ""}
+           Text: ${escapeHtml(tweetText)}`
+        );
+
+        postText.value = "";
+        updateCount();
+      } catch (err) {
+        console.error(err);
+        showFeedback("error", `Request failed: ${escapeHtml(err.message || "Unknown error")}`);
+        setLastResponse(err.message || "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    postText.addEventListener("input", updateCount);
+
+    postBtn.addEventListener("click", () => {
+      postToX();
     });
 
-    const xData = await xRes.json();
-
-    return new Response(JSON.stringify({
-      success: true,
-      x_response: xData
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    checkBtn.addEventListener("click", () => {
+      checkConnection();
     });
 
-  } catch (err) {
-    return new Response(JSON.stringify({
-      error: err.message
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    demoBtn.addEventListener("click", () => {
+      postText.value = "Hello from View app 🚀";
+      updateCount();
+      showFeedback("info", "Demo text inserted.");
+      setLastResponse("Demo text inserted.");
     });
-  }
-});
+
+    window.addEventListener("load", async () => {
+      updateCount();
+      await checkConnection();
+    });
+  </script>
+</body>
+</html>
