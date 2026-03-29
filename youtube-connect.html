@@ -367,12 +367,6 @@
       text-decoration:underline;
     }
 
-    .hint{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.55;
-    }
-
     .bottom-nav{
       position:fixed;
       left:50%;
@@ -669,20 +663,29 @@
       refreshBtn.disabled = show;
     }
 
-    async function syncConnectedAccount(channel = null) {
-      if (!currentUser) return;
+    async function getCurrentUser() {
+      const { data, error } = await supabaseClient.auth.getUser();
+      if (error) throw error;
+      if (!data?.user) throw new Error("Session expired. Sign in again.");
+      currentUser = data.user;
+      return data.user;
+    }
+
+    async function saveConnectedAccount(channel) {
+      const user = await getCurrentUser();
 
       const payload = {
-        user_id: currentUser.id,
+        user_id: user.id,
         platform: "youtube",
-        is_connected: true,
-        account_name: channel?.snippet?.title || null,
-        account_handle: channel?.snippet?.customUrl || null,
-        account_email: currentUser.email || null,
+        account_name: channel?.snippet?.title || "YouTube",
+        account_handle: channel?.id || null,
+        account_email: user.email || null,
         avatar_url:
           channel?.snippet?.thumbnails?.high?.url ||
           channel?.snippet?.thumbnails?.default?.url ||
           null,
+        access_token: providerToken || null,
+        is_connected: true,
         updated_at: new Date().toISOString()
       };
 
@@ -766,7 +769,7 @@
         return;
       }
 
-      setStatus("info", "Checking channel...");
+      setStatus("ok", "Checking channel...");
 
       try {
         const response = await fetch(
@@ -781,10 +784,7 @@
         const data = await response.json();
 
         if (!response.ok) {
-          const message =
-            data?.error?.message ||
-            "Check channel failed.";
-          throw new Error(message);
+          throw new Error(data?.error?.message || "Check channel failed.");
         }
 
         if (!data.items || !data.items.length) {
@@ -802,11 +802,11 @@
         channelSub.textContent = `Subscribers: ${channel?.statistics?.subscriberCount || 0} • Videos: ${channel?.statistics?.videoCount || 0}`;
         channelBox.style.display = "grid";
 
-        await syncConnectedAccount(channel);
+        await saveConnectedAccount(channel);
 
-        setStatus("ok", "Channel loaded.");
-        setResult(connectResult, "Channel connected.", "success");
-        showNotice("Channel connected.", "success");
+        setStatus("ok", "Connected.");
+        setResult(connectResult, "YouTube connected.", "success");
+        showNotice("YouTube connected.", "success");
       } catch (error) {
         channelBox.style.display = "none";
         setStatus("err", "Channel check failed.");
@@ -900,10 +900,7 @@
         const data = await response.json();
 
         if (!response.ok) {
-          const message =
-            data?.error?.message ||
-            "Upload failed.";
-          throw new Error(message);
+          throw new Error(data?.error?.message || "Upload failed.");
         }
 
         setProgress(true, 100, "Done");
@@ -930,8 +927,11 @@
       setResult(uploadResult, "");
 
       try {
-        const { error } = await supabaseClient.auth.signOut();
-        if (error) throw error;
+        if (!currentUser) {
+          try {
+            await getCurrentUser();
+          } catch {}
+        }
 
         if (currentUser) {
           await supabaseClient
@@ -944,11 +944,15 @@
             .eq("platform", "youtube");
         }
 
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+
         currentUser = null;
         currentSession = null;
         clearProviderToken();
         channelBox.style.display = "none";
         setStatus("err", "Logged out.");
+        setResult(connectResult, "Logged out.", "success");
         showNotice("Logged out.", "success");
       } catch (error) {
         setResult(connectResult, error.message || "Logout failed.", "error");
