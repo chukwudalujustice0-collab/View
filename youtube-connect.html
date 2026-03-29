@@ -6,6 +6,7 @@
   <title>YouTube Connect | View</title>
   <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root{
       --bg:#08111f;
@@ -20,63 +21,396 @@
       --shadow:0 14px 40px rgba(0,0,0,.28);
       --safe-bottom:env(safe-area-inset-bottom);
     }
-    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent}
-    html,body{min-height:100%;background:var(--bg);color:var(--text)}
-    body{padding:16px 14px 110px}
-    button,input,textarea,select{font:inherit;color:inherit}
-    button{border:none;background:none;cursor:pointer}
-    a{color:inherit;text-decoration:none}
-    .wrap{width:min(100%,820px);margin:0 auto}
-    .notice{display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;font-size:14px;line-height:1.55;box-shadow:var(--shadow)}
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    body{
+      padding:16px 14px 110px;
+    }
+
+    button,input,textarea,select{
+      font:inherit;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      background:none;
+      cursor:pointer;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    .wrap{
+      width:min(100%, 820px);
+      margin:0 auto;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.55;
+      box-shadow:var(--shadow);
+    }
     .notice.show{display:block}
     .notice.error{background:rgba(127,29,29,.92);color:#fecaca}
     .notice.success{background:rgba(5,46,22,.92);color:#d1fae5}
     .notice.info{background:rgba(30,41,59,.95);color:#dbeafe}
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
-    .top-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
-    .icon-btn{width:46px;height:46px;min-width:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border:1px solid var(--line);box-shadow:var(--shadow);font-size:18px;color:#fff}
-    .title-box{min-width:0;flex:1}
-    .title{font-size:22px;font-weight:800;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .sub{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);margin-bottom:16px}
-    .card-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .card-head h3{font-size:16px;font-weight:800}
-    .card-body{padding:14px;display:grid;gap:12px}
-    .status-box{display:flex;align-items:center;gap:10px;min-height:52px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
-    .dot{width:10px;height:10px;min-width:10px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 4px rgba(245,158,11,.12)}
-    .dot.ok{background:var(--success);box-shadow:0 0 0 4px rgba(16,185,129,.12)}
-    .dot.err{background:var(--danger);box-shadow:0 0 0 4px rgba(239,68,68,.12)}
-    .btn-row{display:flex;gap:10px;flex-wrap:wrap}
-    .btn{min-height:44px;padding:0 14px;border-radius:12px;font-size:13px;font-weight:700;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
-    .btn.primary{background:linear-gradient(135deg,var(--youtube),#d70000);border-color:transparent}
-    .btn.danger{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#fecaca}
-    .channel-box{display:none;gap:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
-    .channel-top{display:flex;align-items:center;gap:12px;min-width:0}
-    .channel-thumb{width:60px;height:60px;min-width:60px;border-radius:16px;object-fit:cover;background:#0f172a;border:1px solid var(--line)}
-    .channel-meta{min-width:0;flex:1}
-    .channel-name{font-size:15px;font-weight:800;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .channel-sub{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .badge{width:max-content;min-height:30px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.22);color:#d1fae5;font-size:11px;font-weight:800}
-    .field{display:grid;gap:8px}
-    .label{font-size:13px;font-weight:700;color:#dbeafe}
-    .input,.textarea,.select,.file-wrap{width:100%;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);padding:14px;outline:none}
-    .textarea{min-height:120px;resize:vertical;line-height:1.6}
-    .file-wrap{padding:10px 12px}
-    .file-wrap input[type="file"]{width:100%;color:var(--muted)}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .progress-wrap{display:none;gap:8px}
-    .progress-track{width:100%;height:10px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08);border:1px solid var(--line)}
-    .progress-fill{width:0%;height:100%;background:linear-gradient(90deg,var(--youtube),#ff6a00,#7c3aed);transition:width .25s ease}
-    .progress-text{color:var(--muted);font-size:12px}
-    .result{display:none;padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:14px;line-height:1.6;word-break:break-word}
-    .result a{color:#93c5fd;text-decoration:underline}
-    .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;width:min(760px,calc(100% - 20px));background:rgba(12,20,36,.95);border:1px solid var(--line);border-radius:20px;padding:8px 6px calc(8px + var(--safe-bottom));display:grid;grid-template-columns:repeat(5,1fr);gap:6px;box-shadow:var(--shadow);z-index:40}
-    .nav-btn{min-height:56px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:700;color:var(--muted);text-decoration:none}
-    .nav-btn.active{background:rgba(37,99,235,.16);color:#fff}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      font-size:18px;
+      color:#fff;
+    }
+
+    .title-box{
+      min-width:0;
+      flex:1;
+    }
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      margin-bottom:16px;
+    }
+
+    .card-head{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .card-head h3{
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .card-body{
+      padding:14px;
+      display:grid;
+      gap:12px;
+    }
+
+    .status-box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-height:52px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+    }
+
+    .dot{
+      width:10px;
+      height:10px;
+      min-width:10px;
+      border-radius:50%;
+      background:var(--warn);
+      box-shadow:0 0 0 4px rgba(245,158,11,.12);
+    }
+
+    .dot.ok{
+      background:var(--success);
+      box-shadow:0 0 0 4px rgba(16,185,129,.12);
+    }
+
+    .dot.err{
+      background:var(--danger);
+      box-shadow:0 0 0 4px rgba(239,68,68,.12);
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      min-height:44px;
+      padding:0 14px;
+      border-radius:12px;
+      font-size:13px;
+      font-weight:700;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      cursor:pointer;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--youtube),#d70000);
+      border-color:transparent;
+    }
+
+    .btn.danger{
+      background:rgba(239,68,68,.12);
+      border-color:rgba(239,68,68,.24);
+      color:#fecaca;
+    }
+
+    .channel-box{
+      display:none;
+      gap:12px;
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+    }
+
+    .channel-top{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .channel-thumb{
+      width:60px;
+      height:60px;
+      min-width:60px;
+      border-radius:16px;
+      object-fit:cover;
+      background:#0f172a;
+      border:1px solid var(--line);
+    }
+
+    .channel-meta{
+      min-width:0;
+      flex:1;
+    }
+
+    .channel-name{
+      font-size:15px;
+      font-weight:800;
+      margin-bottom:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .channel-sub{
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .badge{
+      width:max-content;
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(16,185,129,.12);
+      border:1px solid rgba(16,185,129,.22);
+      color:#d1fae5;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    .label{
+      font-size:13px;
+      font-weight:700;
+      color:#dbeafe;
+    }
+
+    .input,
+    .textarea,
+    .select,
+    .file-wrap{
+      width:100%;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      padding:14px;
+      outline:none;
+    }
+
+    .textarea{
+      min-height:120px;
+      resize:vertical;
+      line-height:1.6;
+    }
+
+    .file-wrap{
+      padding:10px 12px;
+    }
+
+    .file-wrap input[type="file"]{
+      width:100%;
+      color:var(--muted);
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .progress-wrap{
+      display:none;
+      gap:8px;
+    }
+
+    .progress-track{
+      width:100%;
+      height:10px;
+      border-radius:999px;
+      overflow:hidden;
+      background:rgba(255,255,255,.08);
+      border:1px solid var(--line);
+    }
+
+    .progress-fill{
+      width:0%;
+      height:100%;
+      background:linear-gradient(90deg,var(--youtube),#ff6a00,#7c3aed);
+      transition:width .25s ease;
+    }
+
+    .progress-text{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .result{
+      display:none;
+      padding:14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      font-size:14px;
+      line-height:1.6;
+      word-break:break-word;
+    }
+
+    .result a{
+      color:#93c5fd;
+      text-decoration:underline;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:12px;
+      width:min(760px, calc(100% - 20px));
+      background:rgba(12,20,36,.95);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:8px 6px calc(8px + var(--safe-bottom));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
+      box-shadow:var(--shadow);
+      z-index:40;
+    }
+
+    .nav-btn{
+      min-height:56px;
+      border-radius:14px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
+      text-decoration:none;
+    }
+
+    .nav-btn.active{
+      background:rgba(37,99,235,.16);
+      color:#fff;
+    }
+
     @media (max-width:560px){
-      .row{grid-template-columns:1fr}
-      .btn-row{flex-direction:column}
-      .btn{width:100%}
+      .row{
+        grid-template-columns:1fr;
+      }
+      .btn-row{
+        flex-direction:column;
+      }
+      .btn{
+        width:100%;
+      }
     }
   </style>
 </head>
@@ -92,11 +426,15 @@
           <div class="sub">Connect and upload</div>
         </div>
       </div>
+
       <button class="icon-btn" id="refreshBtn" title="Refresh">↻</button>
     </header>
 
     <section class="card">
-      <div class="card-head"><h3>Connection</h3></div>
+      <div class="card-head">
+        <h3>Connection</h3>
+      </div>
+
       <div class="card-body">
         <div class="status-box">
           <span class="dot" id="statusDot"></span>
@@ -125,7 +463,10 @@
     </section>
 
     <section class="card">
-      <div class="card-head"><h3>Upload</h3></div>
+      <div class="card-head">
+        <h3>Upload</h3>
+      </div>
+
       <div class="card-body">
         <form id="uploadForm" class="card-body" style="padding:0;">
           <div class="field">
@@ -154,6 +495,7 @@
                 <option value="public">Public</option>
               </select>
             </div>
+
             <div class="field">
               <label class="label" for="categoryIdInput">Category</label>
               <input class="input" id="categoryIdInput" value="22" />
@@ -164,7 +506,9 @@
         </form>
 
         <div class="progress-wrap" id="progressWrap">
-          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
           <div class="progress-text" id="progressText">Preparing...</div>
         </div>
 
@@ -174,11 +518,26 @@
   </div>
 
   <nav class="bottom-nav">
-    <a class="nav-btn" href="home.html"><span>🏠</span><span>Home</span></a>
-    <a class="nav-btn" href="explore.html"><span>🔎</span><span>Explore</span></a>
-    <a class="nav-btn" href="create-post.html"><span>➕</span><span>Create</span></a>
-    <a class="nav-btn active" href="youtube-connect.html"><span>▶</span><span>YouTube</span></a>
-    <a class="nav-btn" href="settings.html"><span>⚙️</span><span>Settings</span></a>
+    <a class="nav-btn" href="home.html">
+      <span>🏠</span>
+      <span>Home</span>
+    </a>
+    <a class="nav-btn" href="explore.html">
+      <span>🔎</span>
+      <span>Explore</span>
+    </a>
+    <a class="nav-btn" href="create-post.html">
+      <span>➕</span>
+      <span>Create</span>
+    </a>
+    <a class="nav-btn active" href="youtube-connect.html">
+      <span>▶</span>
+      <span>YouTube</span>
+    </a>
+    <a class="nav-btn" href="settings.html">
+      <span>⚙️</span>
+      <span>Settings</span>
+    </a>
   </nav>
 
   <script>
@@ -188,7 +547,12 @@
     const TOKEN_KEY = "view_youtube_provider_token";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "pkce" }
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
     });
 
     const noticeBox = document.getElementById("notice");
@@ -243,8 +607,10 @@
         target.innerHTML = "";
         return;
       }
+
       target.style.display = "block";
       target.innerHTML = message;
+
       if (type === "error") {
         target.style.background = "rgba(239,68,68,.08)";
         target.style.borderColor = "rgba(239,68,68,.22)";
@@ -260,16 +626,24 @@
     function saveProviderToken(token) {
       if (!token) return;
       providerToken = token;
-      try { localStorage.setItem(TOKEN_KEY, token); } catch {}
+      try {
+        localStorage.setItem(TOKEN_KEY, token);
+      } catch {}
     }
 
     function loadProviderToken() {
-      try { return localStorage.getItem(TOKEN_KEY) || null; } catch { return null; }
+      try {
+        return localStorage.getItem(TOKEN_KEY) || null;
+      } catch {
+        return null;
+      }
     }
 
     function clearProviderToken() {
       providerToken = null;
-      try { localStorage.removeItem(TOKEN_KEY); } catch {}
+      try {
+        localStorage.removeItem(TOKEN_KEY);
+      } catch {}
     }
 
     function setProgress(show, percent = 0, text = "Preparing...") {
@@ -293,6 +667,7 @@
 
     async function saveConnectedAccount(channel) {
       const user = await getCurrentUser();
+
       const payload = {
         user_id: user.id,
         platform: "youtube",
@@ -306,9 +681,11 @@
         external_page_id: null,
         updated_at: new Date().toISOString()
       };
+
       const { error } = await supabaseClient
         .from("connected_accounts")
         .upsert(payload, { onConflict: "user_id,platform" });
+
       if (error) throw error;
     }
 
@@ -339,6 +716,7 @@
       try {
         const { data, error } = await supabaseClient.auth.getSession();
         if (error) throw error;
+
         currentSession = data?.session || null;
         currentUser = currentSession?.user || null;
 
@@ -350,12 +728,14 @@
           setStatus("err", "No session.");
           return;
         }
+
         if (!providerToken) {
           channelBox.style.display = "none";
           setStatus("err", "No provider token.");
           setResult(connectResult, "Reconnect Google account.", "error");
           return;
         }
+
         setStatus("ok", "Ready.");
       } catch (error) {
         setStatus("err", "Session error.");
@@ -369,12 +749,18 @@
 
       const response = await fetch(
         "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true",
-        { headers: { Authorization: `Bearer ${providerToken}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${providerToken}`
+          }
+        }
       );
 
       const data = await response.json();
+
       if (!response.ok) throw new Error(data?.error?.message || "Check channel failed.");
       if (!data.items || !data.items.length) throw new Error("No YouTube channel found.");
+
       return data.items[0];
     }
 
@@ -390,11 +776,14 @@
     async function autoSaveOnReturn() {
       if (autoSavedFromReturn) return;
       autoSavedFromReturn = true;
+
       try {
         if (!currentSession?.provider_token && !providerToken) return;
+
         const channel = await fetchChannel();
         renderChannel(channel);
         await saveConnectedAccount(channel);
+
         setStatus("ok", "Connected.");
         setResult(connectResult, "YouTube connected.", "success");
         showNotice("YouTube connected.", "success");
@@ -411,6 +800,7 @@
         const channel = await fetchChannel();
         renderChannel(channel);
         await saveConnectedAccount(channel);
+
         setStatus("ok", "Connected.");
         setResult(connectResult, "YouTube connected.", "success");
         showNotice("YouTube connected.", "success");
@@ -424,6 +814,7 @@
     async function uploadVideo(event) {
       event.preventDefault();
       setResult(uploadResult, "");
+
       if (!providerToken) providerToken = loadProviderToken();
       if (!providerToken) {
         setStatus("err", "No provider token.");
@@ -442,6 +833,7 @@
 
       try {
         setProgress(true, 8, "Preparing...");
+
         const metadata = {
           snippet: { title, description, categoryId },
           status: { privacyStatus: privacy }
@@ -470,6 +862,7 @@
         ]);
 
         setProgress(true, 42, "Uploading...");
+
         const response = await fetch(
           "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=multipart&part=snippet,status",
           {
@@ -484,9 +877,11 @@
 
         setProgress(true, 84, "Finishing...");
         const data = await response.json();
+
         if (!response.ok) throw new Error(data?.error?.message || "Upload failed.");
 
         setProgress(true, 100, "Done");
+
         const videoId = data?.id || "";
         const url = videoId ? `https://www.youtube.com/watch?v=${videoId}` : "";
 
@@ -495,6 +890,7 @@
           url ? `Upload complete.<br><a href="${url}" target="_blank" rel="noopener">Open video</a>` : "Upload complete.",
           "success"
         );
+
         showNotice("Upload complete.", "success");
         setTimeout(() => setProgress(false, 0, "Preparing..."), 700);
       } catch (error) {
@@ -506,10 +902,12 @@
     async function logout() {
       setResult(connectResult, "");
       setResult(uploadResult, "");
+
       try {
         if (!currentUser) {
           try { await getCurrentUser(); } catch {}
         }
+
         if (currentUser) {
           await supabaseClient
             .from("connected_accounts")
