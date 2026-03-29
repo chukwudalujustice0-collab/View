@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/*.js": {
+    "api/process-publish-jobs.js": {
       "runtime": "nodejs18.x"
     }
   },
