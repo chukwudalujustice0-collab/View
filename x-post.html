@@ -3,80 +3,299 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>X Ping Test</title>
+  <title>X Post Diagnostic | View</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    :root{
+      --bg:#07101f;
+      --bg2:#0d1a31;
+      --card:rgba(255,255,255,.08);
+      --line:rgba(255,255,255,.12);
+      --text:#f8fbff;
+      --muted:#9fb0c9;
+      --primary:#1d9bf0;
+      --primary2:#4f46e5;
+      --success:#19c37d;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     body{
-      margin:0;
+      min-height:100vh;
       font-family:Arial,sans-serif;
-      background:#0b1220;
-      color:#fff;
-      padding:24px;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(29,155,240,.15), transparent 24%),
+        radial-gradient(circle at bottom left, rgba(79,70,229,.14), transparent 24%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      padding:16px;
     }
-    .wrap{
-      max-width:680px;
-      margin:0 auto;
-    }
+    .wrap{max-width:760px;margin:0 auto}
     .card{
-      background:#172033;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:18px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
       padding:18px;
       margin-bottom:16px;
+      backdrop-filter:blur(14px);
     }
+    h1{font-size:1.3rem;margin-bottom:8px}
+    p{color:var(--muted);line-height:1.55}
+    textarea{
+      width:100%;min-height:140px;margin-top:12px;border:none;outline:none;
+      border-radius:16px;padding:14px;font-size:1rem;line-height:1.5;
+      background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)
+    }
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}
     button{
-      width:100%;
-      padding:14px;
-      border:none;
-      border-radius:14px;
-      background:#2563eb;
-      color:#fff;
-      font-weight:700;
-      cursor:pointer;
-      margin-top:10px;
+      border:none;cursor:pointer;border-radius:16px;padding:14px;
+      font-weight:800;font-size:.96rem;color:#fff
     }
-    pre{
-      white-space:pre-wrap;
-      word-break:break-word;
-      background:#0f172a;
-      padding:14px;
-      border-radius:14px;
-      overflow:auto;
+    .primary{background:linear-gradient(135deg,var(--primary),var(--primary2))}
+    .success{background:linear-gradient(135deg,#16a34a,#19c37d)}
+    .secondary{background:rgba(255,255,255,.06);border:1px solid var(--line)}
+    .danger{background:linear-gradient(135deg,#dc2626,#ef4444)}
+    .status{
+      margin-top:14px;padding:14px;border-radius:16px;
+      border:1px solid var(--line);background:rgba(255,255,255,.04);line-height:1.55
+    }
+    .good{border-color:rgba(25,195,125,.28);background:rgba(25,195,125,.10)}
+    .bad{border-color:rgba(239,68,68,.28);background:rgba(239,68,68,.10)}
+    .info{border-color:rgba(29,155,240,.28);background:rgba(29,155,240,.10)}
+    .mono{
+      margin-top:12px;background:rgba(0,0,0,.22);border:1px solid var(--line);
+      border-radius:14px;padding:12px;white-space:pre-wrap;word-break:break-word;
+      font-family:monospace;font-size:.82rem;max-height:320px;overflow:auto
+    }
+    .small{font-size:.88rem;color:var(--muted)}
+    @media (max-width:640px){
+      .row,.row3{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h2>Browser Reach Test</h2>
-      <p>This tests whether your browser can reach a Supabase Edge Function at all.</p>
-      <button id="btn">Test x-ping</button>
+      <h1>X Post Diagnostic</h1>
+      <p>This page tests your session, your connected X account, function reachability, and actual posting.</p>
     </div>
 
     <div class="card">
-      <h3>Result</h3>
-      <pre id="out">No test yet.</pre>
+      <label for="postText" class="small">Post text</label>
+      <textarea id="postText" maxlength="280">Hello from View app 🚀</textarea>
+
+      <div class="row3">
+        <button class="secondary" id="btnSession">Check Session</button>
+        <button class="secondary" id="btnAccount">Check X Account</button>
+        <button class="secondary" id="btnReach">Test Function Reach</button>
+      </div>
+
+      <div class="row">
+        <button class="success" id="btnDemo">Use Demo Text</button>
+        <button class="primary" id="btnPost">Post to X</button>
+      </div>
+
+      <div id="status" class="status info">Ready.</div>
+      <div id="output" class="mono">No output yet.</div>
     </div>
   </div>
 
   <script>
-    const out = document.getElementById("out");
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const X_POST_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/x-post";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    document.getElementById("btn").addEventListener("click", async () => {
-      out.textContent = "Testing...";
+    const statusBox = document.getElementById("status");
+    const outputBox = document.getElementById("output");
+    const postText = document.getElementById("postText");
+
+    function setStatus(type, text) {
+      statusBox.className = "status " + type;
+      statusBox.textContent = text;
+    }
+
+    function setOutput(value) {
       try {
-        const res = await fetch("https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/x-ping", {
-          method: "GET"
-        });
-        const text = await res.text();
-        out.textContent = JSON.stringify({
-          status: res.status,
-          body: text
-        }, null, 2);
-      } catch (err) {
-        out.textContent = JSON.stringify({
-          error: err.message || String(err)
-        }, null, 2);
+        outputBox.textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+      } catch {
+        outputBox.textContent = String(value);
       }
+    }
+
+    async function getSession() {
+      const { data, error } = await supabaseClient.auth.getSession();
+      return { session: data?.session || null, error };
+    }
+
+    async function checkSession() {
+      setStatus("info", "Checking session...");
+      const { session, error } = await getSession();
+
+      if (error) {
+        setStatus("bad", "Session check failed.");
+        setOutput(error);
+        return null;
+      }
+
+      if (!session) {
+        setStatus("bad", "No active View session.");
+        setOutput("No session found. Log in to View first.");
+        return null;
+      }
+
+      setStatus("good", "View session found.");
+      setOutput({
+        user_id: session.user?.id,
+        email: session.user?.email || null,
+        has_access_token: !!session.access_token,
+        access_token_preview: session.access_token ? session.access_token.slice(0, 30) + "..." : null
+      });
+      return session;
+    }
+
+    async function checkAccount() {
+      setStatus("info", "Checking connected X account...");
+      const { session, error } = await getSession();
+
+      if (error || !session) {
+        setStatus("bad", "No active session for account lookup.");
+        setOutput(error || "No session");
+        return;
+      }
+
+      const { data, error: dbError } = await supabaseClient
+        .from("connected_accounts")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .eq("platform", "x")
+        .maybeSingle();
+
+      if (dbError) {
+        setStatus("bad", "Database lookup failed.");
+        setOutput(dbError);
+        return;
+      }
+
+      if (!data) {
+        setStatus("bad", "No X account row found.");
+        setOutput("No row in connected_accounts for this user and platform=x");
+        return;
+      }
+
+      setStatus("good", "Connected X account found.");
+      setOutput(data);
+    }
+
+    async function testReachability() {
+      setStatus("info", "Testing function reachability...");
+      const { session, error } = await getSession();
+
+      if (error || !session) {
+        setStatus("bad", "No active session for function test.");
+        setOutput(error || "No session");
+        return;
+      }
+
+      try {
+        const res = await fetch(X_POST_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ text: "diagnostic ping" })
+        });
+
+        const raw = await res.text();
+        let parsed;
+        try { parsed = raw ? JSON.parse(raw) : {}; } catch { parsed = raw; }
+
+        setOutput({
+          http_status: res.status,
+          response: parsed
+        });
+
+        if (!res.ok) {
+          setStatus("bad", "Function reached, but request failed.");
+        } else {
+          setStatus("good", "Function reached successfully.");
+        }
+      } catch (err) {
+        setStatus("bad", "Browser could not fetch x-post at all.");
+        setOutput({
+          error: err.message || String(err),
+          hint: "This usually means CORS/preflight blocking, wrong function deployment, or Verify JWT still ON."
+        });
+      }
+    }
+
+    async function postToX() {
+      setStatus("info", "Posting to X...");
+      const { session, error } = await getSession();
+
+      if (error || !session) {
+        setStatus("bad", "No active session for posting.");
+        setOutput(error || "No session");
+        return;
+      }
+
+      const text = postText.value.trim();
+      if (!text) {
+        setStatus("bad", "Enter text first.");
+        setOutput("Textarea is empty.");
+        return;
+      }
+
+      try {
+        const res = await fetch(X_POST_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ text })
+        });
+
+        const raw = await res.text();
+        let parsed;
+        try { parsed = raw ? JSON.parse(raw) : {}; } catch { parsed = raw; }
+
+        setOutput({
+          http_status: res.status,
+          response: parsed
+        });
+
+        if (!res.ok) {
+          setStatus("bad", "Post request failed.");
+          return;
+        }
+
+        setStatus("good", "Posted successfully.");
+      } catch (err) {
+        setStatus("bad", "Browser-level fetch failure.");
+        setOutput({
+          error: err.message || String(err),
+          hint: "If this still says Failed to fetch, x-post is still blocked before response reaches browser."
+        });
+      }
+    }
+
+    document.getElementById("btnSession").addEventListener("click", checkSession);
+    document.getElementById("btnAccount").addEventListener("click", checkAccount);
+    document.getElementById("btnReach").addEventListener("click", testReachability);
+    document.getElementById("btnDemo").addEventListener("click", () => {
+      postText.value = "Hello from View app 🚀";
+      setStatus("info", "Demo text inserted.");
+      setOutput("Demo text inserted into textarea.");
+    });
+    document.getElementById("btnPost").addEventListener("click", postToX);
+
+    window.addEventListener("load", async () => {
+      await checkSession();
     });
   </script>
 </body>
