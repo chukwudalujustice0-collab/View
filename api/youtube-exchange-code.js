@@ -19,22 +19,23 @@ module.exports = async function handler(req, res) {
       process.env.SUPABASE_SERVICE_KEY
     );
 
-    const { code, user_id } = req.method === "POST" ? req.body : req.query;
+    const code = req.query.code || req.body?.code;
+    const userId = req.query.state || req.body?.state;
 
     if (!code) {
-      return res.status(400).json({ ok: false, error: "Missing authorization code" });
+      return res.status(400).send("Missing authorization code.");
     }
 
-    if (!user_id) {
-      return res.status(400).json({ ok: false, error: "Missing user_id" });
+    if (!userId) {
+      return res.status(400).send("Missing user ID in state.");
     }
 
     const body = new URLSearchParams();
-    body.set("client_id", process.env.GOOGLE_CLIENT_ID);
-    body.set("client_secret", process.env.GOOGLE_CLIENT_SECRET);
+    body.set("client_id", process.env.GOOGLE_CLIENT_ID || "");
+    body.set("client_secret", process.env.GOOGLE_CLIENT_SECRET || "");
     body.set("code", code);
     body.set("grant_type", "authorization_code");
-    body.set("redirect_uri", process.env.YOUTUBE_REDIRECT_URI);
+    body.set("redirect_uri", process.env.YOUTUBE_REDIRECT_URI || "");
 
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
@@ -45,39 +46,36 @@ module.exports = async function handler(req, res) {
     const tokenData = await tokenRes.json();
 
     if (!tokenRes.ok) {
-      return res.status(500).json({
-        ok: false,
-        step: "token_exchange",
-        error: tokenData.error_description || tokenData.error || "Token exchange failed"
-      });
+      return res.status(500).send(tokenData.error_description || tokenData.error || "Token exchange failed");
     }
 
-    const meRes = await fetch("https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true", {
-      headers: {
-        Authorization: `Bearer ${tokenData.access_token}`
+    const channelRes = await fetch(
+      "https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true",
+      {
+        headers: {
+          Authorization: `Bearer ${tokenData.access_token}`
+        }
       }
-    });
+    );
 
-    const meData = await meRes.json();
+    const channelData = await channelRes.json();
 
-    if (!meRes.ok) {
-      return res.status(500).json({
-        ok: false,
-        step: "channel_lookup",
-        error: meData?.error?.message || "Could not fetch YouTube channel"
-      });
+    if (!channelRes.ok) {
+      return res.status(500).send(channelData?.error?.message || "Could not fetch YouTube channel");
     }
 
-    const channel = meData?.items?.[0];
+    const channel = channelData?.items?.[0];
     const channelId = channel?.id || null;
     const channelName = channel?.snippet?.title || "YouTube Channel";
 
-    const expiresAt = new Date(Date.now() + Number(tokenData.expires_in || 3600) * 1000).toISOString();
+    const expiresAt = new Date(
+      Date.now() + Number(tokenData.expires_in || 3600) * 1000
+    ).toISOString();
 
     const { data: existing } = await supabase
       .from("connected_accounts")
       .select("id")
-      .eq("user_id", user_id)
+      .eq("user_id", userId)
       .eq("platform", "youtube")
       .maybeSingle();
 
@@ -98,13 +96,13 @@ module.exports = async function handler(req, res) {
         .eq("id", existing.id);
 
       if (updateError) {
-        return res.status(500).json({ ok: false, error: updateError.message });
+        return res.status(500).send(updateError.message);
       }
     } else {
       const { error: insertError } = await supabase
         .from("connected_accounts")
         .insert({
-          user_id,
+          user_id: userId,
           platform: "youtube",
           status: "connected",
           access_token: tokenData.access_token,
@@ -118,20 +116,24 @@ module.exports = async function handler(req, res) {
         });
 
       if (insertError) {
-        return res.status(500).json({ ok: false, error: insertError.message });
+        return res.status(500).send(insertError.message);
       }
     }
 
-    return res.status(200).json({
-      ok: true,
-      platform: "youtube",
-      channel_id: channelId,
-      channel_name: channelName
-    });
+    return res.send(`
+      <html>
+        <body style="font-family:Arial;padding:30px">
+          <h2>YouTube connected successfully</h2>
+          <p>Channel: ${channelName}</p>
+          <script>
+            setTimeout(() => {
+              window.location.href = "https://view.ceetice.com/youtube-connect.html?connected=1";
+            }, 1500);
+          </script>
+        </body>
+      </html>
+    `);
   } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: error.message || "Unknown error"
-    });
+    return res.status(500).send(error.message || "Unknown error");
   }
 };
