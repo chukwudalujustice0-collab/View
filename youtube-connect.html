@@ -360,11 +360,6 @@
       word-break:break-word;
     }
 
-    .result a{
-      color:#93c5fd;
-      text-decoration:underline;
-    }
-
     .bottom-nav{
       position:fixed;
       left:50%;
@@ -402,15 +397,9 @@
     }
 
     @media (max-width:560px){
-      .row{
-        grid-template-columns:1fr;
-      }
-      .btn-row{
-        flex-direction:column;
-      }
-      .btn{
-        width:100%;
-      }
+      .row{grid-template-columns:1fr}
+      .btn-row{flex-direction:column}
+      .btn{width:100%}
     }
   </style>
 </head>
@@ -426,7 +415,6 @@
           <div class="sub">Connect and upload</div>
         </div>
       </div>
-
       <button class="icon-btn" id="refreshBtn" title="Refresh">↻</button>
     </header>
 
@@ -518,26 +506,11 @@
   </div>
 
   <nav class="bottom-nav">
-    <a class="nav-btn" href="home.html">
-      <span>🏠</span>
-      <span>Home</span>
-    </a>
-    <a class="nav-btn" href="explore.html">
-      <span>🔎</span>
-      <span>Explore</span>
-    </a>
-    <a class="nav-btn" href="create-post.html">
-      <span>➕</span>
-      <span>Create</span>
-    </a>
-    <a class="nav-btn active" href="youtube-connect.html">
-      <span>▶</span>
-      <span>YouTube</span>
-    </a>
-    <a class="nav-btn" href="settings.html">
-      <span>⚙️</span>
-      <span>Settings</span>
-    </a>
+    <a class="nav-btn" href="home.html"><span>🏠</span><span>Home</span></a>
+    <a class="nav-btn" href="explore.html"><span>🔎</span><span>Explore</span></a>
+    <a class="nav-btn" href="create-post.html"><span>➕</span><span>Create</span></a>
+    <a class="nav-btn active" href="youtube-connect.html"><span>▶</span><span>YouTube</span></a>
+    <a class="nav-btn" href="settings.html"><span>⚙️</span><span>Settings</span></a>
   </nav>
 
   <script>
@@ -582,7 +555,7 @@
     let providerToken = null;
     let currentSession = null;
     let currentUser = null;
-    let autoSavedFromReturn = false;
+    let autoAttemptDone = false;
 
     function showNotice(message, type = "info") {
       noticeBox.className = `notice show ${type}`;
@@ -591,7 +564,7 @@
       showNotice._timer = setTimeout(() => {
         noticeBox.className = "notice";
         noticeBox.textContent = "";
-      }, 2600);
+      }, 2800);
     }
 
     function setStatus(type, message) {
@@ -604,12 +577,12 @@
     function setResult(target, message = "", type = "info") {
       if (!message) {
         target.style.display = "none";
-        target.innerHTML = "";
+        target.textContent = "";
         return;
       }
 
       target.style.display = "block";
-      target.innerHTML = message;
+      target.textContent = message;
 
       if (type === "error") {
         target.style.background = "rgba(239,68,68,.08)";
@@ -665,82 +638,33 @@
       return data.user;
     }
 
-    async function saveConnectedAccount(channel) {
-      const user = await getCurrentUser();
-
-      const payload = {
-        user_id: user.id,
-        platform: "youtube",
-        account_name: channel?.snippet?.title || "YouTube",
-        account_handle: channel?.id || null,
-        status: "connected",
-        access_token: providerToken || null,
-        refresh_token: null,
-        token_expires_at: null,
-        external_user_id: channel?.id || null,
-        external_page_id: null,
-        updated_at: new Date().toISOString()
-      };
-
-      const { error } = await supabaseClient
-        .from("connected_accounts")
-        .upsert(payload, { onConflict: "user_id,platform" });
-
-      if (error) throw error;
-    }
-
-    async function connectGoogleYouTube() {
-      setResult(connectResult, "");
-      try {
-        const { error } = await supabaseClient.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: LIVE_REDIRECT_URL,
-            scopes: "openid email profile https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
-            queryParams: {
-              access_type: "offline",
-              prompt: "consent",
-              include_granted_scopes: "true"
-            }
-          }
-        });
-        if (error) throw error;
-      } catch (error) {
-        setStatus("err", "Connect failed.");
-        setResult(connectResult, error.message || "Connect failed.", "error");
-      }
-    }
-
     async function refreshSessionState() {
-      setResult(connectResult, "");
-      try {
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (error) throw error;
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) throw error;
 
-        currentSession = data?.session || null;
-        currentUser = currentSession?.user || null;
+      currentSession = data?.session || null;
+      currentUser = currentSession?.user || null;
 
-        if (currentSession?.provider_token) saveProviderToken(currentSession.provider_token);
-        else providerToken = loadProviderToken();
-
-        if (!currentSession) {
-          channelBox.style.display = "none";
-          setStatus("err", "No session.");
-          return;
-        }
-
-        if (!providerToken) {
-          channelBox.style.display = "none";
-          setStatus("err", "No provider token.");
-          setResult(connectResult, "Reconnect Google account.", "error");
-          return;
-        }
-
-        setStatus("ok", "Ready.");
-      } catch (error) {
-        setStatus("err", "Session error.");
-        setResult(connectResult, error.message || "Session error.", "error");
+      if (currentSession?.provider_token) {
+        saveProviderToken(currentSession.provider_token);
+      } else {
+        providerToken = loadProviderToken();
       }
+
+      if (!currentSession) {
+        channelBox.style.display = "none";
+        setStatus("err", "No session.");
+        return false;
+      }
+
+      if (!providerToken) {
+        channelBox.style.display = "none";
+        setStatus("err", "No provider token.");
+        return false;
+      }
+
+      setStatus("ok", "Ready.");
+      return true;
     }
 
     async function fetchChannel() {
@@ -758,8 +682,13 @@
 
       const data = await response.json();
 
-      if (!response.ok) throw new Error(data?.error?.message || "Check channel failed.");
-      if (!data.items || !data.items.length) throw new Error("No YouTube channel found.");
+      if (!response.ok) {
+        throw new Error(data?.error?.message || "Check channel failed.");
+      }
+
+      if (!data.items || !data.items.length) {
+        throw new Error("No YouTube channel found.");
+      }
 
       return data.items[0];
     }
@@ -767,25 +696,85 @@
     function renderChannel(channel) {
       channelThumb.src =
         channel?.snippet?.thumbnails?.high?.url ||
-        channel?.snippet?.thumbnails?.default?.url || "";
+        channel?.snippet?.thumbnails?.default?.url ||
+        "";
+
       channelName.textContent = channel?.snippet?.title || "Channel";
       channelSub.textContent = `Subscribers: ${channel?.statistics?.subscriberCount || 0} • Videos: ${channel?.statistics?.videoCount || 0}`;
       channelBox.style.display = "grid";
     }
 
+    async function findExistingYoutube(userId) {
+      const { data, error } = await supabaseClient
+        .from("connected_accounts")
+        .select("id, platform, status, account_name, account_handle")
+        .eq("user_id", userId)
+        .eq("platform", "youtube")
+        .maybeSingle();
+
+      if (error) throw error;
+      return data || null;
+    }
+
+    async function saveConnectedAccount(channel, allowExistingConnected = false) {
+      const user = await getCurrentUser();
+      const existing = await findExistingYoutube(user.id);
+
+      if (existing && existing.status === "connected" && !allowExistingConnected) {
+        throw new Error("YouTube already connected.");
+      }
+
+      const payload = {
+        user_id: user.id,
+        platform: "youtube",
+        account_name: channel?.snippet?.title || "YouTube",
+        account_handle: channel?.id || null,
+        status: "connected",
+        access_token: providerToken || null,
+        refresh_token: null,
+        token_expires_at: null,
+        external_user_id: channel?.id || null,
+        external_page_id: null,
+        updated_at: new Date().toISOString()
+      };
+
+      if (existing?.id) {
+        const { error: updateError } = await supabaseClient
+          .from("connected_accounts")
+          .update(payload)
+          .eq("id", existing.id);
+
+        if (updateError) throw new Error(updateError.message);
+        return "updated";
+      }
+
+      const { error: insertError } = await supabaseClient
+        .from("connected_accounts")
+        .insert(payload);
+
+      if (insertError) throw new Error(insertError.message);
+      return "inserted";
+    }
+
     async function autoSaveOnReturn() {
-      if (autoSavedFromReturn) return;
-      autoSavedFromReturn = true;
+      if (autoAttemptDone) return;
+      autoAttemptDone = true;
 
       try {
-        if (!currentSession?.provider_token && !providerToken) return;
+        const ready = await refreshSessionState();
+        if (!ready) return;
 
         const channel = await fetchChannel();
         renderChannel(channel);
-        await saveConnectedAccount(channel);
+
+        const result = await saveConnectedAccount(channel, true);
 
         setStatus("ok", "Connected.");
-        setResult(connectResult, "YouTube connected.", "success");
+        setResult(
+          connectResult,
+          result === "updated" ? "YouTube connected." : "YouTube connected.",
+          "success"
+        );
         showNotice("YouTube connected.", "success");
       } catch (error) {
         setStatus("err", "Connection incomplete.");
@@ -793,19 +782,71 @@
       }
     }
 
+    async function connectGoogleYouTube() {
+      setResult(connectResult, "");
+
+      try {
+        const user = await getCurrentUser().catch(() => null);
+
+        if (user) {
+          const existing = await findExistingYoutube(user.id);
+          if (existing && existing.status === "connected") {
+            setStatus("err", "Already connected.");
+            setResult(connectResult, "YouTube already connected.", "error");
+            showNotice("YouTube already connected.", "error");
+            return;
+          }
+        }
+
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: LIVE_REDIRECT_URL,
+            scopes: "openid email profile https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
+            queryParams: {
+              access_type: "offline",
+              prompt: "consent",
+              include_granted_scopes: "true"
+            }
+          }
+        });
+
+        if (error) throw error;
+      } catch (error) {
+        setStatus("err", "Connect failed.");
+        setResult(connectResult, error.message || "Connect failed.", "error");
+      }
+    }
+
     async function checkChannel() {
       setResult(connectResult, "");
+
       try {
+        const ready = await refreshSessionState();
+        if (!ready) throw new Error("Reconnect Google account.");
+
         setStatus("ok", "Checking channel...");
         const channel = await fetchChannel();
         renderChannel(channel);
-        await saveConnectedAccount(channel);
 
-        setStatus("ok", "Connected.");
-        setResult(connectResult, "YouTube connected.", "success");
-        showNotice("YouTube connected.", "success");
+        try {
+          await saveConnectedAccount(channel, false);
+          setStatus("ok", "Connected.");
+          setResult(connectResult, "YouTube connected.", "success");
+          showNotice("YouTube connected.", "success");
+        } catch (saveError) {
+          if (saveError.message === "YouTube already connected.") {
+            setStatus("err", "Already connected.");
+            setResult(connectResult, "YouTube already connected.", "error");
+            showNotice("YouTube already connected.", "error");
+          } else {
+            throw saveError;
+          }
+        }
       } catch (error) {
-        channelBox.style.display = "none";
+        if (!channelBox.style.display || channelBox.style.display === "none") {
+          channelBox.style.display = "none";
+        }
         setStatus("err", "Channel check failed.");
         setResult(connectResult, error.message || "Channel check failed.", "error");
       }
@@ -828,8 +869,15 @@
       const privacy = privacyInput.value;
       const categoryId = categoryIdInput.value.trim() || "22";
 
-      if (!file) return setResult(uploadResult, "Select a video file.", "error");
-      if (!title) return setResult(uploadResult, "Enter a title.", "error");
+      if (!file) {
+        setResult(uploadResult, "Select a video file.", "error");
+        return;
+      }
+
+      if (!title) {
+        setResult(uploadResult, "Enter a title.", "error");
+        return;
+      }
 
       try {
         setProgress(true, 8, "Preparing...");
@@ -842,6 +890,7 @@
         const boundary = "-------314159265358979323846";
         const delimiter = `\r\n--${boundary}\r\n`;
         const closeDelim = `\r\n--${boundary}--`;
+
         const fileBuffer = await file.arrayBuffer();
 
         const metadataPart =
@@ -878,19 +927,12 @@
         setProgress(true, 84, "Finishing...");
         const data = await response.json();
 
-        if (!response.ok) throw new Error(data?.error?.message || "Upload failed.");
+        if (!response.ok) {
+          throw new Error(data?.error?.message || "Upload failed.");
+        }
 
         setProgress(true, 100, "Done");
-
-        const videoId = data?.id || "";
-        const url = videoId ? `https://www.youtube.com/watch?v=${videoId}` : "";
-
-        setResult(
-          uploadResult,
-          url ? `Upload complete.<br><a href="${url}" target="_blank" rel="noopener">Open video</a>` : "Upload complete.",
-          "success"
-        );
-
+        setResult(uploadResult, "Upload complete.", "success");
         showNotice("Upload complete.", "success");
         setTimeout(() => setProgress(false, 0, "Preparing..."), 700);
       } catch (error) {
@@ -940,20 +982,20 @@
     channelBtn.addEventListener("click", checkChannel);
     logoutBtn.addEventListener("click", logout);
     refreshBtn.addEventListener("click", async () => {
-      await refreshSessionState();
+      autoAttemptDone = false;
       await autoSaveOnReturn();
     });
     uploadForm.addEventListener("submit", uploadVideo);
 
     supabaseClient.auth.onAuthStateChange(async (_event, session) => {
       if (session?.provider_token) saveProviderToken(session.provider_token);
-      await refreshSessionState();
+      autoAttemptDone = false;
       await autoSaveOnReturn();
     });
 
     window.addEventListener("load", async () => {
       providerToken = loadProviderToken();
-      await refreshSessionState();
+      autoAttemptDone = false;
       await autoSaveOnReturn();
     });
   </script>
