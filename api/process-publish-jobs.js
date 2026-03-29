@@ -7,46 +7,54 @@ function setCors(res) {
 }
 
 async function updatePostSummary(supabase, postId) {
-  const { data: postJobs, error: postJobsError } = await supabase
+  const { data: jobs, error } = await supabase
     .from("post_publish_jobs")
     .select("status")
     .eq("post_id", postId);
 
-  if (postJobsError) {
-    throw new Error(`Post summary read failed: ${postJobsError.message}`);
+  if (error) {
+    throw new Error(`Post summary read failed: ${error.message}`);
   }
 
-  if (!postJobs || !postJobs.length) {
+  if (!jobs || !jobs.length) {
     return;
   }
 
-  const statuses = postJobs.map(j => (j.status || "").toLowerCase());
+  const statuses = jobs.map(j => String(j.status || "").toLowerCase());
 
   let publishStatus = "queued";
 
-  if (statuses.every(status => status === "success")) {
+  if (statuses.every(s => s === "success")) {
     publishStatus = "published";
-  } else if (statuses.some(status => status === "failed") && statuses.some(status => status === "success")) {
+  } else if (statuses.some(s => s === "failed") && statuses.some(s => s === "success")) {
     publishStatus = "partial";
-  } else if (statuses.every(status => status === "failed")) {
+  } else if (statuses.every(s => s === "failed")) {
     publishStatus = "failed";
-  } else if (statuses.some(status => status === "processing")) {
+  } else if (statuses.some(s => s === "processing")) {
     publishStatus = "processing";
-  } else if (statuses.some(status => status === "retrying")) {
+  } else if (statuses.some(s => s === "retrying")) {
     publishStatus = "retrying";
-  } else if (statuses.some(status => status === "queued")) {
+  } else if (statuses.some(s => s === "queued")) {
     publishStatus = "queued";
   }
 
-  const { error: updatePostError } = await supabase
+  const payload = {
+    publish_status: publishStatus,
+    status: publishStatus,
+    updated_at: new Date().toISOString()
+  };
+
+  if (publishStatus === "published") {
+    payload.published_at = new Date().toISOString();
+  }
+
+  const { error: updateError } = await supabase
     .from("posts")
-    .update({
-      publish_status: publishStatus
-    })
+    .update(payload)
     .eq("id", postId);
 
-  if (updatePostError) {
-    throw new Error(`Post summary update failed: ${updatePostError.message}`);
+  if (updateError) {
+    throw new Error(`Post summary update failed: ${updateError.message}`);
   }
 }
 
@@ -94,8 +102,13 @@ module.exports = async function handler(req, res) {
           .eq("id", job.post_id)
           .single();
 
-        if (postError) throw postError;
-        if (!post) throw new Error("Post not found");
+        if (postError) {
+          throw postError;
+        }
+
+        if (!post) {
+          throw new Error("Post not found");
+        }
 
         const processingAt = new Date().toISOString();
 
@@ -108,11 +121,22 @@ module.exports = async function handler(req, res) {
           })
           .eq("id", job.id);
 
-        if (markProcessingError) throw markProcessingError;
+        if (markProcessingError) {
+          throw markProcessingError;
+        }
 
         // Simulated delivery for now
         const deliveredAt = new Date().toISOString();
         const platformPostId = `post_${job.platform}_${Date.now()}`;
+
+        const responsePayload = {
+          ok: true,
+          mode: "simulated",
+          platform: job.platform,
+          post_id: post.id,
+          content: post.content || null,
+          media_url: post.media_url || null
+        };
 
         const { error: updateJobError } = await supabase
           .from("post_publish_jobs")
@@ -122,19 +146,16 @@ module.exports = async function handler(req, res) {
             delivered_at: deliveredAt,
             finished_at: deliveredAt,
             platform_post_id: platformPostId,
-            response_payload: {
-              ok: true,
-              mode: "simulated",
-              platform: job.platform,
-              post_id: post.id
-            },
+            response_payload: responsePayload,
             last_error: null,
             next_retry_at: null,
             updated_at: deliveredAt
           })
           .eq("id", job.id);
 
-        if (updateJobError) throw updateJobError;
+        if (updateJobError) {
+          throw updateJobError;
+        }
 
         await supabase
           .from("post_publish_logs")
@@ -145,12 +166,7 @@ module.exports = async function handler(req, res) {
             platform: job.platform,
             status: "success",
             platform_post_id: platformPostId,
-            response_payload: {
-              ok: true,
-              mode: "simulated",
-              platform: job.platform,
-              post_id: post.id
-            },
+            response_payload: responsePayload,
             attempts: (job.attempts || 0) + 1
           });
 
@@ -163,12 +179,13 @@ module.exports = async function handler(req, res) {
         });
       } catch (err) {
         const failedAt = new Date().toISOString();
+        const message = err.message || "Unknown error";
 
         await supabase
           .from("post_publish_jobs")
           .update({
             status: "failed",
-            last_error: err.message,
+            last_error: message,
             attempts: (job.attempts || 0) + 1,
             finished_at: failedAt,
             updated_at: failedAt
@@ -183,7 +200,7 @@ module.exports = async function handler(req, res) {
             user_id: job.user_id,
             platform: job.platform,
             status: "failed",
-            error_message: err.message,
+            error_message: message,
             attempts: (job.attempts || 0) + 1
           });
 
@@ -195,12 +212,11 @@ module.exports = async function handler(req, res) {
           job: job.id,
           platform: job.platform,
           status: "failed",
-          error: err.message
+          error: message
         });
       }
     }
 
-    // Final sweep for all touched posts
     for (const postId of touchedPostIds) {
       try {
         await updatePostSummary(supabase, postId);
