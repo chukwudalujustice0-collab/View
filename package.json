@@ -1,3 +1,6 @@
 {
-  "type": "module"
+  "name": "view-backend",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4"
+  }
 }
