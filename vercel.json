@@ -1,13 +1,8 @@
 {
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src * data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src * https://*.facebook.com https://*.fbcdn.net;"
-        }
-      ]
-    }
-  ]
+  "name": "view-backend",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4"
+  }
 }
