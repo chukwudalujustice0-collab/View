@@ -6,7 +6,6 @@
   <title>YouTube Connect | View</title>
   <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root{
       --bg:#08111f;
@@ -21,381 +20,60 @@
       --shadow:0 14px 40px rgba(0,0,0,.28);
       --safe-bottom:env(safe-area-inset-bottom);
     }
-
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-      font-family:Arial,sans-serif;
-      -webkit-tap-highlight-color:transparent;
-    }
-
-    html,body{
-      min-height:100%;
-      background:var(--bg);
-      color:var(--text);
-    }
-
-    body{
-      padding:16px 14px 110px;
-    }
-
-    button,input,textarea,select{
-      font:inherit;
-      color:inherit;
-    }
-
-    button{
-      border:none;
-      background:none;
-      cursor:pointer;
-    }
-
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
-
-    .wrap{
-      width:min(100%, 820px);
-      margin:0 auto;
-    }
-
-    .notice{
-      display:none;
-      margin-bottom:14px;
-      padding:12px 14px;
-      border-radius:14px;
-      font-size:14px;
-      line-height:1.55;
-      box-shadow:var(--shadow);
-    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:var(--bg);color:var(--text)}
+    body{padding:16px 14px 110px}
+    button,input,textarea,select{font:inherit;color:inherit}
+    button{border:none;background:none;cursor:pointer}
+    a{color:inherit;text-decoration:none}
+    .wrap{width:min(100%,820px);margin:0 auto}
+    .notice{display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;font-size:14px;line-height:1.55;box-shadow:var(--shadow)}
     .notice.show{display:block}
     .notice.error{background:rgba(127,29,29,.92);color:#fecaca}
     .notice.success{background:rgba(5,46,22,.92);color:#d1fae5}
     .notice.info{background:rgba(30,41,59,.95);color:#dbeafe}
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
-    }
-
-    .top-left{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-      flex:1;
-    }
-
-    .icon-btn{
-      width:46px;
-      height:46px;
-      min-width:46px;
-      border-radius:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      box-shadow:var(--shadow);
-      font-size:18px;
-      color:#fff;
-    }
-
-    .title-box{
-      min-width:0;
-      flex:1;
-    }
-
-    .title{
-      font-size:22px;
-      font-weight:800;
-      margin-bottom:3px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .sub{
-      color:var(--muted);
-      font-size:13px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      margin-bottom:16px;
-    }
-
-    .card-head{
-      padding:14px 16px;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .card-head h3{
-      font-size:16px;
-      font-weight:800;
-    }
-
-    .card-body{
-      padding:14px;
-      display:grid;
-      gap:12px;
-    }
-
-    .status-box{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-height:52px;
-      padding:12px 14px;
-      border-radius:16px;
-      background:rgba(255,255,255,.05);
-      border:1px solid var(--line);
-    }
-
-    .dot{
-      width:10px;
-      height:10px;
-      min-width:10px;
-      border-radius:50%;
-      background:var(--warn);
-      box-shadow:0 0 0 4px rgba(245,158,11,.12);
-    }
-
-    .dot.ok{
-      background:var(--success);
-      box-shadow:0 0 0 4px rgba(16,185,129,.12);
-    }
-
-    .dot.err{
-      background:var(--danger);
-      box-shadow:0 0 0 4px rgba(239,68,68,.12);
-    }
-
-    .btn-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      min-height:44px;
-      padding:0 14px;
-      border-radius:12px;
-      font-size:13px;
-      font-weight:700;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      cursor:pointer;
-    }
-
-    .btn.primary{
-      background:linear-gradient(135deg,var(--youtube),#d70000);
-      border-color:transparent;
-    }
-
-    .btn.danger{
-      background:rgba(239,68,68,.12);
-      border-color:rgba(239,68,68,.24);
-      color:#fecaca;
-    }
-
-    .channel-box{
-      display:none;
-      gap:12px;
-      padding:14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.05);
-      border:1px solid var(--line);
-    }
-
-    .channel-top{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
-    .channel-thumb{
-      width:60px;
-      height:60px;
-      min-width:60px;
-      border-radius:16px;
-      object-fit:cover;
-      background:#0f172a;
-      border:1px solid var(--line);
-    }
-
-    .channel-meta{
-      min-width:0;
-      flex:1;
-    }
-
-    .channel-name{
-      font-size:15px;
-      font-weight:800;
-      margin-bottom:4px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .channel-sub{
-      color:var(--muted);
-      font-size:12px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .badge{
-      width:max-content;
-      min-height:30px;
-      padding:0 10px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(16,185,129,.12);
-      border:1px solid rgba(16,185,129,.22);
-      color:#d1fae5;
-      font-size:11px;
-      font-weight:800;
-    }
-
-    .field{
-      display:grid;
-      gap:8px;
-    }
-
-    .label{
-      font-size:13px;
-      font-weight:700;
-      color:#dbeafe;
-    }
-
-    .input,
-    .textarea,
-    .select,
-    .file-wrap{
-      width:100%;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      color:var(--text);
-      padding:14px;
-      outline:none;
-    }
-
-    .textarea{
-      min-height:120px;
-      resize:vertical;
-      line-height:1.6;
-    }
-
-    .file-wrap{
-      padding:10px 12px;
-    }
-
-    .file-wrap input[type="file"]{
-      width:100%;
-      color:var(--muted);
-    }
-
-    .row{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-    }
-
-    .progress-wrap{
-      display:none;
-      gap:8px;
-    }
-
-    .progress-track{
-      width:100%;
-      height:10px;
-      border-radius:999px;
-      overflow:hidden;
-      background:rgba(255,255,255,.08);
-      border:1px solid var(--line);
-    }
-
-    .progress-fill{
-      width:0%;
-      height:100%;
-      background:linear-gradient(90deg,var(--youtube),#ff6a00,#7c3aed);
-      transition:width .25s ease;
-    }
-
-    .progress-text{
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    .result{
-      display:none;
-      padding:14px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      font-size:14px;
-      line-height:1.6;
-      word-break:break-word;
-    }
-
-    .bottom-nav{
-      position:fixed;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:12px;
-      width:min(760px, calc(100% - 20px));
-      background:rgba(12,20,36,.95);
-      border:1px solid var(--line);
-      border-radius:20px;
-      padding:8px 6px calc(8px + var(--safe-bottom));
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:6px;
-      box-shadow:var(--shadow);
-      z-index:40;
-    }
-
-    .nav-btn{
-      min-height:56px;
-      border-radius:14px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      font-size:11px;
-      font-weight:700;
-      color:var(--muted);
-      text-decoration:none;
-    }
-
-    .nav-btn.active{
-      background:rgba(37,99,235,.16);
-      color:#fff;
-    }
-
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+    .top-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+    .icon-btn{width:46px;height:46px;min-width:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border:1px solid var(--line);box-shadow:var(--shadow);font-size:18px;color:#fff}
+    .title-box{min-width:0;flex:1}
+    .title{font-size:22px;font-weight:800;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sub{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);margin-bottom:16px}
+    .card-head{padding:14px 16px;border-bottom:1px solid var(--line)}
+    .card-head h3{font-size:16px;font-weight:800}
+    .card-body{padding:14px;display:grid;gap:12px}
+    .status-box{display:flex;align-items:center;gap:10px;min-height:52px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+    .dot{width:10px;height:10px;min-width:10px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 4px rgba(245,158,11,.12)}
+    .dot.ok{background:var(--success);box-shadow:0 0 0 4px rgba(16,185,129,.12)}
+    .dot.err{background:var(--danger);box-shadow:0 0 0 4px rgba(239,68,68,.12)}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{min-height:44px;padding:0 14px;border-radius:12px;font-size:13px;font-weight:700;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg,var(--youtube),#d70000);border-color:transparent}
+    .btn.danger{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#fecaca}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .channel-box{display:none;gap:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+    .channel-top{display:flex;align-items:center;gap:12px;min-width:0}
+    .channel-thumb{width:60px;height:60px;min-width:60px;border-radius:16px;object-fit:cover;background:#0f172a;border:1px solid var(--line)}
+    .channel-meta{min-width:0;flex:1}
+    .channel-name{font-size:15px;font-weight:800;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .channel-sub{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .badge{width:max-content;min-height:30px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.22);color:#d1fae5;font-size:11px;font-weight:800}
+    .field{display:grid;gap:8px}
+    .label{font-size:13px;font-weight:700;color:#dbeafe}
+    .input,.textarea,.select,.file-wrap{width:100%;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);padding:14px;outline:none}
+    .textarea{min-height:120px;resize:vertical;line-height:1.6}
+    .file-wrap{padding:10px 12px}
+    .file-wrap input[type="file"]{width:100%;color:var(--muted)}
+    .file-note{color:var(--muted);font-size:12px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .progress-wrap{display:none;gap:8px}
+    .progress-track{width:100%;height:10px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08);border:1px solid var(--line)}
+    .progress-fill{width:0%;height:100%;background:linear-gradient(90deg,var(--youtube),#ff6a00,#7c3aed);transition:width .25s ease}
+    .progress-text{color:var(--muted);font-size:12px}
+    .result{display:none;padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:14px;line-height:1.6;word-break:break-word;white-space:pre-wrap}
+    .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;width:min(760px,calc(100% - 20px));background:rgba(12,20,36,.95);border:1px solid var(--line);border-radius:20px;padding:8px 6px calc(8px + var(--safe-bottom));display:grid;grid-template-columns:repeat(5,1fr);gap:6px;box-shadow:var(--shadow);z-index:40}
+    .nav-btn{min-height:56px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:700;color:var(--muted);text-decoration:none}
+    .nav-btn.active{background:rgba(37,99,235,.16);color:#fff}
     @media (max-width:560px){
       .row{grid-template-columns:1fr}
       .btn-row{flex-direction:column}
@@ -409,30 +87,27 @@
 
     <header class="topbar">
       <div class="top-left">
-        <button class="icon-btn" onclick="history.back()" title="Back">←</button>
+        <button class="icon-btn" onclick="history.back()">←</button>
         <div class="title-box">
           <div class="title">YouTube</div>
           <div class="sub">Connect and upload</div>
         </div>
       </div>
-      <button class="icon-btn" id="refreshBtn" title="Refresh">↻</button>
+      <button class="icon-btn" id="refreshBtn">↻</button>
     </header>
 
     <section class="card">
-      <div class="card-head">
-        <h3>Connection</h3>
-      </div>
-
+      <div class="card-head"><h3>Connection</h3></div>
       <div class="card-body">
         <div class="status-box">
           <span class="dot" id="statusDot"></span>
-          <span id="statusText">Checking session...</span>
+          <span id="statusText">Ready.</span>
         </div>
 
         <div class="btn-row">
-          <button class="btn primary" id="connectBtn">Connect</button>
-          <button class="btn" id="channelBtn">Check Channel</button>
-          <button class="btn danger" id="logoutBtn">Logout</button>
+          <button class="btn primary" id="connectBtn" type="button">Connect</button>
+          <button class="btn" id="channelBtn" type="button">Check Channel</button>
+          <button class="btn danger" id="logoutBtn" type="button">Logout</button>
         </div>
 
         <div class="channel-box" id="channelBox">
@@ -451,10 +126,7 @@
     </section>
 
     <section class="card">
-      <div class="card-head">
-        <h3>Upload</h3>
-      </div>
-
+      <div class="card-head"><h3>Upload</h3></div>
       <div class="card-body">
         <form id="uploadForm" class="card-body" style="padding:0;">
           <div class="field">
@@ -462,6 +134,7 @@
             <div class="file-wrap">
               <input type="file" id="videoFile" accept="video/*" />
             </div>
+            <div class="file-note" id="fileNote">No file selected.</div>
           </div>
 
           <div class="field">
@@ -494,9 +167,7 @@
         </form>
 
         <div class="progress-wrap" id="progressWrap">
-          <div class="progress-track">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
           <div class="progress-text" id="progressText">Preparing...</div>
         </div>
 
@@ -541,8 +212,8 @@
     const channelSub = document.getElementById("channelSub");
     const connectResult = document.getElementById("connectResult");
     const uploadForm = document.getElementById("uploadForm");
-    const uploadBtn = document.getElementById("uploadBtn");
     const videoFile = document.getElementById("videoFile");
+    const fileNote = document.getElementById("fileNote");
     const titleInput = document.getElementById("titleInput");
     const descriptionInput = document.getElementById("descriptionInput");
     const privacyInput = document.getElementById("privacyInput");
@@ -553,9 +224,7 @@
     const uploadResult = document.getElementById("uploadResult");
 
     let providerToken = null;
-    let currentSession = null;
-    let currentUser = null;
-    let autoAttemptDone = false;
+    let cachedFile = null;
 
     function showNotice(message, type = "info") {
       noticeBox.className = `notice show ${type}`;
@@ -580,10 +249,8 @@
         target.textContent = "";
         return;
       }
-
       target.style.display = "block";
       target.textContent = message;
-
       if (type === "error") {
         target.style.background = "rgba(239,68,68,.08)";
         target.style.borderColor = "rgba(239,68,68,.22)";
@@ -596,118 +263,46 @@
       }
     }
 
-    function saveProviderToken(token) {
-      if (!token) return;
-      providerToken = token;
-      try {
-        localStorage.setItem(TOKEN_KEY, token);
-      } catch {}
-    }
-
-    function loadProviderToken() {
-      try {
-        return localStorage.getItem(TOKEN_KEY) || null;
-      } catch {
-        return null;
-      }
-    }
-
-    function clearProviderToken() {
-      providerToken = null;
-      try {
-        localStorage.removeItem(TOKEN_KEY);
-      } catch {}
-    }
-
     function setProgress(show, percent = 0, text = "Preparing...") {
       progressWrap.style.display = show ? "grid" : "none";
       progressFill.style.width = `${percent}%`;
       progressText.textContent = text;
-      uploadBtn.disabled = show;
-      connectBtn.disabled = show;
-      channelBtn.disabled = show;
-      logoutBtn.disabled = show;
-      refreshBtn.disabled = show;
     }
 
-    async function getCurrentUser() {
+    function saveProviderToken(token) {
+      if (!token) return;
+      providerToken = token;
+      try { localStorage.setItem(TOKEN_KEY, token); } catch {}
+    }
+
+    function loadProviderToken() {
+      try { return localStorage.getItem(TOKEN_KEY) || null; } catch { return null; }
+    }
+
+    function clearProviderToken() {
+      providerToken = null;
+      try { localStorage.removeItem(TOKEN_KEY); } catch {}
+    }
+
+    async function getUser() {
       const { data, error } = await supabaseClient.auth.getUser();
       if (error) throw error;
-      if (!data?.user) throw new Error("Session expired. Sign in again.");
-      currentUser = data.user;
+      if (!data.user) throw new Error("Session expired. Sign in again.");
       return data.user;
     }
 
-    async function refreshSessionState() {
+    async function getSession() {
       const { data, error } = await supabaseClient.auth.getSession();
       if (error) throw error;
-
-      currentSession = data?.session || null;
-      currentUser = currentSession?.user || null;
-
-      if (currentSession?.provider_token) {
-        saveProviderToken(currentSession.provider_token);
-      } else {
-        providerToken = loadProviderToken();
-      }
-
-      if (!currentSession) {
-        channelBox.style.display = "none";
-        setStatus("err", "No session.");
-        return false;
-      }
-
-      if (!providerToken) {
-        channelBox.style.display = "none";
-        setStatus("err", "No provider token.");
-        return false;
-      }
-
-      setStatus("ok", "Ready.");
-      return true;
-    }
-
-    async function fetchChannel() {
+      if (data?.session?.provider_token) saveProviderToken(data.session.provider_token);
       if (!providerToken) providerToken = loadProviderToken();
-      if (!providerToken) throw new Error("Reconnect Google account.");
-
-      const response = await fetch(
-        "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true",
-        {
-          headers: {
-            Authorization: `Bearer ${providerToken}`
-          }
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.error?.message || "Check channel failed.");
-      }
-
-      if (!data.items || !data.items.length) {
-        throw new Error("No YouTube channel found.");
-      }
-
-      return data.items[0];
-    }
-
-    function renderChannel(channel) {
-      channelThumb.src =
-        channel?.snippet?.thumbnails?.high?.url ||
-        channel?.snippet?.thumbnails?.default?.url ||
-        "";
-
-      channelName.textContent = channel?.snippet?.title || "Channel";
-      channelSub.textContent = `Subscribers: ${channel?.statistics?.subscriberCount || 0} • Videos: ${channel?.statistics?.videoCount || 0}`;
-      channelBox.style.display = "grid";
+      return data.session || null;
     }
 
     async function findExistingYoutube(userId) {
       const { data, error } = await supabaseClient
         .from("connected_accounts")
-        .select("id, platform, status, account_name, account_handle")
+        .select("id, status, account_name, account_handle")
         .eq("user_id", userId)
         .eq("platform", "youtube")
         .maybeSingle();
@@ -716,11 +311,37 @@
       return data || null;
     }
 
-    async function saveConnectedAccount(channel, allowExistingConnected = false) {
-      const user = await getCurrentUser();
+    async function fetchChannel() {
+      const session = await getSession();
+      if (!session) throw new Error("No session.");
+      if (!providerToken) throw new Error("Reconnect Google account.");
+
+      const response = await fetch(
+        "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true",
+        { headers: { Authorization: `Bearer ${providerToken}` } }
+      );
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error?.message || "Check channel failed.");
+      if (!data.items || !data.items.length) throw new Error("No YouTube channel found.");
+      return data.items[0];
+    }
+
+    function renderChannel(channel) {
+      channelThumb.src =
+        channel?.snippet?.thumbnails?.high?.url ||
+        channel?.snippet?.thumbnails?.default?.url ||
+        "";
+      channelName.textContent = channel?.snippet?.title || "Channel";
+      channelSub.textContent = `Subscribers: ${channel?.statistics?.subscriberCount || 0} • Videos: ${channel?.statistics?.videoCount || 0}`;
+      channelBox.style.display = "grid";
+    }
+
+    async function saveYoutubeConnection(channel, allowAlreadyConnected = false) {
+      const user = await getUser();
       const existing = await findExistingYoutube(user.id);
 
-      if (existing && existing.status === "connected" && !allowExistingConnected) {
+      if (existing && existing.status === "connected" && !allowAlreadyConnected) {
         throw new Error("YouTube already connected.");
       }
 
@@ -739,44 +360,53 @@
       };
 
       if (existing?.id) {
-        const { error: updateError } = await supabaseClient
+        const { error } = await supabaseClient
           .from("connected_accounts")
           .update(payload)
           .eq("id", existing.id);
-
-        if (updateError) throw new Error(updateError.message);
+        if (error) throw new Error(error.message);
         return "updated";
       }
 
-      const { error: insertError } = await supabaseClient
+      const { error } = await supabaseClient
         .from("connected_accounts")
         .insert(payload);
-
-      if (insertError) throw new Error(insertError.message);
+      if (error) throw new Error(error.message);
       return "inserted";
     }
 
-    async function autoSaveOnReturn() {
-      if (autoAttemptDone) return;
-      autoAttemptDone = true;
-
+    async function refreshState() {
       try {
-        const ready = await refreshSessionState();
-        if (!ready) return;
+        const session = await getSession();
+        if (!session) {
+          setStatus("err", "No session.");
+          return;
+        }
+        setStatus("ok", "Ready.");
+      } catch (error) {
+        setStatus("err", error.message || "Session error.");
+      }
+    }
+
+    async function tryAutoConnectReturn() {
+      try {
+        const session = await getSession();
+        if (!session || !providerToken) return;
 
         const channel = await fetchChannel();
         renderChannel(channel);
-
-        const result = await saveConnectedAccount(channel, true);
+        await saveYoutubeConnection(channel, true);
 
         setStatus("ok", "Connected.");
-        setResult(
-          connectResult,
-          result === "updated" ? "YouTube connected." : "YouTube connected.",
-          "success"
-        );
+        setResult(connectResult, "YouTube connected.", "success");
         showNotice("YouTube connected.", "success");
       } catch (error) {
+        if (
+          String(error.message).includes("No session") ||
+          String(error.message).includes("Reconnect")
+        ) {
+          return;
+        }
         setStatus("err", "Connection incomplete.");
         setResult(connectResult, error.message || "Connection incomplete.", "error");
       }
@@ -784,16 +414,13 @@
 
     async function connectGoogleYouTube() {
       setResult(connectResult, "");
-
       try {
-        const user = await getCurrentUser().catch(() => null);
-
+        const user = await getUser().catch(() => null);
         if (user) {
           const existing = await findExistingYoutube(user.id);
           if (existing && existing.status === "connected") {
             setStatus("err", "Already connected.");
             setResult(connectResult, "YouTube already connected.", "error");
-            showNotice("YouTube already connected.", "error");
             return;
           }
         }
@@ -820,35 +447,76 @@
 
     async function checkChannel() {
       setResult(connectResult, "");
-
       try {
-        const ready = await refreshSessionState();
-        if (!ready) throw new Error("Reconnect Google account.");
-
-        setStatus("ok", "Checking channel...");
+        setStatus("ok", "Checking...");
         const channel = await fetchChannel();
         renderChannel(channel);
 
         try {
-          await saveConnectedAccount(channel, false);
+          await saveYoutubeConnection(channel, false);
           setStatus("ok", "Connected.");
           setResult(connectResult, "YouTube connected.", "success");
           showNotice("YouTube connected.", "success");
         } catch (saveError) {
-          if (saveError.message === "YouTube already connected.") {
-            setStatus("err", "Already connected.");
-            setResult(connectResult, "YouTube already connected.", "error");
-            showNotice("YouTube already connected.", "error");
-          } else {
-            throw saveError;
-          }
+          setStatus("err", "Save failed.");
+          setResult(connectResult, saveError.message || "Save failed.", "error");
         }
       } catch (error) {
-        if (!channelBox.style.display || channelBox.style.display === "none") {
-          channelBox.style.display = "none";
-        }
         setStatus("err", "Channel check failed.");
         setResult(connectResult, error.message || "Channel check failed.", "error");
+      }
+    }
+
+    async function logoutYoutube() {
+      setResult(connectResult, "");
+      try {
+        const user = await getUser().catch(() => null);
+        if (user) {
+          await supabaseClient
+            .from("connected_accounts")
+            .update({
+              status: "disconnected",
+              access_token: null,
+              refresh_token: null,
+              updated_at: new Date().toISOString()
+            })
+            .eq("user_id", user.id)
+            .eq("platform", "youtube");
+        }
+
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+
+        clearProviderToken();
+        channelBox.style.display = "none";
+        setStatus("err", "Logged out.");
+        setResult(connectResult, "Logged out.", "success");
+        showNotice("Logged out.", "success");
+      } catch (error) {
+        setStatus("err", "Logout failed.");
+        setResult(connectResult, error.message || "Logout failed.", "error");
+      }
+    }
+
+    async function cacheSelectedFile(file) {
+      if (!file) {
+        cachedFile = null;
+        fileNote.textContent = "No file selected.";
+        return;
+      }
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        cachedFile = {
+          name: file.name,
+          type: file.type || "video/mp4",
+          buffer: arrayBuffer
+        };
+        fileNote.textContent = `${file.name} ready.`;
+      } catch (error) {
+        cachedFile = null;
+        fileNote.textContent = "Could not read selected file.";
+        setResult(uploadResult, "Could not read selected file.", "error");
       }
     }
 
@@ -858,21 +526,19 @@
 
       if (!providerToken) providerToken = loadProviderToken();
       if (!providerToken) {
-        setStatus("err", "No provider token.");
         setResult(uploadResult, "Reconnect Google account.", "error");
         return;
       }
 
-      const file = videoFile.files?.[0];
+      if (!cachedFile) {
+        setResult(uploadResult, "Select a video file again.", "error");
+        return;
+      }
+
       const title = titleInput.value.trim();
       const description = descriptionInput.value.trim();
       const privacy = privacyInput.value;
       const categoryId = categoryIdInput.value.trim() || "22";
-
-      if (!file) {
-        setResult(uploadResult, "Select a video file.", "error");
-        return;
-      }
 
       if (!title) {
         setResult(uploadResult, "Enter a title.", "error");
@@ -891,8 +557,6 @@
         const delimiter = `\r\n--${boundary}\r\n`;
         const closeDelim = `\r\n--${boundary}--`;
 
-        const fileBuffer = await file.arrayBuffer();
-
         const metadataPart =
           delimiter +
           "Content-Type: application/json; charset=UTF-8\r\n\r\n" +
@@ -900,13 +564,13 @@
 
         const videoHeader =
           delimiter +
-          `Content-Type: ${file.type || "video/mp4"}\r\n\r\n`;
+          `Content-Type: ${cachedFile.type}\r\n\r\n`;
 
         const encoder = new TextEncoder();
         const body = new Blob([
           encoder.encode(metadataPart),
           encoder.encode(videoHeader),
-          fileBuffer,
+          cachedFile.buffer,
           encoder.encode(closeDelim)
         ]);
 
@@ -924,8 +588,8 @@
           }
         );
 
-        setProgress(true, 84, "Finishing...");
         const data = await response.json();
+        setProgress(true, 84, "Finishing...");
 
         if (!response.ok) {
           throw new Error(data?.error?.message || "Upload failed.");
@@ -941,62 +605,28 @@
       }
     }
 
-    async function logout() {
-      setResult(connectResult, "");
-      setResult(uploadResult, "");
+    document.addEventListener("DOMContentLoaded", async () => {
+      connectBtn.addEventListener("click", connectGoogleYouTube);
+      channelBtn.addEventListener("click", checkChannel);
+      logoutBtn.addEventListener("click", logoutYoutube);
+      refreshBtn.addEventListener("click", async () => {
+        await refreshState();
+        await tryAutoConnectReturn();
+      });
+
+      videoFile.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0] || null;
+        await cacheSelectedFile(file);
+      });
+
+      uploadForm.addEventListener("submit", uploadVideo);
 
       try {
-        if (!currentUser) {
-          try { await getCurrentUser(); } catch {}
-        }
-
-        if (currentUser) {
-          await supabaseClient
-            .from("connected_accounts")
-            .update({
-              status: "disconnected",
-              access_token: null,
-              refresh_token: null,
-              updated_at: new Date().toISOString()
-            })
-            .eq("user_id", currentUser.id)
-            .eq("platform", "youtube");
-        }
-
-        const { error } = await supabaseClient.auth.signOut();
-        if (error) throw error;
-
-        currentUser = null;
-        currentSession = null;
-        clearProviderToken();
-        channelBox.style.display = "none";
-        setStatus("err", "Logged out.");
-        setResult(connectResult, "Logged out.", "success");
-        showNotice("Logged out.", "success");
+        await refreshState();
+        await tryAutoConnectReturn();
       } catch (error) {
-        setResult(connectResult, error.message || "Logout failed.", "error");
+        setStatus("err", error.message || "Startup error.");
       }
-    }
-
-    connectBtn.addEventListener("click", connectGoogleYouTube);
-    channelBtn.addEventListener("click", checkChannel);
-    logoutBtn.addEventListener("click", logout);
-    refreshBtn.addEventListener("click", async () => {
-      autoAttemptDone = false;
-      await autoSaveOnReturn();
-    });
-    uploadForm.addEventListener("submit", uploadVideo);
-
-    supabaseClient.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.provider_token) saveProviderToken(session.provider_token);
-      autoAttemptDone = false;
-      await autoSaveOnReturn();
-    });
-
-    window.addEventListener("load", async () => {
-      providerToken = loadProviderToken();
-      autoAttemptDone = false;
-      await autoSaveOnReturn();
     });
   </script>
 </body>
