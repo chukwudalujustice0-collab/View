@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/process-publish-jobs.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
