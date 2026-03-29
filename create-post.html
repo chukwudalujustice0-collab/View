@@ -11,15 +11,15 @@
     :root{
       --bg:#08111f;
       --card:#101b31;
-      --card-2:#14213d;
+      --card2:#16233f;
       --line:rgba(255,255,255,.08);
       --text:#f4f7ff;
       --muted:#9fb1d7;
       --primary:#2563eb;
       --primary2:#7c3aed;
       --success:#10b981;
-      --danger:#ef4444;
       --warn:#f59e0b;
+      --danger:#ef4444;
       --shadow:0 14px 40px rgba(0,0,0,.28);
       --safe-bottom:env(safe-area-inset-bottom);
     }
@@ -39,7 +39,12 @@
     }
 
     body{
-      padding:16px 14px 120px;
+      padding:16px 14px 110px;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
     }
 
     button,input,textarea,select{
@@ -54,7 +59,7 @@
     }
 
     .wrap{
-      width:min(100%, 820px);
+      width:min(100%, 920px);
       margin:0 auto;
     }
 
@@ -125,15 +130,9 @@
       text-overflow:ellipsis;
     }
 
-    .publish-btn{
-      min-height:42px;
-      padding:0 14px;
-      border-radius:12px;
-      font-size:13px;
-      font-weight:700;
-      color:#fff;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:var(--shadow);
+    .page{
+      display:grid;
+      gap:16px;
     }
 
     .card{
@@ -141,7 +140,7 @@
       border:1px solid var(--line);
       border-radius:22px;
       box-shadow:var(--shadow);
-      margin-bottom:16px;
+      overflow:hidden;
     }
 
     .card-head{
@@ -162,67 +161,78 @@
     .card-body{
       padding:14px;
       display:grid;
-      gap:12px;
+      gap:14px;
     }
 
-    .profile-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
-    .profile-left{
+    .composer-top{
       display:flex;
       align-items:center;
       gap:12px;
-      min-width:0;
-      flex:1;
     }
 
     .avatar{
-      width:52px;
-      height:52px;
-      min-width:52px;
-      border-radius:16px;
-      overflow:hidden;
+      width:54px;
+      height:54px;
+      min-width:54px;
+      border-radius:18px;
       background:linear-gradient(135deg,var(--primary),var(--primary2));
       display:flex;
       align-items:center;
       justify-content:center;
-      color:#fff;
+      font-size:22px;
       font-weight:800;
-      font-size:18px;
+      color:#fff;
+      box-shadow:var(--shadow);
     }
 
-    .avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .profile-meta{
+    .composer-meta{
       min-width:0;
       flex:1;
     }
 
-    .profile-name{
-      font-size:15px;
+    .composer-name{
+      font-size:16px;
       font-weight:800;
-      margin-bottom:4px;
+      margin-bottom:5px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .profile-sub{
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .top-tools{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .select,
+    .input,
+    .textarea,
+    .file-wrap{
+      width:100%;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      outline:none;
+      padding:14px;
+    }
+
+    .mini-select{
+      min-height:40px;
+      padding:0 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      outline:none;
+    }
+
+    .textarea{
+      min-height:170px;
+      resize:vertical;
+      line-height:1.6;
     }
 
     .field{
@@ -236,23 +246,24 @@
       color:#dbeafe;
     }
 
-    .input,
-    .textarea,
-    .select,
-    .file-wrap{
-      width:100%;
+    .post-preview-title{
+      display:none;
+      padding:12px 14px;
       border-radius:14px;
-      border:1px solid var(--line);
       background:rgba(255,255,255,.05);
-      color:var(--text);
-      padding:14px;
-      outline:none;
+      border:1px solid var(--line);
+      font-size:14px;
+      color:#dbeafe;
     }
 
-    .textarea{
-      min-height:150px;
-      resize:vertical;
-      line-height:1.65;
+    .post-preview-title.show{
+      display:block;
+    }
+
+    .media-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
     }
 
     .file-wrap{
@@ -267,59 +278,51 @@
     .hint{
       color:var(--muted);
       font-size:12px;
-      line-height:1.55;
+      line-height:1.5;
     }
 
-    .platform-scroll{
-      display:flex;
+    .platform-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
       gap:10px;
-      overflow:auto;
-      padding-bottom:2px;
-      scrollbar-width:none;
     }
 
-    .platform-scroll::-webkit-scrollbar{
-      display:none;
-    }
-
-    .platform-chip{
-      min-width:124px;
+    .platform-btn{
+      position:relative;
+      min-height:72px;
       padding:12px;
-      border-radius:16px;
+      border-radius:18px;
       border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
       display:flex;
       align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      cursor:pointer;
+      gap:12px;
+      text-align:left;
       transition:.18s ease;
     }
 
-    .platform-chip.active{
-      background:linear-gradient(135deg, rgba(37,99,235,.25), rgba(124,58,237,.18));
-      border-color:rgba(99,102,241,.55);
-      box-shadow:0 0 0 1px rgba(99,102,241,.35) inset;
+    .platform-btn.active{
+      background:rgba(37,99,235,.18);
+      border-color:rgba(37,99,235,.4);
     }
 
-    .platform-left{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
+    .platform-btn.disabled{
+      opacity:.7;
     }
 
     .platform-icon{
-      width:36px;
-      height:36px;
-      min-width:36px;
-      border-radius:12px;
+      width:44px;
+      height:44px;
+      min-width:44px;
+      border-radius:14px;
       display:flex;
       align-items:center;
       justify-content:center;
       color:#fff;
-      font-size:16px;
+      font-size:18px;
       font-weight:800;
+      box-shadow:var(--shadow);
     }
 
     .facebook{background:linear-gradient(135deg,#1877f2,#0f5fd4)}
@@ -327,42 +330,63 @@
     .youtube{background:linear-gradient(135deg,#ff0000,#d70000)}
     .tiktok{background:linear-gradient(135deg,#161616,#25f4ee)}
     .whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
-    .viewapp{background:linear-gradient(135deg,var(--primary),var(--primary2))}
     .xhandle{background:linear-gradient(135deg,#0f172a,#334155)}
 
     .platform-meta{
       min-width:0;
+      flex:1;
     }
 
     .platform-name{
-      font-size:13px;
-      font-weight:700;
-      white-space:nowrap;
+      font-size:14px;
+      font-weight:800;
+      margin-bottom:4px;
     }
 
-    .platform-status{
-      font-size:11px;
+    .platform-sub{
       color:var(--muted);
+      font-size:12px;
       white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .platform-check{
-      width:20px;
-      height:20px;
-      min-width:20px;
-      border-radius:50%;
-      border:1px solid var(--line);
+      position:absolute;
+      right:10px;
+      top:10px;
+      min-width:24px;
+      height:24px;
+      border-radius:999px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:11px;
-      color:transparent;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
     }
 
-    .platform-chip.active .platform-check{
+    .platform-btn.active .platform-check{
+      background:rgba(16,185,129,.18);
+      border-color:rgba(16,185,129,.3);
+      color:#d1fae5;
+    }
+
+    .toolbar{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+    }
+
+    .tool-btn{
+      min-height:46px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
       color:#fff;
-      border-color:rgba(255,255,255,.2);
-      background:rgba(255,255,255,.14);
+      font-size:13px;
+      font-weight:700;
     }
 
     .row{
@@ -371,86 +395,97 @@
       gap:12px;
     }
 
-    .actions-row{
+    .actions{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
     }
 
-    .soft-btn{
-      min-height:42px;
-      padding:0 14px;
-      border-radius:12px;
+    .btn{
+      min-height:46px;
+      padding:0 16px;
+      border-radius:14px;
       border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
+      background:rgba(255,255,255,.05);
       color:#fff;
       font-size:13px;
       font-weight:700;
     }
 
-    .preview-box{
-      display:none;
-      padding:14px;
-      border-radius:18px;
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      border-color:transparent;
+    }
+
+    .btn.success{
+      background:linear-gradient(135deg,#059669,#10b981);
+      border-color:transparent;
+    }
+
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .status-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .status-item{
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.05);
       border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
       gap:12px;
     }
 
-    .preview-title{
-      font-size:16px;
-      font-weight:800;
-      display:none;
-      line-height:1.5;
-    }
-
-    .preview-content{
-      white-space:pre-wrap;
-      line-height:1.65;
+    .status-item-name{
       font-size:14px;
+      font-weight:800;
     }
 
-    .preview-sticker{
-      font-size:40px;
-      line-height:1;
-      display:none;
+    .status-item-sub{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:3px;
     }
 
-    .preview-media{
-      display:none;
-      width:100%;
-      max-height:360px;
-      object-fit:cover;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:#0f172a;
-    }
-
-    .sticker-wrap{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .sticker-chip{
-      width:52px;
-      height:52px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      display:flex;
+    .badge{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      display:inline-flex;
       align-items:center;
       justify-content:center;
-      font-size:24px;
-      cursor:pointer;
+      font-size:11px;
+      font-weight:800;
+      border:1px solid transparent;
+      white-space:nowrap;
     }
 
-    .sticker-chip.active{
-      background:linear-gradient(135deg, rgba(37,99,235,.25), rgba(124,58,237,.18));
-      border-color:rgba(99,102,241,.55);
+    .connected{
+      background:rgba(16,185,129,.12);
+      border-color:rgba(16,185,129,.22);
+      color:#d1fae5;
     }
 
-    .bottom-bar{
+    .not-connected{
+      background:rgba(239,68,68,.12);
+      border-color:rgba(239,68,68,.24);
+      color:#fecaca;
+    }
+
+    .selected{
+      background:rgba(37,99,235,.16);
+      border-color:rgba(37,99,235,.26);
+      color:#dbeafe;
+    }
+
+    .bottom-nav{
       position:fixed;
       left:50%;
       transform:translateX(-50%);
@@ -459,83 +494,37 @@
       background:rgba(12,20,36,.95);
       border:1px solid var(--line);
       border-radius:20px;
-      padding:10px;
-      display:flex;
-      gap:10px;
+      padding:8px 6px calc(8px + var(--safe-bottom));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
       box-shadow:var(--shadow);
       z-index:40;
     }
 
-    .bottom-bar .soft-btn,
-    .bottom-bar .publish-btn{
-      flex:1;
-      min-height:48px;
-    }
-
-    .dropdown-wrap{
-      position:relative;
-    }
-
-    .menu-btn{
-      min-height:42px;
-      padding:0 14px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      font-size:13px;
-      font-weight:700;
-      display:inline-flex;
+    .nav-btn{
+      min-height:56px;
+      border-radius:14px;
+      display:flex;
+      flex-direction:column;
       align-items:center;
       justify-content:center;
-      gap:8px;
+      gap:4px;
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
+      text-decoration:none;
     }
 
-    .dropdown-menu{
-      position:absolute;
-      top:50px;
-      right:0;
-      min-width:190px;
-      display:none;
-      background:#0f1a30;
-      border:1px solid var(--line);
-      border-radius:16px;
-      overflow:hidden;
-      box-shadow:var(--shadow);
-      z-index:50;
+    .nav-btn.active{
+      background:rgba(37,99,235,.16);
+      color:#fff;
     }
 
-    .dropdown-menu.show{
-      display:block;
-    }
-
-    .dropdown-item{
-      width:100%;
-      min-height:44px;
-      padding:0 14px;
-      display:flex;
-      align-items:center;
-      text-align:left;
-      border-bottom:1px solid rgba(255,255,255,.05);
-      font-size:13px;
-    }
-
-    .dropdown-item:last-child{
-      border-bottom:none;
-    }
-
-    .hidden{
-      display:none !important;
-    }
-
-    @media (max-width:640px){
-      .row{
-        grid-template-columns:1fr;
-      }
-
-      .publish-btn{
-        min-width:auto;
-      }
+    @media (max-width:720px){
+      .platform-grid{grid-template-columns:1fr}
+      .toolbar{grid-template-columns:repeat(2,1fr)}
+      .media-grid,.row{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -548,203 +537,140 @@
         <button class="icon-btn" onclick="history.back()" title="Back">←</button>
         <div class="title-box">
           <div class="title">Create Post</div>
-          <div class="sub">New post</div>
+          <div class="sub">Publish everywhere</div>
         </div>
       </div>
-
-      <div class="actions-row">
-        <a class="icon-btn" href="drafts.html" title="Drafts">🗂</a>
-        <a class="icon-btn" href="publish-history.html" title="History">🕘</a>
-      </div>
+      <button class="icon-btn" id="reloadBtn" title="Refresh">↻</button>
     </header>
 
-    <section class="card">
-      <div class="card-body">
-        <div class="profile-row">
-          <div class="profile-left">
-            <div class="avatar" id="profileAvatar">V</div>
-            <div class="profile-meta">
-              <div class="profile-name" id="profileName">Loading...</div>
-              <div class="profile-sub" id="profileSub">Please wait</div>
-            </div>
-          </div>
-
-          <div class="dropdown-wrap">
-            <button class="menu-btn" id="moreBtn">More ▾</button>
-            <div class="dropdown-menu" id="moreMenu">
-              <button class="dropdown-item" id="toggleStickerBtn">Stickers</button>
-              <button class="dropdown-item" onclick="window.location.href='connected-accounts.html'">Connected Accounts</button>
-              <button class="dropdown-item" onclick="window.location.href='scheduled-post.html'">Schedule</button>
-            </div>
-          </div>
+    <main class="page">
+      <section class="card">
+        <div class="card-head">
+          <h3>Composer</h3>
         </div>
 
-        <div class="field">
-          <label class="label" for="postTitle">Post Title</label>
-          <input class="input" id="postTitle" type="text" maxlength="120" placeholder="Optional title" />
-        </div>
+        <div class="card-body">
+          <div class="composer-top">
+            <div class="avatar" id="avatarInitial">V</div>
+            <div class="composer-meta">
+              <div class="composer-name" id="composerName">Loading...</div>
+              <div class="top-tools">
+                <select id="privacySelect" class="mini-select">
+                  <option value="public">Public</option>
+                  <option value="friends">Friends</option>
+                  <option value="private">Private</option>
+                </select>
 
-        <div class="field">
-          <label class="label" for="postContent">Post</label>
-          <textarea class="textarea" id="postContent" placeholder="What's on your mind?"></textarea>
-        </div>
-
-        <div class="field">
-          <label class="label" for="mediaFile">Media</label>
-          <div class="file-wrap">
-            <input type="file" id="mediaFile" accept="image/*,video/*" />
-          </div>
-        </div>
-
-        <div class="field hidden" id="stickerSection">
-          <label class="label">Stickers</label>
-          <div class="sticker-wrap" id="stickerWrap">
-            <button class="sticker-chip" data-sticker="🔥">🔥</button>
-            <button class="sticker-chip" data-sticker="✨">✨</button>
-            <button class="sticker-chip" data-sticker="❤️">❤️</button>
-            <button class="sticker-chip" data-sticker="🎉">🎉</button>
-            <button class="sticker-chip" data-sticker="😍">😍</button>
-            <button class="sticker-chip" data-sticker="🚀">🚀</button>
-            <button class="sticker-chip" data-sticker="👏">👏</button>
-            <button class="sticker-chip" data-sticker="💯">💯</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <h3>Post To</h3>
-      </div>
-
-      <div class="card-body">
-        <div class="platform-scroll" id="platformsWrap">
-          <button class="platform-chip active" data-platform="view">
-            <div class="platform-left">
-              <div class="platform-icon viewapp">V</div>
-              <div class="platform-meta">
-                <div class="platform-name">View</div>
-                <div class="platform-status">Ready</div>
+                <select id="postTypeSelect" class="mini-select">
+                  <option value="text">Text</option>
+                  <option value="photo">Photo</option>
+                  <option value="video">Video</option>
+                </select>
               </div>
             </div>
-            <div class="platform-check">✓</div>
-          </button>
-
-          <button class="platform-chip" data-platform="youtube">
-            <div class="platform-left">
-              <div class="platform-icon youtube">▶</div>
-              <div class="platform-meta">
-                <div class="platform-name">YouTube</div>
-                <div class="platform-status" id="status-youtube">Checking</div>
-              </div>
-            </div>
-            <div class="platform-check">✓</div>
-          </button>
-
-          <button class="platform-chip" data-platform="facebook">
-            <div class="platform-left">
-              <div class="platform-icon facebook">f</div>
-              <div class="platform-meta">
-                <div class="platform-name">Facebook</div>
-                <div class="platform-status" id="status-facebook">Checking</div>
-              </div>
-            </div>
-            <div class="platform-check">✓</div>
-          </button>
-
-          <button class="platform-chip" data-platform="instagram">
-            <div class="platform-left">
-              <div class="platform-icon instagram">◎</div>
-              <div class="platform-meta">
-                <div class="platform-name">Instagram</div>
-                <div class="platform-status" id="status-instagram">Checking</div>
-              </div>
-            </div>
-            <div class="platform-check">✓</div>
-          </button>
-
-          <button class="platform-chip" data-platform="tiktok">
-            <div class="platform-left">
-              <div class="platform-icon tiktok">♪</div>
-              <div class="platform-meta">
-                <div class="platform-name">TikTok</div>
-                <div class="platform-status" id="status-tiktok">Checking</div>
-              </div>
-            </div>
-            <div class="platform-check">✓</div>
-          </button>
-
-          <button class="platform-chip" data-platform="x">
-            <div class="platform-left">
-              <div class="platform-icon xhandle">X</div>
-              <div class="platform-meta">
-                <div class="platform-name">X</div>
-                <div class="platform-status" id="status-x">Checking</div>
-              </div>
-            </div>
-            <div class="platform-check">✓</div>
-          </button>
-
-          <button class="platform-chip" data-platform="whatsapp">
-            <div class="platform-left">
-              <div class="platform-icon whatsapp">✆</div>
-              <div class="platform-meta">
-                <div class="platform-name">WhatsApp</div>
-                <div class="platform-status" id="status-whatsapp">Checking</div>
-              </div>
-            </div>
-            <div class="platform-check">✓</div>
-          </button>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label class="label" for="postPrivacy">Privacy</label>
-            <select class="select" id="postPrivacy">
-              <option value="public">Public</option>
-              <option value="friends">Friends</option>
-              <option value="private">Only Me</option>
-            </select>
           </div>
 
           <div class="field">
-            <label class="label" for="postType">Type</label>
-            <select class="select" id="postType">
-              <option value="text">Text</option>
-              <option value="image">Image</option>
-              <option value="video">Video</option>
-            </select>
+            <label class="label" for="postTitle">Post Title</label>
+            <input id="postTitle" class="input" placeholder="Post title" maxlength="120" />
+          </div>
+
+          <div id="titlePreview" class="post-preview-title"></div>
+
+          <div class="field">
+            <label class="label" for="postBody">Caption / Content</label>
+            <textarea id="postBody" class="textarea" placeholder="What's new in your world?"></textarea>
+          </div>
+
+          <div class="media-grid">
+            <div class="field">
+              <label class="label" for="postMedia">Photo / Video</label>
+              <div class="file-wrap">
+                <input id="postMedia" type="file" accept="image/*,video/*" />
+              </div>
+              <div class="hint" id="mediaNote">No media selected.</div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="postSticker">Sticker</label>
+              <select id="postSticker" class="select">
+                <option value="">None</option>
+                <option value="🔥 Trending">🔥 Trending</option>
+                <option value="✨ New">✨ New</option>
+                <option value="🎉 Celebration">🎉 Celebration</option>
+                <option value="📢 Announcement">📢 Announcement</option>
+                <option value="❤️ Love">❤️ Love</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <button class="tool-btn" type="button" id="tagBtn">Tag</button>
+            <button class="tool-btn" type="button" id="locationBtn">Location</button>
+            <button class="tool-btn" type="button" id="feelingBtn">Feeling</button>
+            <button class="tool-btn" type="button" id="moreBtn">More</button>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label class="label" for="locationInput">Location</label>
+              <input id="locationInput" class="input" placeholder="Optional location" />
+            </div>
+
+            <div class="field">
+              <label class="label" for="tagsInput">Tags</label>
+              <input id="tagsInput" class="input" placeholder="Optional tags" />
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="card">
-      <div class="card-head">
-        <h3>Preview</h3>
-      </div>
-
-      <div class="card-body">
-        <div class="preview-box" id="previewBox" style="display:grid;">
-          <div class="preview-title" id="previewTitle"></div>
-          <div class="preview-sticker" id="previewSticker"></div>
-          <div class="preview-content" id="previewContent">Your post preview will appear here.</div>
-          <img class="preview-media" id="previewImage" alt="Preview image" />
-          <video class="preview-media" id="previewVideo" controls playsinline></video>
+      <section class="card">
+        <div class="card-head">
+          <h3>Where to post</h3>
         </div>
-      </div>
-    </section>
+
+        <div class="card-body">
+          <div id="platformGrid" class="platform-grid"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h3>Connection status</h3>
+        </div>
+
+        <div class="card-body">
+          <div id="statusList" class="status-list"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h3>Actions</h3>
+        </div>
+
+        <div class="card-body">
+          <div class="actions">
+            <button id="draftBtn" class="btn" type="button">Save Draft</button>
+            <button id="publishBtn" class="btn success" type="button">Publish Post</button>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 
-  <div class="bottom-bar">
-    <button class="soft-btn" id="saveDraftBtn">Save Draft</button>
-    <button class="publish-btn" id="publishBtn">Publish Post</button>
-  </div>
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="home.html"><span>🏠</span><span>Home</span></a>
+    <a class="nav-btn" href="explore.html"><span>🔎</span><span>Explore</span></a>
+    <a class="nav-btn active" href="create-post.html"><span>➕</span><span>Create</span></a>
+    <a class="nav-btn" href="connected-accounts.html"><span>🔗</span><span>Accounts</span></a>
+    <a class="nav-btn" href="settings.html"><span>⚙️</span><span>Settings</span></a>
+  </nav>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const SMART_ACTION_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/smart-action";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -755,36 +681,38 @@
       }
     });
 
+    const PLATFORMS = [
+      { key: "facebook", name: "Facebook", icon: "f", iconClass: "facebook", path: "facebook-connect.html" },
+      { key: "instagram", name: "Instagram", icon: "◎", iconClass: "instagram", path: "instagram-connect.html" },
+      { key: "youtube", name: "YouTube", icon: "▶", iconClass: "youtube", path: "youtube-connect.html" },
+      { key: "tiktok", name: "TikTok", icon: "♪", iconClass: "tiktok", path: "tiktok-connect.html" },
+      { key: "whatsapp", name: "WhatsApp", icon: "✆", iconClass: "whatsapp", path: "whatsapp-connect.html" },
+      { key: "x", name: "X", icon: "X", iconClass: "xhandle", path: "x-connect.html" }
+    ];
+
     const noticeBox = document.getElementById("notice");
-    const profileAvatar = document.getElementById("profileAvatar");
-    const profileName = document.getElementById("profileName");
-    const profileSub = document.getElementById("profileSub");
-
+    const reloadBtn = document.getElementById("reloadBtn");
+    const composerName = document.getElementById("composerName");
+    const avatarInitial = document.getElementById("avatarInitial");
     const postTitle = document.getElementById("postTitle");
-    const postContent = document.getElementById("postContent");
-    const mediaFile = document.getElementById("mediaFile");
-    const postPrivacy = document.getElementById("postPrivacy");
-    const postType = document.getElementById("postType");
-
-    const previewTitle = document.getElementById("previewTitle");
-    const previewSticker = document.getElementById("previewSticker");
-    const previewContent = document.getElementById("previewContent");
-    const previewImage = document.getElementById("previewImage");
-    const previewVideo = document.getElementById("previewVideo");
-
+    const titlePreview = document.getElementById("titlePreview");
+    const postBody = document.getElementById("postBody");
+    const postMedia = document.getElementById("postMedia");
+    const mediaNote = document.getElementById("mediaNote");
+    const postSticker = document.getElementById("postSticker");
+    const privacySelect = document.getElementById("privacySelect");
+    const postTypeSelect = document.getElementById("postTypeSelect");
+    const locationInput = document.getElementById("locationInput");
+    const tagsInput = document.getElementById("tagsInput");
+    const platformGrid = document.getElementById("platformGrid");
+    const statusList = document.getElementById("statusList");
+    const draftBtn = document.getElementById("draftBtn");
     const publishBtn = document.getElementById("publishBtn");
-    const saveDraftBtn = document.getElementById("saveDraftBtn");
-    const toggleStickerBtn = document.getElementById("toggleStickerBtn");
-    const stickerSection = document.getElementById("stickerSection");
-    const stickerWrap = document.getElementById("stickerWrap");
-    const moreBtn = document.getElementById("moreBtn");
-    const moreMenu = document.getElementById("moreMenu");
 
     let currentUser = null;
-    let selectedPlatforms = new Set(["view"]);
-    let connectedPlatforms = new Set();
-    let selectedSticker = "";
-    let previewMediaUrl = "";
+    let connections = {};
+    let selectedPlatforms = new Set();
+    let cachedMedia = null;
 
     function showNotice(message, type = "info") {
       noticeBox.className = `notice show ${type}`;
@@ -793,409 +721,315 @@
       showNotice._timer = setTimeout(() => {
         noticeBox.className = "notice";
         noticeBox.textContent = "";
-      }, 2600);
+      }, 2800);
     }
 
-    function escapeHtml(value) {
-      return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    function getInitial(name = "V") {
+      return String(name).trim().charAt(0).toUpperCase() || "V";
     }
 
-    function closeMenus() {
-      moreMenu.classList.remove("show");
-    }
-
-    function toggleMenu() {
-      moreMenu.classList.toggle("show");
-    }
-
-    function setProfile(user, profile = null) {
-      const fullName =
-        profile?.full_name ||
-        user?.user_metadata?.full_name ||
-        user?.user_metadata?.name ||
-        user?.email?.split("@")[0] ||
-        "User";
-
-      const username =
-        profile?.username ||
-        user?.user_metadata?.username ||
-        user?.email ||
-        "View user";
-
-      const avatarUrl =
-        profile?.avatar_url ||
-        user?.user_metadata?.avatar_url ||
-        user?.user_metadata?.picture ||
-        "";
-
-      profileName.textContent = fullName;
-      profileSub.textContent = username;
-
-      if (avatarUrl) {
-        profileAvatar.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(fullName)}">`;
-      } else {
-        profileAvatar.textContent = fullName.charAt(0).toUpperCase();
+    function updateTitlePreview() {
+      const value = postTitle.value.trim();
+      if (!value) {
+        titlePreview.classList.remove("show");
+        titlePreview.textContent = "";
+        return;
       }
+      titlePreview.classList.add("show");
+      titlePreview.textContent = value;
     }
 
-    async function loadProfile(user) {
-      try {
-        const { data, error } = await supabaseClient
-          .from("profiles")
-          .select("full_name, username, avatar_url")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (error) throw error;
-        setProfile(user, data);
-      } catch {
-        setProfile(user, null);
+    async function cacheMedia(file) {
+      if (!file) {
+        cachedMedia = null;
+        mediaNote.textContent = "No media selected.";
+        return;
       }
-    }
-
-    async function loadConnectedAccounts() {
-      if (!currentUser) return;
 
       try {
-        const { data, error } = await supabaseClient
-          .from("connected_accounts")
-          .select("platform, is_connected")
-          .eq("user_id", currentUser.id)
-          .eq("is_connected", true);
-
-        if (error) throw error;
-
-        connectedPlatforms = new Set((data || []).map(item => item.platform));
-
-        ["youtube","facebook","instagram","tiktok","x","whatsapp"].forEach(platform => {
-          const label = document.getElementById(`status-${platform}`);
-          if (!label) return;
-          label.textContent = connectedPlatforms.has(platform) ? "Connected" : "Not Connected";
-        });
-      } catch {
-        ["youtube","facebook","instagram","tiktok","x","whatsapp"].forEach(platform => {
-          const label = document.getElementById(`status-${platform}`);
-          if (label) label.textContent = "Unavailable";
-        });
+        const buffer = await file.arrayBuffer();
+        cachedMedia = {
+          name: file.name,
+          type: file.type || "",
+          buffer
+        };
+        mediaNote.textContent = `${file.name} ready.`;
+      } catch (error) {
+        cachedMedia = null;
+        mediaNote.textContent = "Could not read media.";
+        showNotice("Could not read selected media.", "error");
       }
     }
 
-    function updatePlatformUI() {
-      document.querySelectorAll(".platform-chip").forEach(chip => {
-        const platform = chip.dataset.platform;
-        chip.classList.toggle("active", selectedPlatforms.has(platform));
-      });
-
-      const selectedCount = selectedPlatforms.size;
-      publishBtn.textContent = selectedCount > 1 ? `Publish to ${selectedCount} Platforms` : "Publish Post";
+    function isPlatformConnected(platformKey) {
+      const row = connections[platformKey];
+      return !!(row && row.status === "connected");
     }
 
-    function updatePreview() {
-      const title = postTitle.value.trim();
-      const content = postContent.value.trim();
-
-      previewTitle.style.display = title ? "block" : "none";
-      previewTitle.textContent = title || "";
-
-      previewSticker.style.display = selectedSticker ? "block" : "none";
-      previewSticker.textContent = selectedSticker || "";
-
-      previewContent.textContent = content || "Your post preview will appear here.";
+    function getPlatformDisplay(row, fallbackName) {
+      return row?.account_name || row?.account_handle || row?.external_user_id || fallbackName;
     }
 
-    function clearPreviewMedia() {
-      previewImage.style.display = "none";
-      previewImage.src = "";
-      previewVideo.style.display = "none";
-      previewVideo.src = "";
-      previewMediaUrl = "";
+    function renderPlatforms() {
+      platformGrid.innerHTML = PLATFORMS.map(item => {
+        const connected = isPlatformConnected(item.key);
+        const selected = selectedPlatforms.has(item.key);
+        const row = connections[item.key];
+
+        return `
+          <button
+            type="button"
+            class="platform-btn ${selected ? 'active' : ''} ${connected ? '' : 'disabled'}"
+            data-platform="${item.key}"
+          >
+            <div class="platform-icon ${item.iconClass}">${item.icon}</div>
+            <div class="platform-meta">
+              <div class="platform-name">${item.name}</div>
+              <div class="platform-sub">${connected ? getPlatformDisplay(row, item.name) : 'Not connected'}</div>
+            </div>
+            <div class="platform-check">${selected ? "✓" : connected ? "•" : "!"}</div>
+          </button>
+        `;
+      }).join("");
     }
 
-    function updatePreviewMedia(file) {
-      clearPreviewMedia();
-      if (!file) return;
+    function renderStatusList() {
+      statusList.innerHTML = PLATFORMS.map(item => {
+        const connected = isPlatformConnected(item.key);
+        const selected = selectedPlatforms.has(item.key);
+        const row = connections[item.key];
 
-      previewMediaUrl = URL.createObjectURL(file);
-
-      if (file.type.startsWith("image/")) {
-        previewImage.src = previewMediaUrl;
-        previewImage.style.display = "block";
-      } else if (file.type.startsWith("video/")) {
-        previewVideo.src = previewMediaUrl;
-        previewVideo.style.display = "block";
-      }
+        return `
+          <div class="status-item">
+            <div>
+              <div class="status-item-name">${item.name}</div>
+              <div class="status-item-sub">${connected ? getPlatformDisplay(row, item.name) : 'Not connected'}</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+              <span class="badge ${connected ? 'connected' : 'not-connected'}">${connected ? 'Connected' : 'Not Connected'}</span>
+              ${selected ? `<span class="badge selected">Selected</span>` : ``}
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
-    function validateSelectedPlatforms() {
-      if (!selectedPlatforms.size) {
-        showNotice("Select at least one platform.", "error");
-        return false;
-      }
-
-      for (const platform of selectedPlatforms) {
-        if (platform === "view") continue;
-        if (!connectedPlatforms.has(platform)) {
-          showNotice(`${platform.charAt(0).toUpperCase() + platform.slice(1)} is not connected.`, "error");
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    function validatePostRequirements() {
-      const file = mediaFile.files?.[0] || null;
-      const content = postContent.value.trim();
-      const type = postType.value;
-
-      if (!content && !file && !selectedSticker) {
-        showNotice("Add content, media, or sticker.", "error");
-        return false;
-      }
-
-      if (selectedPlatforms.has("youtube") && !file) {
-        showNotice("Video or media is required for YouTube posting.", "error");
-        return false;
-      }
-
-      if (selectedPlatforms.has("youtube") && file && !file.type.startsWith("video/")) {
-        showNotice("YouTube requires a video file.", "error");
-        return false;
-      }
-
-      if ((selectedPlatforms.has("instagram") || selectedPlatforms.has("tiktok")) && !file) {
-        showNotice("Media is required for the selected platform.", "error");
-        return false;
-      }
-
-      if (type === "image" && file && !file.type.startsWith("image/")) {
-        showNotice("Selected type is image, but media is not an image.", "error");
-        return false;
-      }
-
-      if (type === "video" && file && !file.type.startsWith("video/")) {
-        showNotice("Selected type is video, but media is not a video.", "error");
-        return false;
-      }
-
-      return true;
-    }
-
-    async function uploadMedia(file) {
-      if (!file || !currentUser) return null;
-
-      const extension = (file.name.split(".").pop() || "bin").toLowerCase();
-      const path = `${currentUser.id}/posts/${Date.now()}-${Math.random().toString(36).slice(2)}.${extension}`;
-
-      const { error } = await supabaseClient.storage
-        .from("posts")
-        .upload(path, file, { upsert: false });
+    async function loadConnections() {
+      const { data, error } = await supabaseClient
+        .from("connected_accounts")
+        .select("id, user_id, platform, account_name, account_handle, status, access_token, refresh_token, token_expires_at, external_user_id, external_page_id")
+        .eq("user_id", currentUser.id);
 
       if (error) throw error;
 
-      const { data } = supabaseClient.storage.from("posts").getPublicUrl(path);
-      return data?.publicUrl || null;
+      connections = {};
+      (data || []).forEach(row => {
+        if (row.platform) connections[row.platform] = row;
+      });
+
+      selectedPlatforms.forEach(platform => {
+        if (!isPlatformConnected(platform)) selectedPlatforms.delete(platform);
+      });
+
+      renderPlatforms();
+      renderStatusList();
+    }
+
+    function togglePlatform(platformKey) {
+      if (!isPlatformConnected(platformKey)) {
+        const item = PLATFORMS.find(p => p.key === platformKey);
+        showNotice(`${item?.name || platformKey} is not connected.`, "error");
+        return;
+      }
+
+      if (selectedPlatforms.has(platformKey)) selectedPlatforms.delete(platformKey);
+      else selectedPlatforms.add(platformKey);
+
+      renderPlatforms();
+      renderStatusList();
+    }
+
+    async function initUser() {
+      const { data, error } = await supabaseClient.auth.getUser();
+      if (error) throw error;
+      if (!data?.user) {
+        window.location.href = "login.html?next=create-post.html";
+        return false;
+      }
+
+      currentUser = data.user;
+      const name =
+        currentUser.user_metadata?.full_name ||
+        currentUser.user_metadata?.name ||
+        currentUser.email ||
+        "View User";
+
+      composerName.textContent = name;
+      avatarInitial.textContent = getInitial(name);
+      return true;
+    }
+
+    function getPostPayload() {
+      return {
+        title: postTitle.value.trim(),
+        body: postBody.value.trim(),
+        privacy: privacySelect.value,
+        post_type: postTypeSelect.value,
+        sticker: postSticker.value,
+        location: locationInput.value.trim(),
+        tags: tagsInput.value.trim(),
+        selected_platforms: Array.from(selectedPlatforms),
+        media_name: cachedMedia?.name || null,
+        media_type: cachedMedia?.type || null
+      };
+    }
+
+    function validatePost() {
+      const payload = getPostPayload();
+
+      if (!payload.title && !payload.body && !cachedMedia) {
+        throw new Error("Add a title, content, or media.");
+      }
+
+      if (selectedPlatforms.size === 0) {
+        throw new Error("Select at least one connected platform.");
+      }
+
+      for (const platform of selectedPlatforms) {
+        if (!isPlatformConnected(platform)) {
+          const item = PLATFORMS.find(p => p.key === platform);
+          throw new Error(`${item?.name || platform} is not connected.`);
+        }
+      }
+
+      if ((payload.post_type === "photo" || payload.post_type === "video") && !cachedMedia) {
+        throw new Error(`Select ${payload.post_type} media.`);
+      }
+
+      return payload;
     }
 
     async function saveDraft() {
       try {
-        const title = postTitle.value.trim();
-        const content = postContent.value.trim();
-        const privacy = postPrivacy.value;
-        const type = postType.value;
-        const platforms = Array.from(selectedPlatforms);
+        const user = currentUser || (await supabaseClient.auth.getUser()).data.user;
+        if (!user) throw new Error("Session expired. Sign in again.");
 
-        if (!title && !content && !selectedSticker && !mediaFile.files?.[0]) {
-          showNotice("Nothing to save.", "error");
-          return;
-        }
+        const payload = getPostPayload();
 
-        const draft = {
-          id: `draft_${Date.now()}`,
-          title,
-          content,
-          privacy,
-          type,
-          sticker: selectedSticker,
-          platforms,
-          created_at: new Date().toISOString()
-        };
+        const { error } = await supabaseClient
+          .from("post_drafts")
+          .insert({
+            user_id: user.id,
+            title: payload.title || null,
+            body: payload.body || null,
+            privacy: payload.privacy,
+            post_type: payload.post_type,
+            sticker: payload.sticker || null,
+            location: payload.location || null,
+            tags: payload.tags || null,
+            selected_platforms: payload.selected_platforms,
+            media_name: payload.media_name,
+            media_type: payload.media_type
+          });
 
-        const existing = JSON.parse(localStorage.getItem("view_post_drafts") || "[]");
-        existing.unshift(draft);
-        localStorage.setItem("view_post_drafts", JSON.stringify(existing.slice(0, 50)));
-
+        if (error) throw error;
         showNotice("Draft saved.", "success");
-      } catch {
-        showNotice("Could not save draft.", "error");
+      } catch (error) {
+        showNotice(error.message || "Could not save draft.", "error");
       }
     }
 
     async function publishPost() {
-      if (!currentUser) {
-        window.location.href = "login.html?next=create-post.html";
-        return;
-      }
-
-      if (!validateSelectedPlatforms()) return;
-      if (!validatePostRequirements()) return;
-
       publishBtn.disabled = true;
-      saveDraftBtn.disabled = true;
 
       try {
-        const title = postTitle.value.trim();
-        const content = postContent.value.trim();
-        const privacy = postPrivacy.value;
-        const type = postType.value;
-        const file = mediaFile.files?.[0] || null;
-        const platforms = Array.from(selectedPlatforms);
+        const payload = validatePost();
 
-        let mediaUrl = null;
-        if (file) {
-          mediaUrl = await uploadMedia(file);
+        for (const platform of selectedPlatforms) {
+          if (!isPlatformConnected(platform)) {
+            const item = PLATFORMS.find(p => p.key === platform);
+            throw new Error(`${item?.name || platform} is not connected.`);
+          }
         }
 
-        const postPayload = {
-          user_id: currentUser.id,
-          title: title || null,
-          content: content || null,
-          media_url: mediaUrl,
-          type,
-          privacy,
-          sticker: selectedSticker || null
+        const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+        if (userError) throw userError;
+        if (!userData?.user) throw new Error("Session expired. Sign in again.");
+
+        const postRecord = {
+          user_id: userData.user.id,
+          title: payload.title || null,
+          body: payload.body || null,
+          privacy: payload.privacy,
+          post_type: payload.post_type,
+          sticker: payload.sticker || null,
+          location: payload.location || null,
+          tags: payload.tags || null,
+          selected_platforms: payload.selected_platforms,
+          media_name: payload.media_name,
+          media_type: payload.media_type,
+          publish_status: "queued"
         };
 
-        const { data: postRow, error: postError } = await supabaseClient
+        const { error: insertError } = await supabaseClient
           .from("posts")
-          .insert(postPayload)
-          .select()
-          .single();
+          .insert(postRecord);
 
-        if (postError) throw postError;
-
-        await fetch(SMART_ACTION_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({
-            action: "publish_post",
-            post_id: postRow.id,
-            platforms,
-            title: title || null,
-            content: content || null,
-            media_url: mediaUrl,
-            type,
-            privacy,
-            sticker: selectedSticker || null
-          })
-        });
+        if (insertError) throw insertError;
 
         showNotice("Post published.", "success");
-
-        setTimeout(() => {
-          window.location.href = "publish-history.html";
-        }, 900);
       } catch (error) {
-        showNotice(error.message || "Publish failed.", "error");
+        showNotice(error.message || "Could not publish post.", "error");
       } finally {
         publishBtn.disabled = false;
-        saveDraftBtn.disabled = false;
       }
     }
 
-    function handlePlatformSelect(chip) {
-      const platform = chip.dataset.platform;
+    function bindStaticActions() {
+      document.getElementById("tagBtn").addEventListener("click", () => tagsInput.focus());
+      document.getElementById("locationBtn").addEventListener("click", () => locationInput.focus());
+      document.getElementById("feelingBtn").addEventListener("click", () => postSticker.focus());
+      document.getElementById("moreBtn").addEventListener("click", () => showNotice("More options coming soon.", "info"));
 
-      if (platform === "view") {
-        selectedPlatforms.add("view");
-        updatePlatformUI();
-        return;
-      }
+      postTitle.addEventListener("input", updateTitlePreview);
 
-      if (selectedPlatforms.has(platform)) {
-        selectedPlatforms.delete(platform);
-      } else {
-        selectedPlatforms.add(platform);
-      }
+      postMedia.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0] || null;
+        await cacheMedia(file);
+      });
 
-      if (!selectedPlatforms.size) {
-        selectedPlatforms.add("view");
-      }
+      platformGrid.addEventListener("click", (e) => {
+        const btn = e.target.closest(".platform-btn");
+        if (!btn) return;
+        togglePlatform(btn.dataset.platform);
+      });
 
-      updatePlatformUI();
+      reloadBtn.addEventListener("click", async () => {
+        try {
+          await loadConnections();
+          showNotice("Connections updated.", "success");
+        } catch (error) {
+          showNotice(error.message || "Could not refresh.", "error");
+        }
+      });
+
+      draftBtn.addEventListener("click", saveDraft);
+      publishBtn.addEventListener("click", publishPost);
     }
 
     async function init() {
       try {
-        const { data, error } = await supabaseClient.auth.getUser();
-        if (error) throw error;
-
-        if (!data.user) {
-          window.location.href = "login.html?next=create-post.html";
-          return;
-        }
-
-        currentUser = data.user;
-        await loadProfile(currentUser);
-        await loadConnectedAccounts();
-        updatePlatformUI();
-        updatePreview();
+        const ready = await initUser();
+        if (!ready) return;
+        bindStaticActions();
+        updateTitlePreview();
+        renderPlatforms();
+        renderStatusList();
+        await loadConnections();
       } catch (error) {
         showNotice(error.message || "Could not load page.", "error");
       }
     }
-
-    document.querySelectorAll(".platform-chip").forEach(chip => {
-      chip.addEventListener("click", () => handlePlatformSelect(chip));
-    });
-
-    stickerWrap.querySelectorAll(".sticker-chip").forEach(chip => {
-      chip.addEventListener("click", () => {
-        const sticker = chip.dataset.sticker;
-        if (selectedSticker === sticker) {
-          selectedSticker = "";
-          chip.classList.remove("active");
-        } else {
-          stickerWrap.querySelectorAll(".sticker-chip").forEach(item => item.classList.remove("active"));
-          selectedSticker = sticker;
-          chip.classList.add("active");
-        }
-        updatePreview();
-      });
-    });
-
-    postTitle.addEventListener("input", updatePreview);
-    postContent.addEventListener("input", updatePreview);
-
-    mediaFile.addEventListener("change", () => {
-      updatePreviewMedia(mediaFile.files?.[0] || null);
-    });
-
-    toggleStickerBtn.addEventListener("click", () => {
-      stickerSection.classList.toggle("hidden");
-      closeMenus();
-    });
-
-    moreBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleMenu();
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!e.target.closest(".dropdown-wrap")) closeMenus();
-    });
-
-    saveDraftBtn.addEventListener("click", saveDraft);
-    publishBtn.addEventListener("click", publishPost);
 
     init();
   </script>
