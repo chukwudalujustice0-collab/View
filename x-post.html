@@ -1,67 +1,83 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-serve(async (req) => {
-
-  // ✅ CRITICAL: handle browser preflight FIRST
-  if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      status: 200,
-      headers: corsHeaders,
-    });
-  }
-
-  try {
-    // ✅ Parse body safely
-    const body = await req.json().catch(() => null);
-
-    if (!body) {
-      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>X Ping Test</title>
+  <style>
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:#0b1220;
+      color:#fff;
+      padding:24px;
     }
-
-    const { text } = body;
-
-    if (!text) {
-      return new Response(JSON.stringify({ error: "No text provided" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    .wrap{
+      max-width:680px;
+      margin:0 auto;
     }
-
-    // ✅ Check auth (but DO NOT block preflight)
-    const authHeader = req.headers.get("Authorization");
-
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "No auth header" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    .card{
+      background:#172033;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:16px;
     }
+    button{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:14px;
+      background:#2563eb;
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:10px;
+    }
+    pre{
+      white-space:pre-wrap;
+      word-break:break-word;
+      background:#0f172a;
+      padding:14px;
+      border-radius:14px;
+      overflow:auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h2>Browser Reach Test</h2>
+      <p>This tests whether your browser can reach a Supabase Edge Function at all.</p>
+      <button id="btn">Test x-ping</button>
+    </div>
 
-    // ✅ TEMP: return success (we'll plug X later)
-    return new Response(JSON.stringify({
-      success: true,
-      message: "x-post reachable ✅",
-      received: text
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    <div class="card">
+      <h3>Result</h3>
+      <pre id="out">No test yet.</pre>
+    </div>
+  </div>
 
-  } catch (err) {
-    return new Response(JSON.stringify({
-      error: err.message
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+  <script>
+    const out = document.getElementById("out");
+
+    document.getElementById("btn").addEventListener("click", async () => {
+      out.textContent = "Testing...";
+      try {
+        const res = await fetch("https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/x-ping", {
+          method: "GET"
+        });
+        const text = await res.text();
+        out.textContent = JSON.stringify({
+          status: res.status,
+          body: text
+        }, null, 2);
+      } catch (err) {
+        out.textContent = JSON.stringify({
+          error: err.message || String(err)
+        }, null, 2);
+      }
     });
-  }
-});
+  </script>
+</body>
+</html>
