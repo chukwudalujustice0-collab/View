@@ -2,170 +2,167 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Post to X | View</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Post to X</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
+      font-family: Arial;
+      background: #0f172a;
       color: white;
-    }
-
-    .container {
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 20px;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
     }
 
     .card {
-      background: rgba(255,255,255,0.05);
-      border-radius: 20px;
+      width: 100%;
+      max-width: 400px;
+      background: #1e293b;
       padding: 20px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      border-radius: 15px;
     }
 
     textarea {
       width: 100%;
       height: 120px;
-      border-radius: 12px;
-      border: none;
-      padding: 12px;
-      font-size: 14px;
-      outline: none;
       margin-top: 10px;
-    }
-
-    .btn {
-      margin-top: 15px;
-      padding: 12px;
+      border-radius: 10px;
       border: none;
-      border-radius: 12px;
-      font-weight: bold;
-      cursor: pointer;
+      padding: 10px;
+    }
+
+    button {
       width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
     }
 
-    .btn-primary {
-      background: #10b981;
-      color: white;
-    }
+    .primary { background: #10b981; color: white; }
+    .secondary { background: #334155; color: white; }
 
-    .btn-secondary {
-      background: #334155;
-      color: white;
-    }
-
-    .status {
+    #status {
       margin-top: 15px;
       padding: 10px;
       border-radius: 10px;
       font-size: 14px;
-    }
-
-    .success {
-      background: rgba(16,185,129,0.2);
-      color: #10b981;
-    }
-
-    .error {
-      background: rgba(239,68,68,0.2);
-      color: #ef4444;
+      background: #111827;
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
-  <div class="card">
-    <h2>Post to X</h2>
+<div class="card">
+  <h2>Post to X</h2>
 
-    <textarea id="postText" placeholder="Write something..."></textarea>
+  <textarea id="postText">Ceetice</textarea>
 
-    <button class="btn btn-primary" onclick="postToX()">Post to X</button>
-    <button class="btn btn-secondary" onclick="checkConnection()">Check Connection</button>
+  <button id="postBtn" class="primary">Post to X</button>
+  <button id="checkBtn" class="secondary">Check Connection</button>
 
-    <div id="status"></div>
-  </div>
+  <div id="status">Ready...</div>
 </div>
 
 <script>
-  // ✅ YOUR SUPABASE CONFIG
-  const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+console.log("JS LOADED");
 
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ✅ SUPABASE
+const supabase = supabase.createClient(
+  "https://ezarjrxzkqqsbyirxttg.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI"
+);
 
-  const X_POST_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/x-post";
+const statusBox = document.getElementById("status");
 
-  function showStatus(msg, type = "success") {
-    const el = document.getElementById("status");
-    el.className = "status " + type;
-    el.innerHTML = msg;
+function show(msg) {
+  console.log(msg);
+  statusBox.innerText = msg;
+}
+
+// ✅ CHECK CONNECTION
+async function checkConnection() {
+  show("Checking session...");
+
+  const { data, error } = await supabase.auth.getSession();
+
+  if (error) {
+    show("Error: " + error.message);
+    return;
   }
 
-  // ✅ CHECK CONNECTION
-  async function checkConnection() {
-    const { data, error } = await supabase.auth.getSession();
+  if (!data.session) {
+    show("❌ Not logged in");
+    return;
+  }
 
-    if (!data?.session) {
-      showStatus("❌ Not logged in", "error");
+  show("✅ Logged in");
+}
+
+// ✅ POST TO X
+async function postToX() {
+  show("Posting...");
+
+  try {
+    const text = document.getElementById("postText").value.trim();
+
+    if (!text) {
+      show("Enter text");
       return;
     }
 
-    showStatus("✅ Logged in as user", "success");
-  }
+    const { data } = await supabase.auth.getSession();
 
-  // ✅ MAIN POST FUNCTION
-  async function postToX() {
-    try {
-      const text = document.getElementById("postText").value.trim();
+    if (!data.session) {
+      show("User not logged in");
+      return;
+    }
 
-      if (!text) {
-        showStatus("Enter text first", "error");
-        return;
-      }
+    const jwt = data.session.access_token;
 
-      // 🔥 GET USER SESSION
-      const { data, error } = await supabase.auth.getSession();
+    console.log("JWT:", jwt);
 
-      if (error || !data?.session) {
-        showStatus("User not logged in", "error");
-        return;
-      }
-
-      const jwt = data.session.access_token;
-
-      // 🔥 SEND REQUEST WITH AUTH HEADER (CRITICAL FIX)
-      const res = await fetch(X_POST_URL, {
+    const res = await fetch(
+      "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/x-post",
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${jwt}`
+          "Authorization": "Bearer " + jwt
         },
-        body: JSON.stringify({
-          text: text
-        })
-      });
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.error || "Failed to post");
+        body: JSON.stringify({ text })
       }
+    );
 
-      showStatus("✅ Posted successfully to X");
+    console.log("Response status:", res.status);
 
-    } catch (err) {
-      console.error(err);
-      showStatus("❌ " + err.message, "error");
+    const result = await res.json();
+
+    console.log("Response:", result);
+
+    if (!res.ok) {
+      show("❌ " + JSON.stringify(result));
+      return;
     }
+
+    show("✅ Posted successfully");
+
+  } catch (err) {
+    console.error(err);
+    show("❌ " + err.message);
   }
+}
+
+// ✅ ATTACH BUTTON EVENTS (THIS FIXES SILENT ISSUE)
+document.getElementById("postBtn").addEventListener("click", postToX);
+document.getElementById("checkBtn").addEventListener("click", checkConnection);
+
 </script>
 
 </body>
