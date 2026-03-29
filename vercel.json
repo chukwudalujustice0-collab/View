@@ -1,4 +1,21 @@
 {
+  "crons": [
+    {
+      "path": "/api/process-publish-jobs",
+      "schedule": "0 1 * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src * data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src * https://*.facebook.com https://*.fbcdn.net https://www.googleapis.com https://oauth2.googleapis.com;"
+        }
+      ]
+    }
+  ],
   "functions": {
     "api/*.js": {
       "runtime": "nodejs18.x"
