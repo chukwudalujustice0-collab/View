@@ -35,47 +35,29 @@ export default async function handler(req, res) {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const { data: jobs, error: jobsError } = await supabase
+    const { data, error } = await supabase
       .from("post_publish_jobs")
-      .select("id, post_id, user_id, platform, status, attempts, next_retry_at, created_at")
-      .in("status", ["queued", "retrying"])
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    if (jobsError) {
-      return res.status(500).json({
-        ok: false,
-        step: "query_jobs",
-        error: jobsError.message
-      });
-    }
-
-    const { data: posts, error: postsError } = await supabase
-      .from("posts")
-      .select("id, user_id, content, publish_status, created_at")
-      .order("created_at", { ascending: false })
+      .select("id, status, platform, created_at")
       .limit(5);
 
-    if (postsError) {
+    if (error) {
       return res.status(500).json({
         ok: false,
-        step: "query_posts",
-        error: postsError.message
+        step: "query",
+        error: error.message
       });
     }
 
     return res.status(200).json({
       ok: true,
       message: "Worker test passed",
-      queued_jobs: jobs?.length || 0,
-      latest_jobs: jobs || [],
-      latest_posts: posts || []
+      rows: data || []
     });
   } catch (error) {
     return res.status(500).json({
       ok: false,
       step: "catch",
-      error: error.message || "Unknown server error"
+      error: error.message || "Unknown error"
     });
   }
 }
