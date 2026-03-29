@@ -11,14 +11,12 @@
     :root{
       --bg:#08111f;
       --card:#101b31;
-      --card2:#16233f;
       --line:rgba(255,255,255,.08);
       --text:#f4f7ff;
       --muted:#9fb1d7;
       --primary:#2563eb;
       --primary2:#7c3aed;
       --success:#10b981;
-      --warn:#f59e0b;
       --danger:#ef4444;
       --shadow:0 14px 40px rgba(0,0,0,.28);
       --safe-bottom:env(safe-area-inset-bottom);
@@ -59,7 +57,7 @@
     }
 
     .wrap{
-      width:min(100%, 920px);
+      width:min(100%, 860px);
       margin:0 auto;
     }
 
@@ -130,32 +128,13 @@
       text-overflow:ellipsis;
     }
 
-    .page{
-      display:grid;
-      gap:16px;
-    }
-
     .card{
       background:var(--card);
       border:1px solid var(--line);
       border-radius:22px;
       box-shadow:var(--shadow);
       overflow:hidden;
-    }
-
-    .card-head{
-      padding:14px 16px;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .card-head h3{
-      font-size:16px;
-      font-weight:800;
+      margin-bottom:16px;
     }
 
     .card-body{
@@ -199,27 +178,15 @@
       text-overflow:ellipsis;
     }
 
-    .top-tools{
+    .privacy-row{
       display:flex;
-      gap:8px;
       align-items:center;
+      justify-content:space-between;
+      gap:10px;
       flex-wrap:wrap;
     }
 
-    .select,
-    .input,
-    .textarea,
-    .file-wrap{
-      width:100%;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      color:var(--text);
-      outline:none;
-      padding:14px;
-    }
-
-    .mini-select{
+    .privacy-select{
       min-height:40px;
       padding:0 12px;
       border-radius:12px;
@@ -229,10 +196,22 @@
       outline:none;
     }
 
-    .textarea{
-      min-height:170px;
-      resize:vertical;
-      line-height:1.6;
+    .toolbar{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .tool-btn{
+      min-height:40px;
+      padding:0 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
     }
 
     .field{
@@ -246,24 +225,22 @@
       color:#dbeafe;
     }
 
-    .post-preview-title{
-      display:none;
-      padding:12px 14px;
+    .input,
+    .textarea,
+    .file-wrap{
+      width:100%;
       border-radius:14px;
-      background:rgba(255,255,255,.05);
       border:1px solid var(--line);
-      font-size:14px;
-      color:#dbeafe;
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      padding:14px;
+      outline:none;
     }
 
-    .post-preview-title.show{
-      display:block;
-    }
-
-    .media-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
+    .textarea{
+      min-height:180px;
+      resize:vertical;
+      line-height:1.6;
     }
 
     .file-wrap{
@@ -281,15 +258,41 @@
       line-height:1.5;
     }
 
+    .title-preview{
+      display:none;
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      font-size:14px;
+      color:#dbeafe;
+      font-weight:700;
+    }
+
+    .title-preview.show{
+      display:block;
+    }
+
+    .media-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .platform-wrap{
+      display:grid;
+      gap:10px;
+    }
+
     .platform-grid{
       display:grid;
       grid-template-columns:repeat(2,1fr);
       gap:10px;
     }
 
-    .platform-btn{
+    .platform-chip{
       position:relative;
-      min-height:72px;
+      min-height:70px;
       padding:12px;
       border-radius:18px;
       border:1px solid var(--line);
@@ -299,16 +302,20 @@
       align-items:center;
       gap:12px;
       text-align:left;
-      transition:.18s ease;
     }
 
-    .platform-btn.active{
+    .platform-chip.active{
       background:rgba(37,99,235,.18);
       border-color:rgba(37,99,235,.4);
     }
 
-    .platform-btn.disabled{
-      opacity:.7;
+    .platform-chip.locked{
+      background:rgba(16,185,129,.14);
+      border-color:rgba(16,185,129,.25);
+    }
+
+    .platform-chip.disabled{
+      opacity:.72;
     }
 
     .platform-icon{
@@ -331,6 +338,7 @@
     .tiktok{background:linear-gradient(135deg,#161616,#25f4ee)}
     .whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
     .xhandle{background:linear-gradient(135deg,#0f172a,#334155)}
+    .viewapp{background:linear-gradient(135deg,var(--primary),var(--primary2))}
 
     .platform-meta{
       min-width:0;
@@ -351,7 +359,7 @@
       text-overflow:ellipsis;
     }
 
-    .platform-check{
+    .platform-mark{
       position:absolute;
       right:10px;
       top:10px;
@@ -367,64 +375,11 @@
       background:rgba(255,255,255,.06);
     }
 
-    .platform-btn.active .platform-check{
+    .platform-chip.active .platform-mark,
+    .platform-chip.locked .platform-mark{
       background:rgba(16,185,129,.18);
       border-color:rgba(16,185,129,.3);
       color:#d1fae5;
-    }
-
-    .toolbar{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:10px;
-    }
-
-    .tool-btn{
-      min-height:46px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      color:#fff;
-      font-size:13px;
-      font-weight:700;
-    }
-
-    .row{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-    }
-
-    .actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      min-height:46px;
-      padding:0 16px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      color:#fff;
-      font-size:13px;
-      font-weight:700;
-    }
-
-    .btn.primary{
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      border-color:transparent;
-    }
-
-    .btn.success{
-      background:linear-gradient(135deg,#059669,#10b981);
-      border-color:transparent;
-    }
-
-    .btn:disabled{
-      opacity:.6;
-      cursor:not-allowed;
     }
 
     .status-list{
@@ -485,6 +440,98 @@
       color:#dbeafe;
     }
 
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      min-height:46px;
+      padding:0 16px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      border-color:transparent;
+    }
+
+    .btn.success{
+      background:linear-gradient(135deg,#059669,#10b981);
+      border-color:transparent;
+    }
+
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .dropdown-wrap{
+      position:relative;
+    }
+
+    .dropdown-menu{
+      position:absolute;
+      right:0;
+      top:48px;
+      min-width:220px;
+      display:none;
+      background:#0f1a30;
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      z-index:60;
+    }
+
+    .dropdown-menu.show{
+      display:block;
+    }
+
+    .dropdown-item{
+      width:100%;
+      min-height:44px;
+      padding:0 14px;
+      display:flex;
+      align-items:center;
+      text-align:left;
+      font-size:13px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+    }
+
+    .dropdown-item:last-child{
+      border-bottom:none;
+    }
+
+    .emoji-panel{
+      display:none;
+      padding:12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .emoji-panel.show{
+      display:flex;
+    }
+
+    .emoji-btn{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      font-size:20px;
+    }
+
     .bottom-nav{
       position:fixed;
       left:50%;
@@ -522,9 +569,8 @@
     }
 
     @media (max-width:720px){
-      .platform-grid{grid-template-columns:1fr}
-      .toolbar{grid-template-columns:repeat(2,1fr)}
-      .media-grid,.row{grid-template-columns:1fr}
+      .platform-grid,
+      .media-row{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -534,130 +580,99 @@
 
     <header class="topbar">
       <div class="top-left">
-        <button class="icon-btn" onclick="history.back()" title="Back">←</button>
+        <button class="icon-btn" onclick="history.back()">←</button>
         <div class="title-box">
           <div class="title">Create Post</div>
-          <div class="sub">Publish everywhere</div>
+          <div class="sub">Simple publish flow</div>
         </div>
       </div>
-      <button class="icon-btn" id="reloadBtn" title="Refresh">↻</button>
+      <button class="icon-btn" id="reloadBtn">↻</button>
     </header>
 
-    <main class="page">
-      <section class="card">
-        <div class="card-head">
-          <h3>Composer</h3>
-        </div>
-
-        <div class="card-body">
-          <div class="composer-top">
-            <div class="avatar" id="avatarInitial">V</div>
-            <div class="composer-meta">
-              <div class="composer-name" id="composerName">Loading...</div>
-              <div class="top-tools">
-                <select id="privacySelect" class="mini-select">
-                  <option value="public">Public</option>
-                  <option value="friends">Friends</option>
-                  <option value="private">Private</option>
-                </select>
-
-                <select id="postTypeSelect" class="mini-select">
-                  <option value="text">Text</option>
-                  <option value="photo">Photo</option>
-                  <option value="video">Video</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="label" for="postTitle">Post Title</label>
-            <input id="postTitle" class="input" placeholder="Post title" maxlength="120" />
-          </div>
-
-          <div id="titlePreview" class="post-preview-title"></div>
-
-          <div class="field">
-            <label class="label" for="postBody">Caption / Content</label>
-            <textarea id="postBody" class="textarea" placeholder="What's new in your world?"></textarea>
-          </div>
-
-          <div class="media-grid">
-            <div class="field">
-              <label class="label" for="postMedia">Photo / Video</label>
-              <div class="file-wrap">
-                <input id="postMedia" type="file" accept="image/*,video/*" />
-              </div>
-              <div class="hint" id="mediaNote">No media selected.</div>
-            </div>
-
-            <div class="field">
-              <label class="label" for="postSticker">Sticker</label>
-              <select id="postSticker" class="select">
-                <option value="">None</option>
-                <option value="🔥 Trending">🔥 Trending</option>
-                <option value="✨ New">✨ New</option>
-                <option value="🎉 Celebration">🎉 Celebration</option>
-                <option value="📢 Announcement">📢 Announcement</option>
-                <option value="❤️ Love">❤️ Love</option>
+    <section class="card">
+      <div class="card-body">
+        <div class="composer-top">
+          <div class="avatar" id="avatarInitial">V</div>
+          <div class="composer-meta">
+            <div class="composer-name" id="composerName">Loading...</div>
+            <div class="privacy-row">
+              <select id="privacySelect" class="privacy-select">
+                <option value="public">Public</option>
+                <option value="friends">Friends</option>
+                <option value="private">Private</option>
               </select>
-            </div>
-          </div>
 
-          <div class="toolbar">
-            <button class="tool-btn" type="button" id="tagBtn">Tag</button>
-            <button class="tool-btn" type="button" id="locationBtn">Location</button>
-            <button class="tool-btn" type="button" id="feelingBtn">Feeling</button>
-            <button class="tool-btn" type="button" id="moreBtn">More</button>
-          </div>
+              <div class="toolbar">
+                <button class="tool-btn" id="emojiToggleBtn" type="button">😊 Emoji</button>
 
-          <div class="row">
-            <div class="field">
-              <label class="label" for="locationInput">Location</label>
-              <input id="locationInput" class="input" placeholder="Optional location" />
-            </div>
-
-            <div class="field">
-              <label class="label" for="tagsInput">Tags</label>
-              <input id="tagsInput" class="input" placeholder="Optional tags" />
+                <div class="dropdown-wrap">
+                  <button class="tool-btn" id="moreOptionsBtn" type="button">⋯ More</button>
+                  <div id="moreOptionsMenu" class="dropdown-menu">
+                    <button class="dropdown-item" type="button" id="addTagBtn">Add Tag</button>
+                    <button class="dropdown-item" type="button" id="addMentionBtn">Mention</button>
+                    <button class="dropdown-item" type="button" id="addLocationBtn">Location</button>
+                    <button class="dropdown-item" type="button" id="addFeelingBtn">Feeling</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </section>
 
-      <section class="card">
-        <div class="card-head">
-          <h3>Where to post</h3>
+        <div id="emojiPanel" class="emoji-panel"></div>
+
+        <div class="field">
+          <label class="label" for="postTitle">Post Title</label>
+          <input id="postTitle" class="input" placeholder="Post title" maxlength="120" />
         </div>
 
-        <div class="card-body">
+        <div id="titlePreview" class="title-preview"></div>
+
+        <div class="field">
+          <label class="label" for="postBody">Write something</label>
+          <textarea id="postBody" class="textarea" placeholder="What's new in your world?"></textarea>
+        </div>
+
+        <div class="media-row">
+          <div class="field">
+            <label class="label" for="postMedia">Photo / Video</label>
+            <div class="file-wrap">
+              <input id="postMedia" type="file" accept="image/*,video/*" />
+            </div>
+            <div class="hint" id="mediaNote">No media selected.</div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="extraInput">Extra</label>
+            <input id="extraInput" class="input" placeholder="Tags, location, feeling, mentions" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-body">
+        <div class="platform-wrap">
+          <div class="label">Where to post</div>
           <div id="platformGrid" class="platform-grid"></div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section class="card">
-        <div class="card-head">
-          <h3>Connection status</h3>
-        </div>
+    <section class="card">
+      <div class="card-body">
+        <div id="statusList" class="status-list"></div>
+      </div>
+    </section>
 
-        <div class="card-body">
-          <div id="statusList" class="status-list"></div>
+    <section class="card">
+      <div class="card-body">
+        <div class="actions">
+          <button id="draftBtn" class="btn primary" type="button">Save Draft</button>
+          <button id="publishBtn" class="btn success" type="button">Publish Post</button>
         </div>
-      </section>
-
-      <section class="card">
-        <div class="card-head">
-          <h3>Actions</h3>
-        </div>
-
-        <div class="card-body">
-          <div class="actions">
-            <button id="draftBtn" class="btn" type="button">Save Draft</button>
-            <button id="publishBtn" class="btn success" type="button">Publish Post</button>
-          </div>
-        </div>
-      </section>
-    </main>
+      </div>
+    </section>
   </div>
 
   <nav class="bottom-nav">
@@ -671,6 +686,7 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const PUBLISH_JOBS_TABLE = "post_publish_jobs";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -682,13 +698,16 @@
     });
 
     const PLATFORMS = [
-      { key: "facebook", name: "Facebook", icon: "f", iconClass: "facebook", path: "facebook-connect.html" },
-      { key: "instagram", name: "Instagram", icon: "◎", iconClass: "instagram", path: "instagram-connect.html" },
-      { key: "youtube", name: "YouTube", icon: "▶", iconClass: "youtube", path: "youtube-connect.html" },
-      { key: "tiktok", name: "TikTok", icon: "♪", iconClass: "tiktok", path: "tiktok-connect.html" },
-      { key: "whatsapp", name: "WhatsApp", icon: "✆", iconClass: "whatsapp", path: "whatsapp-connect.html" },
-      { key: "x", name: "X", icon: "X", iconClass: "xhandle", path: "x-connect.html" }
+      { key: "view", name: "View", icon: "V", iconClass: "viewapp", always: true },
+      { key: "facebook", name: "Facebook", icon: "f", iconClass: "facebook" },
+      { key: "tiktok", name: "TikTok", icon: "♪", iconClass: "tiktok" },
+      { key: "youtube", name: "YouTube", icon: "▶", iconClass: "youtube" },
+      { key: "instagram", name: "Instagram", icon: "◎", iconClass: "instagram" },
+      { key: "x", name: "X", icon: "X", iconClass: "xhandle" },
+      { key: "whatsapp", name: "WhatsApp", icon: "✆", iconClass: "whatsapp" }
     ];
+
+    const EMOJIS = ["😀","😂","😍","🔥","🎉","❤️","👏","🙌","😎","✨","📢","🚀","💯","🥳","😇","😉"];
 
     const noticeBox = document.getElementById("notice");
     const reloadBtn = document.getElementById("reloadBtn");
@@ -699,19 +718,24 @@
     const postBody = document.getElementById("postBody");
     const postMedia = document.getElementById("postMedia");
     const mediaNote = document.getElementById("mediaNote");
-    const postSticker = document.getElementById("postSticker");
     const privacySelect = document.getElementById("privacySelect");
-    const postTypeSelect = document.getElementById("postTypeSelect");
-    const locationInput = document.getElementById("locationInput");
-    const tagsInput = document.getElementById("tagsInput");
+    const extraInput = document.getElementById("extraInput");
     const platformGrid = document.getElementById("platformGrid");
     const statusList = document.getElementById("statusList");
     const draftBtn = document.getElementById("draftBtn");
     const publishBtn = document.getElementById("publishBtn");
+    const emojiPanel = document.getElementById("emojiPanel");
+    const emojiToggleBtn = document.getElementById("emojiToggleBtn");
+    const moreOptionsBtn = document.getElementById("moreOptionsBtn");
+    const moreOptionsMenu = document.getElementById("moreOptionsMenu");
+    const addTagBtn = document.getElementById("addTagBtn");
+    const addMentionBtn = document.getElementById("addMentionBtn");
+    const addLocationBtn = document.getElementById("addLocationBtn");
+    const addFeelingBtn = document.getElementById("addFeelingBtn");
 
     let currentUser = null;
     let connections = {};
-    let selectedPlatforms = new Set();
+    let selectedPlatforms = new Set(["view"]);
     let cachedMedia = null;
 
     function showNotice(message, type = "info") {
@@ -721,7 +745,7 @@
       showNotice._timer = setTimeout(() => {
         noticeBox.className = "notice";
         noticeBox.textContent = "";
-      }, 2800);
+      }, 3000);
     }
 
     function getInitial(name = "V") {
@@ -762,6 +786,7 @@
     }
 
     function isPlatformConnected(platformKey) {
+      if (platformKey === "view") return true;
       const row = connections[platformKey];
       return !!(row && row.status === "connected");
     }
@@ -774,20 +799,25 @@
       platformGrid.innerHTML = PLATFORMS.map(item => {
         const connected = isPlatformConnected(item.key);
         const selected = selectedPlatforms.has(item.key);
-        const row = connections[item.key];
 
         return `
           <button
             type="button"
-            class="platform-btn ${selected ? 'active' : ''} ${connected ? '' : 'disabled'}"
+            class="platform-chip ${selected ? 'active' : ''} ${item.always ? 'locked' : ''} ${connected ? '' : 'disabled'}"
             data-platform="${item.key}"
           >
             <div class="platform-icon ${item.iconClass}">${item.icon}</div>
             <div class="platform-meta">
               <div class="platform-name">${item.name}</div>
-              <div class="platform-sub">${connected ? getPlatformDisplay(row, item.name) : 'Not connected'}</div>
+              <div class="platform-sub">${
+                item.key === "view"
+                  ? "Always included"
+                  : connected
+                    ? getPlatformDisplay(connections[item.key], item.name)
+                    : "Not connected"
+              }</div>
             </div>
-            <div class="platform-check">${selected ? "✓" : connected ? "•" : "!"}</div>
+            <div class="platform-mark">${selected ? "✓" : item.always ? "✓" : connected ? "•" : "!"}</div>
           </button>
         `;
       }).join("");
@@ -797,13 +827,18 @@
       statusList.innerHTML = PLATFORMS.map(item => {
         const connected = isPlatformConnected(item.key);
         const selected = selectedPlatforms.has(item.key);
-        const row = connections[item.key];
 
         return `
           <div class="status-item">
             <div>
               <div class="status-item-name">${item.name}</div>
-              <div class="status-item-sub">${connected ? getPlatformDisplay(row, item.name) : 'Not connected'}</div>
+              <div class="status-item-sub">${
+                item.key === "view"
+                  ? "Main app post"
+                  : connected
+                    ? getPlatformDisplay(connections[item.key], item.name)
+                    : "Not connected"
+              }</div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
               <span class="badge ${connected ? 'connected' : 'not-connected'}">${connected ? 'Connected' : 'Not Connected'}</span>
@@ -828,7 +863,9 @@
       });
 
       selectedPlatforms.forEach(platform => {
-        if (!isPlatformConnected(platform)) selectedPlatforms.delete(platform);
+        if (platform !== "view" && !isPlatformConnected(platform)) {
+          selectedPlatforms.delete(platform);
+        }
       });
 
       renderPlatforms();
@@ -836,6 +873,8 @@
     }
 
     function togglePlatform(platformKey) {
+      if (platformKey === "view") return;
+
       if (!isPlatformConnected(platformKey)) {
         const item = PLATFORMS.find(p => p.key === platformKey);
         showNotice(`${item?.name || platformKey} is not connected.`, "error");
@@ -874,10 +913,7 @@
         title: postTitle.value.trim(),
         body: postBody.value.trim(),
         privacy: privacySelect.value,
-        post_type: postTypeSelect.value,
-        sticker: postSticker.value,
-        location: locationInput.value.trim(),
-        tags: tagsInput.value.trim(),
+        extra: extraInput.value.trim(),
         selected_platforms: Array.from(selectedPlatforms),
         media_name: cachedMedia?.name || null,
         media_type: cachedMedia?.type || null
@@ -892,41 +928,33 @@
       }
 
       if (selectedPlatforms.size === 0) {
-        throw new Error("Select at least one connected platform.");
+        throw new Error("Select at least one platform.");
       }
 
       for (const platform of selectedPlatforms) {
-        if (!isPlatformConnected(platform)) {
+        if (platform !== "view" && !isPlatformConnected(platform)) {
           const item = PLATFORMS.find(p => p.key === platform);
           throw new Error(`${item?.name || platform} is not connected.`);
         }
-      }
-
-      if ((payload.post_type === "photo" || payload.post_type === "video") && !cachedMedia) {
-        throw new Error(`Select ${payload.post_type} media.`);
       }
 
       return payload;
     }
 
     async function saveDraft() {
-      try {
-        const user = currentUser || (await supabaseClient.auth.getUser()).data.user;
-        if (!user) throw new Error("Session expired. Sign in again.");
+      draftBtn.disabled = true;
 
+      try {
         const payload = getPostPayload();
 
         const { error } = await supabaseClient
           .from("post_drafts")
           .insert({
-            user_id: user.id,
+            user_id: currentUser.id,
             title: payload.title || null,
             body: payload.body || null,
             privacy: payload.privacy,
-            post_type: payload.post_type,
-            sticker: payload.sticker || null,
-            location: payload.location || null,
-            tags: payload.tags || null,
+            extra: payload.extra || null,
             selected_platforms: payload.selected_platforms,
             media_name: payload.media_name,
             media_type: payload.media_type
@@ -936,6 +964,8 @@
         showNotice("Draft saved.", "success");
       } catch (error) {
         showNotice(error.message || "Could not save draft.", "error");
+      } finally {
+        draftBtn.disabled = false;
       }
     }
 
@@ -945,37 +975,42 @@
       try {
         const payload = validatePost();
 
-        for (const platform of selectedPlatforms) {
-          if (!isPlatformConnected(platform)) {
-            const item = PLATFORMS.find(p => p.key === platform);
-            throw new Error(`${item?.name || platform} is not connected.`);
-          }
-        }
-
-        const { data: userData, error: userError } = await supabaseClient.auth.getUser();
-        if (userError) throw userError;
-        if (!userData?.user) throw new Error("Session expired. Sign in again.");
-
-        const postRecord = {
-          user_id: userData.user.id,
+        const postInsert = {
+          user_id: currentUser.id,
           title: payload.title || null,
           body: payload.body || null,
           privacy: payload.privacy,
-          post_type: payload.post_type,
-          sticker: payload.sticker || null,
-          location: payload.location || null,
-          tags: payload.tags || null,
+          extra: payload.extra || null,
           selected_platforms: payload.selected_platforms,
           media_name: payload.media_name,
           media_type: payload.media_type,
           publish_status: "queued"
         };
 
-        const { error: insertError } = await supabaseClient
+        const { data: insertedPost, error: postError } = await supabaseClient
           .from("posts")
-          .insert(postRecord);
+          .insert(postInsert)
+          .select("id")
+          .single();
 
-        if (insertError) throw insertError;
+        if (postError) throw postError;
+
+        const selectedExternalPlatforms = Array.from(selectedPlatforms).filter(p => p !== "view");
+
+        if (selectedExternalPlatforms.length > 0) {
+          const jobs = selectedExternalPlatforms.map(platform => ({
+            post_id: insertedPost.id,
+            user_id: currentUser.id,
+            platform,
+            status: "queued"
+          }));
+
+          const { error: jobsError } = await supabaseClient
+            .from(PUBLISH_JOBS_TABLE)
+            .insert(jobs);
+
+          if (jobsError) throw jobsError;
+        }
 
         showNotice("Post published.", "success");
       } catch (error) {
@@ -985,12 +1020,27 @@
       }
     }
 
-    function bindStaticActions() {
-      document.getElementById("tagBtn").addEventListener("click", () => tagsInput.focus());
-      document.getElementById("locationBtn").addEventListener("click", () => locationInput.focus());
-      document.getElementById("feelingBtn").addEventListener("click", () => postSticker.focus());
-      document.getElementById("moreBtn").addEventListener("click", () => showNotice("More options coming soon.", "info"));
+    function closeMoreMenu() {
+      moreOptionsMenu.classList.remove("show");
+    }
 
+    function toggleMoreMenu() {
+      moreOptionsMenu.classList.toggle("show");
+    }
+
+    function addTextToBody(text) {
+      const current = postBody.value;
+      postBody.value = current ? `${current} ${text}` : text;
+      postBody.focus();
+    }
+
+    function buildEmojiPanel() {
+      emojiPanel.innerHTML = EMOJIS.map(emoji => `
+        <button type="button" class="emoji-btn" data-emoji="${emoji}">${emoji}</button>
+      `).join("");
+    }
+
+    function bindStaticActions() {
       postTitle.addEventListener("input", updateTitlePreview);
 
       postMedia.addEventListener("change", async (e) => {
@@ -999,7 +1049,7 @@
       });
 
       platformGrid.addEventListener("click", (e) => {
-        const btn = e.target.closest(".platform-btn");
+        const btn = e.target.closest(".platform-chip");
         if (!btn) return;
         togglePlatform(btn.dataset.platform);
       });
@@ -1015,12 +1065,57 @@
 
       draftBtn.addEventListener("click", saveDraft);
       publishBtn.addEventListener("click", publishPost);
+
+      emojiToggleBtn.addEventListener("click", () => {
+        emojiPanel.classList.toggle("show");
+      });
+
+      emojiPanel.addEventListener("click", (e) => {
+        const btn = e.target.closest(".emoji-btn");
+        if (!btn) return;
+        addTextToBody(btn.dataset.emoji);
+      });
+
+      moreOptionsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleMoreMenu();
+      });
+
+      addTagBtn.addEventListener("click", () => {
+        extraInput.value = extraInput.value ? `${extraInput.value} #tag` : "#tag";
+        extraInput.focus();
+        closeMoreMenu();
+      });
+
+      addMentionBtn.addEventListener("click", () => {
+        extraInput.value = extraInput.value ? `${extraInput.value} @mention` : "@mention";
+        extraInput.focus();
+        closeMoreMenu();
+      });
+
+      addLocationBtn.addEventListener("click", () => {
+        extraInput.value = extraInput.value ? `${extraInput.value} 📍location` : "📍location";
+        extraInput.focus();
+        closeMoreMenu();
+      });
+
+      addFeelingBtn.addEventListener("click", () => {
+        extraInput.value = extraInput.value ? `${extraInput.value} feeling happy` : "feeling happy";
+        extraInput.focus();
+        closeMoreMenu();
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".dropdown-wrap")) closeMoreMenu();
+      });
     }
 
     async function init() {
       try {
         const ready = await initUser();
         if (!ready) return;
+
+        buildEmojiPanel();
         bindStaticActions();
         updateTitlePreview();
         renderPlatforms();
