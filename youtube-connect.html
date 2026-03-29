@@ -5,87 +5,135 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Connect YouTube</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     body{
-      font-family: Arial;
+      font-family:Arial,sans-serif;
       background:#f4f6fb;
       display:flex;
       justify-content:center;
       align-items:center;
-      height:100vh;
+      min-height:100vh;
+      margin:0;
+      padding:20px;
     }
     .card{
       background:#fff;
-      padding:30px;
-      border-radius:20px;
-      width:90%;
-      max-width:400px;
-      text-align:center;
-      box-shadow:0 10px 30px rgba(0,0,0,0.1);
-    }
-    button{
-      background:red;
-      color:#fff;
-      border:none;
-      padding:15px;
       width:100%;
-      border-radius:12px;
-      font-size:16px;
-      cursor:pointer;
+      max-width:420px;
+      border-radius:20px;
+      padding:28px;
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+    }
+    h2{
+      margin:0 0 10px;
+      font-size:24px;
+    }
+    p{
+      color:#6b7280;
+      line-height:1.5;
+      margin:0 0 18px;
+      font-size:14px;
     }
     .status{
-      margin-top:15px;
+      margin:14px 0 0;
       font-size:14px;
+      min-height:20px;
+    }
+    .status.success{color:#065f46}
+    .status.error{color:#991b1b}
+    .status.info{color:#1d4ed8}
+    button{
+      width:100%;
+      border:none;
+      border-radius:14px;
+      padding:15px;
+      background:#ff0000;
+      color:#fff;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    button:disabled{
+      opacity:.7;
+      cursor:not-allowed;
     }
   </style>
 </head>
 <body>
+  <div class="card">
+    <h2>Connect YouTube</h2>
+    <p>Connect your YouTube channel so View can upload videos for you.</p>
+    <button id="connectBtn" type="button">Connect YouTube</button>
+    <div id="status" class="status"></div>
+  </div>
 
-<div class="card">
-  <h2>Connect YouTube</h2>
-  <button onclick="connectYouTube()">Connect YouTube</button>
-  <div class="status" id="status"></div>
-</div>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "PASTE_YOUR_REAL_SUPABASE_ANON_KEY_HERE";
+    const GOOGLE_CLIENT_ID = "PASTE_YOUR_REAL_GOOGLE_CLIENT_ID_HERE";
+    const REDIRECT_URI = "https://view-psi-lac.vercel.app/api/youtube-exchange-code";
 
-<script>
-const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-const SUPABASE_ANON = "YOUR_ANON_KEY"; // put your anon key
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    const connectBtn = document.getElementById("connectBtn");
+    const statusBox = document.getElementById("status");
 
-// check if already connected
-const params = new URLSearchParams(window.location.search);
-if (params.get("connected")) {
-  document.getElementById("status").innerText = "YouTube connected successfully ✅";
-}
+    function setStatus(message, type = "info") {
+      statusBox.className = `status ${type}`;
+      statusBox.textContent = message;
+    }
 
-async function connectYouTube() {
-  const { data: { session } } = await supabase.auth.getSession();
+    async function connectYouTube() {
+      connectBtn.disabled = true;
 
-  if (!session) {
-    alert("Please login first");
-    return;
-  }
+      try {
+        if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes("PASTE_YOUR_REAL")) {
+          throw new Error("Add your real Supabase anon key first.");
+        }
 
-  const userId = session.user.id;
+        if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("PASTE_YOUR_REAL")) {
+          throw new Error("Add your real Google client ID first.");
+        }
 
-  const CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID";
+        const { data, error } = await supabaseClient.auth.getUser();
+        if (error) throw error;
 
-  const REDIRECT_URI = "https://view-psi-lac.vercel.app/api/youtube-exchange-code";
+        const user = data?.user;
+        if (!user) {
+          throw new Error("You must log in first.");
+        }
 
-  const url = `https://accounts.google.com/o/oauth2/v2/auth
-  ?client_id=${CLIENT_ID}
-  &redirect_uri=${encodeURIComponent(REDIRECT_URI)}
-  &response_type=code
-  &access_type=offline
-  &prompt=consent
-  &scope=${encodeURIComponent("https://www.googleapis.com/auth/youtube.upload")}
-  &state=${userId}`;
+        setStatus("Redirecting to Google...", "info");
 
-  window.location.href = url;
-}
-</script>
+        const params = new URLSearchParams({
+          client_id: GOOGLE_CLIENT_ID,
+          redirect_uri: REDIRECT_URI,
+          response_type: "code",
+          access_type: "offline",
+          prompt: "consent",
+          scope: "https://www.googleapis.com/auth/youtube.upload",
+          state: user.id
+        });
 
+        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+      } catch (err) {
+        setStatus(err.message || "Could not start YouTube connection.", "error");
+        connectBtn.disabled = false;
+      }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("connected") === "1") {
+      setStatus("YouTube connected successfully.", "success");
+    }
+
+    connectBtn.addEventListener("click", connectYouTube);
+  </script>
 </body>
 </html>
