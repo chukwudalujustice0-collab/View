@@ -6,6 +6,50 @@ function setCors(res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
 
+async function updatePostSummary(supabase, postId) {
+  const { data: postJobs, error: postJobsError } = await supabase
+    .from("post_publish_jobs")
+    .select("status")
+    .eq("post_id", postId);
+
+  if (postJobsError) {
+    throw new Error(`Post summary read failed: ${postJobsError.message}`);
+  }
+
+  if (!postJobs || !postJobs.length) {
+    return;
+  }
+
+  const statuses = postJobs.map(j => (j.status || "").toLowerCase());
+
+  let publishStatus = "queued";
+
+  if (statuses.every(status => status === "success")) {
+    publishStatus = "published";
+  } else if (statuses.some(status => status === "failed") && statuses.some(status => status === "success")) {
+    publishStatus = "partial";
+  } else if (statuses.every(status => status === "failed")) {
+    publishStatus = "failed";
+  } else if (statuses.some(status => status === "processing")) {
+    publishStatus = "processing";
+  } else if (statuses.some(status => status === "retrying")) {
+    publishStatus = "retrying";
+  } else if (statuses.some(status => status === "queued")) {
+    publishStatus = "queued";
+  }
+
+  const { error: updatePostError } = await supabase
+    .from("posts")
+    .update({
+      publish_status: publishStatus
+    })
+    .eq("id", postId);
+
+  if (updatePostError) {
+    throw new Error(`Post summary update failed: ${updatePostError.message}`);
+  }
+}
+
 module.exports = async function handler(req, res) {
   setCors(res);
 
@@ -30,15 +74,19 @@ module.exports = async function handler(req, res) {
       .from("post_publish_jobs")
       .select("*")
       .in("status", ["queued", "retrying"])
-      .limit(10);
+      .order("created_at", { ascending: true })
+      .limit(20);
 
     if (error) {
       throw error;
     }
 
     const processed = [];
+    const touchedPostIds = new Set();
 
     for (const job of jobs || []) {
+      touchedPostIds.add(job.post_id);
+
       try {
         const { data: post, error: postError } = await supabase
           .from("posts")
@@ -49,16 +97,20 @@ module.exports = async function handler(req, res) {
         if (postError) throw postError;
         if (!post) throw new Error("Post not found");
 
-        await supabase
+        const processingAt = new Date().toISOString();
+
+        const { error: markProcessingError } = await supabase
           .from("post_publish_jobs")
           .update({
             status: "processing",
-            started_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            started_at: processingAt,
+            updated_at: processingAt
           })
           .eq("id", job.id);
 
-        // simulated delivery for now
+        if (markProcessingError) throw markProcessingError;
+
+        // Simulated delivery for now
         const deliveredAt = new Date().toISOString();
         const platformPostId = `post_${job.platform}_${Date.now()}`;
 
@@ -102,12 +154,13 @@ module.exports = async function handler(req, res) {
             attempts: (job.attempts || 0) + 1
           });
 
+        await updatePostSummary(supabase, job.post_id);
+
         processed.push({
           job: job.id,
           platform: job.platform,
           status: "success"
         });
-
       } catch (err) {
         const failedAt = new Date().toISOString();
 
@@ -134,6 +187,10 @@ module.exports = async function handler(req, res) {
             attempts: (job.attempts || 0) + 1
           });
 
+        try {
+          await updatePostSummary(supabase, job.post_id);
+        } catch (_) {}
+
         processed.push({
           job: job.id,
           platform: job.platform,
@@ -143,39 +200,11 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // update each post summary status after jobs are processed
-    const postIds = [...new Set((jobs || []).map(j => j.post_id))];
-
-    for (const postId of postIds) {
-      const { data: postJobs, error: postJobsError } = await supabase
-        .from("post_publish_jobs")
-        .select("status")
-        .eq("post_id", postId);
-
-      if (postJobsError || !postJobs || !postJobs.length) continue;
-
-      const statuses = postJobs.map(j => j.status);
-
-      let publishStatus = "queued";
-
-      if (statuses.every(status => status === "success")) {
-        publishStatus = "published";
-      } else if (statuses.some(status => status === "failed") && statuses.some(status => status === "success")) {
-        publishStatus = "partial";
-      } else if (statuses.every(status => status === "failed")) {
-        publishStatus = "failed";
-      } else if (statuses.some(status => status === "processing")) {
-        publishStatus = "processing";
-      } else if (statuses.some(status => status === "retrying")) {
-        publishStatus = "retrying";
-      }
-
-      await supabase
-        .from("posts")
-        .update({
-          publish_status: publishStatus
-        })
-        .eq("id", postId);
+    // Final sweep for all touched posts
+    for (const postId of touchedPostIds) {
+      try {
+        await updatePostSummary(supabase, postId);
+      } catch (_) {}
     }
 
     return res.status(200).json({
@@ -183,7 +212,6 @@ module.exports = async function handler(req, res) {
       processed: processed.length,
       details: processed
     });
-
   } catch (err) {
     return res.status(500).json({
       success: false,
