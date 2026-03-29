@@ -4,554 +4,169 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Post to X | View</title>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    :root{
-      --bg:#050816;
-      --bg2:#0f172a;
-      --card:rgba(255,255,255,.07);
-      --line:rgba(255,255,255,.11);
-      --text:#f8fbff;
-      --muted:#aebad0;
-      --accent:#1d9bf0;
-      --success:#27c67a;
-      --danger:#ff5d6e;
-      --warn:#ffb648;
-      --shadow:0 18px 50px rgba(0,0,0,.35);
-      --radius:24px;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: white;
     }
 
-    *{box-sizing:border-box}
-    html,body{
-      margin:0;
-      padding:0;
-      font-family:Inter,Arial,sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(circle at top right, rgba(29,155,240,.18), transparent 22%),
-        radial-gradient(circle at bottom left, rgba(255,255,255,.08), transparent 20%),
-        linear-gradient(180deg,var(--bg),var(--bg2));
-      min-height:100%;
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
     }
 
-    body{padding:18px 14px 120px}
-
-    .wrap{
-      width:min(100%, 920px);
-      margin:0 auto;
+    .card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     }
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:18px;
+    textarea {
+      width: 100%;
+      height: 120px;
+      border-radius: 12px;
+      border: none;
+      padding: 12px;
+      font-size: 14px;
+      outline: none;
+      margin-top: 10px;
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
+    .btn {
+      margin-top: 15px;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
     }
 
-    .logo{
-      width:52px;
-      height:52px;
-      border-radius:18px;
-      background:linear-gradient(135deg,#111,#222);
-      border:1px solid rgba(255,255,255,.1);
-      display:grid;
-      place-items:center;
-      font-size:24px;
-      font-weight:800;
-      box-shadow:var(--shadow);
+    .btn-primary {
+      background: #10b981;
+      color: white;
     }
 
-    .brand h1{
-      margin:0;
-      font-size:1.15rem;
+    .btn-secondary {
+      background: #334155;
+      color: white;
     }
 
-    .brand p{
-      margin:4px 0 0;
-      color:var(--muted);
-      font-size:.92rem;
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 14px;
     }
 
-    .hero, .card{
-      border:1px solid var(--line);
-      background:var(--card);
-      backdrop-filter:blur(16px);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
+    .success {
+      background: rgba(16,185,129,0.2);
+      color: #10b981;
     }
 
-    .hero{
-      padding:24px;
-      margin-bottom:18px;
-      position:relative;
-      overflow:hidden;
-    }
-
-    .hero h2{
-      margin:0 0 10px;
-      font-size:1.5rem;
-    }
-
-    .hero p{
-      margin:0;
-      line-height:1.6;
-      color:var(--muted);
-      max-width:760px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:18px;
-    }
-
-    .card{
-      padding:20px;
-    }
-
-    .section-title{
-      margin:0 0 14px;
-      font-size:1rem;
-    }
-
-    .status{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-height:54px;
-      padding:14px 16px;
-      border-radius:18px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      margin-bottom:16px;
-    }
-
-    .dot{
-      width:12px;
-      height:12px;
-      border-radius:999px;
-      background:var(--warn);
-      box-shadow:0 0 0 5px rgba(255,182,72,.12);
-      flex:none;
-    }
-
-    .dot.good{
-      background:var(--success);
-      box-shadow:0 0 0 5px rgba(39,198,122,.12);
-    }
-
-    .dot.bad{
-      background:var(--danger);
-      box-shadow:0 0 0 5px rgba(255,93,110,.12);
-    }
-
-    .account{
-      display:none;
-      margin-bottom:16px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      border-radius:20px;
-      padding:16px;
-    }
-
-    .account strong{
-      display:block;
-      margin-bottom:6px;
-    }
-
-    .muted{
-      color:var(--muted);
-      font-size:.92rem;
-    }
-
-    .field{
-      margin-bottom:16px;
-    }
-
-    .label{
-      display:block;
-      margin-bottom:8px;
-      font-size:.92rem;
-      color:#dfe7f5;
-    }
-
-    textarea{
-      width:100%;
-      min-height:180px;
-      resize:vertical;
-      border-radius:18px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      color:var(--text);
-      padding:14px;
-      outline:none;
-      font-size:1rem;
-      line-height:1.5;
-    }
-
-    .count-row{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      margin-top:8px;
-      font-size:.85rem;
-      color:var(--muted);
-    }
-
-    .btn-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-top:12px;
-    }
-
-    button{
-      border:none;
-      cursor:pointer;
-      color:#fff;
-      border-radius:16px;
-      padding:13px 18px;
-      font-weight:700;
-    }
-
-    .primary{
-      background:linear-gradient(135deg,#111,#202938);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 16px 28px rgba(0,0,0,.22);
-    }
-
-    .secondary{
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-    }
-
-    .success{
-      background:linear-gradient(135deg,#1f9d63,#27c67a);
-      box-shadow:0 16px 28px rgba(39,198,122,.18);
-    }
-
-    .result{
-      display:none;
-      margin-top:16px;
-      border-radius:18px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      padding:14px;
-      line-height:1.6;
-      word-break:break-word;
-    }
-
-    .tips{
-      display:grid;
-      gap:12px;
-    }
-
-    .tip{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      border-radius:18px;
-      padding:14px;
-    }
-
-    .tip strong{
-      display:block;
-      margin-bottom:6px;
-    }
-
-    code{
-      background:rgba(255,255,255,.06);
-      padding:2px 6px;
-      border-radius:8px;
-    }
-
-    a{
-      color:#8ec5ff;
-    }
-
-    @media (max-width: 820px){
-      .grid{grid-template-columns:1fr}
+    .error {
+      background: rgba(239,68,68,0.2);
+      color: #ef4444;
     }
   </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo">𝕏</div>
-        <div>
-          <h1>View × X Post</h1>
-          <p>Post directly to X from your View app</p>
-        </div>
-      </div>
-    </div>
 
-    <section class="hero">
-      <h2>Publish to X</h2>
-      <p>
-        This page checks your View session, confirms your X account is connected, and sends your
-        post text to the <strong>x-post</strong> edge function with your logged-in JWT.
-      </p>
-    </section>
+<div class="container">
+  <div class="card">
+    <h2>Post to X</h2>
 
-    <div class="grid">
-      <section class="card">
-        <h3 class="section-title">Posting</h3>
+    <textarea id="postText" placeholder="Write something..."></textarea>
 
-        <div class="status">
-          <span class="dot" id="statusDot"></span>
-          <span id="statusText">Checking your View session...</span>
-        </div>
+    <button class="btn btn-primary" onclick="postToX()">Post to X</button>
+    <button class="btn btn-secondary" onclick="checkConnection()">Check Connection</button>
 
-        <div class="account" id="accountBox">
-          <strong id="accountName">Connected X account</strong>
-          <span class="muted" id="accountHandle">@username</span>
-        </div>
-
-        <div class="field">
-          <label class="label" for="postText">Post text</label>
-          <textarea id="postText" maxlength="280" placeholder="Write something to post on X..."></textarea>
-          <div class="count-row">
-            <span>Maximum 280 characters</span>
-            <span id="charCount">0 / 280</span>
-          </div>
-        </div>
-
-        <div class="btn-row">
-          <button class="primary" id="publishBtn">Post to X</button>
-          <button class="secondary" id="refreshBtn">Refresh</button>
-          <button class="success" id="fillDemoBtn">Use Demo Text</button>
-        </div>
-
-        <div class="result" id="resultBox"></div>
-      </section>
-
-      <section class="card">
-        <h3 class="section-title">Notes</h3>
-
-        <div class="tips">
-          <div class="tip">
-            <strong>Connection required</strong>
-            Your user must already be connected to X in the <code>connected_accounts</code> table.
-          </div>
-
-          <div class="tip">
-            <strong>If posting fails</strong>
-            Most common causes are missing write permission in your X app, expired token, or your
-            edge function not receiving the user JWT.
-          </div>
-
-          <div class="tip">
-            <strong>Next upgrade</strong>
-            After this works, we can plug it into your main View composer so one post can publish to multiple platforms.
-          </div>
-        </div>
-      </section>
-    </div>
+    <div id="status"></div>
   </div>
+</div>
 
-  <script>
-    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const X_POST_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/x-post";
+<script>
+  // ✅ YOUR SUPABASE CONFIG
+  const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const statusDot = document.getElementById("statusDot");
-    const statusText = document.getElementById("statusText");
-    const accountBox = document.getElementById("accountBox");
-    const accountName = document.getElementById("accountName");
-    const accountHandle = document.getElementById("accountHandle");
-    const postText = document.getElementById("postText");
-    const charCount = document.getElementById("charCount");
-    const resultBox = document.getElementById("resultBox");
-    const publishBtn = document.getElementById("publishBtn");
-    const refreshBtn = document.getElementById("refreshBtn");
-    const fillDemoBtn = document.getElementById("fillDemoBtn");
+  const X_POST_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/x-post";
 
-    let currentUser = null;
-    let xAccount = null;
+  function showStatus(msg, type = "success") {
+    const el = document.getElementById("status");
+    el.className = "status " + type;
+    el.innerHTML = msg;
+  }
 
-    function setStatus(type, text) {
-      statusText.textContent = text;
-      statusDot.className = "dot";
-      if (type === "good") statusDot.classList.add("good");
-      if (type === "bad") statusDot.classList.add("bad");
+  // ✅ CHECK CONNECTION
+  async function checkConnection() {
+    const { data, error } = await supabase.auth.getSession();
+
+    if (!data?.session) {
+      showStatus("❌ Not logged in", "error");
+      return;
     }
 
-    function showResult(message, isError = false) {
-      resultBox.style.display = "block";
-      resultBox.innerHTML = message;
-      resultBox.style.borderColor = isError ? "rgba(255,93,110,.35)" : "rgba(255,255,255,.11)";
-      resultBox.style.background = isError ? "rgba(255,93,110,.08)" : "rgba(255,255,255,.04)";
-    }
+    showStatus("✅ Logged in as user", "success");
+  }
 
-    function hideResult() {
-      resultBox.style.display = "none";
-      resultBox.innerHTML = "";
-    }
+  // ✅ MAIN POST FUNCTION
+  async function postToX() {
+    try {
+      const text = document.getElementById("postText").value.trim();
 
-    function escapeHtml(value = "") {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function updateCount() {
-      charCount.textContent = `${postText.value.length} / 280`;
-    }
-
-    async function getViewUser() {
-      const { data, error } = await supabaseClient.auth.getUser();
-      if (error) throw error;
-      return data?.user || null;
-    }
-
-    async function fetchConnectedX() {
-      if (!currentUser) return null;
-
-      const { data, error } = await supabaseClient
-        .from("connected_accounts")
-        .select("*")
-        .eq("user_id", currentUser.id)
-        .eq("platform", "x")
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
-    }
-
-    function renderAccount(row) {
-      if (!row) {
-        accountBox.style.display = "none";
+      if (!text) {
+        showStatus("Enter text first", "error");
         return;
       }
 
-      accountBox.style.display = "block";
-      accountName.textContent = row.account_name || "Connected X account";
-      accountHandle.textContent = row.account_handle ? `@${row.account_handle}` : "@unknown";
-    }
+      // 🔥 GET USER SESSION
+      const { data, error } = await supabase.auth.getSession();
 
-    async function refreshState() {
-      hideResult();
-
-      try {
-        currentUser = await getViewUser();
-
-        if (!currentUser) {
-          setStatus("bad", "No active View session. Login first.");
-          renderAccount(null);
-          return;
-        }
-
-        xAccount = await fetchConnectedX();
-
-        if (!xAccount) {
-          setStatus("bad", "No connected X account found.");
-          renderAccount(null);
-          return;
-        }
-
-        setStatus("good", "X account ready for posting.");
-        renderAccount(xAccount);
-      } catch (err) {
-        console.error(err);
-        setStatus("bad", "Failed to load posting state.");
-        showResult(`<strong>Error:</strong><br>${escapeHtml(err.message || "Unknown error")}`, true);
+      if (error || !data?.session) {
+        showStatus("User not logged in", "error");
+        return;
       }
-    }
 
-    async function publishToX() {
-      hideResult();
+      const jwt = data.session.access_token;
 
-      try {
-        const text = postText.value.trim();
+      // 🔥 SEND REQUEST WITH AUTH HEADER (CRITICAL FIX)
+      const res = await fetch(X_POST_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${jwt}`
+        },
+        body: JSON.stringify({
+          text: text
+        })
+      });
 
-        if (!text) {
-          showResult("Please enter text before posting.", true);
-          return;
-        }
+      const json = await res.json();
 
-        if (text.length > 280) {
-          showResult("X post exceeds 280 characters.", true);
-          return;
-        }
-
-        const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError) throw sessionError;
-
-        const jwt = sessionData?.session?.access_token;
-
-        if (!jwt) {
-          showResult("No active View session found. Please login again.", true);
-          return;
-        }
-
-        publishBtn.disabled = true;
-        publishBtn.textContent = "Posting...";
-
-        const res = await fetch(X_POST_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${jwt}`
-          },
-          body: JSON.stringify({ text })
-        });
-
-        const raw = await res.text();
-        let json = {};
-        try {
-          json = raw ? JSON.parse(raw) : {};
-        } catch {
-          json = { error: raw || "Invalid server response" };
-        }
-
-        if (!res.ok) {
-          throw new Error(json.error || "Failed to post to X");
-        }
-
-        const tweetId = json?.data?.id || "";
-        const tweetText = json?.data?.text || text;
-
-        showResult(
-          `<strong>Posted successfully.</strong><br><br>
-           <strong>Tweet ID:</strong> ${escapeHtml(tweetId)}<br>
-           <strong>Text:</strong> ${escapeHtml(tweetText)}`
-        );
-
-        postText.value = "";
-        updateCount();
-      } catch (err) {
-        console.error(err);
-        showResult(`<strong>Post failed:</strong><br>${escapeHtml(err.message || "Unknown error")}`, true);
-      } finally {
-        publishBtn.disabled = false;
-        publishBtn.textContent = "Post to X";
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to post");
       }
+
+      showStatus("✅ Posted successfully to X");
+
+    } catch (err) {
+      console.error(err);
+      showStatus("❌ " + err.message, "error");
     }
+  }
+</script>
 
-    postText.addEventListener("input", updateCount);
-    publishBtn.addEventListener("click", publishToX);
-    refreshBtn.addEventListener("click", refreshState);
-    fillDemoBtn.addEventListener("click", () => {
-      postText.value = "Hello from View app 🚀";
-      updateCount();
-    });
-
-    window.addEventListener("load", async () => {
-      updateCount();
-      await refreshState();
-    });
-  </script>
 </body>
 </html>
