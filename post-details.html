@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Post Details</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+  font-family:Arial;
+  background:#f6f8fc;
+  padding:16px;
+}
+
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:12px;
+  border:1px solid #e5e7eb;
+}
+
+.title{font-weight:800;margin-bottom:10px}
+.small{font-size:12px;color:#6b7280}
+
+.pill{
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.success{background:#dcfce7}
+.failed{background:#fee2e2}
+.queued{background:#fef3c7}
+.processing{background:#dbeafe}
+
+button{
+  padding:8px 12px;
+  border-radius:8px;
+  border:none;
+  background:#2563eb;
+  color:#fff;
+  margin-top:6px;
+}
+
+.log{
+  font-size:12px;
+  background:#f9fafb;
+  padding:10px;
+  border-radius:10px;
+  margin-top:8px;
+}
+</style>
+</head>
+<body>
+
+<div id="post"></div>
+<div id="jobs"></div>
+
+<script>
+const supabase = window.supabase.createClient(
+"https://ezarjrxzkqqsbyirxttg.supabase.co",
+"YOUR_ANON_KEY"
+);
+
+const WORKER = "https://view-psi-lac.vercel.app/api/process-publish-jobs";
+
+const postId = new URLSearchParams(location.search).get("id");
+
+async function load(){
+  // POST
+  const {data:post} = await supabase
+  .from("posts")
+  .select("*")
+  .eq("id",postId)
+  .single();
+
+  document.getElementById("post").innerHTML = `
+    <div class="card">
+      <div class="title">Post</div>
+      <div>${post.content || ""}</div>
+      <div class="small">${new Date(post.created_at).toLocaleString()}</div>
+    </div>
+  `;
+
+  // JOBS
+  const {data:jobs} = await supabase
+  .from("post_publish_jobs")
+  .select("*")
+  .eq("post_id",postId);
+
+  const {data:logs} = await supabase
+  .from("post_publish_logs")
+  .select("*")
+  .eq("post_id",postId)
+  .order("created_at",{ascending:false});
+
+  const jobsHtml = jobs.map(j=>{
+    const jobLogs = logs.filter(l=>l.job_id === j.id);
+
+    return `
+      <div class="card">
+        <div class="title">${j.platform}</div>
+        <div class="pill ${j.status}">${j.status}</div>
+        <div class="small">Attempts: ${j.attempts}</div>
+        ${j.last_error ? `<div style="color:red">${j.last_error}</div>`:""}
+
+        <button onclick="retry('${j.id}')">Retry</button>
+
+        ${jobLogs.map(l=>`
+          <div class="log">
+            <b>${l.status}</b><br/>
+            ${l.error_message || ""}
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }).join("");
+
+  document.getElementById("jobs").innerHTML = jobsHtml;
+}
+
+async function retry(id){
+  await supabase
+  .from("post_publish_jobs")
+  .update({status:"queued", attempts:0})
+  .eq("id",id);
+
+  await fetch(WORKER);
+
+  load();
+}
+
+load();
+</script>
+
+</body>
+</html>
