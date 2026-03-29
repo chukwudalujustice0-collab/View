@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>X Ping Test</title>
+  <style>
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:#0b1220;
+      color:#fff;
+      padding:24px;
+    }
+    .wrap{
+      max-width:680px;
+      margin:0 auto;
+    }
+    .card{
+      background:#172033;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:16px;
+    }
+    button{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:14px;
+      background:#2563eb;
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:10px;
+    }
+    pre{
+      white-space:pre-wrap;
+      word-break:break-word;
+      background:#0f172a;
+      padding:14px;
+      border-radius:14px;
+      overflow:auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h2>Browser Reach Test</h2>
+      <p>This tests whether your browser can reach a Supabase Edge Function at all.</p>
+      <button id="btn">Test x-ping</button>
+    </div>
+
+    <div class="card">
+      <h3>Result</h3>
+      <pre id="out">No test yet.</pre>
+    </div>
+  </div>
+
+  <script>
+    const out = document.getElementById("out");
+
+    document.getElementById("btn").addEventListener("click", async () => {
+      out.textContent = "Testing...";
+      try {
+        const res = await fetch("https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/x-ping", {
+          method: "GET"
+        });
+        const text = await res.text();
+        out.textContent = JSON.stringify({
+          status: res.status,
+          body: text
+        }, null, 2);
+      } catch (err) {
+        out.textContent = JSON.stringify({
+          error: err.message || String(err)
+        }, null, 2);
+      }
+    });
+  </script>
+</body>
+</html>
