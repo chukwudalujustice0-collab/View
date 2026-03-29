@@ -7,7 +7,19 @@ const supabase = createClient(
 
 const MAX_ATTEMPTS = 4;
 
+function setCors(res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+}
+
 export default async function handler(req, res) {
+  setCors(res);
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "GET" && req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
@@ -210,17 +222,14 @@ function isRetryableError(message) {
     "invalid_grant"
   ];
 
-  if (nonRetryable.some(x => text.includes(x))) {
-    return false;
-  }
-
+  if (nonRetryable.some(x => text.includes(x))) return false;
   return true;
 }
 
 function computeNextRetry(attempt) {
   const now = new Date();
-
   let minutes = 2;
+
   if (attempt === 1) minutes = 2;
   else if (attempt === 2) minutes = 10;
   else if (attempt === 3) minutes = 30;
