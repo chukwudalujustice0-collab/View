@@ -10,9 +10,12 @@
   <style>
     :root{
       --bg:#08111f;
+      --bg-2:#0b1528;
       --card:#101b31;
       --card-2:#14213d;
+      --card-3:rgba(255,255,255,.04);
       --line:rgba(255,255,255,.08);
+      --line-2:rgba(255,255,255,.12);
       --text:#f4f7ff;
       --muted:#9fb1d7;
       --primary:#2563eb;
@@ -21,7 +24,10 @@
       --danger:#ef4444;
       --warn:#f59e0b;
       --shadow:0 14px 40px rgba(0,0,0,.28);
+      --shadow-lg:0 24px 60px rgba(0,0,0,.34);
       --safe-bottom:env(safe-area-inset-bottom);
+      --radius:24px;
+      --radius-sm:18px;
     }
 
     *{
@@ -34,12 +40,15 @@
 
     html,body{
       min-height:100%;
-      background:var(--bg);
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.14), transparent 26%),
+        radial-gradient(circle at top right, rgba(124,58,237,.12), transparent 24%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
       color:var(--text);
     }
 
     body{
-      padding:16px 14px 110px;
+      padding:16px 14px 120px;
     }
 
     a{
@@ -57,7 +66,7 @@
     }
 
     .wrap{
-      width:min(100%, 820px);
+      width:min(100%, 900px);
       margin:0 auto;
     }
 
@@ -69,18 +78,32 @@
       font-size:14px;
       line-height:1.5;
       box-shadow:var(--shadow);
+      border:1px solid transparent;
     }
+
     .notice.show{display:block}
-    .notice.error{background:rgba(127,29,29,.92);color:#fecaca}
-    .notice.success{background:rgba(5,46,22,.92);color:#d1fae5}
-    .notice.info{background:rgba(30,41,59,.95);color:#dbeafe}
+    .notice.error{
+      background:rgba(127,29,29,.92);
+      color:#fecaca;
+      border-color:rgba(239,68,68,.18);
+    }
+    .notice.success{
+      background:rgba(5,46,22,.92);
+      color:#d1fae5;
+      border-color:rgba(16,185,129,.18);
+    }
+    .notice.info{
+      background:rgba(30,41,59,.95);
+      color:#dbeafe;
+      border-color:rgba(255,255,255,.08);
+    }
 
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:16px;
+      margin-bottom:18px;
     }
 
     .top-left{
@@ -92,10 +115,10 @@
     }
 
     .icon-btn{
-      width:46px;
-      height:46px;
-      min-width:46px;
-      border-radius:14px;
+      width:48px;
+      height:48px;
+      min-width:48px;
+      border-radius:16px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -103,6 +126,12 @@
       border:1px solid var(--line);
       box-shadow:var(--shadow);
       font-size:18px;
+      transition:.2s ease;
+    }
+
+    .icon-btn:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.08);
     }
 
     .title-box{
@@ -110,10 +139,26 @@
       flex:1;
     }
 
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:28px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(37,99,235,.12);
+      border:1px solid rgba(37,99,235,.22);
+      color:#dbeafe;
+      font-size:12px;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
     .title{
-      font-size:22px;
+      font-size:24px;
       font-weight:800;
-      margin-bottom:3px;
+      margin-bottom:4px;
+      letter-spacing:-.02em;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
@@ -127,45 +172,63 @@
       text-overflow:ellipsis;
     }
 
-    .profile-card,
-    .section-card{
-      background:var(--card);
+    .hero-card,
+    .section-card,
+    .quick-card{
+      background:linear-gradient(180deg, var(--card), var(--card-2));
       border:1px solid var(--line);
-      border-radius:22px;
+      border-radius:var(--radius);
       box-shadow:var(--shadow);
+    }
+
+    .hero-card{
+      padding:18px;
       margin-bottom:16px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      right:-70px;
+      top:-70px;
+      width:220px;
+      height:220px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(124,58,237,.18), transparent 70%);
+      pointer-events:none;
     }
 
     .profile-card{
-      padding:16px;
-      display:flex;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:14px;
       align-items:center;
-      justify-content:space-between;
-      gap:12px;
     }
 
     .profile-left{
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:14px;
       min-width:0;
-      flex:1;
     }
 
     .avatar{
-      width:58px;
-      height:58px;
-      min-width:58px;
-      border-radius:18px;
+      width:66px;
+      height:66px;
+      min-width:66px;
+      border-radius:20px;
       overflow:hidden;
       background:linear-gradient(135deg,var(--primary),var(--primary-2));
       display:flex;
       align-items:center;
       justify-content:center;
       font-weight:800;
-      font-size:20px;
+      font-size:22px;
       color:#fff;
-      box-shadow:var(--shadow);
+      box-shadow:var(--shadow-lg);
+      border:1px solid rgba(255,255,255,.10);
     }
 
     .avatar img{
@@ -181,12 +244,12 @@
     }
 
     .profile-name{
-      font-size:17px;
+      font-size:18px;
       font-weight:800;
+      margin-bottom:4px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      margin-bottom:4px;
     }
 
     .profile-sub{
@@ -195,20 +258,149 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      margin-bottom:10px;
+    }
+
+    .profile-badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .mini-badge{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:800;
+      border:1px solid var(--line-2);
+      background:rgba(255,255,255,.05);
+      color:#dbeafe;
+      white-space:nowrap;
+    }
+
+    .profile-right{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:flex-end;
+    }
+
+    .hero-btn{
+      min-height:44px;
+      padding:0 14px;
+      border-radius:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      font-size:13px;
+      font-weight:700;
+      transition:.2s ease;
+    }
+
+    .hero-btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary-2));
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .hero-btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .quick-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .quick-card{
+      padding:14px;
+      min-height:112px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:8px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03)),
+        linear-gradient(180deg, var(--card), var(--card-2));
+      transition:.2s ease;
+    }
+
+    .quick-card:hover{
+      transform:translateY(-2px);
+    }
+
+    .quick-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .quick-icon{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      font-size:18px;
+    }
+
+    .quick-value{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .quick-title{
+      font-size:15px;
+      font-weight:800;
+    }
+
+    .quick-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .section-card{
+      margin-bottom:16px;
+      overflow:hidden;
     }
 
     .section-head{
-      padding:14px 16px;
+      padding:15px 16px;
       border-bottom:1px solid var(--line);
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
+      background:rgba(255,255,255,.02);
     }
 
     .section-head h3{
       font-size:17px;
       font-weight:800;
+      letter-spacing:-.01em;
+    }
+
+    .section-head span{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
     }
 
     .menu-list{
@@ -219,16 +411,22 @@
 
     .menu-item{
       width:100%;
-      min-height:60px;
+      min-height:66px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
       padding:0 14px;
-      border-radius:16px;
-      background:rgba(255,255,255,.05);
+      border-radius:18px;
+      background:var(--card-3);
       border:1px solid var(--line);
       text-decoration:none;
+      transition:.2s ease;
+    }
+
+    .menu-item:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.06);
     }
 
     .menu-left{
@@ -241,16 +439,17 @@
     }
 
     .menu-icon{
-      width:40px;
-      height:40px;
-      min-width:40px;
-      border-radius:12px;
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
       background:rgba(255,255,255,.06);
       border:1px solid var(--line);
       display:flex;
       align-items:center;
       justify-content:center;
       font-size:17px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
     }
 
     .menu-text{
@@ -313,58 +512,57 @@
       color:var(--muted);
     }
 
-    .more-wrap{
-      position:relative;
-    }
-
-    .more-btn{
-      width:38px;
-      height:38px;
-      min-width:38px;
-      border-radius:12px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
+    .chev{
+      color:var(--muted);
       font-size:18px;
+      font-weight:700;
+      line-height:1;
     }
 
-    .more-menu{
-      position:absolute;
-      right:0;
-      top:46px;
-      min-width:170px;
-      display:none;
-      background:#0f1a30;
-      border:1px solid var(--line);
-      border-radius:16px;
-      overflow:hidden;
-      box-shadow:var(--shadow);
-      z-index:30;
+    .inline-actions{
+      padding:10px;
+      display:grid;
+      gap:8px;
     }
 
-    .more-menu.show{
-      display:block;
-    }
-
-    .more-action{
+    .action-btn{
       width:100%;
-      min-height:44px;
-      padding:0 14px;
+      min-height:58px;
+      border-radius:18px;
       display:flex;
       align-items:center;
-      text-align:left;
-      font-size:13px;
-      border-bottom:1px solid rgba(255,255,255,.05);
+      justify-content:space-between;
+      gap:12px;
+      padding:0 14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      transition:.2s ease;
     }
 
-    .more-action:last-child{
-      border-bottom:none;
+    .action-btn:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.07);
+    }
+
+    .action-btn.danger{
+      background:rgba(239,68,68,.08);
+      border-color:rgba(239,68,68,.18);
+    }
+
+    .action-btn.danger .menu-title{
+      color:#fff;
+    }
+
+    .action-btn.danger .menu-sub{
+      color:#fecaca;
     }
 
     .danger-text{
       color:#fecaca;
+    }
+
+    .footer-space{
+      height:8px;
     }
 
     .bottom-nav{
@@ -375,18 +573,19 @@
       width:min(760px, calc(100% - 20px));
       background:rgba(12,20,36,.95);
       border:1px solid var(--line);
-      border-radius:20px;
+      border-radius:22px;
       padding:8px 6px calc(8px + var(--safe-bottom));
       display:grid;
       grid-template-columns:repeat(5,1fr);
       gap:6px;
-      box-shadow:var(--shadow);
+      box-shadow:var(--shadow-lg);
       z-index:40;
+      backdrop-filter:blur(14px);
     }
 
     .nav-btn{
-      min-height:56px;
-      border-radius:14px;
+      min-height:58px;
+      border-radius:16px;
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -396,6 +595,7 @@
       font-weight:700;
       color:var(--muted);
       text-decoration:none;
+      transition:.2s ease;
     }
 
     .nav-btn.active{
@@ -403,13 +603,40 @@
       color:#fff;
     }
 
-    @media (max-width:560px){
+    .nav-btn:hover{
+      background:rgba(255,255,255,.05);
+    }
+
+    @media (max-width:760px){
+      .quick-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width:640px){
       .profile-card{
-        align-items:flex-start;
+        grid-template-columns:1fr;
       }
 
       .profile-right{
-        align-self:center;
+        justify-content:flex-start;
+      }
+    }
+
+    @media (max-width:560px){
+      .title{
+        font-size:22px;
+      }
+
+      .hero-card,
+      .section-card,
+      .quick-card{
+        border-radius:20px;
+      }
+
+      .menu-item,
+      .action-btn{
+        min-height:64px;
       }
     }
   </style>
@@ -422,31 +649,77 @@
       <div class="top-left">
         <button class="icon-btn" onclick="history.back()" title="Back">←</button>
         <div class="title-box">
+          <div class="eyebrow">Account control center</div>
           <div class="title">Settings</div>
-          <div class="sub">Manage account and app</div>
+          <div class="sub">Manage your account, app, privacy and support</div>
         </div>
       </div>
 
       <a class="icon-btn" href="profile.html" title="Profile">👤</a>
     </header>
 
-    <section class="profile-card">
-      <div class="profile-left">
-        <div class="avatar" id="profileAvatar">V</div>
-        <div class="profile-meta">
-          <div class="profile-name" id="profileName">Loading...</div>
-          <div class="profile-sub" id="profileSub">Please wait</div>
+    <section class="hero-card">
+      <div class="profile-card">
+        <div class="profile-left">
+          <div class="avatar" id="profileAvatar">V</div>
+
+          <div class="profile-meta">
+            <div class="profile-name" id="profileName">Loading...</div>
+            <div class="profile-sub" id="profileSub">Please wait</div>
+
+            <div class="profile-badges">
+              <span class="mini-badge">View account</span>
+              <span class="mini-badge" id="heroConnectionBadge">Checking connections</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-right">
+          <a class="hero-btn primary" href="edit-profile.html">✎ Edit Profile</a>
+          <a class="hero-btn" href="public-profile.html">🌐 Public Profile</a>
         </div>
       </div>
+    </section>
 
-      <div class="profile-right">
-        <a class="icon-btn" href="edit-profile.html" title="Edit Profile">✎</a>
-      </div>
+    <section class="quick-grid">
+      <a class="quick-card" href="dashboard.html">
+        <div class="quick-top">
+          <div class="quick-icon">◫</div>
+          <div class="quick-value">Overview</div>
+        </div>
+        <div>
+          <div class="quick-title">Dashboard</div>
+          <div class="quick-sub">See your main account overview and shortcuts.</div>
+        </div>
+      </a>
+
+      <a class="quick-card" href="connect-account.html">
+        <div class="quick-top">
+          <div class="quick-icon">🔗</div>
+          <div class="quick-value" id="quickConnectValue">Checking</div>
+        </div>
+        <div>
+          <div class="quick-title">Connected Accounts</div>
+          <div class="quick-sub">Manage your linked social platforms and cross-posting.</div>
+        </div>
+      </a>
+
+      <a class="quick-card" href="notifications.html">
+        <div class="quick-top">
+          <div class="quick-icon">🔔</div>
+          <div class="quick-value">Alerts</div>
+        </div>
+        <div>
+          <div class="quick-title">Notifications</div>
+          <div class="quick-sub">Control updates, alerts and important messages.</div>
+        </div>
+      </a>
     </section>
 
     <section class="section-card">
       <div class="section-head">
         <h3>Account</h3>
+        <span>Profile and identity</span>
       </div>
 
       <div class="menu-list">
@@ -455,21 +728,10 @@
             <div class="menu-icon">👤</div>
             <div class="menu-text">
               <div class="menu-title">Edit Profile</div>
-              <div class="menu-sub">Name, bio, photo</div>
+              <div class="menu-sub">Update your name, bio and profile photo</div>
             </div>
           </div>
-          <div class="menu-right">›</div>
-        </a>
-
-        <a class="menu-item" href="dashboard.html">
-          <div class="menu-left">
-            <div class="menu-icon">◫</div>
-            <div class="menu-text">
-              <div class="menu-title">Dashboard</div>
-              <div class="menu-sub">Overview</div>
-            </div>
-          </div>
-          <div class="menu-right">›</div>
+          <div class="menu-right"><span class="chev">›</span></div>
         </a>
 
         <a class="menu-item" href="public-profile.html">
@@ -477,17 +739,29 @@
             <div class="menu-icon">🌐</div>
             <div class="menu-text">
               <div class="menu-title">Public Profile</div>
-              <div class="menu-sub">Preview</div>
+              <div class="menu-sub">Preview how your profile looks to others</div>
             </div>
           </div>
-          <div class="menu-right">›</div>
+          <div class="menu-right"><span class="chev">›</span></div>
+        </a>
+
+        <a class="menu-item" href="dashboard.html">
+          <div class="menu-left">
+            <div class="menu-icon">◫</div>
+            <div class="menu-text">
+              <div class="menu-title">Dashboard</div>
+              <div class="menu-sub">Go to your main account overview</div>
+            </div>
+          </div>
+          <div class="menu-right"><span class="chev">›</span></div>
         </a>
       </div>
     </section>
 
     <section class="section-card">
       <div class="section-head">
-        <h3>Connections</h3>
+        <h3>Connections & App</h3>
+        <span>Linked services and usage</span>
       </div>
 
       <div class="menu-list">
@@ -496,43 +770,24 @@
             <div class="menu-icon">🔗</div>
             <div class="menu-text">
               <div class="menu-title">Connect Accounts</div>
-              <div class="menu-sub">Social platforms</div>
+              <div class="menu-sub">Manage your linked social platforms</div>
             </div>
           </div>
           <div class="menu-right">
             <span id="connectStatusBadge" class="status-badge status-neutral">Checking</span>
-            <span>›</span>
+            <span class="chev">›</span>
           </div>
         </a>
-      </div>
-    </section>
 
-    <section class="section-card">
-      <div class="section-head">
-        <h3>App</h3>
-      </div>
-
-      <div class="menu-list">
         <a class="menu-item" href="notifications.html">
           <div class="menu-left">
             <div class="menu-icon">🔔</div>
             <div class="menu-text">
               <div class="menu-title">Notifications</div>
-              <div class="menu-sub">Alerts and updates</div>
+              <div class="menu-sub">Alerts, pushes and account updates</div>
             </div>
           </div>
-          <div class="menu-right">›</div>
-        </a>
-
-        <a class="menu-item" href="privacy.html">
-          <div class="menu-left">
-            <div class="menu-icon">🔒</div>
-            <div class="menu-text">
-              <div class="menu-title">Privacy</div>
-              <div class="menu-sub">Visibility and control</div>
-            </div>
-          </div>
-          <div class="menu-right">›</div>
+          <div class="menu-right"><span class="chev">›</span></div>
         </a>
 
         <a class="menu-item" href="subscription.html">
@@ -540,10 +795,10 @@
             <div class="menu-icon">★</div>
             <div class="menu-text">
               <div class="menu-title">Subscription</div>
-              <div class="menu-sub">Plans and billing</div>
+              <div class="menu-sub">Plans, access and billing options</div>
             </div>
           </div>
-          <div class="menu-right">›</div>
+          <div class="menu-right"><span class="chev">›</span></div>
         </a>
 
         <a class="menu-item" href="payments.html">
@@ -551,10 +806,85 @@
             <div class="menu-icon">💳</div>
             <div class="menu-text">
               <div class="menu-title">Payments</div>
-              <div class="menu-sub">Methods and activity</div>
+              <div class="menu-sub">Methods, billing activity and purchases</div>
             </div>
           </div>
-          <div class="menu-right">›</div>
+          <div class="menu-right"><span class="chev">›</span></div>
+        </a>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <h3>Privacy, Legal & Safety</h3>
+        <span>Policies and account control</span>
+      </div>
+
+      <div class="menu-list">
+        <a class="menu-item" href="privacy.html">
+          <div class="menu-left">
+            <div class="menu-icon">🔒</div>
+            <div class="menu-text">
+              <div class="menu-title">Privacy Policy</div>
+              <div class="menu-sub">How View handles your information</div>
+            </div>
+          </div>
+          <div class="menu-right"><span class="chev">›</span></div>
+        </a>
+
+        <a class="menu-item" href="terms.html">
+          <div class="menu-left">
+            <div class="menu-icon">📜</div>
+            <div class="menu-text">
+              <div class="menu-title">Terms of Use</div>
+              <div class="menu-sub">Platform rules, responsibilities and conditions</div>
+            </div>
+          </div>
+          <div class="menu-right"><span class="chev">›</span></div>
+        </a>
+
+        <a class="menu-item" href="community-guidelines.html">
+          <div class="menu-left">
+            <div class="menu-icon">🛡️</div>
+            <div class="menu-text">
+              <div class="menu-title">Community Guidelines</div>
+              <div class="menu-sub">What is allowed on View and what is not</div>
+            </div>
+          </div>
+          <div class="menu-right"><span class="chev">›</span></div>
+        </a>
+
+        <a class="menu-item" href="cookie-policy.html">
+          <div class="menu-left">
+            <div class="menu-icon">🍪</div>
+            <div class="menu-text">
+              <div class="menu-title">Cookie Policy</div>
+              <div class="menu-sub">Cookies, sessions and storage technologies</div>
+            </div>
+          </div>
+          <div class="menu-right"><span class="chev">›</span></div>
+        </a>
+
+        <a class="menu-item" href="report.html">
+          <div class="menu-left">
+            <div class="menu-icon">🚩</div>
+            <div class="menu-text">
+              <div class="menu-title">Report a Problem</div>
+              <div class="menu-sub">Report abuse, scams, fake accounts or issues</div>
+            </div>
+          </div>
+          <div class="menu-right"><span class="chev">›</span></div>
+        </a>
+
+        <a class="menu-item" href="delete-account.html">
+          <div class="menu-left">
+            <div class="menu-icon">🗑️</div>
+            <div class="menu-text">
+              <div class="menu-title">Delete Account</div>
+              <div class="menu-sub">Request permanent account removal</div>
+            </div>
+          </div>
+          <div class="menu-right"><span class="chev danger-text">›</span></div>
         </a>
       </div>
     </section>
@@ -562,6 +892,7 @@
     <section class="section-card">
       <div class="section-head">
         <h3>Support</h3>
+        <span>Help and assistance</span>
       </div>
 
       <div class="menu-list">
@@ -570,10 +901,10 @@
             <div class="menu-icon">❓</div>
             <div class="menu-text">
               <div class="menu-title">Help & Support</div>
-              <div class="menu-sub">Contact and help center</div>
+              <div class="menu-sub">Contact support and get help</div>
             </div>
           </div>
-          <div class="menu-right">›</div>
+          <div class="menu-right"><span class="chev">›</span></div>
         </a>
 
         <a class="menu-item" href="ai-support.html">
@@ -581,10 +912,32 @@
             <div class="menu-icon">✦</div>
             <div class="menu-text">
               <div class="menu-title">AI Support</div>
-              <div class="menu-sub">Quick assistance</div>
+              <div class="menu-sub">Get quick assistance from AI support</div>
             </div>
           </div>
-          <div class="menu-right">›</div>
+          <div class="menu-right"><span class="chev">›</span></div>
+        </a>
+
+        <a class="menu-item" href="about.html">
+          <div class="menu-left">
+            <div class="menu-icon">ℹ️</div>
+            <div class="menu-text">
+              <div class="menu-title">About View</div>
+              <div class="menu-sub">Learn more about the platform</div>
+            </div>
+          </div>
+          <div class="menu-right"><span class="chev">›</span></div>
+        </a>
+
+        <a class="menu-item" href="faq.html">
+          <div class="menu-left">
+            <div class="menu-icon">📚</div>
+            <div class="menu-text">
+              <div class="menu-title">FAQs</div>
+              <div class="menu-sub">Common answers and platform guidance</div>
+            </div>
+          </div>
+          <div class="menu-right"><span class="chev">›</span></div>
         </a>
       </div>
     </section>
@@ -592,32 +945,46 @@
     <section class="section-card">
       <div class="section-head">
         <h3>Session</h3>
+        <span>Sign out and account actions</span>
       </div>
 
-      <div class="menu-list">
-        <div class="menu-item" style="cursor:default;">
+      <div class="inline-actions">
+        <button class="action-btn" onclick="goToPage('about.html')">
           <div class="menu-left">
-            <div class="menu-icon">⋯</div>
+            <div class="menu-icon">ℹ️</div>
             <div class="menu-text">
-              <div class="menu-title">More</div>
-              <div class="menu-sub">Additional actions</div>
+              <div class="menu-title">About</div>
+              <div class="menu-sub">View platform information</div>
             </div>
           </div>
+          <div class="menu-right"><span class="chev">›</span></div>
+        </button>
 
-          <div class="menu-right">
-            <div class="more-wrap">
-              <button class="more-btn" id="moreBtn" title="More">⋯</button>
-              <div class="more-menu" id="moreMenu">
-                <button class="more-action" onclick="goToPage('terms.html')">Terms</button>
-                <button class="more-action" onclick="goToPage('faq.html')">FAQs</button>
-                <button class="more-action" onclick="goToPage('about.html')">About</button>
-                <button class="more-action danger-text" id="logoutAction">Logout</button>
-              </div>
+        <button class="action-btn" onclick="goToPage('terms.html')">
+          <div class="menu-left">
+            <div class="menu-icon">📄</div>
+            <div class="menu-text">
+              <div class="menu-title">Terms</div>
+              <div class="menu-sub">Read platform legal terms</div>
             </div>
           </div>
-        </div>
+          <div class="menu-right"><span class="chev">›</span></div>
+        </button>
+
+        <button class="action-btn danger" id="logoutAction">
+          <div class="menu-left">
+            <div class="menu-icon">↩</div>
+            <div class="menu-text">
+              <div class="menu-title">Logout</div>
+              <div class="menu-sub">Sign out of your View account on this device</div>
+            </div>
+          </div>
+          <div class="menu-right"><span class="chev danger-text">›</span></div>
+        </button>
       </div>
     </section>
+
+    <div class="footer-space"></div>
   </div>
 
   <nav class="bottom-nav">
@@ -665,8 +1032,8 @@
     const profileName = document.getElementById("profileName");
     const profileSub = document.getElementById("profileSub");
     const connectStatusBadge = document.getElementById("connectStatusBadge");
-    const moreBtn = document.getElementById("moreBtn");
-    const moreMenu = document.getElementById("moreMenu");
+    const heroConnectionBadge = document.getElementById("heroConnectionBadge");
+    const quickConnectValue = document.getElementById("quickConnectValue");
     const logoutAction = document.getElementById("logoutAction");
 
     let currentUserId = "";
@@ -678,7 +1045,7 @@
       showNotice._timer = setTimeout(() => {
         noticeBox.className = "notice";
         noticeBox.textContent = "";
-      }, 2400);
+      }, 2600);
     }
 
     function escapeHtml(value) {
@@ -692,14 +1059,6 @@
 
     function goToPage(page) {
       window.location.href = page;
-    }
-
-    function toggleMoreMenu() {
-      moreMenu.classList.toggle("show");
-    }
-
-    function closeMoreMenu() {
-      moreMenu.classList.remove("show");
     }
 
     function setProfile(user, profile = null) {
@@ -747,6 +1106,28 @@
       }
     }
 
+    function setConnectionUi(connectedCount, mode = "ok") {
+      if (mode === "unavailable") {
+        connectStatusBadge.className = "status-badge status-neutral";
+        connectStatusBadge.textContent = "Unavailable";
+        heroConnectionBadge.textContent = "Connection status unavailable";
+        quickConnectValue.textContent = "Unavailable";
+        return;
+      }
+
+      if (connectedCount > 0) {
+        connectStatusBadge.className = "status-badge status-connected";
+        connectStatusBadge.textContent = `${connectedCount} Connected`;
+        heroConnectionBadge.textContent = `${connectedCount} platform${connectedCount > 1 ? "s" : ""} connected`;
+        quickConnectValue.textContent = `${connectedCount} linked`;
+      } else {
+        connectStatusBadge.className = "status-badge status-empty";
+        connectStatusBadge.textContent = "Not Connected";
+        heroConnectionBadge.textContent = "No connected platforms yet";
+        quickConnectValue.textContent = "0 linked";
+      }
+    }
+
     async function loadConnectedAccountsStatus() {
       if (!currentUserId) return;
 
@@ -760,17 +1141,9 @@
         if (error) throw error;
 
         const connectedCount = (data || []).length;
-
-        if (connectedCount > 0) {
-          connectStatusBadge.className = "status-badge status-connected";
-          connectStatusBadge.textContent = `${connectedCount} Connected`;
-        } else {
-          connectStatusBadge.className = "status-badge status-empty";
-          connectStatusBadge.textContent = "Not Connected";
-        }
+        setConnectionUi(connectedCount, "ok");
       } catch {
-        connectStatusBadge.className = "status-badge status-neutral";
-        connectStatusBadge.textContent = "Unavailable";
+        setConnectionUi(0, "unavailable");
       }
     }
 
@@ -807,37 +1180,7 @@
       }
     }
 
-    moreBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleMoreMenu();
-    });
-
     logoutAction.addEventListener("click", logout);
-
-    document.addEventListener("click", (e) => {
-      if (!e.target.closest(".more-wrap")) closeMoreMenu();
-    });
-
-    document.addEventListener("contextmenu", (e) => {
-      const item = e.target.closest(".menu-item");
-      if (!item) return;
-      e.preventDefault();
-      if (item.querySelector(".more-wrap")) toggleMoreMenu();
-    });
-
-    let pressTimer = null;
-    document.addEventListener("touchstart", (e) => {
-      const item = e.target.closest(".menu-item");
-      if (!item || !item.querySelector(".more-wrap")) return;
-      pressTimer = setTimeout(() => {
-        toggleMoreMenu();
-      }, 500);
-    }, { passive: true });
-
-    document.addEventListener("touchend", () => {
-      clearTimeout(pressTimer);
-    });
-
     init();
   </script>
 </body>
