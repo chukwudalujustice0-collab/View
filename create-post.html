@@ -18,7 +18,6 @@
       --primary2:#4f46e5;
       --success:#10b981;
       --danger:#ef4444;
-      --warning:#f59e0b;
       --shadow:0 10px 30px rgba(15,23,42,.08);
       --safe-bottom:env(safe-area-inset-bottom);
     }
@@ -252,15 +251,23 @@
       word-break:break-word;
     }
 
+    .upload-row{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
     .media-preview-wrap{
       display:none;
       position:relative;
-      width:160px;
-      height:160px;
+      width:170px;
+      height:170px;
       border-radius:16px;
       overflow:hidden;
       border:1px solid var(--line);
       background:#f8fafc;
+      flex-shrink:0;
     }
 
     .media-preview-wrap.show{
@@ -298,13 +305,6 @@
       z-index:2;
     }
 
-    .upload-row{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
     .platforms-head{
       display:flex;
       align-items:center;
@@ -325,7 +325,6 @@
     }
 
     .platform{
-      position:relative;
       min-height:70px;
       padding:12px;
       border-radius:18px;
@@ -502,7 +501,7 @@
         <button class="icon-btn" onclick="history.back()">←</button>
         <div class="title-box">
           <div class="title">Create Post</div>
-          <div class="sub">Post instantly across your connected platforms</div>
+          <div class="sub">Post in real time across connected platforms</div>
         </div>
       </div>
       <button class="icon-btn" id="reloadBtn">↻</button>
@@ -543,7 +542,7 @@
           <div class="file-wrap">
             <input id="postMedia" type="file" accept="image/*,video/*" />
           </div>
-          <div class="hint">Upload image or video. Videos will be stored first, then sent to selected platforms.</div>
+          <div class="hint">Media is uploaded first, then linked to your post and sent to selected platforms.</div>
         </div>
       </div>
     </section>
@@ -554,7 +553,6 @@
           <div class="label">Where to post</div>
           <div id="platformSummary" class="platform-summary">View</div>
         </div>
-
         <div id="platformGrid" class="platform-grid"></div>
       </div>
     </section>
@@ -580,8 +578,8 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const PUBLISH_JOBS_TABLE = "post_publish_jobs";
     const POST_BUCKET = "post-media";
+    const PUBLISH_JOBS_TABLE = "post_publish_jobs";
     const PROCESS_WORKER_URL = "https://view-psi-lac.vercel.app/api/process-publish-jobs";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -627,16 +625,15 @@
     let cachedMedia = null;
     let cachedMediaUrl = "";
 
-    function showNotice(message, type = "info", persistMs = 3200) {
+    function showNotice(message, type = "info", duration = 3200) {
       noticeBox.className = `notice show ${type}`;
       noticeBox.textContent = message || "";
       clearTimeout(showNotice._timer);
-
-      if (persistMs > 0) {
+      if (duration > 0) {
         showNotice._timer = setTimeout(() => {
           noticeBox.className = "notice";
           noticeBox.textContent = "";
-        }, persistMs);
+        }, duration);
       }
     }
 
@@ -761,9 +758,7 @@
       if (platformKey === "view") return;
 
       if (!isPlatformConnected(platformKey)) {
-        if (item.connect) {
-          window.location.href = item.connect;
-        }
+        if (item.connect) window.location.href = item.connect;
         return;
       }
 
@@ -823,13 +818,6 @@
       return payload;
     }
 
-    function simplifiedMediaType(file) {
-      if (!file || !file.type) return null;
-      if (file.type.startsWith("video/")) return "video";
-      if (file.type.startsWith("image/")) return "image";
-      return null;
-    }
-
     async function uploadMediaIfNeeded() {
       if (!cachedMedia) {
         return {
@@ -860,7 +848,7 @@
       return {
         media_path: uploadData.path,
         media_url: publicUrlData?.publicUrl || null,
-        media_type: simplifiedMediaType(file),
+        media_type: file.type || null,
         media_name: file.name || null
       };
     }
@@ -883,7 +871,7 @@
 
         const mediaData = cachedMedia
           ? {
-              media_type: simplifiedMediaType(cachedMedia),
+              media_type: cachedMedia.type || null,
               media_name: cachedMedia.name || null
             }
           : {
