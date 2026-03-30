@@ -339,7 +339,7 @@
         <div class="hero-copy">
           <h2>Connect your Facebook Page</h2>
           <p>
-            This will log you into Facebook, fetch the Pages you manage, and save the selected Page token so your publish worker can post for real.
+            This logs you into Facebook, fetches the Pages you manage, and saves the selected Page token so your publish worker can post for real.
           </p>
         </div>
       </div>
@@ -350,7 +350,7 @@
       </div>
 
       <div class="helper">
-        Facebook posting works with a <code>Page access token</code>, not just a normal user token.
+        Facebook posting uses a <code>Page access token</code>, not only a normal user token.
       </div>
     </section>
 
@@ -377,7 +377,9 @@
 
     <section class="card">
       <div class="title" style="font-size:20px;">Managed Pages</div>
-      <div class="sub" style="white-space:normal;margin-bottom:14px;">After Facebook login, your Pages will show here. Select one to save its Page access token.</div>
+      <div class="sub" style="white-space:normal;margin-bottom:14px;">
+        After Facebook login, your Pages will show here. Select one to save its Page access token.
+      </div>
       <div id="pagesList" class="pages-list">
         <div class="helper">No Pages loaded yet.</div>
       </div>
@@ -397,10 +399,7 @@
       }
     });
 
-    // Replace with your real Meta app ID
     const FACEBOOK_APP_ID = "921040053900296";
-
-    // Must match Meta app redirect setting
     const REDIRECT_URI = `${window.location.origin}/facebook-connect.html`;
 
     const FACEBOOK_SCOPES = [
@@ -476,9 +475,6 @@
       };
     }
 
-    // =========================
-    // THIS IS WHERE USER ACCESS TOKEN IS USED
-    // =========================
     async function getFacebookPages(userAccessToken) {
       try {
         const res = await fetch(
@@ -578,8 +574,8 @@
       try {
         clearNotice();
 
-        if (!FACEBOOK_APP_ID || FACEBOOK_APP_ID.includes("921040053900296")) {
-          throw new Error("Set your real Meta App ID inside facebook-connect.html before testing.");
+        if (!FACEBOOK_APP_ID || FACEBOOK_APP_ID.trim().length < 10) {
+          throw new Error("Meta App ID is missing or invalid.");
         }
 
         const user = await requireUser();
@@ -629,11 +625,7 @@
         showNotice("Loading Facebook Pages...", "info");
         stateTextEl.textContent = "Fetching Pages";
 
-        // =========================
-        // USER ACCESS TOKEN IS USED HERE
-        // =========================
         const userAccessToken = hashData.access_token;
-
         const pages = await getFacebookPages(userAccessToken);
 
         renderPages(pages, user);
