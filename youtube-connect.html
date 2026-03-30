@@ -2,138 +2,476 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Connect YouTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Connect YouTube | View</title>
+  <meta name="theme-color" content="#ffffff" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    body{
-      font-family:Arial,sans-serif;
-      background:#f4f6fb;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      min-height:100vh;
+    :root{
+      --bg:#f6f8fc;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --primary:#2563eb;
+      --danger:#dc2626;
+      --success:#059669;
+      --shadow:0 12px 30px rgba(15,23,42,.08);
+    }
+
+    *{
+      box-sizing:border-box;
       margin:0;
-      padding:20px;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
     }
-    .card{
-      background:#fff;
-      width:100%;
-      max-width:420px;
-      border-radius:20px;
-      padding:28px;
-      box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.05), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(239,68,68,.05), transparent 20%),
+        linear-gradient(180deg,#fbfcff 0%, #f5f7fb 100%);
+      color:var(--text);
+      padding:20px 14px 30px;
     }
-    h2{
-      margin:0 0 10px;
-      font-size:24px;
+
+    .wrap{
+      width:min(100%, 760px);
+      margin:0 auto;
     }
-    p{
-      color:#6b7280;
-      line-height:1.5;
-      margin:0 0 18px;
-      font-size:14px;
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
     }
-    .status{
-      margin:14px 0 0;
-      font-size:14px;
-      min-height:20px;
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
     }
-    .status.success{color:#065f46}
-    .status.error{color:#991b1b}
-    .status.info{color:#1d4ed8}
-    button{
-      width:100%;
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
       border:none;
       border-radius:14px;
-      padding:15px;
-      background:#ff0000;
+      background:#fff;
+      box-shadow:var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      color:var(--text);
+      cursor:pointer;
+      text-decoration:none;
+    }
+
+    .title-box{
+      min-width:0;
+    }
+
+    .title{
+      font-size:24px;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      margin-bottom:14px;
+    }
+
+    .hero{
+      display:grid;
+      gap:14px;
+    }
+
+    .youtube-badge{
+      width:64px;
+      height:64px;
+      border-radius:20px;
+      background:linear-gradient(135deg,#ff0000,#d70000);
       color:#fff;
-      font-size:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:28px;
+      font-weight:800;
+    }
+
+    .hero h2{
+      font-size:22px;
+      font-weight:800;
+      line-height:1.25;
+    }
+
+    .hero p{
+      color:var(--muted);
+      line-height:1.6;
+      font-size:14px;
+    }
+
+    .notice{
+      display:none;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.55;
+      white-space:pre-wrap;
+      margin-bottom:14px;
+    }
+
+    .notice.show{display:block}
+    .notice.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8}
+    .notice.success{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+    .notice.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+
+    .list{
+      display:grid;
+      gap:10px;
+      margin-top:6px;
+    }
+
+    .list-item{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color:#374151;
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .tick{
+      width:22px;
+      height:22px;
+      min-width:22px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#ecfdf5;
+      color:#059669;
+      font-size:12px;
+      font-weight:800;
+      margin-top:1px;
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:8px;
+    }
+
+    .btn{
+      min-height:50px;
+      padding:0 18px;
+      border:none;
+      border-radius:14px;
+      font-size:14px;
       font-weight:700;
       cursor:pointer;
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
-    button:disabled{
-      opacity:.7;
-      cursor:not-allowed;
+
+    .btn.primary{
+      background:linear-gradient(135deg,#2563eb,#4f46e5);
+      color:#fff;
+      flex:1;
+    }
+
+    .btn.secondary{
+      background:#fff;
+      color:#111827;
+      border:1px solid var(--line);
+      flex:1;
+    }
+
+    .small{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+      margin-top:8px;
+    }
+
+    .status-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+      margin-top:8px;
+    }
+
+    .status-box{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:#fafcff;
+    }
+
+    .status-label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .status-value{
+      font-size:14px;
+      font-weight:800;
+      word-break:break-word;
+    }
+
+    @media (max-width:560px){
+      .status-grid{
+        grid-template-columns:1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Connect YouTube</h2>
-    <p>Connect your YouTube channel so View can upload videos for you.</p>
-    <button id="connectBtn" type="button">Connect YouTube</button>
-    <div id="status" class="status"></div>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="top-left">
+        <button class="icon-btn" onclick="history.back()">←</button>
+        <div class="title-box">
+          <div class="title">Connect YouTube</div>
+          <div class="sub">Enable real YouTube video publishing</div>
+        </div>
+      </div>
+      <a class="icon-btn" href="connected-accounts.html">✕</a>
+    </header>
+
+    <div id="notice" class="notice"></div>
+
+    <section class="card hero">
+      <div class="youtube-badge">▶</div>
+      <h2>Connect your YouTube account</h2>
+      <p>
+        This will let View upload your video posts directly to your YouTube channel.
+        The connection requests the upload scope and offline access so your delivery worker can publish safely.
+      </p>
+
+      <div class="list">
+        <div class="list-item"><div class="tick">✓</div><div>Requests YouTube upload permission</div></div>
+        <div class="list-item"><div class="tick">✓</div><div>Requests offline access for refresh token support</div></div>
+        <div class="list-item"><div class="tick">✓</div><div>Returns you to Connected Accounts after success</div></div>
+      </div>
+
+      <div class="actions">
+        <button id="connectBtn" class="btn primary" type="button">Connect YouTube</button>
+        <a href="connected-accounts.html" class="btn secondary">Back</a>
+      </div>
+
+      <div class="small">
+        If Google shows an existing connection but upload still fails, disconnect and reconnect again so the correct upload scopes are granted.
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="status-grid">
+        <div class="status-box">
+          <div class="status-label">Frontend origin</div>
+          <div class="status-value" id="frontendOrigin">-</div>
+        </div>
+        <div class="status-box">
+          <div class="status-label">Redirect URI</div>
+          <div class="status-value" id="redirectUri">-</div>
+        </div>
+        <div class="status-box">
+          <div class="status-label">Exchange endpoint</div>
+          <div class="status-value" id="exchangeEndpoint">-</div>
+        </div>
+        <div class="status-box">
+          <div class="status-label">Requested scopes</div>
+          <div class="status-value" id="scopeText">-</div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const GOOGLE_CLIENT_ID = "1453516669-1heoa56uql9svtnm0abhoqu95nn6dpcb.apps.googleusercontent.com";
-    const REDIRECT_URI = "https://view-psi-lac.vercel.app/api/youtube-exchange-code";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        flowType: "pkce"
       }
     });
 
-    const connectBtn = document.getElementById("connectBtn");
-    const statusBox = document.getElementById("status");
+    // REPLACE THIS WITH YOUR REAL GOOGLE OAUTH WEB CLIENT ID
+    const GOOGLE_CLIENT_ID = "PASTE_YOUR_GOOGLE_WEB_CLIENT_ID_HERE";
 
-    function setStatus(message, type = "info") {
-      statusBox.className = `status ${type}`;
-      statusBox.textContent = message;
+    // YOUR BACKEND EXCHANGE ENDPOINT
+    const EXCHANGE_ENDPOINT = "https://view-psi-lac.vercel.app/api/youtube-exchange-code";
+
+    // FRONTEND CALLBACK PAGE
+    const REDIRECT_URI = `${window.location.origin}/youtube-connect.html`;
+
+    const YOUTUBE_SCOPES = [
+      "https://www.googleapis.com/auth/youtube.upload",
+      "https://www.googleapis.com/auth/youtube.readonly"
+    ];
+
+    const noticeEl = document.getElementById("notice");
+    const connectBtn = document.getElementById("connectBtn");
+    const frontendOriginEl = document.getElementById("frontendOrigin");
+    const redirectUriEl = document.getElementById("redirectUri");
+    const exchangeEndpointEl = document.getElementById("exchangeEndpoint");
+    const scopeTextEl = document.getElementById("scopeText");
+
+    frontendOriginEl.textContent = window.location.origin;
+    redirectUriEl.textContent = REDIRECT_URI;
+    exchangeEndpointEl.textContent = EXCHANGE_ENDPOINT;
+    scopeTextEl.textContent = YOUTUBE_SCOPES.join(" ");
+
+    function showNotice(message, type = "info") {
+      noticeEl.className = `notice show ${type}`;
+      noticeEl.textContent = message;
     }
 
-    async function connectYouTube() {
-      connectBtn.disabled = true;
+    function clearNotice() {
+      noticeEl.className = "notice";
+      noticeEl.textContent = "";
+    }
 
+    async function requireUser() {
+      const { data, error } = await supabaseClient.auth.getUser();
+      if (error) throw error;
+
+      if (!data?.user) {
+        window.location.href = "login.html?next=youtube-connect.html";
+        return null;
+      }
+
+      return data.user;
+    }
+
+    function buildGoogleAuthUrl(userId) {
+      const params = new URLSearchParams({
+        client_id: GOOGLE_CLIENT_ID,
+        redirect_uri: REDIRECT_URI,
+        response_type: "code",
+        scope: YOUTUBE_SCOPES.join(" "),
+        access_type: "offline",
+        prompt: "consent",
+        include_granted_scopes: "true",
+        state: userId
+      });
+
+      return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    }
+
+    async function startConnect() {
       try {
-        if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes("PASTE_YOUR_REAL")) {
-          throw new Error("Add your real Supabase anon key first.");
+        clearNotice();
+
+        if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("1453516669-1heoa56uql9svtnm0abhoqu95nn6dpcb.apps.googleusercontent.com")) {
+          throw new Error("Set your real Google Web Client ID inside youtube-connect.html before testing.");
         }
 
-        if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("PASTE_YOUR_REAL")) {
-          throw new Error("Add your real Google client ID first.");
-        }
+        const user = await requireUser();
+        if (!user) return;
 
-        const { data, error } = await supabaseClient.auth.getUser();
-        if (error) throw error;
+        connectBtn.disabled = true;
+        connectBtn.textContent = "Redirecting...";
 
-        const user = data?.user;
-        if (!user) {
-          throw new Error("You must log in first.");
-        }
-
-        setStatus("Redirecting to Google...", "info");
-
-        const params = new URLSearchParams({
-          client_id: GOOGLE_CLIENT_ID,
-          redirect_uri: REDIRECT_URI,
-          response_type: "code",
-          access_type: "offline",
-          prompt: "consent",
-          scope: "https://www.googleapis.com/auth/youtube.upload",
-          state: user.id
-        });
-
-        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-      } catch (err) {
-        setStatus(err.message || "Could not start YouTube connection.", "error");
+        const authUrl = buildGoogleAuthUrl(user.id);
+        window.location.href = authUrl;
+      } catch (error) {
+        showNotice(error.message || "Could not start YouTube connection.", "error");
         connectBtn.disabled = false;
+        connectBtn.textContent = "Connect YouTube";
       }
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("connected") === "1") {
-      setStatus("YouTube connected successfully.", "success");
+    async function handleCallbackIfPresent() {
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get("code");
+      const state = url.searchParams.get("state");
+      const oauthError = url.searchParams.get("error");
+
+      if (oauthError) {
+        showNotice(`Google connection was cancelled or denied: ${oauthError}`, "error");
+        return;
+      }
+
+      if (!code) return;
+
+      try {
+        const user = await requireUser();
+        if (!user) return;
+
+        if (!state || state !== user.id) {
+          throw new Error("State mismatch. Please restart the YouTube connection.");
+        }
+
+        showNotice("Completing YouTube connection...", "info");
+
+        const response = await fetch(EXCHANGE_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code,
+            state,
+            redirect_uri: REDIRECT_URI
+          })
+        });
+
+        const text = await response.text();
+
+        let data = {};
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch {
+          data = { raw: text };
+        }
+
+        if (!response.ok) {
+          throw new Error(data.error || text || "YouTube exchange failed.");
+        }
+
+        showNotice("YouTube connected successfully. Redirecting...", "success");
+
+        const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+        window.history.replaceState({}, document.title, cleanUrl);
+
+        setTimeout(() => {
+          window.location.href = "connected-accounts.html?youtube=connected";
+        }, 1200);
+      } catch (err) {
+        showNotice(err.message || "Failed to complete YouTube connection.", "error");
+      } finally {
+        connectBtn.disabled = false;
+        connectBtn.textContent = "Connect YouTube";
+      }
     }
 
-    connectBtn.addEventListener("click", connectYouTube);
+    connectBtn.addEventListener("click", startConnect);
+    handleCallbackIfPresent();
   </script>
 </body>
 </html>
