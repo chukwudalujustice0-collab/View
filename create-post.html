@@ -248,13 +248,14 @@
       color:var(--muted);
       font-size:12px;
       line-height:1.5;
+      word-break:break-word;
     }
 
     .media-preview-wrap{
       display:none;
       position:relative;
-      width:120px;
-      height:120px;
+      width:140px;
+      height:140px;
       border-radius:16px;
       overflow:hidden;
       border:1px solid var(--line);
@@ -265,10 +266,17 @@
       display:block;
     }
 
-    .media-preview{
+    .media-preview,
+    .media-preview-video{
       width:100%;
       height:100%;
       object-fit:cover;
+      display:none;
+      background:#000;
+    }
+
+    .media-preview.show,
+    .media-preview-video.show{
       display:block;
     }
 
@@ -276,8 +284,8 @@
       position:absolute;
       top:8px;
       right:8px;
-      width:26px;
-      height:26px;
+      width:28px;
+      height:28px;
       border-radius:999px;
       background:rgba(17,24,39,.78);
       color:#fff;
@@ -286,6 +294,7 @@
       align-items:center;
       justify-content:center;
       line-height:1;
+      z-index:2;
     }
 
     .platforms-head{
@@ -509,8 +518,9 @@
             <textarea id="postBody" class="textarea" placeholder="What's new in your world?"></textarea>
 
             <div id="mediaPreviewWrap" class="media-preview-wrap">
-              <img id="mediaPreview" class="media-preview" alt="Selected media preview" />
               <button id="removeMediaBtn" class="remove-media" type="button">×</button>
+              <img id="mediaPreviewImage" class="media-preview" alt="Selected media preview" />
+              <video id="mediaPreviewVideo" class="media-preview-video" muted playsinline controls></video>
             </div>
           </div>
         </div>
@@ -558,6 +568,8 @@
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
     const PUBLISH_JOBS_TABLE = "post_publish_jobs";
+    const POST_BUCKET = "post-media";
+    const PROCESS_WORKER_URL = "https://view-psi-lac.vercel.app/api/process-publish-jobs";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -591,7 +603,8 @@
     const draftBtn = document.getElementById("draftBtn");
     const publishBtn = document.getElementById("publishBtn");
     const mediaPreviewWrap = document.getElementById("mediaPreviewWrap");
-    const mediaPreview = document.getElementById("mediaPreview");
+    const mediaPreviewImage = document.getElementById("mediaPreviewImage");
+    const mediaPreviewVideo = document.getElementById("mediaPreviewVideo");
     const removeMediaBtn = document.getElementById("removeMediaBtn");
 
     let currentUser = null;
@@ -607,7 +620,7 @@
       showNotice._timer = setTimeout(() => {
         noticeBox.className = "notice";
         noticeBox.textContent = "";
-      }, 3000);
+      }, 3200);
     }
 
     function getInitial(name = "V") {
@@ -619,14 +632,26 @@
         URL.revokeObjectURL(cachedMediaUrl);
         cachedMediaUrl = "";
       }
-      mediaPreview.src = "";
+      mediaPreviewImage.src = "";
+      mediaPreviewVideo.src = "";
+      mediaPreviewVideo.pause();
+      mediaPreviewImage.classList.remove("show");
+      mediaPreviewVideo.classList.remove("show");
       mediaPreviewWrap.classList.remove("show");
     }
 
     function showMediaPreview(file) {
       clearMediaPreview();
       cachedMediaUrl = URL.createObjectURL(file);
-      mediaPreview.src = cachedMediaUrl;
+
+      if ((file.type || "").startsWith("video/")) {
+        mediaPreviewVideo.src = cachedMediaUrl;
+        mediaPreviewVideo.classList.add("show");
+      } else {
+        mediaPreviewImage.src = cachedMediaUrl;
+        mediaPreviewImage.classList.add("show");
+      }
+
       mediaPreviewWrap.classList.add("show");
     }
 
@@ -639,12 +664,7 @@
       }
 
       try {
-        const buffer = await file.arrayBuffer();
-        cachedMedia = {
-          name: file.name,
-          type: file.type || "",
-          buffer
-        };
+        cachedMedia = file;
         mediaNote.textContent = `${file.name} ready.`;
         showMediaPreview(file);
       } catch (error) {
@@ -790,11 +810,66 @@
       return payload;
     }
 
+    async function uploadMediaIfNeeded() {
+      if (!cachedMedia) {
+        return {
+          media_path: null,
+          media_url: null,
+          media_type: null,
+          media_name: null
+        };
+      }
+
+      const file = cachedMedia;
+      const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+      const filePath = `posts/${currentUser.id}/${Date.now()}-${safeName}`;
+
+      const { data: uploadData, error: uploadError } = await supabaseClient.storage
+        .from(POST_BUCKET)
+        .upload(filePath, file, {
+          upsert: false,
+          contentType: file.type || "application/octet-stream"
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabaseClient.storage
+        .from(POST_BUCKET)
+        .getPublicUrl(uploadData.path);
+
+      return {
+        media_path: uploadData.path,
+        media_url: publicUrlData?.publicUrl || null,
+        media_type: file.type || null,
+        media_name: file.name || null
+      };
+    }
+
+    async function triggerWorkerSilently() {
+      try {
+        await fetch(PROCESS_WORKER_URL, {
+          method: "GET",
+          mode: "cors",
+          cache: "no-store"
+        });
+      } catch (_) {}
+    }
+
     async function saveDraft() {
       draftBtn.disabled = true;
 
       try {
         const payload = getPostPayload();
+
+        const mediaData = cachedMedia
+          ? {
+              media_type: cachedMedia.type || null,
+              media_name: cachedMedia.name || null
+            }
+          : {
+              media_type: null,
+              media_name: null
+            };
 
         const { error } = await supabaseClient
           .from("post_drafts")
@@ -802,7 +877,8 @@
             user_id: currentUser.id,
             content: payload.content || null,
             privacy: payload.privacy,
-            selected_platforms: payload.selected_platforms
+            selected_platforms: payload.selected_platforms,
+            ...mediaData
           });
 
         if (error) throw error;
@@ -819,6 +895,9 @@
 
       try {
         const payload = validatePost();
+        showNotice("Uploading post...", "info");
+
+        const mediaPayload = await uploadMediaIfNeeded();
 
         const { data: insertedPost, error: postError } = await supabaseClient
           .from("posts")
@@ -827,7 +906,9 @@
             content: payload.content || null,
             privacy: payload.privacy,
             selected_platforms: payload.selected_platforms,
-            publish_status: "queued"
+            publish_status: "queued",
+            status: "queued",
+            ...mediaPayload
           })
           .select("id")
           .single();
@@ -847,7 +928,13 @@
 
         if (jobsError) throw jobsError;
 
-        showNotice("Post published to selected platforms.", "success");
+        await triggerWorkerSilently();
+
+        showNotice("Post published successfully. Redirecting to Home...", "success");
+
+        setTimeout(() => {
+          window.location.href = "home.html";
+        }, 1400);
       } catch (error) {
         showNotice(error.message || "Could not publish post.", "error");
       } finally {
