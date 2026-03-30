@@ -10,20 +10,19 @@
 
   <style>
     :root{
-      --bg:#061126;
-      --bg2:#0a1835;
-      --card:rgba(255,255,255,.08);
-      --card2:rgba(255,255,255,.05);
-      --stroke:rgba(255,255,255,.08);
+      --bg:#071120;
+      --bg2:#0a1630;
+      --panel:#0d1a34;
+      --line:rgba(255,255,255,.08);
+      --line-strong:rgba(255,255,255,.12);
       --text:#f8fbff;
       --muted:#9db0cf;
-      --soft:#7f91af;
+      --soft:#8395b5;
       --primary:#2d6bff;
-      --primary2:#5c8cff;
-      --green:#22c55e;
+      --primary2:#5b8cff;
+      --success:#22c55e;
       --danger:#ef4444;
-      --warning:#f59e0b;
-      --shadow:0 18px 50px rgba(0,0,0,.28);
+      --shadow:0 14px 40px rgba(0,0,0,.22);
     }
 
     *{
@@ -37,18 +36,31 @@
     html,body{
       min-height:100%;
       background:
-        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
-        radial-gradient(circle at top left, rgba(0,255,200,.06), transparent 18%),
-        linear-gradient(180deg,#08142e 0%,#061126 55%,#050d1c 100%);
+        radial-gradient(circle at top right, rgba(45,107,255,.12), transparent 24%),
+        linear-gradient(180deg,#08142b 0%, #071120 56%, #050d1a 100%);
       color:var(--text);
     }
 
     body{
-      padding-bottom:118px;
+      padding-bottom:116px;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      background:none;
+      color:inherit;
+      font:inherit;
+      cursor:pointer;
     }
 
     .wrap{
-      width:min(100%,1040px);
+      width:min(100%, 920px);
       margin:0 auto;
       padding:18px 16px 0;
     }
@@ -57,41 +69,27 @@
       display:none;
       margin-bottom:16px;
       padding:14px 16px;
-      border-radius:18px;
+      border-radius:14px;
       font-size:14px;
       line-height:1.6;
       border:1px solid transparent;
-      backdrop-filter:blur(10px);
     }
+
     .notice.show{display:block}
-    .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#ffd9d9}
-    .notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffe8}
-    .notice.info{background:rgba(45,107,255,.14);border-color:rgba(45,107,255,.26);color:#dce8ff}
-
-    .hero{
-      position:relative;
-      overflow:hidden;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
-        linear-gradient(135deg, rgba(45,107,255,.16), rgba(92,140,255,.06));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:30px;
-      padding:18px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(18px);
-      margin-bottom:18px;
+    .notice.error{
+      background:rgba(239,68,68,.10);
+      border-color:rgba(239,68,68,.18);
+      color:#ffd7d7;
     }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      top:-70px;
-      right:-70px;
-      width:180px;
-      height:180px;
-      border-radius:50%;
-      background:radial-gradient(circle, rgba(92,140,255,.30), transparent 66%);
-      pointer-events:none;
+    .notice.success{
+      background:rgba(34,197,94,.10);
+      border-color:rgba(34,197,94,.18);
+      color:#dcffe7;
+    }
+    .notice.info{
+      background:rgba(45,107,255,.10);
+      border-color:rgba(45,107,255,.18);
+      color:#dcebff;
     }
 
     .topbar{
@@ -99,13 +97,13 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:16px;
-      position:relative;
-      z-index:1;
+      margin-bottom:22px;
+      padding-bottom:14px;
+      border-bottom:1px solid var(--line);
       flex-wrap:wrap;
     }
 
-    .brand-wrap{
+    .brand{
       display:flex;
       align-items:center;
       gap:12px;
@@ -113,113 +111,103 @@
     }
 
     .icon-btn{
-      width:48px;
-      height:48px;
-      min-width:48px;
-      border:none;
-      border-radius:18px;
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.08);
-      color:#fff;
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
       display:flex;
       align-items:center;
       justify-content:center;
-      text-decoration:none;
-      font-size:20px;
-      cursor:pointer;
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
+      font-size:18px;
     }
 
-    .brand-logo{
-      width:52px;
-      height:52px;
-      min-width:52px;
-      border-radius:18px;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#fff;
-      font-size:24px;
-      font-weight:900;
-      box-shadow:0 12px 28px rgba(45,107,255,.30);
+    .title-group{
+      min-width:0;
     }
 
-    .brand-text h1{
-      font-size:31px;
+    .title{
+      font-size:28px;
       font-weight:900;
       letter-spacing:-.03em;
       line-height:1;
-      margin-bottom:5px;
+      margin-bottom:6px;
     }
 
-    .brand-text p{
+    .subtitle{
       font-size:13px;
       color:var(--muted);
+      line-height:1.6;
     }
 
     .top-actions{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
-      align-items:center;
     }
 
-    .primary-btn,.ghost-btn,.soft-btn{
+    .btn,
+    .btn-soft{
       min-height:44px;
-      border:none;
-      border-radius:18px;
       padding:0 16px;
+      border-radius:14px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       gap:8px;
-      cursor:pointer;
-      text-decoration:none;
       font-size:13px;
       font-weight:800;
+      transition:.2s ease;
+    }
+
+    .btn{
+      color:#fff;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      box-shadow:0 12px 28px rgba(45,107,255,.24);
+    }
+
+    .btn-soft{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
       color:#fff;
     }
 
-    .primary-btn{
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:0 12px 28px rgba(45,107,255,.28);
+    .btn:hover,
+    .btn-soft:hover{
+      transform:translateY(-1px);
     }
 
-    .ghost-btn,.soft-btn{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .hero-summary{
+    .hero{
       display:grid;
       grid-template-columns:auto 1fr auto;
-      gap:16px;
+      gap:18px;
       align-items:center;
-      position:relative;
-      z-index:1;
+      padding:0 0 24px;
+      border-bottom:1px solid var(--line);
+      margin-bottom:24px;
     }
 
     .avatar-wrap{
       position:relative;
-      width:106px;
-      height:106px;
+      width:100px;
+      height:100px;
     }
 
     .avatar{
-      width:106px;
-      height:106px;
+      width:100px;
+      height:100px;
       border-radius:50%;
       overflow:hidden;
-      background:linear-gradient(135deg,var(--primary),#7da2ff);
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
       display:flex;
       align-items:center;
       justify-content:center;
       color:#fff;
-      font-size:34px;
+      font-size:32px;
       font-weight:900;
-      border:4px solid rgba(8,20,46,.95);
-      box-shadow:0 18px 40px rgba(0,0,0,.24);
+      border:3px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
     }
 
     .avatar img{
@@ -231,84 +219,78 @@
 
     .avatar-edit{
       position:absolute;
-      right:2px;
-      bottom:4px;
-      width:36px;
-      height:36px;
-      border:none;
-      border-radius:14px;
+      right:0;
+      bottom:2px;
+      width:34px;
+      height:34px;
+      border-radius:12px;
       background:#fff;
       color:#111827;
-      font-size:16px;
+      font-size:14px;
       font-weight:900;
-      cursor:pointer;
-      box-shadow:0 10px 24px rgba(0,0,0,.22);
+      box-shadow:0 10px 20px rgba(0,0,0,.22);
     }
 
-    .summary-copy h2{
-      font-size:28px;
+    .hero-copy{
+      min-width:0;
+    }
+
+    .hero-copy h2{
+      font-size:30px;
       font-weight:900;
       letter-spacing:-.03em;
       margin-bottom:6px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .summary-copy p{
-      color:#bfd0ea;
+    .hero-copy p{
+      color:var(--muted);
       font-size:14px;
       line-height:1.8;
-      margin-bottom:10px;
+      margin-bottom:12px;
     }
 
-    .summary-chips{
+    .chips{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
     }
 
     .chip{
-      min-height:36px;
+      min-height:32px;
       padding:0 12px;
       border-radius:999px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
       font-size:12px;
       font-weight:800;
+      color:#dbe8ff;
     }
 
-    .summary-actions{
+    .hero-actions{
       display:flex;
       flex-direction:column;
       gap:10px;
-      min-width:170px;
+      min-width:180px;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(12,1fr);
-      gap:18px;
-      margin-bottom:18px;
+    .section{
+      padding:0 0 24px;
+      margin-bottom:24px;
+      border-bottom:1px solid var(--line);
     }
 
-    .col-12{grid-column:span 12}
-    .col-8{grid-column:span 8}
-    .col-6{grid-column:span 6}
-    .col-4{grid-column:span 4}
-
-    .card{
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:28px;
-      padding:18px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(16px);
+    .section:last-of-type{
+      margin-bottom:0;
+      border-bottom:none;
     }
 
-    .card-head{
+    .section-head{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
@@ -317,23 +299,46 @@
       flex-wrap:wrap;
     }
 
-    .card-head h3{
-      font-size:23px;
+    .section-head h3{
+      font-size:21px;
       font-weight:900;
       letter-spacing:-.02em;
-      margin-bottom:5px;
+      margin-bottom:4px;
     }
 
-    .card-head p{
-      color:var(--muted);
+    .section-head p{
       font-size:13px;
+      color:var(--muted);
       line-height:1.7;
+      max-width:680px;
+    }
+
+    .section-tag{
+      min-height:30px;
+      padding:0 11px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color:#d9e6ff;
+      font-size:11px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:28px;
+      align-items:start;
     }
 
     .form-grid{
       display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:14px;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
     }
 
     .field{
@@ -353,17 +358,19 @@
       letter-spacing:.04em;
     }
 
-    .input,.textarea{
+    .input,
+    .textarea{
       width:100%;
       min-height:52px;
       border:none;
       outline:none;
-      border-radius:18px;
+      border-radius:14px;
       padding:0 14px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
       color:#fff;
       font-size:14px;
+      transition:.2s ease;
     }
 
     .textarea{
@@ -372,25 +379,39 @@
       resize:vertical;
     }
 
-    .input::placeholder,.textarea::placeholder{
-      color:#92a6c5;
+    .input::placeholder,
+    .textarea::placeholder{
+      color:#8fa3c2;
     }
 
-    .preview-list{
-      display:grid;
-      gap:12px;
+    .input:focus,
+    .textarea:focus{
+      border-color:rgba(91,140,255,.45);
+      box-shadow:0 0 0 4px rgba(45,107,255,.10);
+      background:rgba(255,255,255,.055);
     }
 
-    .preview-item{
+    .preview{
+      padding-top:2px;
+    }
+
+    .preview-row{
+      padding:14px 0;
+      border-bottom:1px solid var(--line);
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:14px;
-      padding:14px;
-      border-radius:20px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
+      gap:12px;
       flex-wrap:wrap;
+    }
+
+    .preview-row:first-child{
+      padding-top:0;
+    }
+
+    .preview-row:last-child{
+      border-bottom:none;
+      padding-bottom:0;
     }
 
     .preview-copy h4{
@@ -402,31 +423,32 @@
     .preview-copy p{
       font-size:13px;
       color:#bfd0ea;
-      line-height:1.7;
+      line-height:1.75;
       word-break:break-word;
     }
 
-    .status-badge{
-      min-height:32px;
-      padding:0 12px;
+    .status{
+      min-height:28px;
+      padding:0 10px;
       border-radius:999px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:12px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      font-size:11px;
       font-weight:900;
+      color:#dce8ff;
+      white-space:nowrap;
     }
 
-    .status-badge.green{
-      background:rgba(34,197,94,.14);
+    .status.live{
+      background:rgba(34,197,94,.10);
       border-color:rgba(34,197,94,.18);
-      color:#ddffe8;
+      color:#dcffe7;
     }
 
-    .inline-actions{
+    .actions-row{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
@@ -436,7 +458,7 @@
     .small-note{
       color:var(--muted);
       font-size:12px;
-      line-height:1.7;
+      line-height:1.8;
       margin-top:10px;
     }
 
@@ -480,26 +502,58 @@
       border:1px solid rgba(45,107,255,.20);
     }
 
-    .nav-icon{font-size:21px;line-height:1}
+    .nav-icon{
+      font-size:21px;
+      line-height:1;
+    }
 
-    @media (max-width:980px){
-      .col-8,.col-6,.col-4{grid-column:span 12}
-      .hero-summary{
+    @media (max-width:920px){
+      .hero{
         grid-template-columns:1fr;
         align-items:start;
       }
-      .summary-actions{
+
+      .hero-actions{
         flex-direction:row;
         flex-wrap:wrap;
+        min-width:unset;
+      }
+
+      .split{
+        grid-template-columns:1fr;
       }
     }
 
-    @media (max-width:640px){
-      .wrap{padding:14px 12px 0}
-      .brand-text h1{font-size:28px}
-      .form-grid{grid-template-columns:1fr}
-      .summary-actions{flex-direction:column}
-      .topbar{align-items:flex-start}
+    @media (max-width:680px){
+      .wrap{
+        padding:14px 12px 0;
+      }
+
+      .title{
+        font-size:24px;
+      }
+
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+
+      .topbar{
+        align-items:flex-start;
+      }
+
+      .top-actions{
+        width:100%;
+      }
+
+      .hero-actions{
+        flex-direction:column;
+        width:100%;
+      }
+
+      .btn,
+      .btn-soft{
+        width:100%;
+      }
     }
   </style>
 </head>
@@ -507,184 +561,185 @@
   <div class="wrap">
     <div id="notice" class="notice"></div>
 
-    <section class="hero">
-      <div class="topbar">
-        <div class="brand-wrap">
-          <a class="icon-btn" href="profile.html" title="Back">←</a>
-          <div class="brand-logo">✎</div>
-          <div class="brand-text">
-            <h1>Edit Profile</h1>
-            <p>Update your owner profile fields, identity details, and presentation.</p>
-          </div>
-        </div>
-
-        <div class="top-actions">
-          <a class="ghost-btn" href="dashboard.html">Dashboard</a>
-          <a class="soft-btn" href="settings.html">Settings</a>
+    <div class="topbar">
+      <div class="brand">
+        <a class="icon-btn" href="profile.html" title="Back">←</a>
+        <div class="title-group">
+          <div class="title">Edit Profile</div>
+          <div class="subtitle">Update your personal details and keep your profile clean and professional.</div>
         </div>
       </div>
 
-      <div class="hero-summary">
-        <div class="avatar-wrap">
-          <div id="profileAvatar" class="avatar">U</div>
-          <button id="changeAvatarBtn" class="avatar-edit" type="button" title="Change photo">✎</button>
-          <input id="avatarInput" type="file" accept="image/*" hidden />
-        </div>
+      <div class="top-actions">
+        <a class="btn-soft" href="dashboard.html">Dashboard</a>
+        <a class="btn-soft" href="settings.html">Settings</a>
+      </div>
+    </div>
 
-        <div class="summary-copy">
-          <h2 id="summaryName">Edit Your Profile</h2>
-          <p id="summarySub">Update what appears on your owner profile and feeds into your public profile rules later.</p>
-          <div class="summary-chips">
-            <span id="ownerChip" class="chip">Owner Profile</span>
-            <span id="usernameChip" class="chip">@username</span>
-            <span id="statusChip" class="chip">Ready to edit</span>
-          </div>
-        </div>
+    <section class="hero">
+      <div class="avatar-wrap">
+        <div id="profileAvatar" class="avatar">U</div>
+        <button id="changeAvatarBtn" class="avatar-edit" type="button" title="Change photo">✎</button>
+        <input id="avatarInput" type="file" accept="image/*" hidden />
+      </div>
 
-        <div class="summary-actions">
-          <button id="saveTopBtn" class="primary-btn" type="button">Save Changes</button>
-          <a class="ghost-btn" href="profile.html">Preview Profile</a>
-          <button id="passwordTopBtn" class="soft-btn" type="button">Update Password</button>
+      <div class="hero-copy">
+        <h2 id="summaryName">Edit Your Profile</h2>
+        <p id="summarySub">Keep your public information accurate and up to date.</p>
+        <div class="chips">
+          <span id="ownerChip" class="chip">Profile editor</span>
+          <span id="usernameChip" class="chip">@username</span>
+          <span id="statusChip" class="chip">Ready to update</span>
         </div>
+      </div>
+
+      <div class="hero-actions">
+        <button id="saveTopBtn" class="btn" type="button">Save Changes</button>
+        <a class="btn-soft" href="profile.html">Preview Profile</a>
+        <button id="passwordTopBtn" class="btn-soft" type="button">Update Password</button>
       </div>
     </section>
 
-    <section class="grid">
-      <div class="card col-8">
-        <div class="card-head">
-          <div>
-            <h3>Main Profile Details</h3>
-            <p>These details define your owner profile and later feed controlled visibility into public profile.</p>
+    <section class="section">
+      <div class="split">
+        <div>
+          <div class="section-head">
+            <div>
+              <h3>Main Details</h3>
+              <p>These are the main profile fields shown across your account.</p>
+            </div>
+            <span class="section-tag">Primary</span>
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="fullNameInput">Full Name</label>
+              <input id="fullNameInput" class="input" type="text" placeholder="Enter full name" />
+            </div>
+
+            <div class="field">
+              <label for="usernameInput">Username</label>
+              <input id="usernameInput" class="input" type="text" placeholder="Enter username" />
+            </div>
+
+            <div class="field">
+              <label for="emailInput">Email</label>
+              <input id="emailInput" class="input" type="email" placeholder="Email address" disabled />
+            </div>
+
+            <div class="field">
+              <label for="phoneInput">Phone</label>
+              <input id="phoneInput" class="input" type="tel" placeholder="Phone number" />
+            </div>
+
+            <div class="field">
+              <label for="dobInput">Date of Birth</label>
+              <input id="dobInput" class="input" type="date" />
+            </div>
+
+            <div class="field">
+              <label for="locationInput">Location</label>
+              <input id="locationInput" class="input" type="text" placeholder="City, state, or location" />
+            </div>
+
+            <div class="field full">
+              <label for="bioInput">Bio</label>
+              <textarea id="bioInput" class="textarea" placeholder="Write a short profile bio..."></textarea>
+            </div>
+
+            <div class="field full">
+              <label for="aboutInput">About</label>
+              <textarea id="aboutInput" class="textarea" placeholder="Tell people more about yourself..."></textarea>
+            </div>
           </div>
         </div>
 
-        <div class="form-grid">
-          <div class="field">
-            <label for="fullNameInput">Full Name</label>
-            <input id="fullNameInput" class="input" type="text" placeholder="Enter full name" />
+        <aside class="preview">
+          <div class="section-head">
+            <div>
+              <h3>Live Preview</h3>
+              <p>A simple preview of your profile identity.</p>
+            </div>
+            <span class="section-tag">Preview</span>
           </div>
 
-          <div class="field">
-            <label for="usernameInput">Username</label>
-            <input id="usernameInput" class="input" type="text" placeholder="Enter username" />
-          </div>
-
-          <div class="field">
-            <label for="emailInput">Email</label>
-            <input id="emailInput" class="input" type="email" placeholder="Email address" disabled />
-          </div>
-
-          <div class="field">
-            <label for="phoneInput">Phone</label>
-            <input id="phoneInput" class="input" type="tel" placeholder="Phone number" />
-          </div>
-
-          <div class="field">
-            <label for="dobInput">Date of Birth</label>
-            <input id="dobInput" class="input" type="date" />
-          </div>
-
-          <div class="field">
-            <label for="locationInput">Location</label>
-            <input id="locationInput" class="input" type="text" placeholder="City, state, or location" />
-          </div>
-
-          <div class="field full">
-            <label for="bioInput">Bio</label>
-            <textarea id="bioInput" class="textarea" placeholder="Write a strong profile bio..."></textarea>
-          </div>
-
-          <div class="field full">
-            <label for="aboutInput">About</label>
-            <textarea id="aboutInput" class="textarea" placeholder="Tell more about yourself..."></textarea>
-          </div>
-        </div>
-      </div>
-
-      <div class="card col-4">
-        <div class="card-head">
-          <div>
-            <h3>Live Preview</h3>
-            <p>Quick owner-side preview of your main identity data.</p>
-          </div>
-        </div>
-
-        <div class="preview-list">
-          <div class="preview-item">
+          <div class="preview-row">
             <div class="preview-copy">
               <h4>Name Preview</h4>
               <p id="previewName">Your full name</p>
             </div>
-            <span class="status-badge green">Live</span>
+            <span class="status live">Live</span>
           </div>
 
-          <div class="preview-item">
+          <div class="preview-row">
             <div class="preview-copy">
               <h4>Username Preview</h4>
               <p id="previewUsername">@username</p>
             </div>
-            <span class="status-badge">Handle</span>
+            <span class="status">Handle</span>
           </div>
 
-          <div class="preview-item">
+          <div class="preview-row">
             <div class="preview-copy">
               <h4>Bio Preview</h4>
               <p id="previewBio">Your bio preview appears here.</p>
             </div>
           </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h3>Extended Details</h3>
+          <p>Add more profile information for a fuller account setup.</p>
+        </div>
+        <span class="section-tag">Extra</span>
+      </div>
+
+      <div class="form-grid">
+        <div class="field full">
+          <label for="likesInput">Likes</label>
+          <textarea id="likesInput" class="textarea" placeholder="Things you like..."></textarea>
+        </div>
+
+        <div class="field full">
+          <label for="hobbiesInput">Hobbies</label>
+          <textarea id="hobbiesInput" class="textarea" placeholder="Your hobbies and interests..."></textarea>
+        </div>
+
+        <div class="field full">
+          <label for="addressInput">Address</label>
+          <textarea id="addressInput" class="textarea" placeholder="Your address or general location detail..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h3>Security</h3>
+          <p>Change your password separately from your profile details.</p>
+        </div>
+        <span class="section-tag">Password</span>
+      </div>
+
+      <div class="form-grid">
+        <div class="field full">
+          <label for="passwordInput">New Password</label>
+          <input id="passwordInput" class="input" type="password" placeholder="Enter new password" />
         </div>
       </div>
 
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Extended Profile Details</h3>
-            <p>These enrich your profile and can later be controlled in public visibility settings.</p>
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <div class="field full">
-            <label for="likesInput">Likes</label>
-            <textarea id="likesInput" class="textarea" placeholder="Things you like..."></textarea>
-          </div>
-
-          <div class="field full">
-            <label for="hobbiesInput">Hobbies</label>
-            <textarea id="hobbiesInput" class="textarea" placeholder="Your hobbies and interests..."></textarea>
-          </div>
-
-          <div class="field full">
-            <label for="addressInput">Address</label>
-            <textarea id="addressInput" class="textarea" placeholder="Your address or general location detail..."></textarea>
-          </div>
-        </div>
+      <div class="actions-row">
+        <button id="saveBtn" class="btn" type="button">Save Profile</button>
+        <button id="passwordBtn" class="btn-soft" type="button">Update Password</button>
+        <a class="btn-soft" href="profile.html">Back to Profile</a>
       </div>
 
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Security & Save</h3>
-            <p>Update password and save all current profile changes.</p>
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <div class="field full">
-            <label for="passwordInput">New Password</label>
-            <input id="passwordInput" class="input" type="password" placeholder="Enter new password" />
-          </div>
-        </div>
-
-        <div class="inline-actions">
-          <button id="saveBtn" class="primary-btn" type="button">Save Profile</button>
-          <button id="passwordBtn" class="ghost-btn" type="button">Update Password</button>
-          <a class="soft-btn" href="profile.html">Back to Profile</a>
-        </div>
-
-        <div class="small-note">
-          Save profile first after editing fields. Password update is handled separately.
-        </div>
+      <div class="small-note">
+        Save your profile after editing your fields. Password update is handled separately.
       </div>
     </section>
   </div>
@@ -715,7 +770,7 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const AVATAR_BUCKET = "avatars";
+    const AVATAR_BUCKET = "profile_pictures";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -801,7 +856,7 @@
       previewBio.textContent = userBio;
 
       summaryName.textContent = name;
-      summarySub.textContent = userBio;
+      summarySub.textContent = userBio || "Keep your public information accurate and up to date.";
       usernameChip.textContent = uname;
     }
 
@@ -986,14 +1041,13 @@
     }
 
     changeAvatarBtn.addEventListener("click", () => avatarInput.click());
+
     avatarInput.addEventListener("change", async () => {
       const file = avatarInput.files?.[0];
       if (file) await uploadAvatar(file);
     });
 
-    [
-      fullNameInput, usernameInput, bioInput
-    ].forEach(input => {
+    [fullNameInput, usernameInput, bioInput].forEach(input => {
       input.addEventListener("input", updatePreview);
     });
 
