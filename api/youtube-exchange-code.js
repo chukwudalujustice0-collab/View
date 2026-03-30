@@ -48,31 +48,17 @@ export default async function handler(req, res) {
     const tokenData = await tokenRes.json();
 
     if (!tokenRes.ok) {
-      return res.status(500).send(tokenData.error_description || tokenData.error || "Token exchange failed");
+      return res.status(500).send(
+        tokenData.error_description || tokenData.error || "Token exchange failed"
+      );
     }
-
-    const channelRes = await fetch(
-      "https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true",
-      {
-        headers: {
-          Authorization: `Bearer ${tokenData.access_token}`
-        }
-      }
-    );
-
-    const channelData = await channelRes.json();
-
-    if (!channelRes.ok) {
-      return res.status(500).send(channelData?.error?.message || "Could not fetch YouTube channel");
-    }
-
-    const channel = channelData?.items?.[0];
-    const channelId = channel?.id || null;
-    const channelName = channel?.snippet?.title || "YouTube Channel";
 
     const expiresAt = new Date(
       Date.now() + Number(tokenData.expires_in || 3600) * 1000
     ).toISOString();
+
+    const basicAccountName = "YouTube Connected";
+    const basicExternalId = `yt_${userId}`;
 
     const { data: existing, error: existingError } = await supabase
       .from("connected_accounts")
@@ -85,21 +71,23 @@ export default async function handler(req, res) {
       return res.status(500).send(existingError.message);
     }
 
+    const payload = {
+      platform: "youtube",
+      status: "connected",
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token || null,
+      token_type: tokenData.token_type || "Bearer",
+      token_expires_at: expiresAt,
+      account_name: basicAccountName,
+      external_user_id: basicExternalId,
+      last_error: null,
+      last_synced_at: new Date().toISOString()
+    };
+
     if (existing?.id) {
       const { error: updateError } = await supabase
         .from("connected_accounts")
-        .update({
-          platform: "youtube",
-          status: "connected",
-          access_token: tokenData.access_token,
-          refresh_token: tokenData.refresh_token || null,
-          token_type: tokenData.token_type || "Bearer",
-          token_expires_at: expiresAt,
-          account_name: channelName,
-          external_user_id: channelId,
-          last_error: null,
-          last_synced_at: new Date().toISOString()
-        })
+        .update(payload)
         .eq("id", existing.id);
 
       if (updateError) {
@@ -110,16 +98,7 @@ export default async function handler(req, res) {
         .from("connected_accounts")
         .insert({
           user_id: userId,
-          platform: "youtube",
-          status: "connected",
-          access_token: tokenData.access_token,
-          refresh_token: tokenData.refresh_token || null,
-          token_type: tokenData.token_type || "Bearer",
-          token_expires_at: expiresAt,
-          account_name: channelName,
-          external_user_id: channelId,
-          last_error: null,
-          last_synced_at: new Date().toISOString()
+          ...payload
         });
 
       if (insertError) {
