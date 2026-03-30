@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Contact Us | View</title>
+  <meta name="description" content="Contact View by Ceetify for support, account help, reports, partnerships, and general enquiries." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="icon" href="/favicon.ico" />
+
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg2:#0b1628;
+      --card:rgba(255,255,255,0.08);
+      --card2:rgba(255,255,255,0.05);
+      --text:#eaf2ff;
+      --muted:#a9bbd6;
+      --line:rgba(255,255,255,0.12);
+      --blue:#3b82f6;
+      --cyan:#22d3ee;
+      --red:#ef4444;
+      --green:#22c55e;
+      --amber:#f59e0b;
+      --shadow:0 20px 50px rgba(0,0,0,0.35);
+      --radius:24px;
+      --radius-sm:18px;
+      --max:1120px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+
+    body{
+      font-family:Inter,Arial,Helvetica,sans-serif;
+      color:var(--text);
+      line-height:1.65;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top left, rgba(34,211,238,.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(59,130,246,.12), transparent 25%),
+        linear-gradient(180deg,#07111f 0%,#081322 38%,#0b1628 100%);
+      overflow-x:hidden;
+    }
+
+    a{color:#9ed0ff;text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .noise{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.06;
+      background-image:radial-gradient(rgba(255,255,255,.35) .7px, transparent .7px);
+      background-size:18px 18px;
+      z-index:0;
+    }
+
+    .page{position:relative;z-index:1}
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      backdrop-filter:blur(14px);
+      background:rgba(7,17,31,.78);
+      border-bottom:1px solid var(--line);
+    }
+
+    .topbar-inner{
+      width:min(100% - 24px, var(--max));
+      margin:auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-badge{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:#fff;
+      background:linear-gradient(135deg,#ef4444,#3b82f6);
+      box-shadow:var(--shadow);
+      flex-shrink:0;
+    }
+
+    .brand-text h1{
+      font-size:1rem;
+      line-height:1.1;
+      font-weight:800;
+    }
+
+    .brand-text p{
+      color:var(--muted);
+      font-size:.84rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:flex-end;
+    }
+
+    .nav a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      font-size:.92rem;
+      transition:.25s ease;
+    }
+
+    .nav a:hover{
+      text-decoration:none;
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.08);
+      border-color:rgba(255,255,255,.2);
+    }
+
+    .hero{
+      width:min(100% - 24px, var(--max));
+      margin:34px auto 22px;
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:22px;
+    }
+
+    .hero-card,.summary-card,.card,.faq-card,.form-card,.contact-card{
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+
+    .hero-card{
+      padding:28px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      width:260px;
+      height:260px;
+      right:-85px;
+      top:-85px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(34,197,94,.14), transparent 70%);
+      pointer-events:none;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(34,197,94,.22);
+      background:rgba(34,197,94,.08);
+      color:#d9ffe7;
+      font-size:.86rem;
+      margin-bottom:14px;
+    }
+
+    .hero h2{
+      font-size:clamp(2rem, 4vw, 3.1rem);
+      line-height:1.02;
+      margin-bottom:14px;
+      letter-spacing:-.03em;
+    }
+
+    .hero p.lead{
+      color:var(--muted);
+      font-size:1.05rem;
+      max-width:760px;
+    }
+
+    .meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:20px;
+    }
+
+    .meta span{
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      font-size:.92rem;
+      color:#dce8ff;
+    }
+
+    .summary-card{
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      justify-content:center;
+    }
+
+    .summary-card h3{
+      font-size:1.15rem;
+      font-weight:800;
+    }
+
+    .summary-item{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .summary-item strong{
+      display:block;
+      margin-bottom:4px;
+      font-size:.96rem;
+    }
+
+    .summary-item span{
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .section-wrap{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 20px;
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:18px;
+    }
+
+    .card{
+      padding:22px;
+    }
+
+    .card h3{
+      font-size:1.08rem;
+      margin-bottom:8px;
+    }
+
+    .card p{
+      color:var(--muted);
+      font-size:.95rem;
+    }
+
+    .badge{
+      display:inline-flex;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:.8rem;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      margin-bottom:10px;
+    }
+
+    .action{
+      display:inline-flex;
+      margin-top:16px;
+      padding:11px 15px;
+      border-radius:14px;
+      background:rgba(59,130,246,.12);
+      border:1px solid rgba(59,130,246,.18);
+      color:#dceeff;
+      text-decoration:none;
+      font-weight:700;
+    }
+
+    .action:hover{
+      text-decoration:none;
+      transform:translateY(-1px);
+    }
+
+    .main{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 42px;
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .form-card,.faq-card{
+      padding:24px;
+    }
+
+    .form-card h3,.faq-card h3{
+      font-size:1.3rem;
+      margin-bottom:8px;
+    }
+
+    .subtext{
+      color:var(--muted);
+      margin-bottom:18px;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    }
+
+    .field{
+      margin-bottom:14px;
+    }
+
+    .field label{
+      display:block;
+      margin-bottom:8px;
+      font-weight:700;
+      font-size:.95rem;
+      color:#e8f1ff;
+    }
+
+    .field input,
+    .field select,
+    .field textarea{
+      width:100%;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border-radius:14px;
+      padding:14px 14px;
+      font-size:.95rem;
+      outline:none;
+      transition:.2s ease;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder{
+      color:#8fa3c2;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus{
+      border-color:rgba(34,211,238,.45);
+      box-shadow:0 0 0 4px rgba(34,211,238,.10);
+    }
+
+    .field textarea{
+      min-height:150px;
+      resize:vertical;
+    }
+
+    .check{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      margin:6px 0 18px;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .check input{
+      margin-top:3px;
+      accent-color:#3b82f6;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:13px 18px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      text-decoration:none;
+      color:#fff;
+      transition:.25s ease;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--blue),var(--cyan));
+      border:none;
+    }
+
+    .btn.secondary{
+      background:rgba(255,255,255,.05);
+    }
+
+    .btn:hover{
+      text-decoration:none;
+      transform:translateY(-1px);
+      opacity:.97;
+    }
+
+    .faq-list{
+      display:grid;
+      gap:12px;
+      margin-top:10px;
+    }
+
+    .faq-item{
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .faq-item h4{
+      font-size:1rem;
+      margin-bottom:6px;
+    }
+
+    .faq-item p{
+      color:var(--muted);
+      font-size:.93rem;
+    }
+
+    .contact-card{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 36px;
+      padding:24px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:center;
+    }
+
+    .contact-card h3{
+      font-size:1.35rem;
+      margin-bottom:8px;
+    }
+
+    .contact-card p{
+      color:var(--muted);
+    }
+
+    .contact-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:flex-end;
+    }
+
+    .notice{
+      margin-top:16px;
+      padding:14px 16px;
+      border-radius:16px;
+      font-size:.92rem;
+      display:none;
+    }
+
+    .notice.success{
+      display:block;
+      color:#dafce7;
+      background:rgba(34,197,94,.08);
+      border:1px solid rgba(34,197,94,.18);
+    }
+
+    .notice.error{
+      display:block;
+      color:#ffd7d7;
+      background:rgba(239,68,68,.08);
+      border:1px solid rgba(239,68,68,.18);
+    }
+
+    footer{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 40px;
+      color:var(--muted);
+      text-align:center;
+      padding:10px 0 40px;
+      font-size:.92rem;
+    }
+
+    @media (max-width: 980px){
+      .hero,.main,.contact-card{
+        grid-template-columns:1fr;
+      }
+
+      .section-wrap{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .contact-actions{
+        justify-content:flex-start;
+      }
+    }
+
+    @media (max-width: 700px){
+      .topbar-inner{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .nav{
+        width:100%;
+        justify-content:flex-start;
+      }
+
+      .section-wrap{
+        grid-template-columns:1fr;
+      }
+
+      .grid-2{
+        grid-template-columns:1fr;
+      }
+
+      .hero-card,.summary-card,.card,.faq-card,.form-card,.contact-card{
+        border-radius:20px;
+      }
+
+      .hero-card,.summary-card,.card,.faq-card,.form-card{
+        padding:20px;
+      }
+
+      .meta span{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-badge">V</div>
+          <div class="brand-text">
+            <h1>Contact View</h1>
+            <p>View by Ceetify — Support, reports, feedback, and partnerships</p>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a href="/index.html">Home</a>
+          <a href="/about.html">About</a>
+          <a href="/privacy.html">Privacy</a>
+          <a href="/terms.html">Terms</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">Support • Reports • Business Enquiries</div>
+        <h2>We’re here to help you with View.</h2>
+        <p class="lead">
+          Contact us for account support, login issues, abuse reports, content
+          complaints, feedback, technical problems, partnerships, or general
+          questions about the View platform.
+        </p>
+
+        <div class="meta">
+          <span><strong>Email:</strong> info.ceeticegroup@gmail.com</span>
+          <span><strong>Platform:</strong> View by Ceetify</span>
+          <span><strong>Support type:</strong> User, business, safety</span>
+        </div>
+      </div>
+
+      <aside class="summary-card">
+        <h3>Contact reasons</h3>
+
+        <div class="summary-item">
+          <strong>Account support</strong>
+          <span>Login issues, password reset, account access, profile problems.</span>
+        </div>
+
+        <div class="summary-item">
+          <strong>Safety reports</strong>
+          <span>Harassment, impersonation, scams, abuse, or harmful content.</span>
+        </div>
+
+        <div class="summary-item">
+          <strong>Technical help</strong>
+          <span>Bugs, upload errors, connection issues, or broken features.</span>
+        </div>
+
+        <div class="summary-item">
+          <strong>Business enquiries</strong>
+          <span>Brand partnerships, integrations, creator tools, and collaboration.</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section-wrap">
+      <div class="card">
+        <div class="badge">General Support</div>
+        <h3>Need help with your account?</h3>
+        <p>
+          Contact us for login help, profile issues, app errors, password problems,
+          or general questions about using View.
+        </p>
+        <a class="action" href="mailto:info.ceeticegroup@gmail.com?subject=View%20Support%20Request">Email support</a>
+      </div>
+
+      <div class="card">
+        <div class="badge">Safety & Reports</div>
+        <h3>Report abuse or harmful behavior</h3>
+        <p>
+          Report harassment, fake accounts, impersonation, fraud, dangerous content,
+          privacy violations, or repeated spam.
+        </p>
+        <a class="action" href="mailto:info.ceeticegroup@gmail.com?subject=View%20Safety%20Report">Send safety report</a>
+      </div>
+
+      <div class="card">
+        <div class="badge">Business</div>
+        <h3>Discuss partnerships or integrations</h3>
+        <p>
+          Reach out for business partnerships, creator collaborations, media
+          opportunities, or platform integration requests.
+        </p>
+        <a class="action" href="mailto:info.ceeticegroup@gmail.com?subject=View%20Business%20Enquiry">Contact business team</a>
+      </div>
+    </section>
+
+    <section class="main">
+      <div class="form-card">
+        <h3>Send us a message</h3>
+        <p class="subtext">
+          This form opens the user’s mail app with the message details already arranged.
+        </p>
+
+        <form id="contactForm">
+          <div class="grid-2">
+            <div class="field">
+              <label for="fullName">Full name</label>
+              <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" />
+            </div>
+
+            <div class="field">
+              <label for="email">Email address</label>
+              <input type="email" id="email" name="email" placeholder="Enter your email address" />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="username">View username</label>
+              <input type="text" id="username" name="username" placeholder="@yourusername" />
+            </div>
+
+            <div class="field">
+              <label for="category">Category</label>
+              <select id="category" name="category">
+                <option value="General Support">General Support</option>
+                <option value="Account Access">Account Access</option>
+                <option value="Technical Issue">Technical Issue</option>
+                <option value="Safety Report">Safety Report</option>
+                <option value="Copyright Complaint">Copyright Complaint</option>
+                <option value="Business Enquiry">Business Enquiry</option>
+                <option value="Feedback">Feedback</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" placeholder="Briefly describe your issue" />
+          </div>
+
+          <div class="field">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Write your message clearly. Include usernames, links, dates, or issue details where useful."></textarea>
+          </div>
+
+          <label class="check">
+            <input type="checkbox" id="consent" />
+            <span>I understand that this form prepares an email draft in my mail app and that I should review it before sending.</span>
+          </label>
+
+          <div class="btn-row">
+            <button type="submit" class="btn primary">Open Email Draft</button>
+            <a href="mailto:info.ceeticegroup@gmail.com" class="btn secondary">Direct Email</a>
+          </div>
+
+          <div id="formNotice" class="notice"></div>
+        </form>
+      </div>
+
+      <div class="faq-card">
+        <h3>Frequently asked questions</h3>
+        <p class="subtext">
+          Common support topics for users, creators, and partners.
+        </p>
+
+        <div class="faq-list">
+          <div class="faq-item">
+            <h4>I cannot log in to my account. What should I do?</h4>
+            <p>
+              Use the forgot password option on the login page first. If the issue
+              continues, contact support and include your username and account email.
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <h4>How do I report a fake account or scam?</h4>
+            <p>
+              Send a safety report with the username, profile link, screenshots,
+              and a short explanation of what happened.
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <h4>Can I request removal of content that affects me?</h4>
+            <p>
+              Yes. Contact support with the exact content link, account details,
+              and why the content should be reviewed.
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <h4>How do I ask about partnerships or integration?</h4>
+            <p>
+              Choose Business Enquiry in the form and provide your brand, goal,
+              and the type of partnership you want to discuss.
+            </p>
+          </div>
+
+          <div class="faq-item">
+            <h4>How fast will support respond?</h4>
+            <p>
+              Response time may vary depending on message volume and the type of
+              issue, especially for safety or legal matters.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact-card">
+      <div>
+        <h3>Prefer direct contact?</h3>
+        <p>
+          You can email us directly for support, moderation, reports, or business
+          communication regarding the View platform.
+        </p>
+      </div>
+
+      <div class="contact-actions">
+        <a class="btn primary" href="mailto:info.ceeticegroup@gmail.com">Email Support</a>
+        <a class="btn secondary" href="/community-guidelines.html">Community Guidelines</a>
+      </div>
+    </section>
+
+    <footer>
+      © 2026 View by Ceetify. All rights reserved.
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const form = document.getElementById('contactForm');
+      const notice = document.getElementById('formNotice');
+
+      function showNotice(type, text) {
+        notice.className = 'notice ' + type;
+        notice.textContent = text;
+      }
+
+      function clean(value) {
+        return (value || '').trim();
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const fullName = clean(document.getElementById('fullName').value);
+        const email = clean(document.getElementById('email').value);
+        const username = clean(document.getElementById('username').value);
+        const category = clean(document.getElementById('category').value);
+        const subject = clean(document.getElementById('subject').value);
+        const message = clean(document.getElementById('message').value);
+        const consent = document.getElementById('consent').checked;
+
+        if (!consent) {
+          showNotice('error', 'Please confirm the email draft checkbox before continuing.');
+          return;
+        }
+
+        if (!subject || !message) {
+          showNotice('error', 'Please enter at least a subject and message.');
+          return;
+        }
+
+        const finalSubject = `[View] ${category} - ${subject}`;
+
+        const bodyLines = [
+          'Hello View Support,',
+          '',
+          'I need help with the following:',
+          '',
+          message,
+          '',
+          '----- Sender Details -----',
+          'Full name: ' + (fullName || 'Not provided'),
+          'Email: ' + (email || 'Not provided'),
+          'View username: ' + (username || 'Not provided'),
+          'Category: ' + (category || 'Not provided'),
+          '',
+          'Sent from: view.ceetice.com/contact.html'
+        ];
+
+        const mailto = 'mailto:info.ceeticegroup@gmail.com'
+          + '?subject=' + encodeURIComponent(finalSubject)
+          + '&body=' + encodeURIComponent(bodyLines.join('\n'));
+
+        showNotice('success', 'Opening your email app with a prepared draft...');
+        window.location.href = mailto;
+      });
+    })();
+  </script>
+</body>
+</html>
