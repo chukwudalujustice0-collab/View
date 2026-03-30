@@ -1,650 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Connect Facebook | View</title>
-  <meta name="theme-color" content="#ffffff" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Connect Facebook | View</title>
 
-  <style>
-    :root{
-      --bg:#f6f8fc;
-      --card:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --primary:#1877f2;
-      --primary2:#0f5fd4;
-      --success:#059669;
-      --danger:#dc2626;
-      --info:#1d4ed8;
-      --shadow:0 12px 30px rgba(15,23,42,.08);
-      --safe-bottom:env(safe-area-inset-bottom);
-    }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-      font-family:Arial,sans-serif;
-      -webkit-tap-highlight-color:transparent;
-    }
-
-    html,body{
-      min-height:100%;
-      background:
-        radial-gradient(circle at top left, rgba(24,119,242,.06), transparent 24%),
-        radial-gradient(circle at bottom right, rgba(15,95,212,.05), transparent 20%),
-        linear-gradient(180deg,#fbfcff 0%, #f5f7fb 100%);
-      color:var(--text);
-    }
-
-    body{
-      padding:18px 14px calc(24px + var(--safe-bottom));
-    }
-
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
-
-    button{
-      border:none;
-      outline:none;
-      cursor:pointer;
-      font:inherit;
-    }
-
-    .wrap{
-      width:min(100%, 860px);
-      margin:0 auto;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
-    }
-
-    .top-left{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-      flex:1;
-    }
-
-    .icon-btn{
-      width:48px;
-      height:48px;
-      min-width:48px;
-      border-radius:16px;
-      background:#fff;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:18px;
-      color:var(--text);
-    }
-
-    .title-box{
-      min-width:0;
-      flex:1;
-    }
-
-    .title{
-      font-size:24px;
-      font-weight:800;
-      margin-bottom:4px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .sub{
-      color:var(--muted);
-      font-size:13px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .notice{
-      display:none;
-      padding:14px 16px;
-      border-radius:16px;
-      font-size:14px;
-      line-height:1.6;
-      white-space:pre-wrap;
-      margin-bottom:14px;
-      box-shadow:var(--shadow);
-    }
-
-    .notice.show{display:block}
-    .notice.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8}
-    .notice.success{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-    .notice.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-
-    .card{
-      background:rgba(255,255,255,.94);
-      border:1px solid rgba(255,255,255,.7);
-      border-radius:24px;
-      box-shadow:var(--shadow);
-      padding:18px;
-      margin-bottom:14px;
-    }
-
-    .hero{
-      display:grid;
-      gap:16px;
-    }
-
-    .hero-top{
-      display:flex;
-      gap:14px;
-      align-items:flex-start;
-    }
-
-    .fb-badge{
-      width:68px;
-      height:68px;
-      min-width:68px;
-      border-radius:22px;
-      background:linear-gradient(135deg,#1877f2,#0f5fd4);
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:30px;
-      font-weight:800;
-      box-shadow:0 16px 34px rgba(24,119,242,.22);
-    }
-
-    .hero-copy h2{
-      font-size:24px;
-      font-weight:800;
-      line-height:1.2;
-      margin-bottom:8px;
-    }
-
-    .hero-copy p{
-      color:var(--muted);
-      line-height:1.65;
-      font-size:14px;
-    }
-
-    .actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      min-height:52px;
-      padding:0 18px;
-      border-radius:16px;
-      font-size:14px;
-      font-weight:700;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      transition:.18s ease;
-    }
-
-    .btn.primary{
-      flex:1;
-      min-width:210px;
-      color:#fff;
-      background:linear-gradient(135deg,#1877f2,#0f5fd4);
-    }
-
-    .btn.secondary{
-      flex:1;
-      min-width:150px;
-      color:#111827;
-      background:#fff;
-      border:1px solid var(--line);
-    }
-
-    .btn:disabled{
-      opacity:.7;
-      cursor:not-allowed;
-    }
-
-    .helper{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.65;
-    }
-
-    .status-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:10px;
-    }
-
-    .status-box{
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px;
-      background:#fafcff;
-      min-height:100px;
-    }
-
-    .status-label{
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:7px;
-    }
-
-    .status-value{
-      font-size:13px;
-      font-weight:800;
-      line-height:1.55;
-      word-break:break-word;
-    }
-
-    .pages-list{
-      display:grid;
-      gap:10px;
-    }
-
-    .page-item{
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px;
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .page-meta{
-      min-width:0;
-      flex:1;
-    }
-
-    .page-name{
-      font-size:15px;
-      font-weight:800;
-      margin-bottom:4px;
-      word-break:break-word;
-    }
-
-    .page-id{
-      font-size:12px;
-      color:var(--muted);
-      word-break:break-word;
-    }
-
-    .mini-btn{
-      min-height:42px;
-      padding:0 14px;
-      border-radius:12px;
-      background:linear-gradient(135deg,#1877f2,#0f5fd4);
-      color:#fff;
-      font-size:13px;
-      font-weight:700;
-      white-space:nowrap;
-    }
-
-    code{
-      background:#f3f4f6;
-      padding:2px 6px;
-      border-radius:6px;
-      font-size:12px;
-    }
-
-    @media (max-width:720px){
-      .status-grid{
-        grid-template-columns:1fr;
-      }
-
-      .hero-top,
-      .page-item{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-
-      .mini-btn{
-        width:100%;
-      }
-    }
-  </style>
+<style>
+body{
+  font-family:Arial;
+  background:#f5f7fb;
+  padding:20px;
+}
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
+  max-width:500px;
+  margin:auto;
+}
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  font-weight:bold;
+  margin-top:10px;
+  cursor:pointer;
+}
+.primary{background:#1877f2;color:#fff;}
+.secondary{background:#eee;}
+.notice{
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+  display:none;
+}
+.notice.show{display:block;}
+.notice.error{background:#fee;color:#900;}
+.notice.success{background:#efe;color:#060;}
+.notice.info{background:#eef;color:#036;}
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <header class="topbar">
-      <div class="top-left">
-        <button class="icon-btn" type="button" onclick="history.back()">←</button>
-        <div class="title-box">
-          <div class="title">Connect Facebook</div>
-          <div class="sub">Connect a Facebook Page for real publishing</div>
-        </div>
-      </div>
-      <a class="icon-btn" href="connected-accounts.html">✕</a>
-    </header>
 
-    <div id="notice" class="notice"></div>
+<div class="card">
+  <h2>Connect Facebook Page</h2>
 
-    <section class="card hero">
-      <div class="hero-top">
-        <div class="fb-badge">f</div>
-        <div class="hero-copy">
-          <h2>Connect your Facebook Page</h2>
-          <p>
-            This logs you into Facebook, fetches the Pages you manage, and saves the selected Page token so your publish worker can post for real.
-          </p>
-        </div>
-      </div>
+  <div id="notice" class="notice"></div>
 
-      <div class="actions">
-        <button id="loginBtn" class="btn primary" type="button">Login with Facebook</button>
-        <a href="connected-accounts.html" class="btn secondary">Back</a>
-      </div>
+  <button id="loginBtn" class="primary">Login with Facebook</button>
+  <button id="manualBtn" class="secondary" style="display:none;">
+    Open Facebook Manually
+  </button>
 
-      <div class="helper">
-        Facebook posting uses a <code>Page access token</code>, not only a normal user token.
-      </div>
-    </section>
+  <div id="pages"></div>
+</div>
 
-    <section class="card">
-      <div class="status-grid">
-        <div class="status-box">
-          <div class="status-label">Frontend origin</div>
-          <div class="status-value" id="frontendOrigin">-</div>
-        </div>
-        <div class="status-box">
-          <div class="status-label">Redirect URI</div>
-          <div class="status-value" id="redirectUri">-</div>
-        </div>
-        <div class="status-box">
-          <div class="status-label">Permissions</div>
-          <div class="status-value" id="scopeText">-</div>
-        </div>
-        <div class="status-box">
-          <div class="status-label">Current state</div>
-          <div class="status-value" id="stateText">Waiting for login</div>
-        </div>
-      </div>
-    </section>
+<script>
+const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    <section class="card">
-      <div class="title" style="font-size:20px;">Managed Pages</div>
-      <div class="sub" style="white-space:normal;margin-bottom:14px;">
-        After Facebook login, your Pages will show here. Select one to save its Page access token.
-      </div>
-      <div id="pagesList" class="pages-list">
-        <div class="helper">No Pages loaded yet.</div>
-      </div>
-    </section>
-  </div>
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  <script>
-    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+// ✅ YOUR APP ID (CONFIRMED WORKING)
+const FACEBOOK_APP_ID = "921040053900296";
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: "pkce"
-      }
+// MUST MATCH META EXACTLY
+const REDIRECT_URI = "https://view.ceetice.com/facebook-connect.html";
+
+const SCOPES = [
+  "pages_show_list",
+  "pages_manage_posts",
+  "pages_read_engagement"
+];
+
+const notice = document.getElementById("notice");
+const loginBtn = document.getElementById("loginBtn");
+const manualBtn = document.getElementById("manualBtn");
+const pagesEl = document.getElementById("pages");
+
+function show(msg,type="info"){
+  notice.className = "notice show " + type;
+  notice.innerText = msg;
+}
+
+async function getUser(){
+  const {data} = await supabase.auth.getUser();
+  if(!data.user){
+    location.href = "login.html";
+    return null;
+  }
+  return data.user;
+}
+
+function getAuthUrl(userId){
+  return `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${SCOPES.join(",")}&state=${userId}&display=touch`;
+}
+
+async function startLogin(){
+  const user = await getUser();
+  if(!user) return;
+
+  const url = getAuthUrl(user.id);
+
+  show("Opening Facebook...", "info");
+
+  manualBtn.style.display = "block";
+
+  setTimeout(()=>{
+    window.location.assign(url);
+  },200);
+}
+
+loginBtn.onclick = startLogin;
+
+manualBtn.onclick = async ()=>{
+  const user = await getUser();
+  if(!user) return;
+  window.location.href = getAuthUrl(user.id);
+};
+
+// =====================
+// HANDLE FACEBOOK RETURN
+// =====================
+function getTokenFromHash(){
+  const hash = location.hash.replace("#","");
+  const params = new URLSearchParams(hash);
+
+  if(!params.get("access_token")) return null;
+
+  return {
+    token: params.get("access_token"),
+    state: params.get("state")
+  };
+}
+
+async function loadPages(token){
+  const res = await fetch(
+    `https://graph.facebook.com/v19.0/me/accounts?access_token=${token}`
+  );
+
+  const data = await res.json();
+
+  if(!data.data){
+    throw new Error("No pages found");
+  }
+
+  return data.data;
+}
+
+function renderPages(pages,user){
+  pagesEl.innerHTML = "";
+
+  pages.forEach(p=>{
+    const div = document.createElement("div");
+    div.style.marginTop = "10px";
+
+    div.innerHTML = `
+      <b>${p.name}</b><br/>
+      <small>${p.id}</small><br/>
+      <button onclick="savePage('${p.id}','${p.access_token}','${p.name}')">
+        Use this page
+      </button>
+    `;
+
+    pagesEl.appendChild(div);
+  });
+}
+
+window.savePage = async (id,token,name)=>{
+  const {error} = await supabase
+    .from("connected_accounts")
+    .upsert({
+      user_id:(await getUser()).id,
+      platform:"facebook",
+      external_page_id:id,
+      external_user_id:id,
+      account_name:name,
+      access_token:token,
+      status:"connected"
+    },{
+      onConflict:"user_id,platform"
     });
 
-    const FACEBOOK_APP_ID = "921040053900296";
-    const REDIRECT_URI = `${window.location.origin}/facebook-connect.html`;
+  if(error){
+    show(error.message,"error");
+    return;
+  }
 
-    const FACEBOOK_SCOPES = [
-      "pages_show_list",
-      "pages_manage_posts",
-      "pages_read_engagement"
-    ];
+  show("Facebook connected successfully","success");
 
-    const noticeEl = document.getElementById("notice");
-    const loginBtn = document.getElementById("loginBtn");
-    const pagesListEl = document.getElementById("pagesList");
-    const frontendOriginEl = document.getElementById("frontendOrigin");
-    const redirectUriEl = document.getElementById("redirectUri");
-    const scopeTextEl = document.getElementById("scopeText");
-    const stateTextEl = document.getElementById("stateText");
+  setTimeout(()=>{
+    location.href="connected-accounts.html?facebook=connected";
+  },1000);
+};
 
-    frontendOriginEl.textContent = window.location.origin;
-    redirectUriEl.textContent = REDIRECT_URI;
-    scopeTextEl.textContent = FACEBOOK_SCOPES.join(", ");
+// =====================
+// ON LOAD
+// =====================
+(async ()=>{
+  const data = getTokenFromHash();
+  if(!data) return;
 
-    function showNotice(message, type = "info") {
-      noticeEl.className = `notice show ${type}`;
-      noticeEl.textContent = message;
-    }
+  const user = await getUser();
+  if(!user) return;
 
-    function clearNotice() {
-      noticeEl.className = "notice";
-      noticeEl.textContent = "";
-    }
+  if(data.state !== user.id){
+    show("Security error: state mismatch","error");
+    return;
+  }
 
-    async function requireUser() {
-      const { data, error } = await supabaseClient.auth.getUser();
-      if (error) throw error;
+  try{
+    show("Fetching pages...","info");
 
-      if (!data?.user) {
-        window.location.href = "login.html?next=facebook-connect.html";
-        return null;
-      }
+    const pages = await loadPages(data.token);
 
-      return data.user;
-    }
+    renderPages(pages,user);
 
-    function buildFacebookAuthUrl(userId) {
-      const params = new URLSearchParams({
-        client_id: FACEBOOK_APP_ID,
-        redirect_uri: REDIRECT_URI,
-        response_type: "token",
-        scope: FACEBOOK_SCOPES.join(","),
-        state: userId
-      });
+    show("Select a page below","success");
 
-      return `https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`;
-    }
+    history.replaceState({}, "", REDIRECT_URI);
 
-    function parseHashToken() {
-      const hash = window.location.hash.startsWith("#")
-        ? window.location.hash.slice(1)
-        : window.location.hash;
+  }catch(e){
+    show(e.message,"error");
+  }
+})();
+</script>
 
-      if (!hash) return null;
-
-      const params = new URLSearchParams(hash);
-      const accessToken = params.get("access_token");
-      const expiresIn = params.get("expires_in");
-      const state = params.get("state");
-
-      if (!accessToken) return null;
-
-      return {
-        access_token: accessToken,
-        expires_in: expiresIn,
-        state
-      };
-    }
-
-    async function getFacebookPages(userAccessToken) {
-      try {
-        const res = await fetch(
-          `https://graph.facebook.com/v19.0/me/accounts?access_token=${encodeURIComponent(userAccessToken)}`
-        );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.error?.message || "Failed to fetch Facebook Pages");
-        }
-
-        if (!data.data || data.data.length === 0) {
-          throw new Error("No Facebook Pages found for this account.");
-        }
-
-        return data.data;
-      } catch (err) {
-        throw new Error(err.message || "Could not load Facebook Pages");
-      }
-    }
-
-    function renderPages(pages, currentUser) {
-      if (!pages || !pages.length) {
-        pagesListEl.innerHTML = `<div class="helper">No Pages found.</div>`;
-        return;
-      }
-
-      pagesListEl.innerHTML = pages.map((page, index) => `
-        <div class="page-item">
-          <div class="page-meta">
-            <div class="page-name">${page.name || "Untitled Page"}</div>
-            <div class="page-id">Page ID: ${page.id || "-"}</div>
-          </div>
-          <button class="mini-btn" type="button" onclick="saveFacebookPage(${index})">Use This Page</button>
-        </div>
-      `).join("");
-
-      window.__facebookPages = pages;
-      window.__facebookUserId = currentUser.id;
-    }
-
-    async function savePageConnection(page, currentUserId) {
-      if (!page?.id) throw new Error("Facebook Page ID is missing.");
-      if (!page?.access_token) throw new Error("Facebook Page access token is missing.");
-
-      const payload = {
-        user_id: currentUserId,
-        platform: "facebook",
-        account_name: page.name || "Facebook Page",
-        external_page_id: page.id,
-        external_user_id: page.id,
-        access_token: page.access_token,
-        status: "connected",
-        last_synced_at: new Date().toISOString(),
-        last_error: null
-      };
-
-      const { error } = await supabaseClient
-        .from("connected_accounts")
-        .upsert(payload, {
-          onConflict: "user_id,platform"
-        });
-
-      if (error) {
-        throw new Error(`Failed to save Facebook Page connection: ${error.message}`);
-      }
-    }
-
-    window.saveFacebookPage = async function(index) {
-      try {
-        const pages = window.__facebookPages || [];
-        const currentUserId = window.__facebookUserId;
-        const page = pages[index];
-
-        if (!page) throw new Error("Selected Page not found.");
-        if (!currentUserId) throw new Error("Missing current user ID.");
-
-        showNotice("Saving Facebook Page connection...", "info");
-        stateTextEl.textContent = "Saving selected Page";
-
-        await savePageConnection(page, currentUserId);
-
-        showNotice("Facebook Page connected successfully. Redirecting...", "success");
-        stateTextEl.textContent = "Page connected";
-
-        setTimeout(() => {
-          window.location.href = "connected-accounts.html?facebook=connected";
-        }, 1200);
-      } catch (error) {
-        showNotice(error.message || "Could not save Facebook Page.", "error");
-        stateTextEl.textContent = "Save failed";
-      }
-    };
-
-    async function startFacebookLogin() {
-      try {
-        clearNotice();
-
-        if (!FACEBOOK_APP_ID || FACEBOOK_APP_ID.trim().length < 10) {
-          throw new Error("Meta App ID is missing or invalid.");
-        }
-
-        const user = await requireUser();
-        if (!user) return;
-
-        loginBtn.disabled = true;
-        loginBtn.textContent = "Redirecting...";
-        stateTextEl.textContent = "Redirecting to Facebook";
-
-        window.location.href = buildFacebookAuthUrl(user.id);
-      } catch (error) {
-        showNotice(error.message || "Could not start Facebook login.", "error");
-        stateTextEl.textContent = "Login start failed";
-        loginBtn.disabled = false;
-        loginBtn.textContent = "Login with Facebook";
-      }
-    }
-
-    async function handleFacebookReturn() {
-      const url = new URL(window.location.href);
-      const hashData = parseHashToken();
-      const queryError = url.searchParams.get("error");
-      const queryErrorReason = url.searchParams.get("error_reason");
-      const queryErrorDescription = url.searchParams.get("error_description");
-
-      if (queryError) {
-        showNotice(
-          `Facebook connection failed: ${queryErrorReason || queryError}\n${queryErrorDescription || ""}`.trim(),
-          "error"
-        );
-        stateTextEl.textContent = "Facebook denied access";
-        return;
-      }
-
-      if (!hashData?.access_token) {
-        return;
-      }
-
-      try {
-        const user = await requireUser();
-        if (!user) return;
-
-        if (!hashData.state || hashData.state !== user.id) {
-          throw new Error("State mismatch. Please restart Facebook connection.");
-        }
-
-        showNotice("Loading Facebook Pages...", "info");
-        stateTextEl.textContent = "Fetching Pages";
-
-        const userAccessToken = hashData.access_token;
-        const pages = await getFacebookPages(userAccessToken);
-
-        renderPages(pages, user);
-
-        showNotice("Facebook login worked. Select the Page you want to connect below.", "success");
-        stateTextEl.textContent = `Found ${pages.length} Page(s)`;
-
-        history.replaceState({}, document.title, REDIRECT_URI);
-      } catch (error) {
-        showNotice(error.message || "Failed to fetch Facebook Pages.", "error");
-        stateTextEl.textContent = "Page fetch failed";
-      } finally {
-        loginBtn.disabled = false;
-        loginBtn.textContent = "Login with Facebook";
-      }
-    }
-
-    loginBtn.addEventListener("click", startFacebookLogin);
-    handleFacebookReturn();
-  </script>
 </body>
 </html>
