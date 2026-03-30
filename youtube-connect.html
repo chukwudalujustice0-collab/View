@@ -267,14 +267,13 @@
       <div class="youtube-badge">▶</div>
       <h2>Connect your YouTube account</h2>
       <p>
-        This will let View upload your video posts directly to your YouTube channel.
-        The connection requests the upload scope and offline access so your delivery worker can publish safely.
+        This connection requests upload permission and offline access so your worker can publish videos and refresh tokens when needed.
       </p>
 
       <div class="list">
         <div class="list-item"><div class="tick">✓</div><div>Requests YouTube upload permission</div></div>
-        <div class="list-item"><div class="tick">✓</div><div>Requests offline access for refresh token support</div></div>
-        <div class="list-item"><div class="tick">✓</div><div>Returns you to Connected Accounts after success</div></div>
+        <div class="list-item"><div class="tick">✓</div><div>Requests offline access for refresh tokens</div></div>
+        <div class="list-item"><div class="tick">✓</div><div>Redirects back to Connected Accounts after success</div></div>
       </div>
 
       <div class="actions">
@@ -283,7 +282,7 @@
       </div>
 
       <div class="small">
-        If Google shows an existing connection but upload still fails, disconnect and reconnect again so the correct upload scopes are granted.
+        If uploads still fail after connecting, delete the old YouTube record in <code>connected_accounts</code> and reconnect so Google gives the correct scopes.
       </div>
     </section>
 
@@ -322,13 +321,13 @@
       }
     });
 
-    // REPLACE THIS WITH YOUR REAL GOOGLE OAUTH WEB CLIENT ID
+    // REPLACE THIS WITH YOUR REAL GOOGLE WEB CLIENT ID
     const GOOGLE_CLIENT_ID = "PASTE_YOUR_GOOGLE_WEB_CLIENT_ID_HERE";
 
-    // YOUR BACKEND EXCHANGE ENDPOINT
+    // THIS MUST MATCH YOUR VERCEL BACKEND FILE
     const EXCHANGE_ENDPOINT = "https://view-psi-lac.vercel.app/api/youtube-exchange-code";
 
-    // FRONTEND CALLBACK PAGE
+    // THIS MUST MATCH THE REDIRECT URI IN GOOGLE CLOUD CONSOLE
     const REDIRECT_URI = `${window.location.origin}/youtube-connect.html`;
 
     const YOUTUBE_SCOPES = [
@@ -433,7 +432,9 @@
 
         const response = await fetch(EXCHANGE_ENDPOINT, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify({
             code,
             state,
@@ -464,7 +465,6 @@
         }, 1200);
       } catch (err) {
         showNotice(err.message || "Failed to complete YouTube connection.", "error");
-      } finally {
         connectBtn.disabled = false;
         connectBtn.textContent = "Connect YouTube";
       }
