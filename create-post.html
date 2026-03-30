@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Create Post | View</title>
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#f8fbff" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -18,6 +18,7 @@
       --primary2:#4f46e5;
       --success:#10b981;
       --danger:#ef4444;
+      --warning:#f59e0b;
       --shadow:0 10px 30px rgba(15,23,42,.08);
       --safe-bottom:env(safe-area-inset-bottom);
     }
@@ -254,8 +255,8 @@
     .media-preview-wrap{
       display:none;
       position:relative;
-      width:140px;
-      height:140px;
+      width:160px;
+      height:160px;
       border-radius:16px;
       overflow:hidden;
       border:1px solid var(--line);
@@ -266,7 +267,7 @@
       display:block;
     }
 
-    .media-preview,
+    .media-preview-image,
     .media-preview-video{
       width:100%;
       height:100%;
@@ -275,7 +276,7 @@
       background:#000;
     }
 
-    .media-preview.show,
+    .media-preview-image.show,
     .media-preview-video.show{
       display:block;
     }
@@ -295,6 +296,13 @@
       justify-content:center;
       line-height:1;
       z-index:2;
+    }
+
+    .upload-row{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
     }
 
     .platforms-head{
@@ -318,7 +326,7 @@
 
     .platform{
       position:relative;
-      min-height:68px;
+      min-height:70px;
       padding:12px;
       border-radius:18px;
       border:1px solid var(--line);
@@ -328,6 +336,7 @@
       gap:12px;
       cursor:pointer;
       transition:.18s ease;
+      text-align:left;
     }
 
     .platform.active{
@@ -363,6 +372,7 @@
     .tiktok{background:linear-gradient(135deg,#111827,#25f4ee)}
     .whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
     .xhandle{background:linear-gradient(135deg,#111827,#334155)}
+    .telegram{background:linear-gradient(135deg,#229ED9,#1277a9)}
     .viewapp{background:linear-gradient(135deg,var(--primary),var(--primary2))}
 
     .platform-meta{
@@ -492,7 +502,7 @@
         <button class="icon-btn" onclick="history.back()">←</button>
         <div class="title-box">
           <div class="title">Create Post</div>
-          <div class="sub">Simple publish flow</div>
+          <div class="sub">Post instantly across your connected platforms</div>
         </div>
       </div>
       <button class="icon-btn" id="reloadBtn">↻</button>
@@ -517,10 +527,13 @@
           <div class="composer-box">
             <textarea id="postBody" class="textarea" placeholder="What's new in your world?"></textarea>
 
-            <div id="mediaPreviewWrap" class="media-preview-wrap">
-              <button id="removeMediaBtn" class="remove-media" type="button">×</button>
-              <img id="mediaPreviewImage" class="media-preview" alt="Selected media preview" />
-              <video id="mediaPreviewVideo" class="media-preview-video" muted playsinline controls></video>
+            <div class="upload-row">
+              <div id="mediaPreviewWrap" class="media-preview-wrap">
+                <button id="removeMediaBtn" class="remove-media" type="button">×</button>
+                <img id="mediaPreviewImage" class="media-preview-image" alt="Selected media preview" />
+                <video id="mediaPreviewVideo" class="media-preview-video" muted playsinline controls></video>
+              </div>
+              <div class="hint" id="mediaNote">No media selected.</div>
             </div>
           </div>
         </div>
@@ -530,7 +543,7 @@
           <div class="file-wrap">
             <input id="postMedia" type="file" accept="image/*,video/*" />
           </div>
-          <div class="hint" id="mediaNote">No media selected.</div>
+          <div class="hint">Upload image or video. Videos will be stored first, then sent to selected platforms.</div>
         </div>
       </div>
     </section>
@@ -587,6 +600,7 @@
       { key: "youtube", name: "YouTube", icon: "▶", iconClass: "youtube", connect: "youtube-connect.html" },
       { key: "instagram", name: "Instagram", icon: "◎", iconClass: "instagram", connect: "instagram-connect.html" },
       { key: "x", name: "X", icon: "X", iconClass: "xhandle", connect: "x-connect.html" },
+      { key: "telegram", name: "Telegram", icon: "✈", iconClass: "telegram", connect: "telegram-connect.html" },
       { key: "whatsapp", name: "WhatsApp", icon: "✆", iconClass: "whatsapp", connect: "whatsapp-connect.html" }
     ];
 
@@ -613,14 +627,17 @@
     let cachedMedia = null;
     let cachedMediaUrl = "";
 
-    function showNotice(message, type = "info") {
+    function showNotice(message, type = "info", persistMs = 3200) {
       noticeBox.className = `notice show ${type}`;
       noticeBox.textContent = message || "";
       clearTimeout(showNotice._timer);
-      showNotice._timer = setTimeout(() => {
-        noticeBox.className = "notice";
-        noticeBox.textContent = "";
-      }, 3200);
+
+      if (persistMs > 0) {
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, persistMs);
+      }
     }
 
     function getInitial(name = "V") {
@@ -633,8 +650,9 @@
         cachedMediaUrl = "";
       }
       mediaPreviewImage.src = "";
-      mediaPreviewVideo.src = "";
       mediaPreviewVideo.pause();
+      mediaPreviewVideo.removeAttribute("src");
+      mediaPreviewVideo.load();
       mediaPreviewImage.classList.remove("show");
       mediaPreviewVideo.classList.remove("show");
       mediaPreviewWrap.classList.remove("show");
@@ -663,16 +681,9 @@
         return;
       }
 
-      try {
-        cachedMedia = file;
-        mediaNote.textContent = `${file.name} ready.`;
-        showMediaPreview(file);
-      } catch (error) {
-        cachedMedia = null;
-        mediaNote.textContent = "Could not read media.";
-        clearMediaPreview();
-        showNotice("Could not read selected media.", "error");
-      }
+      cachedMedia = file;
+      mediaNote.textContent = `${file.name} ready to upload.`;
+      showMediaPreview(file);
     }
 
     function isPlatformConnected(platformKey) {
@@ -700,7 +711,7 @@
         return `
           <button
             type="button"
-            class="platform ${selected ? 'active' : ''} ${item.always ? 'locked' : ''} ${connected ? '' : 'disabled'}"
+            class="platform ${selected ? "active" : ""} ${item.always ? "locked" : ""} ${connected ? "" : "disabled"}"
             data-platform="${item.key}"
           >
             <div class="platform-icon ${item.iconClass}">${item.icon}</div>
@@ -725,7 +736,7 @@
     async function loadConnections() {
       const { data, error } = await supabaseClient
         .from("connected_accounts")
-        .select("id, user_id, platform, account_name, account_handle, status, access_token, refresh_token, token_expires_at, external_user_id, external_page_id")
+        .select("id, user_id, platform, account_name, account_handle, status, external_user_id")
         .eq("user_id", currentUser.id);
 
       if (error) throw error;
@@ -747,11 +758,12 @@
     function togglePlatform(platformKey) {
       const item = PLATFORMS.find(p => p.key === platformKey);
       if (!item) return;
-
       if (platformKey === "view") return;
 
       if (!isPlatformConnected(platformKey)) {
-        if (item.connect) window.location.href = item.connect;
+        if (item.connect) {
+          window.location.href = item.connect;
+        }
         return;
       }
 
@@ -764,6 +776,7 @@
     async function initUser() {
       const { data, error } = await supabaseClient.auth.getUser();
       if (error) throw error;
+
       if (!data?.user) {
         window.location.href = "login.html?next=create-post.html";
         return false;
@@ -810,6 +823,13 @@
       return payload;
     }
 
+    function simplifiedMediaType(file) {
+      if (!file || !file.type) return null;
+      if (file.type.startsWith("video/")) return "video";
+      if (file.type.startsWith("image/")) return "image";
+      return null;
+    }
+
     async function uploadMediaIfNeeded() {
       if (!cachedMedia) {
         return {
@@ -840,7 +860,7 @@
       return {
         media_path: uploadData.path,
         media_url: publicUrlData?.publicUrl || null,
-        media_type: file.type || null,
+        media_type: simplifiedMediaType(file),
         media_name: file.name || null
       };
     }
@@ -863,7 +883,7 @@
 
         const mediaData = cachedMedia
           ? {
-              media_type: cachedMedia.type || null,
+              media_type: simplifiedMediaType(cachedMedia),
               media_name: cachedMedia.name || null
             }
           : {
@@ -895,7 +915,7 @@
 
       try {
         const payload = validatePost();
-        showNotice("Uploading post...", "info");
+        showNotice("Uploading and publishing post...", "info", 0);
 
         const mediaPayload = await uploadMediaIfNeeded();
 
