@@ -211,9 +211,9 @@
       border:1px solid var(--line);
     }
 
-    .btn:disabled{
+    .btn.disabled{
       opacity:.7;
-      cursor:not-allowed;
+      pointer-events:none;
     }
 
     .helper{
@@ -345,8 +345,8 @@
       </div>
 
       <div class="actions">
-        <button id="loginBtn" class="btn primary" type="button">Login with Facebook</button>
-        <button id="manualBtn" class="btn secondary" type="button" style="display:none;">Open Facebook Manually</button>
+        <a id="loginLink" class="btn primary disabled" href="#">Preparing Facebook Login...</a>
+        <a id="manualLink" class="btn secondary" href="#" style="display:none;">Open Facebook Manually</a>
         <a href="connected-accounts.html" class="btn secondary">Back</a>
       </div>
 
@@ -399,7 +399,7 @@
     });
 
     const FACEBOOK_APP_ID = "921040053900296";
-    const REDIRECT_URI = `${window.location.origin}/facebook-connect.html`;
+    const REDIRECT_URI = "https://view.ceetice.com/facebook-connect.html";
 
     const FACEBOOK_SCOPES = [
       "pages_show_list",
@@ -408,8 +408,8 @@
     ];
 
     const noticeEl = document.getElementById("notice");
-    const loginBtn = document.getElementById("loginBtn");
-    const manualBtn = document.getElementById("manualBtn");
+    const loginLink = document.getElementById("loginLink");
+    const manualLink = document.getElementById("manualLink");
     const pagesListEl = document.getElementById("pagesList");
     const frontendOriginEl = document.getElementById("frontendOrigin");
     const redirectUriEl = document.getElementById("redirectUri");
@@ -477,25 +477,21 @@
     }
 
     async function getFacebookPages(userAccessToken) {
-      try {
-        const res = await fetch(
-          `https://graph.facebook.com/v19.0/me/accounts?access_token=${encodeURIComponent(userAccessToken)}`
-        );
+      const res = await fetch(
+        `https://graph.facebook.com/v19.0/me/accounts?access_token=${encodeURIComponent(userAccessToken)}`
+      );
 
-        const data = await res.json();
+      const data = await res.json();
 
-        if (!res.ok) {
-          throw new Error(data.error?.message || "Failed to fetch Facebook Pages");
-        }
-
-        if (!data.data || data.data.length === 0) {
-          throw new Error("No Facebook Pages found for this account.");
-        }
-
-        return data.data;
-      } catch (err) {
-        throw new Error(err.message || "Could not load Facebook Pages");
+      if (!res.ok) {
+        throw new Error(data.error?.message || "Failed to fetch Facebook Pages");
       }
+
+      if (!data.data || data.data.length === 0) {
+        throw new Error("No Facebook Pages found for this account.");
+      }
+
+      return data.data;
     }
 
     function renderPages(pages, currentUser) {
@@ -571,7 +567,7 @@
       }
     };
 
-    async function startFacebookLogin() {
+    async function prepareFacebookLinks() {
       try {
         clearNotice();
 
@@ -582,36 +578,33 @@
         const user = await requireUser();
         if (!user) return;
 
-        loginBtn.disabled = true;
-        loginBtn.textContent = "Redirecting...";
-        stateTextEl.textContent = "Redirecting to Facebook";
-        manualBtn.style.display = "flex";
-
         const authUrl = buildFacebookAuthUrl(user.id);
-        console.log("Facebook auth URL:", authUrl);
-        showNotice("Opening Facebook login...", "info");
 
-        setTimeout(() => {
-          window.location.assign(authUrl);
-        }, 150);
+        loginLink.href = authUrl;
+        manualLink.href = authUrl;
+
+        loginLink.textContent = "Login with Facebook";
+        loginLink.classList.remove("disabled");
+        manualLink.style.display = "flex";
+
+        stateTextEl.textContent = "Ready to open Facebook";
+        showNotice("Facebook login is ready.", "success");
       } catch (error) {
-        showNotice(error.message || "Could not start Facebook login.", "error");
-        stateTextEl.textContent = "Login start failed";
-        loginBtn.disabled = false;
-        loginBtn.textContent = "Login with Facebook";
+        showNotice(error.message || "Could not prepare Facebook login.", "error");
+        stateTextEl.textContent = "Login setup failed";
+        loginLink.textContent = "Login setup failed";
       }
     }
 
-    async function openFacebookManually() {
-      try {
-        const user = await requireUser();
-        if (!user) return;
-        const authUrl = buildFacebookAuthUrl(user.id);
-        window.location.href = authUrl;
-      } catch (error) {
-        showNotice(error.message || "Could not open Facebook login.", "error");
-      }
-    }
+    loginLink.addEventListener("click", () => {
+      showNotice("Opening Facebook login...", "info");
+      stateTextEl.textContent = "Opening Facebook";
+    });
+
+    manualLink.addEventListener("click", () => {
+      showNotice("Opening Facebook manually...", "info");
+      stateTextEl.textContent = "Opening Facebook manually";
+    });
 
     async function handleFacebookReturn() {
       const url = new URL(window.location.href);
@@ -626,17 +619,10 @@
           "error"
         );
         stateTextEl.textContent = "Facebook denied access";
-        loginBtn.disabled = false;
-        loginBtn.textContent = "Login with Facebook";
-        manualBtn.style.display = "flex";
         return;
       }
 
-      if (!hashData?.access_token) {
-        loginBtn.disabled = false;
-        loginBtn.textContent = "Login with Facebook";
-        return;
-      }
+      if (!hashData?.access_token) return;
 
       try {
         const user = await requireUser();
@@ -649,8 +635,7 @@
         showNotice("Loading Facebook Pages...", "info");
         stateTextEl.textContent = "Fetching Pages";
 
-        const userAccessToken = hashData.access_token;
-        const pages = await getFacebookPages(userAccessToken);
+        const pages = await getFacebookPages(hashData.access_token);
 
         renderPages(pages, user);
 
@@ -661,14 +646,10 @@
       } catch (error) {
         showNotice(error.message || "Failed to fetch Facebook Pages.", "error");
         stateTextEl.textContent = "Page fetch failed";
-      } finally {
-        loginBtn.disabled = false;
-        loginBtn.textContent = "Login with Facebook";
       }
     }
 
-    loginBtn.addEventListener("click", startFacebookLogin);
-    manualBtn.addEventListener("click", openFacebookManually);
+    prepareFacebookLinks();
     handleFacebookReturn();
   </script>
 </body>
