@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Community Guidelines | View</title>
+  <meta name="description" content="Community Guidelines for View by Ceetify. Learn the rules for posts, chats, groups, media, safety, and respectful use of the platform." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="icon" href="/favicon.ico" />
+
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg2:#0b1628;
+      --card:rgba(255,255,255,0.08);
+      --card2:rgba(255,255,255,0.05);
+      --text:#eaf2ff;
+      --muted:#a9bbd6;
+      --line:rgba(255,255,255,0.12);
+      --blue:#3b82f6;
+      --cyan:#22d3ee;
+      --red:#ef4444;
+      --amber:#f59e0b;
+      --green:#22c55e;
+      --shadow:0 20px 50px rgba(0,0,0,0.35);
+      --radius:24px;
+      --radius-sm:16px;
+      --max:1120px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+
+    body{
+      font-family:Inter,Arial,Helvetica,sans-serif;
+      color:var(--text);
+      line-height:1.65;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top left, rgba(34,211,238,.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(59,130,246,.12), transparent 25%),
+        linear-gradient(180deg,#07111f 0%,#081322 38%,#0b1628 100%);
+      overflow-x:hidden;
+    }
+
+    a{color:#9ed0ff;text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .noise{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.06;
+      background-image:radial-gradient(rgba(255,255,255,.35) .7px, transparent .7px);
+      background-size:18px 18px;
+      z-index:0;
+    }
+
+    .page{position:relative;z-index:1}
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      backdrop-filter:blur(14px);
+      background:rgba(7,17,31,.78);
+      border-bottom:1px solid var(--line);
+    }
+
+    .topbar-inner{
+      width:min(100% - 24px, var(--max));
+      margin:auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-badge{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:#fff;
+      background:linear-gradient(135deg,#ef4444,#3b82f6);
+      box-shadow:var(--shadow);
+      flex-shrink:0;
+    }
+
+    .brand-text h1{
+      font-size:1rem;
+      line-height:1.1;
+      font-weight:800;
+    }
+
+    .brand-text p{
+      color:var(--muted);
+      font-size:.84rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:flex-end;
+    }
+
+    .nav a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      font-size:.92rem;
+      transition:.25s ease;
+    }
+
+    .nav a:hover{
+      text-decoration:none;
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.08);
+      border-color:rgba(255,255,255,.2);
+    }
+
+    .hero{
+      width:min(100% - 24px, var(--max));
+      margin:34px auto 22px;
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:22px;
+    }
+
+    .hero-card,.summary-card,.section,.toc,.contact-card{
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+
+    .hero-card{
+      padding:28px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      width:260px;
+      height:260px;
+      right:-90px;
+      top:-90px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(245,158,11,.16), transparent 70%);
+      pointer-events:none;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(245,158,11,.25);
+      background:rgba(245,158,11,.08);
+      color:#ffe3ad;
+      font-size:.86rem;
+      margin-bottom:14px;
+    }
+
+    .hero h2{
+      font-size:clamp(2rem, 4vw, 3.2rem);
+      line-height:1.02;
+      margin-bottom:14px;
+      letter-spacing:-.03em;
+    }
+
+    .hero p.lead{
+      color:var(--muted);
+      font-size:1.05rem;
+      max-width:760px;
+    }
+
+    .meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:20px;
+    }
+
+    .meta span{
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      font-size:.92rem;
+      color:#dce8ff;
+    }
+
+    .summary-card{
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      justify-content:center;
+    }
+
+    .summary-card h3{
+      font-size:1.15rem;
+      font-weight:800;
+    }
+
+    .summary-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .summary-item{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .summary-item strong{
+      display:block;
+      font-size:.96rem;
+      margin-bottom:4px;
+    }
+
+    .summary-item span{
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .layout{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 48px;
+      display:grid;
+      grid-template-columns:320px 1fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .toc{
+      position:sticky;
+      top:92px;
+      padding:18px;
+    }
+
+    .toc h3{
+      font-size:1rem;
+      margin-bottom:12px;
+      font-weight:800;
+    }
+
+    .toc a{
+      display:block;
+      padding:11px 12px;
+      border-radius:14px;
+      color:#dbeafe;
+      font-size:.94rem;
+      border:1px solid transparent;
+      transition:.2s ease;
+    }
+
+    .toc a:hover{
+      text-decoration:none;
+      background:rgba(255,255,255,.06);
+      border-color:rgba(255,255,255,.08);
+    }
+
+    .content{
+      display:grid;
+      gap:18px;
+    }
+
+    .section{
+      padding:26px;
+    }
+
+    .section h3{
+      font-size:1.35rem;
+      font-weight:800;
+      margin-bottom:12px;
+      letter-spacing:-.01em;
+    }
+
+    .section h4{
+      font-size:1rem;
+      margin:18px 0 10px;
+      color:#dfeeff;
+      font-weight:800;
+    }
+
+    .section p{
+      color:var(--muted);
+      margin-bottom:12px;
+    }
+
+    .section ul{
+      padding-left:20px;
+      color:var(--muted);
+      margin:10px 0 14px;
+    }
+
+    .section li{
+      margin-bottom:8px;
+    }
+
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .pill{
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(59,130,246,.10);
+      border:1px solid rgba(59,130,246,.22);
+      color:#dceeff;
+      font-size:.9rem;
+    }
+
+    .highlight{
+      padding:16px 18px;
+      border-radius:18px;
+      background:rgba(34,197,94,.08);
+      border:1px solid rgba(34,197,94,.18);
+      color:#dafce7;
+      margin-top:14px;
+    }
+
+    .warn{
+      padding:16px 18px;
+      border-radius:18px;
+      background:rgba(239,68,68,.08);
+      border:1px solid rgba(239,68,68,.18);
+      color:#ffd7d7;
+      margin-top:14px;
+    }
+
+    .note{
+      padding:16px 18px;
+      border-radius:18px;
+      background:rgba(245,158,11,.08);
+      border:1px solid rgba(245,158,11,.18);
+      color:#ffe6b8;
+      margin-top:14px;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+      margin-top:14px;
+    }
+
+    .rule-card{
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .rule-card h5{
+      font-size:1rem;
+      margin-bottom:6px;
+    }
+
+    .rule-card p{
+      margin:0;
+      font-size:.93rem;
+    }
+
+    .contact-card{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 36px;
+      padding:24px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:center;
+    }
+
+    .contact-card h3{
+      font-size:1.35rem;
+      margin-bottom:8px;
+    }
+
+    .contact-card p{color:var(--muted)}
+
+    .contact-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:13px 18px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      text-decoration:none;
+      color:#fff;
+      transition:.25s ease;
+      font-weight:700;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--blue),var(--cyan));
+      border:none;
+    }
+
+    .btn.secondary{
+      background:rgba(255,255,255,.05);
+    }
+
+    .btn:hover{
+      text-decoration:none;
+      transform:translateY(-1px);
+      opacity:.97;
+    }
+
+    footer{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 40px;
+      color:var(--muted);
+      text-align:center;
+      padding:10px 0 40px;
+      font-size:.92rem;
+    }
+
+    @media (max-width: 960px){
+      .hero,.layout,.contact-card{
+        grid-template-columns:1fr;
+      }
+      .toc{
+        position:relative;
+        top:0;
+      }
+      .contact-actions{
+        justify-content:flex-start;
+      }
+      .grid-2{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 640px){
+      .topbar-inner{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+      .nav{
+        width:100%;
+        justify-content:flex-start;
+      }
+      .hero-card,.summary-card,.section,.toc,.contact-card{
+        border-radius:20px;
+      }
+      .hero-card,.summary-card,.section{
+        padding:20px;
+      }
+      .meta span{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-badge">V</div>
+          <div class="brand-text">
+            <h1>View Community Guidelines</h1>
+            <p>View by Ceetify — Safety, respect, and responsible sharing</p>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a href="/index.html">Home</a>
+          <a href="/terms.html">Terms</a>
+          <a href="/privacy.html">Privacy</a>
+          <a href="mailto:info.ceeticegroup@gmail.com">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">Safety • Respect • Integrity</div>
+        <h2>Help us keep View safe, respectful, and useful for everyone.</h2>
+        <p class="lead">
+          These Community Guidelines explain what is allowed and what is not allowed
+          on View. They apply to posts, comments, captions, images, videos, chats,
+          group messages, profile names, usernames, bios, live features, connected
+          account activity, and any content or behavior on the platform.
+        </p>
+
+        <div class="meta">
+          <span><strong>Effective date:</strong> March 30, 2026</span>
+          <span><strong>Applies to:</strong> Posts, chats, groups, media, profiles</span>
+          <span><strong>Contact:</strong> info.ceeticegroup@gmail.com</span>
+        </div>
+      </div>
+
+      <aside class="summary-card">
+        <h3>Quick summary</h3>
+
+        <div class="summary-list">
+          <div class="summary-item">
+            <strong>Be respectful</strong>
+            <span>No bullying, harassment, impersonation, or hateful behavior.</span>
+          </div>
+
+          <div class="summary-item">
+            <strong>Be honest</strong>
+            <span>No scams, fraud, fake giveaways, deceptive links, or misinformation meant to mislead.</span>
+          </div>
+
+          <div class="summary-item">
+            <strong>Be responsible</strong>
+            <span>Only share content you own or have permission to use.</span>
+          </div>
+
+          <div class="summary-item">
+            <strong>Be safe</strong>
+            <span>No dangerous threats, criminal promotion, or content that puts people at risk.</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="layout">
+      <aside class="toc">
+        <h3>Contents</h3>
+        <a href="#our-goal">1. Our Goal</a>
+        <a href="#respect">2. Respectful Behavior</a>
+        <a href="#harassment">3. Harassment & Bullying</a>
+        <a href="#hate">4. Hate, Extremism & Degrading Content</a>
+        <a href="#safety">5. Safety & Violent Threats</a>
+        <a href="#fraud">6. Fraud, Scams & Deception</a>
+        <a href="#sexual-content">7. Sexual Content & Exploitation</a>
+        <a href="#privacy">8. Privacy & Personal Information</a>
+        <a href="#copyright">9. Copyright, Identity & Authenticity</a>
+        <a href="#spam">10. Spam, Manipulation & Platform Abuse</a>
+        <a href="#groups">11. Groups, Chats & Community Spaces</a>
+        <a href="#enforcement">12. Enforcement</a>
+        <a href="#reporting">13. Reporting & Appeals</a>
+      </aside>
+
+      <main class="content">
+        <section class="section" id="our-goal">
+          <h3>1. Our Goal</h3>
+          <p>
+            View is built for connection, creativity, communication, and community.
+            We want people to share ideas, post content, chat with others, and build
+            meaningful interactions in a safe environment.
+          </p>
+          <p>
+            Content or behavior that damages trust, encourages abuse, or puts people
+            at risk may be removed, restricted, or reported where required.
+          </p>
+
+          <div class="pill-row">
+            <span class="pill">Respect</span>
+            <span class="pill">Trust</span>
+            <span class="pill">Safety</span>
+            <span class="pill">Original content</span>
+            <span class="pill">Responsible sharing</span>
+          </div>
+        </section>
+
+        <section class="section" id="respect">
+          <h3>2. Respectful Behavior</h3>
+          <p>Use View in a way that respects other people.</p>
+
+          <div class="grid-2">
+            <div class="rule-card">
+              <h5>Allowed</h5>
+              <p>Debate, disagreement, criticism, humor, and opinion shared without abuse or targeted harm.</p>
+            </div>
+            <div class="rule-card">
+              <h5>Not allowed</h5>
+              <p>Insults meant to humiliate, repeated targeting, intimidation, humiliation campaigns, or degrading treatment.</p>
+            </div>
+          </div>
+
+          <p>
+            Strong opinions are allowed, but targeted cruelty, repeated abuse, and
+            deliberate attempts to make someone unsafe are not.
+          </p>
+        </section>
+
+        <section class="section" id="harassment">
+          <h3>3. Harassment & Bullying</h3>
+          <p>Do not harass, bully, or stalk others on View.</p>
+          <ul>
+            <li>No repeated abusive messages, comments, tags, or mentions.</li>
+            <li>No threats, intimidation, blackmail, or attempts to silence people through fear.</li>
+            <li>No coordinated attacks, pile-ons, or encouraging others to target someone.</li>
+            <li>No mocking someone’s private tragedy, disability, appearance, or vulnerability to shame them.</li>
+          </ul>
+
+          <div class="warn">
+            Accounts that repeatedly target other users may face content removal,
+            temporary restrictions, or permanent suspension.
+          </div>
+        </section>
+
+        <section class="section" id="hate">
+          <h3>4. Hate, Extremism & Degrading Content</h3>
+          <p>
+            We do not allow content that glorifies hate, dehumanizes people, or
+            promotes extremist violence or organized hatred.
+          </p>
+          <ul>
+            <li>No content praising or supporting violent extremist groups.</li>
+            <li>No slurs or degrading language used to attack protected groups.</li>
+            <li>No content encouraging exclusion, harm, or violence against people because of who they are.</li>
+            <li>No organized hate symbols or propaganda shared for support or recruitment.</li>
+          </ul>
+
+          <p>
+            Context matters. Educational, documentary, reporting, or anti-hate
+            discussion may be allowed when clearly presented for awareness or criticism,
+            not promotion.
+          </p>
+        </section>
+
+        <section class="section" id="safety">
+          <h3>5. Safety & Violent Threats</h3>
+          <p>
+            Do not post or send content that threatens serious harm or encourages dangerous acts.
+          </p>
+          <ul>
+            <li>No credible threats of violence against any person, group, or place.</li>
+            <li>No instructions or recruitment for violent wrongdoing or criminal harm.</li>
+            <li>No glorification of attacks, killings, kidnappings, or organized violence.</li>
+            <li>No content celebrating harm to real people.</li>
+          </ul>
+
+          <div class="note">
+            We may act quickly on urgent safety threats, including removing content,
+            restricting accounts, and responding to lawful safety requests.
+          </div>
+        </section>
+
+        <section class="section" id="fraud">
+          <h3>6. Fraud, Scams & Deception</h3>
+          <p>
+            View must not be used to scam, deceive, or manipulate people for money,
+            access, traffic, or personal gain.
+          </p>
+          <ul>
+            <li>No fake giveaways, fake investments, fake jobs, or fake urgent requests.</li>
+            <li>No phishing links, account-stealing messages, or fake support accounts.</li>
+            <li>No impersonation for financial gain, manipulation, or reputation damage.</li>
+            <li>No misleading claims designed to trick users into sending money, data, or credentials.</li>
+          </ul>
+
+          <div class="highlight">
+            Accounts involved in fraud or impersonation may be disabled immediately.
+          </div>
+        </section>
+
+        <section class="section" id="sexual-content">
+          <h3>7. Sexual Content & Exploitation</h3>
+          <p>
+            Do not use View to exploit, coerce, expose, or endanger people through sexual content.
+          </p>
+          <ul>
+            <li>No sexual exploitation, coercion, blackmail, or non-consensual sharing.</li>
+            <li>No sexualized content involving minors, or any exploitative content involving young people.</li>
+            <li>No grooming, predatory behavior, or attempts to obtain exploitative private material.</li>
+            <li>No sharing of intimate images or videos without consent.</li>
+          </ul>
+
+          <div class="warn">
+            Serious violations may lead to permanent removal and additional action where legally required.
+          </div>
+        </section>
+
+        <section class="section" id="privacy">
+          <h3>8. Privacy & Personal Information</h3>
+          <p>
+            Respect people’s privacy. Do not expose private or sensitive information
+            without permission.
+          </p>
+          <ul>
+            <li>No sharing of private phone numbers, addresses, identity numbers, bank details, passwords, or access codes without consent.</li>
+            <li>No doxxing, location exposure, or targeted leaking of personal information.</li>
+            <li>No posting private conversations, recordings, or images in a harmful or deceptive way where you do not have the right to share them.</li>
+            <li>No attempts to trick users into revealing personal or financial information.</li>
+          </ul>
+        </section>
+
+        <section class="section" id="copyright">
+          <h3>9. Copyright, Identity & Authenticity</h3>
+          <p>
+            Share original work, properly licensed content, or content you have the right to post.
+          </p>
+          <ul>
+            <li>No repeated copyright infringement or unauthorized reposting.</li>
+            <li>No pretending to be another person, brand, creator, organization, or public figure in a misleading way.</li>
+            <li>No fake verification, fake identity badges, or edited context intended to mislead others.</li>
+            <li>Parody, commentary, or fan expression may be allowed when it is clearly not deceptive.</li>
+          </ul>
+        </section>
+
+        <section class="section" id="spam">
+          <h3>10. Spam, Manipulation & Platform Abuse</h3>
+          <p>Do not abuse View’s systems, reach, or engagement tools.</p>
+          <ul>
+            <li>No mass unsolicited messages, repetitive comments, or fake engagement loops.</li>
+            <li>No bots or scripts used to manipulate likes, follows, views, trends, or rankings without permission.</li>
+            <li>No link flooding, repetitive posting, or misleading clickbait designed only to exploit traffic.</li>
+            <li>No attempts to bypass restrictions, evade bans, or recreate abusive accounts repeatedly.</li>
+          </ul>
+
+          <div class="grid-2">
+            <div class="rule-card">
+              <h5>Healthy growth</h5>
+              <p>Build genuine communities, real conversations, and original content.</p>
+            </div>
+            <div class="rule-card">
+              <h5>Unhealthy manipulation</h5>
+              <p>Fake followers, spam messages, bot abuse, and forced engagement schemes.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="groups">
+          <h3>11. Groups, Chats & Community Spaces</h3>
+          <p>
+            These rules also apply inside private and public spaces on View,
+            including group chats, comment sections, live rooms, creator communities,
+            channels, and collaborative spaces.
+          </p>
+          <ul>
+            <li>Group admins should help keep their spaces lawful, respectful, and safe.</li>
+            <li>Private groups are not exempt from abuse, fraud, exploitation, or harmful coordination rules.</li>
+            <li>Repeated harmful behavior inside closed spaces may still result in moderation action.</li>
+          </ul>
+
+          <div class="note">
+            Privacy settings do not override platform safety rules.
+          </div>
+        </section>
+
+        <section class="section" id="enforcement">
+          <h3>12. Enforcement</h3>
+          <p>
+            When content or behavior breaks these guidelines, we may take action depending on severity, pattern, and risk.
+          </p>
+          <ul>
+            <li>Remove content</li>
+            <li>Limit visibility or distribution</li>
+            <li>Disable messaging or posting features</li>
+            <li>Issue warnings</li>
+            <li>Temporarily suspend accounts</li>
+            <li>Permanently remove accounts</li>
+            <li>Restrict connected features or linked accounts</li>
+          </ul>
+
+          <p>
+            Severe or repeated abuse usually leads to stronger enforcement.
+          </p>
+        </section>
+
+        <section class="section" id="reporting">
+          <h3>13. Reporting & Appeals</h3>
+          <p>
+            If you see content or behavior that violates these guidelines, report it.
+            If your account or content is affected by moderation and a review option
+            is available, you may submit an appeal through the appropriate channel.
+          </p>
+          <ul>
+            <li>Report harassment, impersonation, scams, spam, or harmful content.</li>
+            <li>Include clear details, screenshots, usernames, or links where possible.</li>
+            <li>False reporting or abuse of reporting tools may also lead to action.</li>
+          </ul>
+
+          <div class="highlight">
+            The strongest communities are built when users help protect each other.
+          </div>
+        </section>
+      </main>
+    </section>
+
+    <section class="contact-card">
+      <div>
+        <h3>Need to report abuse or ask about a moderation action?</h3>
+        <p>
+          Contact support for reporting, account review questions, safety concerns,
+          or community policy issues.
+        </p>
+      </div>
+
+      <div class="contact-actions">
+        <a class="btn primary" href="mailto:info.ceeticegroup@gmail.com">Email Support</a>
+        <a class="btn secondary" href="/terms.html">View Terms</a>
+      </div>
+    </section>
+
+    <footer>
+      © 2026 View by Ceetify. All rights reserved.
+    </footer>
+  </div>
+</body>
+</html>
