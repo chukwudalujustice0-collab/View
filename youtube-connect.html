@@ -1,129 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Connect YouTube | View</title>
-  <meta name="theme-color" content="#ffffff" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect YouTube | View</title>
 
-  <style>
-    :root{
-      --bg:#f6f8fc;
-      --card:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --primary:#2563eb;
-      --danger:#dc2626;
-      --success:#059669;
-      --shadow:0 12px 30px rgba(15,23,42,.08);
-    }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-      font-family:Arial,sans-serif;
-    }
-
-    body{
-      min-height:100vh;
-      background:linear-gradient(180deg,#fbfcff 0%, #f5f7fb 100%);
-      color:var(--text);
-      padding:20px 14px;
-    }
-
-    .wrap{
-      max-width:760px;
-      margin:auto;
-    }
-
-    .card{
-      background:#fff;
-      border-radius:20px;
-      padding:20px;
-      box-shadow:var(--shadow);
-      margin-bottom:15px;
-    }
-
-    .title{
-      font-size:22px;
-      font-weight:800;
-      margin-bottom:10px;
-    }
-
-    .btn{
-      width:100%;
-      height:50px;
-      border:none;
-      border-radius:12px;
-      background:linear-gradient(135deg,#2563eb,#4f46e5);
-      color:#fff;
-      font-weight:700;
-      cursor:pointer;
-      margin-top:10px;
-    }
-
-    .notice{
-      display:none;
-      padding:12px;
-      border-radius:10px;
-      margin-bottom:12px;
-    }
-
-    .notice.show{display:block}
-    .success{background:#ecfdf5;color:#065f46}
-    .error{background:#fef2f2;color:#991b1b}
-    .info{background:#eff6ff;color:#1d4ed8}
-  </style>
+<style>
+body{
+  font-family:Arial;
+  background:#f6f8fc;
+  padding:20px;
+}
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:16px;
+  max-width:500px;
+  margin:auto;
+  box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+h2{margin-bottom:10px;}
+button{
+  width:100%;
+  height:50px;
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  font-weight:700;
+  cursor:pointer;
+}
+.notice{
+  margin-bottom:10px;
+  padding:10px;
+  border-radius:8px;
+  display:none;
+}
+.success{background:#d1fae5;color:#065f46;}
+.error{background:#fee2e2;color:#991b1b;}
+.info{background:#dbeafe;color:#1e40af;}
+</style>
 </head>
+
 <body>
 
-<div class="wrap">
+<div class="card">
 
-  <div id="notice" class="notice"></div>
+<div id="notice" class="notice"></div>
 
-  <div class="card">
-    <div class="title">Connect YouTube</div>
-    <p style="color:#6b7280;font-size:14px;">
-      Connect your YouTube account to publish videos directly.
-    </p>
+<h2>Connect YouTube</h2>
+<p style="color:#6b7280;font-size:14px;">
+Connect your YouTube account to publish videos directly from View.
+</p>
 
-    <button id="connectBtn" class="btn">Connect YouTube</button>
-  </div>
+<button id="connectBtn">Connect YouTube</button>
 
 </div>
 
 <script>
+
+// ================= CONFIG =================
 const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ✅ YOUR REAL CLIENT ID
 const GOOGLE_CLIENT_ID = "1453516669-1heoa56uql9svtnm0abhoqu95nn6dpcb.apps.googleusercontent.com";
-
-// ✅ YOUR BACKEND
 const EXCHANGE_ENDPOINT = "https://view-psi-lac.vercel.app/api/youtube-exchange-code";
-
-// ✅ MUST MATCH GOOGLE CONSOLE
 const REDIRECT_URI = window.location.origin + "/youtube-connect.html";
 
+// scopes
 const SCOPES = [
   "https://www.googleapis.com/auth/youtube.upload",
   "https://www.googleapis.com/auth/youtube.readonly",
   "https://www.googleapis.com/auth/youtube"
 ];
 
+// ================= INIT =================
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const notice = document.getElementById("notice");
-const connectBtn = document.getElementById("connectBtn");
+const btn = document.getElementById("connectBtn");
 
+// ================= UI =================
 function show(msg,type="info"){
-  notice.className="notice show "+type;
+  notice.className="notice "+type;
+  notice.style.display="block";
   notice.innerText=msg;
 }
 
+// ================= AUTH =================
 async function getUser(){
   const { data } = await supabase.auth.getUser();
   if(!data?.user){
@@ -133,11 +98,14 @@ async function getUser(){
   return data.user;
 }
 
-// 🚀 START GOOGLE LOGIN
+// ================= START CONNECT =================
 async function connect(){
   try{
+
     const user = await getUser();
     if(!user) return;
+
+    show("Redirecting to Google...","info");
 
     const params = new URLSearchParams({
       client_id: GOOGLE_CLIENT_ID,
@@ -149,21 +117,25 @@ async function connect(){
       state: user.id
     });
 
-    location.href = "https://accounts.google.com/o/oauth2/v2/auth?" + params.toString();
+    location.href =
+      "https://accounts.google.com/o/oauth2/v2/auth?"
+      + params.toString();
 
   }catch(e){
     show(e.message,"error");
   }
 }
 
-// 🔥 HANDLE RETURN FROM GOOGLE
+// ================= CALLBACK =================
 async function handleCallback(){
+
   const url = new URL(location.href);
+
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
-  const err = url.searchParams.get("error");
+  const error = url.searchParams.get("error");
 
-  if(err){
+  if(error){
     show("Google denied access","error");
     return;
   }
@@ -171,7 +143,8 @@ async function handleCallback(){
   if(!code) return;
 
   try{
-    show("Connecting YouTube...","info");
+
+    show("Finalizing connection...","info");
 
     const res = await fetch(EXCHANGE_ENDPOINT,{
       method:"POST",
@@ -179,7 +152,7 @@ async function handleCallback(){
       body: JSON.stringify({
         code,
         state,
-        redirect_uri: REDIRECT_URI   // ✅ VERY IMPORTANT
+        redirect_uri: REDIRECT_URI
       })
     });
 
@@ -199,13 +172,15 @@ async function handleCallback(){
     },1500);
 
   }catch(e){
-    show(e.message,"error");
+    show("Error: "+e.message,"error");
   }
 }
 
-connectBtn.onclick = connect;
+// ================= RUN =================
+btn.onclick = connect;
 handleCallback();
 
 </script>
+
 </body>
 </html>
