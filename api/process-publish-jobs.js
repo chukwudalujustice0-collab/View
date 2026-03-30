@@ -8,95 +8,6 @@ function setCors(res) {
 
 const now = () => new Date().toISOString();
 
-async function updatePostSummary(supabase, postId) {
-  const { data: jobs } = await supabase
-    .from("post_publish_jobs")
-    .select("status")
-    .eq("post_id", postId);
-
-  if (!jobs?.length) return;
-
-  const statuses = jobs.map(j => j.status);
-
-  let status = "queued";
-
-  if (statuses.every(s => s === "success")) status = "published";
-  else if (statuses.every(s => s === "failed")) status = "failed";
-  else if (statuses.some(s => s === "failed")) status = "partial";
-  else if (statuses.some(s => s === "processing")) status = "processing";
-
-  await supabase
-    .from("posts")
-    .update({
-      publish_status: status,
-      status,
-      updated_at: now(),
-      ...(status === "published" && { published_at: now() })
-    })
-    .eq("id", postId);
-}
-
-async function uploadToYouTube(post, account) {
-  if (!post.media_url) {
-    throw new Error("No media_url found");
-  }
-
-  if (!post.media_type?.startsWith("video/")) {
-    throw new Error("YouTube requires video");
-  }
-
-  // STEP 1: fetch video file
-  const fileRes = await fetch(post.media_url);
-  if (!fileRes.ok) throw new Error("Failed to fetch video");
-
-  const buffer = Buffer.from(await fileRes.arrayBuffer());
-
-  // STEP 2: create upload session
-  const init = await fetch(
-    "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${account.access_token}`,
-        "Content-Type": "application/json",
-        "X-Upload-Content-Type": post.media_type,
-        "X-Upload-Content-Length": buffer.length
-      },
-      body: JSON.stringify({
-        snippet: {
-          title: post.media_name || "View Upload",
-          description: post.content || ""
-        },
-        status: {
-          privacyStatus: "public"
-        }
-      })
-    }
-  );
-
-  const uploadUrl = init.headers.get("location");
-  if (!uploadUrl) throw new Error("Upload URL missing");
-
-  // STEP 3: upload file
-  const upload = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${account.access_token}`,
-      "Content-Type": post.media_type,
-      "Content-Length": buffer.length
-    },
-    body: buffer
-  });
-
-  const result = await upload.json();
-
-  if (!upload.ok) {
-    throw new Error(result?.error?.message || "Upload failed");
-  }
-
-  return result.id;
-}
-
 module.exports = async function handler(req, res) {
   setCors(res);
 
@@ -114,9 +25,7 @@ module.exports = async function handler(req, res) {
       .from("post_publish_jobs")
       .select("*")
       .in("status", ["queued", "retrying"])
-      .limit(20);
-
-    const processed = [];
+      .limit(10);
 
     for (const job of jobs || []) {
       try {
@@ -126,54 +35,37 @@ module.exports = async function handler(req, res) {
           .eq("id", job.post_id)
           .single();
 
+        if (!post) throw new Error("Post not found");
+
         await supabase
           .from("post_publish_jobs")
-          .update({ status: "processing", updated_at: now() })
+          .update({
+            status: "processing",
+            started_at: now()
+          })
           .eq("id", job.id);
 
-        let platformPostId = null;
+        let result;
 
-        // 🔥 REAL YOUTUBE UPLOAD
         if (job.platform === "youtube") {
-          const { data: account } = await supabase
-            .from("connected_accounts")
-            .select("*")
-            .eq("user_id", job.user_id)
-            .eq("platform", "youtube")
-            .single();
-
-          if (!account) throw new Error("YouTube not connected");
-
-          platformPostId = await uploadToYouTube(post, account);
-        }
-
-        // View local post
-        if (job.platform === "view") {
-          platformPostId = post.id;
+          result = await uploadToYouTube(supabase, post, job.user_id);
+        } else {
+          result = {
+            platform_post_id: post.id,
+            response_payload: { ok: true }
+          };
         }
 
         await supabase
           .from("post_publish_jobs")
           .update({
             status: "success",
-            platform_post_id: platformPostId,
+            platform_post_id: result.platform_post_id,
+            response_payload: result.response_payload,
+            finished_at: now(),
             updated_at: now()
           })
           .eq("id", job.id);
-
-        await supabase
-          .from("post_publish_logs")
-          .insert({
-            post_id: job.post_id,
-            job_id: job.id,
-            platform: job.platform,
-            status: "success",
-            platform_post_id: platformPostId
-          });
-
-        await updatePostSummary(supabase, job.post_id);
-
-        processed.push({ job: job.id, success: true });
 
       } catch (err) {
         await supabase
@@ -181,20 +73,106 @@ module.exports = async function handler(req, res) {
           .update({
             status: "failed",
             last_error: err.message,
+            finished_at: now(),
             updated_at: now()
           })
           .eq("id", job.id);
-
-        processed.push({ job: job.id, error: err.message });
       }
     }
 
-    return res.json({ success: true, processed });
+    return res.json({ success: true });
 
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      error: err.message
-    });
+    return res.status(500).json({ error: err.message });
   }
 };
+
+/* ===========================
+   🔥 REAL YOUTUBE UPLOAD
+=========================== */
+async function uploadToYouTube(supabase, post, userId) {
+  // get connected account
+  const { data: account } = await supabase
+    .from("connected_accounts")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("platform", "youtube")
+    .single();
+
+  if (!account?.access_token) {
+    throw new Error("YouTube not connected");
+  }
+
+  // 🔥 FIX: support BOTH storage + URL
+  let videoBuffer;
+  let contentType = post.media_type || "video/mp4";
+
+  if (post.media_path) {
+    const { data } = await supabase.storage
+      .from("post-media")
+      .download(post.media_path);
+
+    if (!data) throw new Error("Storage file missing");
+
+    videoBuffer = Buffer.from(await data.arrayBuffer());
+
+  } else if (post.media_url) {
+    const response = await fetch(post.media_url);
+    if (!response.ok) throw new Error("Failed to fetch media_url");
+
+    videoBuffer = Buffer.from(await response.arrayBuffer());
+
+  } else {
+    throw new Error("No media found");
+  }
+
+  // STEP 1: INIT upload
+  const init = await fetch(
+    "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${account.access_token}`,
+        "Content-Type": "application/json",
+        "X-Upload-Content-Type": contentType,
+        "X-Upload-Content-Length": videoBuffer.length
+      },
+      body: JSON.stringify({
+        snippet: {
+          title: post.media_name || "View Upload",
+          description: post.content || ""
+        },
+        status: {
+          privacyStatus: "public"
+        }
+      })
+    }
+  );
+
+  const uploadUrl = init.headers.get("location");
+
+  if (!uploadUrl) {
+    throw new Error("Failed to get upload URL");
+  }
+
+  // STEP 2: UPLOAD video
+  const upload = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": contentType,
+      "Content-Length": videoBuffer.length
+    },
+    body: videoBuffer
+  });
+
+  const result = await upload.json();
+
+  if (!result.id) {
+    throw new Error("YouTube upload failed");
+  }
+
+  return {
+    platform_post_id: result.id,
+    response_payload: result
+  };
+}
