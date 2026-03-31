@@ -2,183 +2,793 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Connect Accounts | View</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Connect Account | View</title>
+  <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body{
-      font-family: Arial, sans-serif;
-      background:#f4f7fc;
+    :root{
+      --bg:#08111f;
+      --card:#101b31;
+      --card-soft:#0d1629;
+      --line:rgba(255,255,255,.08);
+      --text:#f4f7ff;
+      --muted:#9fb1d7;
+      --primary:#2563eb;
+      --primary2:#7c3aed;
+      --success:#10b981;
+      --danger:#ef4444;
+      --shadow:0 14px 40px rgba(0,0,0,.28);
+      --safe-bottom:env(safe-area-inset-bottom);
+      --safe-top:env(safe-area-inset-top);
+    }
+
+    *{
+      box-sizing:border-box;
       margin:0;
-      padding:20px;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
     }
 
-    h1{
-      color:#1d4ed8;
-      font-size:26px;
-      margin-bottom:10px;
+    html,body{
+      min-height:100%;
+      background:var(--bg);
+      color:var(--text);
     }
 
-    .card{
-      background:#fff;
-      border-radius:20px;
-      padding:16px;
-      margin-bottom:16px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    body{
+      padding:16px 14px 110px;
     }
 
-    .row{
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    button,input{
+      font:inherit;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      background:none;
+      color:inherit;
+      cursor:pointer;
+    }
+
+    .wrap{
+      width:min(100%, 900px);
+      margin:0 auto;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.5;
+      box-shadow:var(--shadow);
+    }
+    .notice.show{display:block}
+    .notice.error{background:rgba(127,29,29,.92);color:#fecaca}
+    .notice.success{background:rgba(5,46,22,.92);color:#d1fae5}
+    .notice.info{background:rgba(30,41,59,.95);color:#dbeafe}
+
+    .topbar{
       display:flex;
-      justify-content:space-between;
       align-items:center;
-      margin-bottom:12px;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
     }
 
-    .platform{
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      font-size:18px;
+    }
+
+    .title-box{
+      min-width:0;
+      flex:1;
+    }
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .hero{
+      background:linear-gradient(135deg, rgba(37,99,235,.24), rgba(124,58,237,.16));
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      box-shadow:var(--shadow);
+      margin-bottom:16px;
+    }
+
+    .hero h2{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .hero p{
+      color:#d8e4ff;
+      font-size:14px;
+      line-height:1.6;
+      margin-bottom:14px;
+    }
+
+    .hero-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .hero-chip{
+      min-height:36px;
+      padding:0 12px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.08);
+      border:1px solid var(--line);
+      color:#e6eeff;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .tools{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .search-wrap{
+      flex:1 1 240px;
+      min-height:46px;
       display:flex;
       align-items:center;
       gap:10px;
+      padding:0 14px;
+      border-radius:14px;
+      background:var(--card);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+    }
+
+    .search-wrap span{
+      color:var(--muted);
+      font-size:17px;
+    }
+
+    .search-wrap input{
+      flex:1;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:var(--text);
+      font-size:14px;
+    }
+
+    .search-wrap input::placeholder{
+      color:var(--muted);
+    }
+
+    .filter-btn{
+      min-height:46px;
+      padding:0 14px;
+      border-radius:14px;
+      background:var(--card);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      font-size:13px;
       font-weight:700;
+      color:var(--text);
+    }
+
+    .section-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .section-head{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .section-head h3{
+      font-size:17px;
+      font-weight:800;
+    }
+
+    .section-head p{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .platform-grid{
+      padding:12px;
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:12px;
+    }
+
+    .platform-card{
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-width:0;
+      transition:.18s ease;
+    }
+
+    .platform-card:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.06);
+    }
+
+    .platform-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .platform-main{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .platform-icon{
+      width:54px;
+      height:54px;
+      min-width:54px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:24px;
+      font-weight:800;
+      color:#fff;
+      box-shadow:var(--shadow);
+    }
+
+    .facebook{background:linear-gradient(135deg,#1877f2,#0f5fd4)}
+    .whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
+    .instagram{background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4)}
+    .youtube{background:linear-gradient(135deg,#ff0000,#d70000)}
+    .tiktok{background:linear-gradient(135deg,#161616,#25f4ee)}
+    .xhandle{background:linear-gradient(135deg,#0f172a,#334155)}
+    .linkedin{background:linear-gradient(135deg,#0077b5,#005582)}
+    .telegram{background:linear-gradient(135deg,#229ED9,#0f6fa5)}
+
+    .platform-meta{
+      min-width:0;
+      flex:1;
+    }
+
+    .platform-name{
+      font-size:16px;
+      font-weight:800;
+      margin-bottom:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .platform-sub{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.55;
+    }
+
+    .status-badge{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:800;
+      border:1px solid transparent;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+
+    .status-connected{
+      background:rgba(16,185,129,.12);
+      border-color:rgba(16,185,129,.22);
+      color:#d1fae5;
+    }
+
+    .status-disconnected{
+      background:rgba(239,68,68,.12);
+      border-color:rgba(239,68,68,.24);
+      color:#fecaca;
+    }
+
+    .platform-desc{
+      color:#d8e4ff;
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .platform-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:auto;
     }
 
     .btn{
-      padding:8px 14px;
-      border:none;
-      border-radius:999px;
-      cursor:pointer;
+      min-height:40px;
+      padding:0 14px;
+      border-radius:12px;
+      font-size:13px;
       font-weight:700;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
     }
 
-    .connect{background:#1d4ed8;color:#fff;}
-    .connected{background:#dcfce7;color:#15803d;}
-
-    .input{
-      width:100%;
-      padding:10px;
-      border-radius:10px;
-      border:1px solid #ddd;
-      margin-top:6px;
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      border-color:transparent;
+      color:#fff;
     }
 
-    .small{
-      font-size:12px;
-      color:#6b7280;
-      margin-top:4px;
+    .btn.full{
+      flex:1 1 140px;
+    }
+
+    .empty-box{
+      margin:12px;
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+      text-align:center;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:12px;
+      width:min(760px, calc(100% - 20px));
+      background:rgba(12,20,36,.95);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:8px 6px calc(8px + var(--safe-bottom));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
+      box-shadow:var(--shadow);
+      z-index:40;
+    }
+
+    .nav-btn{
+      min-height:56px;
+      border-radius:14px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
+      text-decoration:none;
+      text-align:center;
+    }
+
+    .nav-btn.active{
+      background:rgba(37,99,235,.16);
+      color:#fff;
+    }
+
+    @media (max-width:760px){
+      .platform-grid{
+        grid-template-columns:1fr;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
 
-<h1>Connect Accounts</h1>
+    <header class="topbar">
+      <div class="top-left">
+        <button class="icon-btn" onclick="history.back()" title="Back">←</button>
+        <div class="title-box">
+          <div class="title">Connect Account</div>
+          <div class="sub">Choose a platform to connect</div>
+        </div>
+      </div>
 
-<div id="notice"></div>
+      <a class="icon-btn" href="connected-accounts.html" title="Connected Accounts">🔗</a>
+    </header>
 
-<!-- TELEGRAM -->
-<div class="card">
-  <div class="row">
-    <div class="platform">📨 Telegram</div>
-    <button id="telegramBtn" class="btn connect">Connect</button>
+    <section class="hero">
+      <h2>Connect your social platforms</h2>
+      <p>
+        Link your accounts so you can manage connections and prepare for publishing across your ecosystem from one place.
+      </p>
+
+      <div class="hero-row">
+        <span class="hero-chip" id="chipAvailable">Available: 8</span>
+        <span class="hero-chip" id="chipConnected">Connected: 0</span>
+        <span class="hero-chip">View by Ceetify</span>
+      </div>
+    </section>
+
+    <section class="tools">
+      <div class="search-wrap">
+        <span>🔎</span>
+        <input type="text" id="searchInput" placeholder="Search platform..." />
+      </div>
+
+      <button class="filter-btn" id="showAllBtn">All</button>
+      <button class="filter-btn" id="showConnectedBtn">Connected</button>
+      <button class="filter-btn" id="showNotConnectedBtn">Not Connected</button>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <div>
+          <h3>Platforms</h3>
+          <p>Select any platform below to open its connection page.</p>
+        </div>
+
+        <a class="btn primary" href="connected-accounts.html">View Connected</a>
+      </div>
+
+      <div class="platform-grid" id="platformGrid"></div>
+      <div class="empty-box" id="emptyBox" style="display:none;">No platforms match your search.</div>
+    </section>
   </div>
 
-  <input id="telegramChatId" class="input" placeholder="Enter your Telegram Chat ID"/>
-  <div class="small">
-    Open your bot and send a message, then get chat ID via:
-    https://api.telegram.org/botYOUR_TOKEN/getUpdates
-  </div>
-</div>
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="home.html">
+      <span>🏠</span>
+      <span>Home</span>
+    </a>
 
-<!-- LINKEDIN -->
-<div class="card">
-  <div class="row">
-    <div class="platform">💼 LinkedIn</div>
-    <button id="linkedinBtn" class="btn connect">Connect</button>
-  </div>
+    <a class="nav-btn active" href="connect-account.html">
+      <span>➕</span>
+      <span>Connect</span>
+    </a>
 
-  <div class="small">
-    Connect your LinkedIn account for cross-posting
-  </div>
-</div>
+    <a class="nav-btn" href="dashboard.html">
+      <span>◫</span>
+      <span>Dashboard</span>
+    </a>
 
-<!-- FACEBOOK (EXISTING) -->
-<div class="card">
-  <div class="row">
-    <div class="platform">📘 Facebook</div>
-    <button id="facebookBtn" class="btn connect">Connect</button>
-  </div>
-</div>
+    <a class="nav-btn" href="connected-accounts.html">
+      <span>🔗</span>
+      <span>Accounts</span>
+    </a>
 
-<script>
-const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    <a class="nav-btn" href="settings.html">
+      <span>⚙️</span>
+      <span>Settings</span>
+    </a>
+  </nav>
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-const notice = document.getElementById("notice");
-
-function show(msg){
-  notice.innerHTML = `<div style="background:#fee2e2;padding:10px;border-radius:10px;color:#b91c1c">${msg}</div>`;
-}
-
-async function getUser(){
-  const { data } = await supabase.auth.getSession();
-  return data.session?.user;
-}
-
-/* ===========================
-   TELEGRAM CONNECT
-=========================== */
-document.getElementById("telegramBtn").onclick = async () => {
-  const user = await getUser();
-  if(!user) return show("Login required");
-
-  const chatId = document.getElementById("telegramChatId").value.trim();
-  if(!chatId) return show("Enter chat ID");
-
-  const { error } = await supabase
-    .from("connected_accounts")
-    .upsert({
-      user_id: user.id,
-      telegram_chat_id: chatId
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
     });
 
-  if(error) return show(error.message);
+    const noticeBox = document.getElementById("notice");
+    const platformGrid = document.getElementById("platformGrid");
+    const emptyBox = document.getElementById("emptyBox");
+    const searchInput = document.getElementById("searchInput");
+    const showAllBtn = document.getElementById("showAllBtn");
+    const showConnectedBtn = document.getElementById("showConnectedBtn");
+    const showNotConnectedBtn = document.getElementById("showNotConnectedBtn");
+    const chipAvailable = document.getElementById("chipAvailable");
+    const chipConnected = document.getElementById("chipConnected");
 
-  alert("Telegram connected!");
-};
+    let currentUserId = "";
+    let connectionMap = {};
+    let currentFilter = "all";
 
-/* ===========================
-   LINKEDIN CONNECT
-=========================== */
-document.getElementById("linkedinBtn").onclick = () => {
-  const clientId = "YOUR_LINKEDIN_CLIENT_ID";
-  const redirectUri = encodeURIComponent("https://view.ceetice.com/linkedin-callback.html");
+    const PLATFORMS = [
+      {
+        key: "facebook",
+        name: "Facebook",
+        icon: "f",
+        iconClass: "facebook",
+        path: "facebook-connect.html",
+        desc: "Connect your Facebook account or page for post publishing and page management."
+      },
+      {
+        key: "whatsapp",
+        name: "WhatsApp",
+        icon: "✆",
+        iconClass: "whatsapp",
+        path: "whatsapp-connect.html",
+        desc: "Connect your WhatsApp flow for business messaging and channel expansion."
+      },
+      {
+        key: "instagram",
+        name: "Instagram",
+        icon: "◎",
+        iconClass: "instagram",
+        path: "instagram-connect.html",
+        desc: "Connect Instagram for post, reel, and business account workflows."
+      },
+      {
+        key: "youtube",
+        name: "YouTube",
+        icon: "▶",
+        iconClass: "youtube",
+        path: "youtube-connect.html",
+        desc: "Connect your YouTube channel for video publishing and management."
+      },
+      {
+        key: "tiktok",
+        name: "TikTok",
+        icon: "♪",
+        iconClass: "tiktok",
+        path: "tiktok-connect.html",
+        desc: "Connect TikTok for short-form video workflows and creator publishing."
+      },
+      {
+        key: "x",
+        name: "X",
+        icon: "X",
+        iconClass: "xhandle",
+        path: "x-connect.html",
+        desc: "Connect X for social posts, threads, and engagement distribution."
+      },
+      {
+        key: "linkedin",
+        name: "LinkedIn",
+        icon: "in",
+        iconClass: "linkedin",
+        path: "linkedin-connect.html",
+        desc: "Connect LinkedIn for professional publishing and company visibility."
+      },
+      {
+        key: "telegram",
+        name: "Telegram",
+        icon: "✈",
+        iconClass: "telegram",
+        path: "telegram-connect.html",
+        desc: "Connect Telegram for bot, channel, and community publishing flows."
+      }
+    ];
 
-  const url = `https://www.linkedin.com/oauth/v2/authorization
-  ?response_type=code
-  &client_id=${clientId}
-  &redirect_uri=${redirectUri}
-  &scope=r_liteprofile%20w_member_social`;
+    function showNotice(message, type = "info") {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        noticeBox.className = "notice";
+        noticeBox.textContent = "";
+      }, 2400);
+    }
 
-  window.location.href = url;
-};
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
-/* ===========================
-   FACEBOOK CONNECT
-=========================== */
-document.getElementById("facebookBtn").onclick = () => {
-  const fbAppId = "YOUR_FB_APP_ID";
-  const redirectUri = encodeURIComponent("https://view.ceetice.com/facebook-callback.html");
+    function getConnection(platform) {
+      return connectionMap[platform] || null;
+    }
 
-  const url = `https://www.facebook.com/v18.0/dialog/oauth
-  ?client_id=${fbAppId}
-  &redirect_uri=${redirectUri}
-  &scope=pages_manage_posts,pages_read_engagement`;
+    function isConnected(platform) {
+      const conn = getConnection(platform);
+      return !!(conn && conn.is_connected);
+    }
 
-  window.location.href = url;
-};
-</script>
+    function getStatusBadge(platform) {
+      return isConnected(platform)
+        ? `<span class="status-badge status-connected">Connected</span>`
+        : `<span class="status-badge status-disconnected">Not Connected</span>`;
+    }
 
+    function renderCounts() {
+      const connected = Object.values(connectionMap).filter(item => item?.is_connected).length;
+      chipAvailable.textContent = `Available: ${PLATFORMS.length}`;
+      chipConnected.textContent = `Connected: ${connected}`;
+    }
+
+    function passesFilter(item) {
+      const term = (searchInput.value || "").trim().toLowerCase();
+      const matchesSearch =
+        !term ||
+        item.name.toLowerCase().includes(term) ||
+        item.desc.toLowerCase().includes(term);
+
+      if (!matchesSearch) return false;
+
+      if (currentFilter === "connected") return isConnected(item.key);
+      if (currentFilter === "not_connected") return !isConnected(item.key);
+      return true;
+    }
+
+    function renderPlatforms() {
+      const filtered = PLATFORMS.filter(passesFilter);
+
+      if (!filtered.length) {
+        platformGrid.innerHTML = "";
+        emptyBox.style.display = "block";
+        return;
+      }
+
+      emptyBox.style.display = "none";
+      platformGrid.innerHTML = filtered.map(item => {
+        const connected = isConnected(item.key);
+        const conn = getConnection(item.key);
+        const sub = connected
+          ? (conn.account_name || conn.account_handle || conn.account_email || "Connected")
+          : "Not connected yet";
+
+        return `
+          <article class="platform-card">
+            <div class="platform-top">
+              <div class="platform-main">
+                <div class="platform-icon ${item.iconClass}">${item.icon}</div>
+
+                <div class="platform-meta">
+                  <div class="platform-name">${escapeHtml(item.name)}</div>
+                  <div class="platform-sub">${escapeHtml(sub)}</div>
+                </div>
+              </div>
+
+              ${getStatusBadge(item.key)}
+            </div>
+
+            <div class="platform-desc">${escapeHtml(item.desc)}</div>
+
+            <div class="platform-actions">
+              <a class="btn primary full" href="${item.path}">
+                ${connected ? "Manage Connection" : "Connect Now"}
+              </a>
+              <a class="btn full" href="connected-accounts.html">Status</a>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function loadConnections() {
+      try {
+        const { data, error } = await supabaseClient
+          .from("connected_accounts")
+          .select("platform, is_connected, account_name, account_email, account_handle")
+          .eq("user_id", currentUserId)
+          .eq("is_connected", true);
+
+        if (error) throw error;
+
+        connectionMap = {};
+        (data || []).forEach(row => {
+          connectionMap[row.platform] = row;
+        });
+
+        renderCounts();
+        renderPlatforms();
+      } catch (error) {
+        renderCounts();
+        renderPlatforms();
+        showNotice(error.message || "Could not load connections.", "error");
+      }
+    }
+
+    async function init() {
+      try {
+        const { data, error } = await supabaseClient.auth.getUser();
+        if (error) throw error;
+
+        const user = data.user;
+        if (!user) {
+          window.location.href = "login.html?next=connect-account.html";
+          return;
+        }
+
+        currentUserId = user.id;
+        renderCounts();
+        renderPlatforms();
+        await loadConnections();
+      } catch (error) {
+        showNotice(error.message || "Could not load page.", "error");
+      }
+    }
+
+    showAllBtn.addEventListener("click", () => {
+      currentFilter = "all";
+      renderPlatforms();
+    });
+
+    showConnectedBtn.addEventListener("click", () => {
+      currentFilter = "connected";
+      renderPlatforms();
+    });
+
+    showNotConnectedBtn.addEventListener("click", () => {
+      currentFilter = "not_connected";
+      renderPlatforms();
+    });
+
+    searchInput.addEventListener("input", renderPlatforms);
+
+    init();
+  </script>
 </body>
 </html>
