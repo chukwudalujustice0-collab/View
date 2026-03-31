@@ -249,49 +249,13 @@
       word-break:break-word;
     }
 
-    .pages-list{
-      display:grid;
-      gap:10px;
-    }
-
-    .page-item{
+    .result-box{
       border:1px solid var(--line);
       border-radius:18px;
       padding:14px;
       background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .page-meta{
-      min-width:0;
-      flex:1;
-    }
-
-    .page-name{
-      font-size:15px;
-      font-weight:800;
-      margin-bottom:4px;
-      word-break:break-word;
-    }
-
-    .page-id{
-      font-size:12px;
-      color:var(--muted);
-      word-break:break-word;
-    }
-
-    .mini-btn{
-      min-height:42px;
-      padding:0 14px;
-      border-radius:12px;
-      background:linear-gradient(135deg,#1877f2,#0f5fd4);
-      color:#fff;
-      font-size:13px;
-      font-weight:700;
-      white-space:nowrap;
+      display:grid;
+      gap:8px;
     }
 
     code{
@@ -299,6 +263,7 @@
       padding:2px 6px;
       border-radius:6px;
       font-size:12px;
+      word-break:break-all;
     }
 
     @media (max-width:720px){
@@ -306,14 +271,9 @@
         grid-template-columns:1fr;
       }
 
-      .hero-top,
-      .page-item{
+      .hero-top{
         flex-direction:column;
         align-items:flex-start;
-      }
-
-      .mini-btn{
-        width:100%;
       }
     }
   </style>
@@ -325,7 +285,7 @@
         <button class="icon-btn" type="button" onclick="history.back()">←</button>
         <div class="title-box">
           <div class="title">Connect Facebook</div>
-          <div class="sub">Connect a Facebook Page for real publishing</div>
+          <div class="sub">Basic login test for your Facebook connection flow</div>
         </div>
       </div>
       <a class="icon-btn" href="connected-accounts.html">✕</a>
@@ -337,9 +297,9 @@
       <div class="hero-top">
         <div class="fb-badge">f</div>
         <div class="hero-copy">
-          <h2>Connect your Facebook Page</h2>
+          <h2>Test Facebook login first</h2>
           <p>
-            This will log you into Facebook, fetch the Pages you manage, and save the selected Page token so your publish worker can post for real.
+            This version uses only <code>public_profile</code> so Facebook should allow the login and redirect back to your app. Once this works, you’ll know your App ID and redirect URI are correct.
           </p>
         </div>
       </div>
@@ -351,22 +311,22 @@
       </div>
 
       <div class="helper">
-        Facebook posting works with a <code>Page access token</code>, not just a normal user token.
+        This test does not fetch Pages yet. It only proves the Facebook login and redirect flow works.
       </div>
     </section>
 
     <section class="card">
       <div class="status-grid">
         <div class="status-box">
-          <div class="status-label">Frontend origin</div>
-          <div class="status-value" id="frontendOrigin">-</div>
+          <div class="status-label">Meta App ID</div>
+          <div class="status-value" id="appIdText">-</div>
         </div>
         <div class="status-box">
           <div class="status-label">Redirect URI</div>
           <div class="status-value" id="redirectUri">-</div>
         </div>
         <div class="status-box">
-          <div class="status-label">Permissions</div>
+          <div class="status-label">Requested scope</div>
           <div class="status-value" id="scopeText">-</div>
         </div>
         <div class="status-box">
@@ -377,10 +337,9 @@
     </section>
 
     <section class="card">
-      <div class="title" style="font-size:20px;">Managed Pages</div>
-      <div class="sub" style="white-space:normal;margin-bottom:14px;">After Facebook login, your Pages will show here. Select one to save its Page access token.</div>
-      <div id="pagesList" class="pages-list">
-        <div class="helper">No Pages loaded yet.</div>
+      <div class="title" style="font-size:20px; margin-bottom:12px;">Login Result</div>
+      <div id="resultBox" class="result-box">
+        <div class="helper">No login result yet.</div>
       </div>
     </section>
   </div>
@@ -400,34 +359,24 @@
 
     const FACEBOOK_APP_ID = "921040053900296";
     const REDIRECT_URI = "https://view.ceetice.com/facebook-connect.html";
-
-    const FACEBOOK_SCOPES = [
-      "pages_show_list",
-      "pages_manage_posts",
-      "pages_read_engagement"
-    ];
+    const FACEBOOK_SCOPES = ["public_profile"];
 
     const noticeEl = document.getElementById("notice");
     const loginLink = document.getElementById("loginLink");
     const manualLink = document.getElementById("manualLink");
-    const pagesListEl = document.getElementById("pagesList");
-    const frontendOriginEl = document.getElementById("frontendOrigin");
+    const appIdTextEl = document.getElementById("appIdText");
     const redirectUriEl = document.getElementById("redirectUri");
     const scopeTextEl = document.getElementById("scopeText");
     const stateTextEl = document.getElementById("stateText");
+    const resultBoxEl = document.getElementById("resultBox");
 
-    frontendOriginEl.textContent = window.location.origin;
+    appIdTextEl.textContent = FACEBOOK_APP_ID;
     redirectUriEl.textContent = REDIRECT_URI;
     scopeTextEl.textContent = FACEBOOK_SCOPES.join(", ");
 
     function showNotice(message, type = "info") {
       noticeEl.className = `notice show ${type}`;
       noticeEl.textContent = message;
-    }
-
-    function clearNotice() {
-      noticeEl.className = "notice";
-      noticeEl.textContent = "";
     }
 
     async function requireUser() {
@@ -476,101 +425,8 @@
       };
     }
 
-    async function getFacebookPages(userAccessToken) {
-      const res = await fetch(
-        `https://graph.facebook.com/v19.0/me/accounts?access_token=${encodeURIComponent(userAccessToken)}`
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error?.message || "Failed to fetch Facebook Pages");
-      }
-
-      if (!data.data || data.data.length === 0) {
-        throw new Error("No Facebook Pages found for this account.");
-      }
-
-      return data.data;
-    }
-
-    function renderPages(pages, currentUser) {
-      if (!pages || !pages.length) {
-        pagesListEl.innerHTML = `<div class="helper">No Pages found.</div>`;
-        return;
-      }
-
-      pagesListEl.innerHTML = pages.map((page, index) => `
-        <div class="page-item">
-          <div class="page-meta">
-            <div class="page-name">${page.name || "Untitled Page"}</div>
-            <div class="page-id">Page ID: ${page.id || "-"}</div>
-          </div>
-          <button class="mini-btn" type="button" onclick="saveFacebookPage(${index})">Use This Page</button>
-        </div>
-      `).join("");
-
-      window.__facebookPages = pages;
-      window.__facebookUserId = currentUser.id;
-    }
-
-    async function savePageConnection(page, currentUserId) {
-      if (!page?.id) throw new Error("Facebook Page ID is missing.");
-      if (!page?.access_token) throw new Error("Facebook Page access token is missing.");
-
-      const payload = {
-        user_id: currentUserId,
-        platform: "facebook",
-        account_name: page.name || "Facebook Page",
-        external_page_id: page.id,
-        external_user_id: page.id,
-        access_token: page.access_token,
-        status: "connected",
-        last_synced_at: new Date().toISOString(),
-        last_error: null
-      };
-
-      const { error } = await supabaseClient
-        .from("connected_accounts")
-        .upsert(payload, {
-          onConflict: "user_id,platform"
-        });
-
-      if (error) {
-        throw new Error(`Failed to save Facebook Page connection: ${error.message}`);
-      }
-    }
-
-    window.saveFacebookPage = async function(index) {
-      try {
-        const pages = window.__facebookPages || [];
-        const currentUserId = window.__facebookUserId;
-        const page = pages[index];
-
-        if (!page) throw new Error("Selected Page not found.");
-        if (!currentUserId) throw new Error("Missing current user ID.");
-
-        showNotice("Saving Facebook Page connection...", "info");
-        stateTextEl.textContent = "Saving selected Page";
-
-        await savePageConnection(page, currentUserId);
-
-        showNotice("Facebook Page connected successfully. Redirecting...", "success");
-        stateTextEl.textContent = "Page connected";
-
-        setTimeout(() => {
-          window.location.href = "connected-accounts.html?facebook=connected";
-        }, 1200);
-      } catch (error) {
-        showNotice(error.message || "Could not save Facebook Page.", "error");
-        stateTextEl.textContent = "Save failed";
-      }
-    };
-
     async function prepareFacebookLinks() {
       try {
-        clearNotice();
-
         if (!FACEBOOK_APP_ID || FACEBOOK_APP_ID.trim().length < 10) {
           throw new Error("Meta App ID is missing or invalid.");
         }
@@ -588,7 +444,7 @@
         manualLink.style.display = "flex";
 
         stateTextEl.textContent = "Ready to open Facebook";
-        showNotice("Facebook login is ready.", "success");
+        showNotice("Facebook basic login is ready.", "success");
       } catch (error) {
         showNotice(error.message || "Could not prepare Facebook login.", "error");
         stateTextEl.textContent = "Login setup failed";
@@ -619,6 +475,11 @@
           "error"
         );
         stateTextEl.textContent = "Facebook denied access";
+        resultBoxEl.innerHTML = `
+          <div><strong>Status:</strong> Failed</div>
+          <div><strong>Reason:</strong> ${queryErrorReason || queryError}</div>
+          <div><strong>Details:</strong> ${queryErrorDescription || "-"}</div>
+        `;
         return;
       }
 
@@ -632,20 +493,27 @@
           throw new Error("State mismatch. Please restart Facebook connection.");
         }
 
-        showNotice("Loading Facebook Pages...", "info");
-        stateTextEl.textContent = "Fetching Pages";
+        showNotice("Facebook basic login worked. Redirecting...", "success");
+        stateTextEl.textContent = "Basic login successful";
 
-        const pages = await getFacebookPages(hashData.access_token);
-
-        renderPages(pages, user);
-
-        showNotice("Facebook login worked. Select the Page you want to connect below.", "success");
-        stateTextEl.textContent = `Found ${pages.length} Page(s)`;
+        resultBoxEl.innerHTML = `
+          <div><strong>Status:</strong> Success</div>
+          <div><strong>User ID:</strong> <code>${user.id}</code></div>
+          <div><strong>Returned token:</strong> <code>${hashData.access_token.slice(0, 30)}...</code></div>
+        `;
 
         history.replaceState({}, document.title, REDIRECT_URI);
+
+        setTimeout(() => {
+          window.location.href = "connected-accounts.html?facebook=basic-connected";
+        }, 1200);
       } catch (error) {
-        showNotice(error.message || "Failed to fetch Facebook Pages.", "error");
-        stateTextEl.textContent = "Page fetch failed";
+        showNotice(error.message || "Facebook login failed.", "error");
+        stateTextEl.textContent = "Login failed";
+        resultBoxEl.innerHTML = `
+          <div><strong>Status:</strong> Failed</div>
+          <div><strong>Error:</strong> ${error.message || "Unknown error"}</div>
+        `;
       }
     }
 
