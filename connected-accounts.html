@@ -220,7 +220,6 @@
       gap:12px;
       min-width:0;
       flex:1;
-      cursor:pointer;
     }
 
     .account-icon{
@@ -243,6 +242,8 @@
     .tiktok{background:linear-gradient(135deg,#161616,#25f4ee)}
     .whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
     .xhandle{background:linear-gradient(135deg,#0f172a,#334155)}
+    .telegram{background:linear-gradient(135deg,#229ED9,#0f6fa5)}
+    .linkedin{background:linear-gradient(135deg,#0077b5,#005582)}
 
     .account-meta{
       min-width:0;
@@ -358,6 +359,16 @@
       color:#fecaca;
     }
 
+    .empty-box{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
     .bottom-nav{
       position:fixed;
       left:50%;
@@ -404,9 +415,11 @@
       .stats-grid{
         grid-template-columns:1fr;
       }
+
       .account-card{
         align-items:flex-start;
       }
+
       .account-right{
         align-self:center;
       }
@@ -440,7 +453,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-label">Available</div>
-        <div class="stat-value" id="statAvailable">6</div>
+        <div class="stat-value" id="statAvailable">8</div>
       </div>
     </section>
 
@@ -458,11 +471,30 @@
   </div>
 
   <nav class="bottom-nav">
-    <a class="nav-btn" href="home.html"><span>🏠</span><span>Home</span></a>
-    <a class="nav-btn" href="explore.html"><span>🔎</span><span>Explore</span></a>
-    <a class="nav-btn" href="dashboard.html"><span>◫</span><span>Dashboard</span></a>
-    <a class="nav-btn active" href="connected-accounts.html"><span>🔗</span><span>Accounts</span></a>
-    <a class="nav-btn" href="settings.html"><span>⚙️</span><span>Settings</span></a>
+    <a class="nav-btn" href="home.html">
+      <span>🏠</span>
+      <span>Home</span>
+    </a>
+
+    <a class="nav-btn" href="explore.html">
+      <span>🔎</span>
+      <span>Explore</span>
+    </a>
+
+    <a class="nav-btn" href="dashboard.html">
+      <span>◫</span>
+      <span>Dashboard</span>
+    </a>
+
+    <a class="nav-btn active" href="connected-accounts.html">
+      <span>🔗</span>
+      <span>Accounts</span>
+    </a>
+
+    <a class="nav-btn" href="settings.html">
+      <span>⚙️</span>
+      <span>Settings</span>
+    </a>
   </nav>
 
   <script>
@@ -483,17 +515,20 @@
     const accountsList = document.getElementById("accountsList");
     const statConnected = document.getElementById("statConnected");
     const statExpired = document.getElementById("statExpired");
+    const statAvailable = document.getElementById("statAvailable");
 
     let currentUserId = "";
     let connectionMap = {};
 
     const PLATFORMS = [
-      { key: "facebook", name: "Facebook", icon: "f", iconClass: "facebook", path: "facebook-connect.html" },
+      { key: "facebook",  name: "Facebook",  icon: "f",  iconClass: "facebook",  path: "facebook-connect.html" },
       { key: "instagram", name: "Instagram", icon: "◎", iconClass: "instagram", path: "instagram-connect.html" },
-      { key: "youtube", name: "YouTube", icon: "▶", iconClass: "youtube", path: "youtube-connect.html" },
-      { key: "tiktok", name: "TikTok", icon: "♪", iconClass: "tiktok", path: "tiktok-connect.html" },
-      { key: "whatsapp", name: "WhatsApp", icon: "✆", iconClass: "whatsapp", path: "whatsapp-connect.html" },
-      { key: "x", name: "X", icon: "X", iconClass: "xhandle", path: "x-connect.html" }
+      { key: "youtube",   name: "YouTube",   icon: "▶", iconClass: "youtube",   path: "youtube-connect.html" },
+      { key: "tiktok",    name: "TikTok",    icon: "♪", iconClass: "tiktok",    path: "tiktok-connect.html" },
+      { key: "whatsapp",  name: "WhatsApp",  icon: "✆", iconClass: "whatsapp",  path: "whatsapp-connect.html" },
+      { key: "x",         name: "X",         icon: "X", iconClass: "xhandle",   path: "x-connect.html" },
+      { key: "telegram",  name: "Telegram",  icon: "✈", iconClass: "telegram",  path: "telegram-connect.html" },
+      { key: "linkedin",  name: "LinkedIn",  icon: "in", iconClass: "linkedin", path: "linkedin-connect.html" }
     ];
 
     function showNotice(message, type = "info") {
@@ -504,6 +539,15 @@
         noticeBox.className = "notice";
         noticeBox.textContent = "";
       }, 2400);
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     function closeAllMenus() {
@@ -521,25 +565,21 @@
     }
 
     function getStatusHtml(conn) {
-      if (!conn || conn.status !== "connected") {
-        return `<span class="status-badge status-disconnected">Not Connected</span>`;
-      }
-
-      if (conn.token_expires_at && new Date(conn.token_expires_at) < new Date()) {
+      if (!conn) return `<span class="status-badge status-disconnected">Not Connected</span>`;
+      if (conn.is_connected && conn.token_expires_at && new Date(conn.token_expires_at) < new Date()) {
         return `<span class="status-badge status-expired">Expired</span>`;
       }
-
       return `<span class="status-badge status-connected">Connected</span>`;
     }
 
     function getSubText(item, conn) {
       if (!conn) return item.name;
-      return conn.account_name || conn.account_handle || conn.external_user_id || "Connected";
+      return conn.account_name || conn.account_handle || conn.account_email || "Connected";
     }
 
     function countExpired() {
       return Object.values(connectionMap).filter(conn =>
-        conn?.status === "connected" &&
+        conn?.is_connected &&
         conn?.token_expires_at &&
         new Date(conn.token_expires_at) < new Date()
       ).length;
@@ -548,41 +588,7 @@
     function renderStats() {
       statConnected.textContent = Object.keys(connectionMap).length;
       statExpired.textContent = countExpired();
-    }
-
-    function openConnectPage(path) {
-      window.location.href = path;
-    }
-
-    function reconnectPlatform(path) {
-      closeAllMenus();
-      openConnectPage(path);
-    }
-
-    async function disconnectPlatform(platform) {
-      closeAllMenus();
-
-      try {
-        const { error } = await supabaseClient
-          .from("connected_accounts")
-          .update({
-            status: "disconnected",
-            access_token: null,
-            refresh_token: null,
-            updated_at: new Date().toISOString()
-          })
-          .eq("user_id", currentUserId)
-          .eq("platform", platform);
-
-        if (error) throw error;
-
-        delete connectionMap[platform];
-        renderAccounts();
-        renderStats();
-        showNotice("Account disconnected.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not disconnect account.", "error");
-      }
+      statAvailable.textContent = PLATFORMS.length;
     }
 
     function renderAccounts() {
@@ -595,8 +601,8 @@
             <div class="account-left" onclick="openConnectPage('${item.path}')">
               <div class="account-icon ${item.iconClass}">${item.icon}</div>
               <div class="account-meta">
-                <div class="account-name">${item.name}</div>
-                <div class="account-sub">${subText}</div>
+                <div class="account-name">${escapeHtml(item.name)}</div>
+                <div class="account-sub">${escapeHtml(subText)}</div>
               </div>
             </div>
 
@@ -615,20 +621,58 @@
           </div>
         `;
       }).join("");
+
+      if (!PLATFORMS.length) {
+        accountsList.innerHTML = `<div class="empty-box">No platforms available.</div>`;
+      }
+    }
+
+    function openConnectPage(path) {
+      window.location.href = path;
+    }
+
+    function reconnectPlatform(path) {
+      closeAllMenus();
+      openConnectPage(path);
+    }
+
+    async function disconnectPlatform(platform) {
+      closeAllMenus();
+
+      try {
+        const { error } = await supabaseClient
+          .from("connected_accounts")
+          .update({
+            is_connected: false,
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", currentUserId)
+          .eq("platform", platform);
+
+        if (error) throw error;
+
+        delete connectionMap[platform];
+        renderAccounts();
+        renderStats();
+        showNotice("Account disconnected.", "success");
+      } catch (error) {
+        showNotice(error.message || "Could not disconnect account.", "error");
+      }
     }
 
     async function loadConnections() {
       try {
         const { data, error } = await supabaseClient
           .from("connected_accounts")
-          .select("id, user_id, platform, account_name, account_handle, status, access_token, refresh_token, token_expires_at, external_user_id, external_page_id")
-          .eq("user_id", currentUserId);
+          .select("id, platform, account_name, account_email, account_handle, is_connected, token_expires_at")
+          .eq("user_id", currentUserId)
+          .eq("is_connected", true);
 
         if (error) throw error;
 
         connectionMap = {};
         (data || []).forEach(row => {
-          if (row.status === "connected") connectionMap[row.platform] = row;
+          connectionMap[row.platform] = row;
         });
 
         renderAccounts();
