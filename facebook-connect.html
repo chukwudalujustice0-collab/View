@@ -2,13 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
-  <title>Connected Accounts | View</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Connect Facebook | View</title>
   <meta name="theme-color" content="#ffffff" />
-  <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -18,587 +14,536 @@
       --text:#111827;
       --muted:#6b7280;
       --line:#e5e7eb;
-      --primary:#111827;
+      --primary:#1877f2;
+      --primary2:#0f5fd4;
       --success:#059669;
       --danger:#dc2626;
-      --shadow:0 10px 30px rgba(17,24,39,.08);
-      --radius:22px;
-      --facebook:#1877f2;
-      --instagram:#e1306c;
-      --youtube:#ff0000;
-      --tiktok:#111111;
-      --telegram:#0088cc;
-      --linkedin:#0a66c2;
+      --info:#1d4ed8;
+      --shadow:0 12px 30px rgba(15,23,42,.08);
+      --safe-bottom:env(safe-area-inset-bottom);
     }
 
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
-    body{min-height:100vh}
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(24,119,242,.06), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(15,95,212,.05), transparent 20%),
+        linear-gradient(180deg,#fbfcff 0%, #f5f7fb 100%);
+      color:var(--text);
+    }
+
+    body{
+      padding:18px 14px calc(24px + var(--safe-bottom));
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      cursor:pointer;
+      font:inherit;
+    }
 
     .wrap{
-      max-width:760px;
+      width:min(100%, 860px);
       margin:0 auto;
-      padding:18px 16px 110px;
     }
 
     .topbar{
       display:flex;
       align-items:center;
+      justify-content:space-between;
       gap:12px;
-      margin-bottom:18px;
+      margin-bottom:16px;
     }
 
-    .back-btn{
-      border:none;
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .icon-btn{
+      width:48px;
+      height:48px;
+      min-width:48px;
+      border-radius:16px;
       background:#fff;
-      width:44px;
-      height:44px;
-      border-radius:14px;
+      border:1px solid var(--line);
       box-shadow:var(--shadow);
-      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       font-size:18px;
+      color:var(--text);
     }
 
-    .title-block h1{
-      margin:0;
-      font-size:22px;
-      line-height:1.1;
+    .title-box{
+      min-width:0;
+      flex:1;
     }
 
-    .title-block p{
-      margin:5px 0 0;
+    .title{
+      font-size:24px;
+      font-weight:800;
+      margin-bottom:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sub{
       color:var(--muted);
-      font-size:14px;
-    }
-
-    .hero{
-      background:linear-gradient(135deg,#ffffff,#eef4ff);
-      border:1px solid #e9eefc;
-      border-radius:28px;
-      padding:20px;
-      box-shadow:var(--shadow);
-      margin-bottom:18px;
-    }
-
-    .hero h2{
-      margin:0 0 8px;
-      font-size:20px;
-    }
-
-    .hero p{
-      margin:0;
-      color:var(--muted);
-      line-height:1.5;
-      font-size:14px;
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .notice{
       display:none;
       padding:14px 16px;
       border-radius:16px;
-      margin:0 0 16px;
       font-size:14px;
-      line-height:1.4;
-      border:1px solid transparent;
+      line-height:1.6;
+      white-space:pre-wrap;
+      margin-bottom:14px;
+      box-shadow:var(--shadow);
     }
 
     .notice.show{display:block}
-    .notice.success{
-      background:#ecfdf5;
-      color:#065f46;
-      border-color:#a7f3d0;
-    }
-    .notice.error{
-      background:#fef2f2;
-      color:#991b1b;
-      border-color:#fecaca;
-    }
-    .notice.info{
-      background:#eff6ff;
-      color:#1d4ed8;
-      border-color:#bfdbfe;
-    }
-
-    .cards{
-      display:grid;
-      gap:14px;
-    }
+    .notice.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8}
+    .notice.success{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+    .notice.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
 
     .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:16px;
+      background:rgba(255,255,255,.94);
+      border:1px solid rgba(255,255,255,.7);
+      border-radius:24px;
       box-shadow:var(--shadow);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:14px;
+      padding:18px;
+      margin-bottom:14px;
     }
 
-    .card-left{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      min-width:0;
-      flex:1;
+    .hero{
+      display:grid;
+      gap:16px;
     }
 
-    .icon{
-      width:52px;
-      height:52px;
-      border-radius:16px;
+    .hero-top{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+    }
+
+    .fb-badge{
+      width:68px;
+      height:68px;
+      min-width:68px;
+      border-radius:22px;
+      background:linear-gradient(135deg,#1877f2,#0f5fd4);
+      color:#fff;
       display:flex;
       align-items:center;
       justify-content:center;
-      color:#fff;
-      font-size:18px;
-      font-weight:700;
-      flex-shrink:0;
+      font-size:30px;
+      font-weight:800;
+      box-shadow:0 16px 34px rgba(24,119,242,.22);
     }
 
-    .facebook{background:var(--facebook)}
-    .instagram{background:var(--instagram)}
-    .youtube{background:var(--youtube)}
-    .tiktok{background:var(--tiktok)}
-    .telegram{background:var(--telegram)}
-    .linkedin{background:var(--linkedin)}
-
-    .meta{
-      min-width:0;
+    .hero-copy h2{
+      font-size:24px;
+      font-weight:800;
+      line-height:1.2;
+      margin-bottom:8px;
     }
 
-    .meta h3{
-      margin:0 0 6px;
-      font-size:16px;
-    }
-
-    .meta p{
-      margin:0;
+    .hero-copy p{
       color:var(--muted);
-      font-size:13px;
-      line-height:1.4;
+      line-height:1.65;
+      font-size:14px;
     }
 
-    .status{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      margin-top:8px;
-      font-size:12px;
-      font-weight:700;
-      padding:7px 10px;
-      border-radius:999px;
-      background:#f3f4f6;
-      color:#374151;
-    }
-
-    .status.connected{
-      background:#ecfdf5;
-      color:#065f46;
-    }
-
-    .status.pending{
-      background:#eff6ff;
-      color:#1d4ed8;
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
     .btn{
-      border:none;
-      border-radius:14px;
-      padding:12px 16px;
+      min-height:52px;
+      padding:0 18px;
+      border-radius:16px;
       font-size:14px;
       font-weight:700;
-      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:.18s ease;
+    }
+
+    .btn.primary{
+      flex:1;
+      min-width:210px;
       color:#fff;
-      min-width:110px;
-      flex-shrink:0;
+      background:linear-gradient(135deg,#1877f2,#0f5fd4);
     }
 
-    .btn.facebook{background:var(--facebook)}
-    .btn.instagram{background:var(--instagram)}
-    .btn.youtube{background:var(--youtube)}
-    .btn.tiktok{background:var(--tiktok)}
-    .btn.telegram{background:var(--telegram)}
-    .btn.linkedin{background:var(--linkedin)}
-
-    .btn.disconnect{
-      background:#111827;
+    .btn.secondary{
+      flex:1;
+      min-width:150px;
+      color:#111827;
+      background:#fff;
+      border:1px solid var(--line);
     }
 
-    .footer-space{
-      height:20px;
+    .btn.disabled{
+      opacity:.7;
+      pointer-events:none;
     }
 
-    @media (max-width:640px){
-      .card{
-        flex-direction:column;
-        align-items:stretch;
+    .helper{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.65;
+    }
+
+    .status-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+
+    .status-box{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      background:#fafcff;
+      min-height:100px;
+    }
+
+    .status-label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:7px;
+    }
+
+    .status-value{
+      font-size:13px;
+      font-weight:800;
+      line-height:1.55;
+      word-break:break-word;
+    }
+
+    .result-box{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      background:#fff;
+      display:grid;
+      gap:8px;
+    }
+
+    code{
+      background:#f3f4f6;
+      padding:2px 6px;
+      border-radius:6px;
+      font-size:12px;
+      word-break:break-all;
+    }
+
+    @media (max-width:720px){
+      .status-grid{
+        grid-template-columns:1fr;
       }
-      .btn{
-        width:100%;
+
+      .hero-top{
+        flex-direction:column;
+        align-items:flex-start;
       }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="topbar">
-      <button class="back-btn" onclick="goBack()">←</button>
-      <div class="title-block">
-        <h1>Connected Accounts</h1>
-        <p>Link your social platforms to publish and manage them from View.</p>
+    <header class="topbar">
+      <div class="top-left">
+        <button class="icon-btn" type="button" onclick="history.back()">←</button>
+        <div class="title-box">
+          <div class="title">Connect Facebook</div>
+          <div class="sub">Basic login test for your Facebook connection flow</div>
+        </div>
       </div>
-    </div>
-
-    <div class="hero">
-      <h2>Manage your social connections</h2>
-      <p>
-        Connect the platforms you want to use with View. You can disconnect them
-        at any time.
-      </p>
-    </div>
+      <a class="icon-btn" href="connected-accounts.html">✕</a>
+    </header>
 
     <div id="notice" class="notice"></div>
 
-    <div class="cards">
-      <!-- FACEBOOK -->
-      <div class="card">
-        <div class="card-left">
-          <div class="icon facebook">f</div>
-          <div class="meta">
-            <h3>Facebook</h3>
-            <p>Connect your Facebook account for posting and page actions.</p>
-            <div id="facebook-status" class="status">Not connected</div>
-          </div>
+    <section class="card hero">
+      <div class="hero-top">
+        <div class="fb-badge">f</div>
+        <div class="hero-copy">
+          <h2>Test Facebook login first</h2>
+          <p>
+            This version uses only <code>public_profile</code> so Facebook should allow login and redirect back. It also saves a basic Facebook connection row after success.
+          </p>
         </div>
-        <button id="facebook-btn" class="btn facebook" onclick="connectFacebook()">
-          Connect
-        </button>
       </div>
 
-      <!-- INSTAGRAM -->
-      <div class="card">
-        <div class="card-left">
-          <div class="icon instagram">IG</div>
-          <div class="meta">
-            <h3>Instagram</h3>
-            <p>Connect Instagram for publishing and profile syncing.</p>
-            <div id="instagram-status" class="status">Not connected</div>
-          </div>
-        </div>
-        <button id="instagram-btn" class="btn instagram" onclick="comingSoon('Instagram')">
-          Connect
-        </button>
+      <div class="actions">
+        <a id="loginLink" class="btn primary disabled" href="#">Preparing Facebook Login...</a>
+        <a id="manualLink" class="btn secondary" href="#" style="display:none;">Open Facebook Manually</a>
+        <a href="connected-accounts.html" class="btn secondary">Back</a>
       </div>
 
-      <!-- YOUTUBE -->
-      <div class="card">
-        <div class="card-left">
-          <div class="icon youtube">▶</div>
-          <div class="meta">
-            <h3>YouTube</h3>
-            <p>Connect YouTube for video publishing and creator tools.</p>
-            <div id="youtube-status" class="status">Not connected</div>
-          </div>
-        </div>
-        <button id="youtube-btn" class="btn youtube" onclick="comingSoon('YouTube')">
-          Connect
-        </button>
+      <div class="helper">
+        This confirms login and saves a basic Facebook connection. It is not yet full Page-posting setup.
       </div>
+    </section>
 
-      <!-- TIKTOK -->
-      <div class="card">
-        <div class="card-left">
-          <div class="icon tiktok">TT</div>
-          <div class="meta">
-            <h3>TikTok</h3>
-            <p>Connect TikTok for short video cross-posting.</p>
-            <div id="tiktok-status" class="status">Not connected</div>
-          </div>
+    <section class="card">
+      <div class="status-grid">
+        <div class="status-box">
+          <div class="status-label">Meta App ID</div>
+          <div class="status-value" id="appIdText">-</div>
         </div>
-        <button id="tiktok-btn" class="btn tiktok" onclick="comingSoon('TikTok')">
-          Connect
-        </button>
-      </div>
-
-      <!-- TELEGRAM -->
-      <div class="card">
-        <div class="card-left">
-          <div class="icon telegram">TG</div>
-          <div class="meta">
-            <h3>Telegram</h3>
-            <p>Connect Telegram for bot and channel posting integration.</p>
-            <div id="telegram-status" class="status">Not connected</div>
-          </div>
+        <div class="status-box">
+          <div class="status-label">Redirect URI</div>
+          <div class="status-value" id="redirectUri">-</div>
         </div>
-        <button id="telegram-btn" class="btn telegram" onclick="connectTelegram()">
-          Connect
-        </button>
-      </div>
-
-      <!-- LINKEDIN -->
-      <div class="card">
-        <div class="card-left">
-          <div class="icon linkedin">in</div>
-          <div class="meta">
-            <h3>LinkedIn</h3>
-            <p>Connect LinkedIn for professional profile and post sharing.</p>
-            <div id="linkedin-status" class="status">Not connected</div>
-          </div>
+        <div class="status-box">
+          <div class="status-label">Requested scope</div>
+          <div class="status-value" id="scopeText">-</div>
         </div>
-        <button id="linkedin-btn" class="btn linkedin" onclick="connectLinkedIn()">
-          Connect
-        </button>
+        <div class="status-box">
+          <div class="status-label">Current state</div>
+          <div class="status-value" id="stateText">Waiting for login</div>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <div class="footer-space"></div>
+    <section class="card">
+      <div class="title" style="font-size:20px; margin-bottom:12px;">Login Result</div>
+      <div id="resultBox" class="result-box">
+        <div class="helper">No login result yet.</div>
+      </div>
+    </section>
   </div>
 
   <script>
-    // =========================
-    // SUPABASE CONFIG
-    // =========================
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    // =========================
-    // PLATFORM CONFIG
-    // =========================
-    const FACEBOOK_CONNECT_URL = "facebook-connect.html";
-
-    // Telegram
-    const TELEGRAM_BOT_USERNAME = "view_ceetice_bot";
-
-    // LinkedIn
-    const LINKEDIN_CLIENT_ID = "YOUR_LINKEDIN_CLIENT_ID";
-    const LINKEDIN_REDIRECT_URI = window.location.origin + "/linkedin-callback.html";
-
-    // =========================
-    // INIT
-    // =========================
-    document.addEventListener("DOMContentLoaded", async () => {
-      await guardAuth();
-      await loadConnectionStates();
-      handleCallbackMessages();
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
     });
 
-    async function guardAuth() {
-      try {
-        const { data, error } = await supabaseClient.auth.getUser();
-        if (error || !data?.user) {
-          window.location.href = "login.html";
-        }
-      } catch (err) {
-        window.location.href = "login.html";
-      }
-    }
+    const FACEBOOK_APP_ID = "921040053900296";
+    const REDIRECT_URI = "https://view.ceetice.com/facebook-connect.html";
+    const FACEBOOK_SCOPES = ["public_profile"];
 
-    function goBack() {
-      if (document.referrer) {
-        history.back();
-      } else {
-        window.location.href = "profile.html";
-      }
-    }
+    const noticeEl = document.getElementById("notice");
+    const loginLink = document.getElementById("loginLink");
+    const manualLink = document.getElementById("manualLink");
+    const appIdTextEl = document.getElementById("appIdText");
+    const redirectUriEl = document.getElementById("redirectUri");
+    const scopeTextEl = document.getElementById("scopeText");
+    const stateTextEl = document.getElementById("stateText");
+    const resultBoxEl = document.getElementById("resultBox");
+
+    appIdTextEl.textContent = FACEBOOK_APP_ID;
+    redirectUriEl.textContent = REDIRECT_URI;
+    scopeTextEl.textContent = FACEBOOK_SCOPES.join(", ");
 
     function showNotice(message, type = "info") {
-      const el = document.getElementById("notice");
-      el.className = `notice show ${type}`;
-      el.textContent = message;
+      noticeEl.className = `notice show ${type}`;
+      noticeEl.textContent = message;
     }
 
-    function setStatus(platform, state, label) {
-      const statusEl = document.getElementById(`${platform}-status`);
-      const btnEl = document.getElementById(`${platform}-btn`);
+    async function requireUser() {
+      const { data, error } = await supabaseClient.auth.getUser();
+      if (error) throw error;
 
-      statusEl.className = "status";
-      if (state === "connected") statusEl.classList.add("connected");
-      if (state === "pending") statusEl.classList.add("pending");
-      statusEl.textContent = label;
-
-      if (state === "connected") {
-        btnEl.textContent = "Connected";
-        btnEl.classList.add("disconnect");
-      } else if (state === "pending") {
-        btnEl.textContent = "Pending";
-      } else {
-        btnEl.textContent = "Connect";
-        btnEl.classList.remove("disconnect");
+      if (!data?.user) {
+        window.location.href = "login.html?next=facebook-connect.html";
+        return null;
       }
+
+      return data.user;
     }
 
-    async function loadConnectionStates() {
-      try {
-        const { data: authData } = await supabaseClient.auth.getUser();
-        const user = authData?.user;
-        if (!user) return;
+    function buildFacebookAuthUrl(userId) {
+      const params = new URLSearchParams({
+        client_id: FACEBOOK_APP_ID,
+        redirect_uri: REDIRECT_URI,
+        response_type: "token",
+        scope: FACEBOOK_SCOPES.join(","),
+        state: userId,
+        display: "touch"
+      });
 
-        // Reads from a table called social_connections
-        // Expected columns:
-        // user_id, platform, status, account_name, metadata
-        const { data, error } = await supabaseClient
-          .from("social_connections")
-          .select("platform,status,account_name")
-          .eq("user_id", user.id);
+      return `https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`;
+    }
 
-        if (error) {
-          console.warn("Could not load social connections:", error.message);
-          return;
-        }
+    function parseHashToken() {
+      const hash = window.location.hash.startsWith("#")
+        ? window.location.hash.slice(1)
+        : window.location.hash;
 
-        const map = {};
-        (data || []).forEach(item => {
-          map[item.platform] = item;
+      if (!hash) return null;
+
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get("access_token");
+      const expiresIn = params.get("expires_in");
+      const state = params.get("state");
+
+      if (!accessToken) return null;
+
+      return {
+        access_token: accessToken,
+        expires_in: expiresIn,
+        state
+      };
+    }
+
+    async function saveBasicFacebookConnection(user, token) {
+      const payload = {
+        user_id: user.id,
+        platform: "facebook",
+        account_name: user.user_metadata?.full_name || user.email || "Facebook Basic Login",
+        external_user_id: user.id,
+        access_token: token,
+        status: "connected",
+        last_synced_at: new Date().toISOString(),
+        last_error: null
+      };
+
+      const { error } = await supabaseClient
+        .from("connected_accounts")
+        .upsert(payload, {
+          onConflict: "user_id,platform"
         });
 
-        applyPlatformState("facebook", map.facebook);
-        applyPlatformState("instagram", map.instagram);
-        applyPlatformState("youtube", map.youtube);
-        applyPlatformState("tiktok", map.tiktok);
-        applyPlatformState("telegram", map.telegram);
-        applyPlatformState("linkedin", map.linkedin);
-      } catch (err) {
-        console.warn("Connection load error:", err);
+      if (error) {
+        throw new Error(`Could not save Facebook basic connection: ${error.message}`);
       }
     }
 
-    function applyPlatformState(platform, row) {
-      if (!row) {
-        setStatus(platform, "idle", "Not connected");
+    async function prepareFacebookLinks() {
+      try {
+        if (!FACEBOOK_APP_ID || FACEBOOK_APP_ID.trim().length < 10) {
+          throw new Error("Meta App ID is missing or invalid.");
+        }
+
+        const user = await requireUser();
+        if (!user) return;
+
+        const authUrl = buildFacebookAuthUrl(user.id);
+
+        loginLink.href = authUrl;
+        manualLink.href = authUrl;
+
+        loginLink.textContent = "Login with Facebook";
+        loginLink.classList.remove("disabled");
+        manualLink.style.display = "flex";
+
+        stateTextEl.textContent = "Ready to open Facebook";
+        showNotice("Facebook basic login is ready.", "success");
+      } catch (error) {
+        showNotice(error.message || "Could not prepare Facebook login.", "error");
+        stateTextEl.textContent = "Login setup failed";
+        loginLink.textContent = "Login setup failed";
+      }
+    }
+
+    loginLink.addEventListener("click", () => {
+      showNotice("Opening Facebook login...", "info");
+      stateTextEl.textContent = "Opening Facebook";
+    });
+
+    manualLink.addEventListener("click", () => {
+      showNotice("Opening Facebook manually...", "info");
+      stateTextEl.textContent = "Opening Facebook manually";
+    });
+
+    async function handleFacebookReturn() {
+      const url = new URL(window.location.href);
+      const hashData = parseHashToken();
+      const queryError = url.searchParams.get("error");
+      const queryErrorReason = url.searchParams.get("error_reason");
+      const queryErrorDescription = url.searchParams.get("error_description");
+
+      if (queryError) {
+        showNotice(
+          `Facebook connection failed: ${queryErrorReason || queryError}\n${queryErrorDescription || ""}`.trim(),
+          "error"
+        );
+        stateTextEl.textContent = "Facebook denied access";
+        resultBoxEl.innerHTML = `
+          <div><strong>Status:</strong> Failed</div>
+          <div><strong>Reason:</strong> ${queryErrorReason || queryError}</div>
+          <div><strong>Details:</strong> ${queryErrorDescription || "-"}</div>
+        `;
         return;
       }
 
-      if (row.status === "connected") {
-        const name = row.account_name ? `Connected as ${row.account_name}` : "Connected";
-        setStatus(platform, "connected", name);
-      } else if (row.status === "pending") {
-        setStatus(platform, "pending", "Waiting for confirmation");
-      } else {
-        setStatus(platform, "idle", "Not connected");
-      }
-    }
+      if (!hashData?.access_token) return;
 
-    function handleCallbackMessages() {
-      const params = new URLSearchParams(window.location.search);
-      const status = params.get("status");
-      const platform = params.get("platform");
-
-      if (status === "connected" && platform) {
-        showNotice(`${capitalize(platform)} connected successfully.`, "success");
-        loadConnectionStates();
-      } else if (status === "error" && platform) {
-        showNotice(`Could not connect ${capitalize(platform)}.`, "error");
-      }
-    }
-
-    function capitalize(text = "") {
-      return text.charAt(0).toUpperCase() + text.slice(1);
-    }
-
-    function comingSoon(name) {
-      showNotice(`${name} connection is not changed here.`, "info");
-    }
-
-    // =========================
-    // FACEBOOK
-    // =========================
-    function connectFacebook() {
-      window.location.href = FACEBOOK_CONNECT_URL;
-    }
-
-    // =========================
-    // TELEGRAM
-    // =========================
-    async function connectTelegram() {
       try {
-        setStatus("telegram", "pending", "Waiting for confirmation");
+        const user = await requireUser();
+        if (!user) return;
 
-        const { data: authData } = await supabaseClient.auth.getUser();
-        const user = authData?.user;
-        if (!user) {
-          window.location.href = "login.html";
-          return;
+        if (!hashData.state || hashData.state !== user.id) {
+          throw new Error("State mismatch. Please restart Facebook connection.");
         }
 
-        await upsertConnection({
-          user_id: user.id,
-          platform: "telegram",
-          status: "pending",
-          account_name: null,
-          metadata: {
-            started_at: new Date().toISOString()
-          }
-        });
+        showNotice("Facebook basic login worked. Saving connection...", "success");
+        stateTextEl.textContent = "Basic login successful";
 
-        const startPayload = `connect_${user.id}`;
-        const telegramUrl = `https://t.me/${TELEGRAM_BOT_USERNAME}?start=${encodeURIComponent(startPayload)}`;
+        resultBoxEl.innerHTML = `
+          <div><strong>Status:</strong> Success</div>
+          <div><strong>User ID:</strong> <code>${user.id}</code></div>
+          <div><strong>Returned token:</strong> <code>${hashData.access_token.slice(0, 30)}...</code></div>
+        `;
 
-        window.open(telegramUrl, "_blank");
-        showNotice("Telegram opened. Start the bot to complete connection.", "info");
-      } catch (err) {
-        console.error(err);
-        showNotice("Could not start Telegram connection.", "error");
-        setStatus("telegram", "idle", "Not connected");
+        await saveBasicFacebookConnection(user, hashData.access_token);
+
+        history.replaceState({}, document.title, REDIRECT_URI);
+
+        setTimeout(() => {
+          window.location.href = "connected-accounts.html?facebook=basic-connected";
+        }, 1200);
+      } catch (error) {
+        showNotice(error.message || "Facebook login failed.", "error");
+        stateTextEl.textContent = "Login failed";
+        resultBoxEl.innerHTML = `
+          <div><strong>Status:</strong> Failed</div>
+          <div><strong>Error:</strong> ${error.message || "Unknown error"}</div>
+        `;
       }
     }
 
-    // =========================
-    // LINKEDIN
-    // =========================
-    async function connectLinkedIn() {
-      try {
-        const { data: authData } = await supabaseClient.auth.getUser();
-        const user = authData?.user;
-        if (!user) {
-          window.location.href = "login.html";
-          return;
-        }
-
-        const state = `linkedin_${user.id}_${Date.now()}`;
-        localStorage.setItem("linkedin_oauth_state", state);
-
-        await upsertConnection({
-          user_id: user.id,
-          platform: "linkedin",
-          status: "pending",
-          account_name: null,
-          metadata: {
-            started_at: new Date().toISOString(),
-            state
-          }
-        });
-
-        setStatus("linkedin", "pending", "Redirecting to LinkedIn");
-
-        const authUrl =
-          `https://www.linkedin.com/oauth/v2/authorization` +
-          `?response_type=code` +
-          `&client_id=${encodeURIComponent(LINKEDIN_CLIENT_ID)}` +
-          `&redirect_uri=${encodeURIComponent(LINKEDIN_REDIRECT_URI)}` +
-          `&state=${encodeURIComponent(state)}` +
-          `&scope=${encodeURIComponent("openid profile email w_member_social")}`;
-
-        window.location.href = authUrl;
-      } catch (err) {
-        console.error(err);
-        showNotice("Could not start LinkedIn connection.", "error");
-        setStatus("linkedin", "idle", "Not connected");
-      }
-    }
-
-    // =========================
-    // DATABASE UPSERT
-    // =========================
-    async function upsertConnection(payload) {
-      const { error } = await supabaseClient
-        .from("social_connections")
-        .upsert(payload, { onConflict: "user_id,platform" });
-
-      if (error) throw error;
-    }
+    prepareFacebookLinks();
+    handleFacebookReturn();
   </script>
 </body>
 </html>
