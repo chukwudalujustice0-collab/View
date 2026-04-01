@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Facebook Connection | View</title>
+  <title>Facebook Pages Debug | View</title>
   <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -35,7 +35,7 @@
     }
 
     .page{
-      max-width:860px;
+      max-width:900px;
       margin:0 auto;
       padding:calc(18px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
     }
@@ -48,117 +48,231 @@
       margin-bottom:18px;
     }
 
-    .back-btn,.link-btn,.btn,.page-btn{
+    .back-btn,.link-btn,.btn{
       border:none;
       cursor:pointer;
       font:inherit;
     }
 
     .back-btn{
-      width:46px;height:46px;border-radius:14px;
-      background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line);
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border:1px solid var(--line);
     }
 
     .heading-wrap{flex:1;min-width:0}
-    .eyebrow{color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
-    h1{margin:0;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .eyebrow{
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      margin-bottom:4px;
+    }
+
+    h1{
+      margin:0;
+      font-size:22px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
 
     .link-btn{
-      display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 14px;border-radius:14px;
-      background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--line);text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:42px;
+      padding:0 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+      border:1px solid var(--line);
+      text-decoration:none;
     }
 
     .notice{
-      display:none;margin-bottom:16px;padding:14px 15px;border-radius:16px;border:1px solid var(--line);
-      font-size:14px;line-height:1.5;word-break:break-word;
+      display:none;
+      margin-bottom:16px;
+      padding:14px 15px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      font-size:14px;
+      line-height:1.5;
+      word-break:break-word;
     }
     .notice.show{display:block}
     .notice.success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.24);color:#d1fae5}
     .notice.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.24);color:#fef3c7}
     .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#fee2e2}
 
-    .hero,.card{
+    .hero,.card,.debug-card{
       background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
       border:1px solid var(--line);
       box-shadow:var(--shadow);
     }
 
-    .hero{border-radius:28px;padding:22px 18px;margin-bottom:16px}
-    .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
-    .brand{display:flex;gap:14px;align-items:center;min-width:0}
-    .brand-icon{
-      width:58px;height:58px;border-radius:18px;background:linear-gradient(180deg,#2b84ff,#1768d9);
-      display:grid;place-items:center;font-size:30px;font-weight:900;color:#fff;flex:0 0 auto;
+    .hero{
+      border-radius:28px;
+      padding:22px 18px;
+      margin-bottom:16px;
     }
-    .brand-text h2{margin:0 0 5px;font-size:20px}
-    .brand-text p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
+
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .brand{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      min-width:0;
+    }
+
+    .brand-icon{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      background:linear-gradient(180deg,#2b84ff,#1768d9);
+      display:grid;
+      place-items:center;
+      font-size:30px;
+      font-weight:900;
+      color:#fff;
+      flex:0 0 auto;
+    }
+
+    .brand-text h2{
+      margin:0 0 5px;
+      font-size:20px;
+    }
+
+    .brand-text p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.55;
+    }
 
     .chip{
-      padding:10px 12px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--line);
-      background:rgba(255,255,255,.06);color:var(--muted);white-space:nowrap;
+      padding:10px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--muted);
+      white-space:nowrap;
     }
     .chip.connected{color:#d1fae5;background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.24)}
     .chip.disconnected{color:#fef3c7;background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.24)}
 
-    .hero-copy{color:#dbe7ff;font-size:14px;line-height:1.6;margin:0 0 18px}
-    .actions{display:flex;flex-wrap:wrap;gap:12px}
+    .hero-copy{
+      color:#dbe7ff;
+      font-size:14px;
+      line-height:1.6;
+      margin:0 0 18px;
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+    }
 
     .btn{
-      min-height:48px;border-radius:16px;padding:0 16px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      min-height:48px;
+      border-radius:16px;
+      padding:0 16px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
     }
     .btn[disabled]{opacity:.6;cursor:not-allowed}
     .btn-primary{background:linear-gradient(180deg,#2b84ff,#1768d9);color:#fff}
     .btn-secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}
     .btn-danger{background:rgba(239,68,68,.12);color:#fecaca;border:1px solid rgba(239,68,68,.22)}
 
-    .grid{display:grid;gap:16px;grid-template-columns:1fr}
-    .card{border-radius:24px;padding:18px}
-    .card h3{margin:0 0 14px;font-size:17px}
-
-    .rows{display:grid;gap:12px}
-    .row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line)}
-    .row:last-child{border-bottom:none;padding-bottom:0}
-    .label{color:var(--muted);font-size:13px;min-width:110px}
-    .value{text-align:right;font-size:14px;line-height:1.45;max-width:72%;word-break:break-word}
-
-    .muted{color:var(--muted);font-size:14px;line-height:1.55}
-    .hidden{display:none!important}
-
-    .spinner{
-      width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);
-      border-top-color:#fff;display:none;animation:spin 1s linear infinite;
+    .grid{
+      display:grid;
+      gap:16px;
+      grid-template-columns:1fr;
     }
-    .spinner.show{display:inline-block}
 
-    .pages-list{display:grid;gap:12px;margin-top:12px}
-    .page-item{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      border-radius:18px;
-      padding:14px;
+    .card,.debug-card{
+      border-radius:24px;
+      padding:18px;
     }
-    .page-item-top{
+
+    .card h3,.debug-card h3{
+      margin:0 0 14px;
+      font-size:17px;
+    }
+
+    .rows{
+      display:grid;
+      gap:12px;
+    }
+
+    .row{
       display:flex;
       justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom:8px;
+      gap:14px;
+      padding:12px 0;
+      border-bottom:1px dashed var(--line);
     }
-    .page-name{font-weight:800;font-size:15px}
-    .page-meta{font-size:13px;color:var(--muted);line-height:1.5}
-    .page-btn{
-      min-height:40px;padding:0 14px;border-radius:12px;background:linear-gradient(180deg,#2b84ff,#1768d9);color:#fff;font-weight:800;
+    .row:last-child{border-bottom:none;padding-bottom:0}
+
+    .label{
+      color:var(--muted);
+      font-size:13px;
+      min-width:110px;
     }
-    .selected-badge{
-      display:inline-block;
-      padding:6px 10px;
-      border-radius:999px;
+
+    .value{
+      text-align:right;
+      font-size:14px;
+      line-height:1.45;
+      max-width:72%;
+      word-break:break-word;
+    }
+
+    .debug-card{
+      margin-top:16px;
+      border-color:rgba(59,130,246,.25);
+    }
+
+    .debug-box{
+      background:#08101d;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:14px;
+      min-height:220px;
+      max-height:480px;
+      overflow:auto;
+      white-space:pre-wrap;
+      word-break:break-word;
       font-size:12px;
-      font-weight:700;
-      color:#d1fae5;
-      background:rgba(16,185,129,.14);
-      border:1px solid rgba(16,185,129,.22);
+      line-height:1.5;
+      color:#d8e6ff;
     }
+
+    .spinner{
+      width:16px;height:16px;border-radius:50%;
+      border:2px solid rgba(255,255,255,.35);
+      border-top-color:#fff;
+      display:none;
+      animation:spin 1s linear infinite;
+    }
+    .spinner.show{display:inline-block}
 
     @keyframes spin{to{transform:rotate(360deg)}}
     @media(min-width:760px){.grid{grid-template-columns:1.1fr .9fr}}
@@ -168,10 +282,12 @@
   <div class="page">
     <div class="topbar">
       <button class="back-btn" id="backBtn" type="button">←</button>
+
       <div class="heading-wrap">
         <div class="eyebrow">View account center</div>
-        <h1>Facebook connection</h1>
+        <h1>Facebook pages debug</h1>
       </div>
+
       <a class="link-btn" href="connect-account.html">All accounts</a>
     </div>
 
@@ -182,25 +298,27 @@
         <div class="brand">
           <div class="brand-icon">f</div>
           <div class="brand-text">
-            <h2>Connect Facebook</h2>
-            <p>Connect Facebook, list your pages, and select the page you want to use for publishing.</p>
+            <h2>Facebook pages diagnosis</h2>
+            <p>This temporary page shows the exact response from your `facebook-pages` function.</p>
           </div>
         </div>
-        <div id="statusChip" class="chip disconnected">Not connected</div>
+        <div id="statusChip" class="chip disconnected">Unknown</div>
       </div>
 
       <p class="hero-copy">
-        This page loads your saved Facebook connection, fetches available pages, and lets you save one page for posting.
+        Tap refresh to confirm session and connection. Tap load pages to see the full JSON from Facebook.
       </p>
 
       <div class="actions">
-        <button id="connectBtn" class="btn btn-primary" type="button">
-          <span id="connectSpinner" class="spinner"></span>
-          <span id="connectBtnText">Connect Facebook</span>
+        <button id="refreshBtn" class="btn btn-secondary" type="button">
+          <span id="refreshSpinner" class="spinner"></span>
+          <span id="refreshBtnText">Refresh status</span>
         </button>
-        <button id="refreshBtn" class="btn btn-secondary" type="button">Refresh status</button>
-        <button id="loadPagesBtn" class="btn btn-secondary" type="button">Load pages</button>
-        <button id="disconnectBtn" class="btn btn-danger hidden" type="button">Disconnect</button>
+
+        <button id="loadPagesBtn" class="btn btn-primary" type="button">
+          <span id="pagesSpinner" class="spinner"></span>
+          <span id="pagesBtnText">Load pages</span>
+        </button>
       </div>
     </section>
 
@@ -214,17 +332,22 @@
           <div class="row"><div class="label">Facebook user ID</div><div class="value" id="detailUserId">—</div></div>
           <div class="row"><div class="label">Selected page ID</div><div class="value" id="detailPageId">—</div></div>
           <div class="row"><div class="label">Scope</div><div class="value" id="detailScope">—</div></div>
-          <div class="row"><div class="label">Token expiry</div><div class="value" id="detailExpiry">—</div></div>
-          <div class="row"><div class="label">Last synced</div><div class="value" id="detailSynced">—</div></div>
         </div>
       </div>
 
       <div class="card">
-        <h3>Available pages</h3>
-        <p class="muted">After connecting, tap “Load pages” to see your Facebook Pages and choose one.</p>
-        <div id="pagesEmpty" class="muted">No pages loaded yet.</div>
-        <div id="pagesList" class="pages-list"></div>
+        <h3>What to look for</h3>
+        <div class="rows">
+          <div class="row"><div class="label">pages_count</div><div class="value">0 or more</div></div>
+          <div class="row"><div class="label">pages</div><div class="value">actual page objects</div></div>
+          <div class="row"><div class="label">raw_pages_response</div><div class="value">Facebook raw response</div></div>
+        </div>
       </div>
+    </section>
+
+    <section class="debug-card">
+      <h3>Raw `facebook-pages` response</h3>
+      <div id="debugBox" class="debug-box">No response yet. Tap “Load pages”.</div>
     </section>
   </div>
 
@@ -239,84 +362,58 @@
         backBtn: document.getElementById("backBtn"),
         notice: document.getElementById("notice"),
         statusChip: document.getElementById("statusChip"),
-        connectBtn: document.getElementById("connectBtn"),
-        connectSpinner: document.getElementById("connectSpinner"),
-        connectBtnText: document.getElementById("connectBtnText"),
         refreshBtn: document.getElementById("refreshBtn"),
+        refreshSpinner: document.getElementById("refreshSpinner"),
+        refreshBtnText: document.getElementById("refreshBtnText"),
         loadPagesBtn: document.getElementById("loadPagesBtn"),
-        disconnectBtn: document.getElementById("disconnectBtn"),
+        pagesSpinner: document.getElementById("pagesSpinner"),
+        pagesBtnText: document.getElementById("pagesBtnText"),
         detailStatus: document.getElementById("detailStatus"),
         detailName: document.getElementById("detailName"),
         detailHandle: document.getElementById("detailHandle"),
         detailUserId: document.getElementById("detailUserId"),
         detailPageId: document.getElementById("detailPageId"),
         detailScope: document.getElementById("detailScope"),
-        detailExpiry: document.getElementById("detailExpiry"),
-        detailSynced: document.getElementById("detailSynced"),
-        pagesList: document.getElementById("pagesList"),
-        pagesEmpty: document.getElementById("pagesEmpty")
+        debugBox: document.getElementById("debugBox")
       };
-
-      let currentAccount = null;
 
       function showNotice(message, type = "warn") {
         els.notice.className = `notice show ${type}`;
         els.notice.textContent = message;
       }
 
-      function fmtDate(value) {
-        if (!value) return "—";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return String(value);
-        return d.toLocaleString([], {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit"
-        });
+      function setRefreshBusy(state) {
+        els.refreshBtn.disabled = state;
+        els.refreshSpinner.classList.toggle("show", state);
+        els.refreshBtnText.textContent = state ? "Please wait..." : "Refresh status";
       }
 
-      function setBusy(state) {
-        els.connectBtn.disabled = state;
-        els.refreshBtn.disabled = state;
+      function setPagesBusy(state) {
         els.loadPagesBtn.disabled = state;
-        els.disconnectBtn.disabled = state;
-        els.connectSpinner.classList.toggle("show", state);
-        els.connectBtnText.textContent = state ? "Please wait..." : "Connect Facebook";
+        els.pagesSpinner.classList.toggle("show", state);
+        els.pagesBtnText.textContent = state ? "Please wait..." : "Load pages";
       }
 
       function setDisconnectedUI() {
-        currentAccount = null;
         els.statusChip.textContent = "Not connected";
         els.statusChip.className = "chip disconnected";
-        els.disconnectBtn.classList.add("hidden");
         els.detailStatus.textContent = "No saved Facebook connection";
         els.detailName.textContent = "—";
         els.detailHandle.textContent = "—";
         els.detailUserId.textContent = "—";
         els.detailPageId.textContent = "—";
         els.detailScope.textContent = "—";
-        els.detailExpiry.textContent = "—";
-        els.detailSynced.textContent = "—";
-        els.pagesList.innerHTML = "";
-        els.pagesEmpty.textContent = "No pages loaded yet.";
-        els.pagesEmpty.classList.remove("hidden");
       }
 
       function setConnectedUI(data) {
-        currentAccount = data;
         els.statusChip.textContent = "Connected";
         els.statusChip.className = "chip connected";
-        els.disconnectBtn.classList.remove("hidden");
         els.detailStatus.textContent = data.status || "connected";
         els.detailName.textContent = data.account_name || "—";
         els.detailHandle.textContent = data.account_handle || "—";
         els.detailUserId.textContent = data.external_user_id || "—";
         els.detailPageId.textContent = data.external_page_id || "—";
         els.detailScope.textContent = data.scope || "—";
-        els.detailExpiry.textContent = fmtDate(data.token_expires_at);
-        els.detailSynced.textContent = fmtDate(data.last_synced_at || data.updated_at || data.created_at);
       }
 
       async function getSessionOrWarn() {
@@ -330,7 +427,7 @@
         return session;
       }
 
-      async function safeFetch(url, options = {}, timeoutMs = 20000) {
+      async function safeFetch(url, options = {}, timeoutMs = 25000) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), timeoutMs);
         try {
@@ -341,7 +438,7 @@
       }
 
       async function loadStatus() {
-        setBusy(true);
+        setRefreshBusy(true);
         try {
           const session = await getSessionOrWarn();
           if (!session) {
@@ -351,7 +448,9 @@
 
           const res = await safeFetch(`${FN_BASE}/facebook-status`, {
             method: "GET",
-            headers: { "Authorization": `Bearer ${session.access_token}` }
+            headers: {
+              "Authorization": `Bearer ${session.access_token}`
+            }
           });
 
           const data = await res.json().catch(() => ({}));
@@ -369,71 +468,12 @@
           setDisconnectedUI();
           showNotice(err.message || "Could not load Facebook status.", "error");
         } finally {
-          setBusy(false);
-        }
-      }
-
-      async function connectFacebook() {
-        setBusy(true);
-        try {
-          const session = await getSessionOrWarn();
-          if (!session) return;
-
-          const redirect_to = `${window.location.origin}/facebook-connect.html`;
-
-          const res = await safeFetch(`${FN_BASE}/facebook-connect`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${session.access_token}`
-            },
-            body: JSON.stringify({ redirect_to })
-          });
-
-          const data = await res.json().catch(() => ({}));
-
-          if (!res.ok) throw new Error(data?.error || `Connect failed (${res.status})`);
-          if (!data?.auth_url) throw new Error("facebook-connect did not return auth_url.");
-
-          window.location.href = data.auth_url;
-        } catch (err) {
-          showNotice(err.message || "Failed to start Facebook login.", "error");
-        } finally {
-          setBusy(false);
-        }
-      }
-
-      async function disconnectFacebook() {
-        const ok = confirm("Disconnect saved Facebook account?");
-        if (!ok) return;
-
-        setBusy(true);
-        try {
-          const session = await getSessionOrWarn();
-          if (!session) return;
-
-          const res = await safeFetch(`${FN_BASE}/facebook-disconnect`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${session.access_token}`
-            }
-          });
-
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(data?.error || `Disconnect failed (${res.status})`);
-
-          setDisconnectedUI();
-          showNotice("Facebook disconnected successfully.", "success");
-        } catch (err) {
-          showNotice(err.message || "Disconnect failed.", "error");
-        } finally {
-          setBusy(false);
+          setRefreshBusy(false);
         }
       }
 
       async function loadPages() {
-        setBusy(true);
+        setPagesBusy(true);
         try {
           const session = await getSessionOrWarn();
           if (!session) return;
@@ -446,101 +486,19 @@
           });
 
           const data = await res.json().catch(() => ({}));
+
+          els.debugBox.textContent = JSON.stringify(data, null, 2);
+          alert(JSON.stringify(data, null, 2));
+
           if (!res.ok) throw new Error(data?.error || `Load pages failed (${res.status})`);
 
-          renderPages(Array.isArray(data.pages) ? data.pages : []);
-          showNotice("Facebook pages loaded.", "success");
+          showNotice(`facebook-pages returned. pages_count: ${data?.pages_count ?? "unknown"}`, "success");
         } catch (err) {
-          renderPages([]);
+          els.debugBox.textContent = String(err.message || err);
           showNotice(err.message || "Could not load Facebook pages.", "error");
+          alert(err.message || "Could not load Facebook pages.");
         } finally {
-          setBusy(false);
-        }
-      }
-
-      async function selectPage(page) {
-        setBusy(true);
-        try {
-          const session = await getSessionOrWarn();
-          if (!session) return;
-
-          const res = await safeFetch(`${FN_BASE}/facebook-select-page`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${session.access_token}`
-            },
-            body: JSON.stringify({
-              page_id: page.id,
-              page_name: page.name,
-              page_access_token: page.access_token
-            })
-          });
-
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(data?.error || `Select page failed (${res.status})`);
-
-          showNotice(data?.message || "Page selected successfully.", "success");
-          await loadStatus();
-          await loadPages();
-        } catch (err) {
-          showNotice(err.message || "Could not save selected page.", "error");
-        } finally {
-          setBusy(false);
-        }
-      }
-
-      function renderPages(pages) {
-        els.pagesList.innerHTML = "";
-
-        if (!pages.length) {
-          els.pagesEmpty.textContent = "No pages found for this account.";
-          els.pagesEmpty.classList.remove("hidden");
-          return;
-        }
-
-        els.pagesEmpty.classList.add("hidden");
-
-        pages.forEach((page) => {
-          const wrap = document.createElement("div");
-          wrap.className = "page-item";
-
-          const isSelected = currentAccount?.external_page_id && String(currentAccount.external_page_id) === String(page.id);
-
-          wrap.innerHTML = `
-            <div class="page-item-top">
-              <div>
-                <div class="page-name">${page.name || "Unnamed Page"}</div>
-                <div class="page-meta">
-                  ID: ${page.id || "—"}<br>
-                  Category: ${page.category || "—"}
-                </div>
-              </div>
-              ${isSelected ? '<span class="selected-badge">Selected</span>' : ''}
-            </div>
-          `;
-
-          const btn = document.createElement("button");
-          btn.className = "page-btn";
-          btn.type = "button";
-          btn.textContent = isSelected ? "Selected page" : "Use this page";
-          btn.disabled = isSelected;
-          btn.addEventListener("click", () => selectPage(page));
-
-          wrap.appendChild(btn);
-          els.pagesList.appendChild(wrap);
-        });
-      }
-
-      function readQueryMessage() {
-        const params = new URLSearchParams(window.location.search);
-        const status = params.get("status");
-        const message = params.get("message");
-
-        if (status === "success") {
-          showNotice(message || "Facebook connected successfully.", "success");
-        } else if (status === "error") {
-          showNotice(message || "Facebook connection failed.", "error");
+          setPagesBusy(false);
         }
       }
 
@@ -549,12 +507,9 @@
         else window.location.href = "connect-account.html";
       });
 
-      els.connectBtn.addEventListener("click", connectFacebook);
       els.refreshBtn.addEventListener("click", loadStatus);
       els.loadPagesBtn.addEventListener("click", loadPages);
-      els.disconnectBtn.addEventListener("click", disconnectFacebook);
 
-      readQueryMessage();
       loadStatus();
     });
   </script>
