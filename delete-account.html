@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Delete Account | View</title>
+  <meta name="description" content="Delete your View account. Learn what happens when you request account deletion and how your data may be removed or retained." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="icon" href="/favicon.ico" />
+
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg2:#0b1628;
+      --card:rgba(255,255,255,0.08);
+      --card2:rgba(255,255,255,0.05);
+      --text:#eaf2ff;
+      --muted:#a9bbd6;
+      --line:rgba(255,255,255,0.12);
+      --blue:#3b82f6;
+      --cyan:#22d3ee;
+      --red:#ef4444;
+      --red2:#dc2626;
+      --green:#22c55e;
+      --amber:#f59e0b;
+      --shadow:0 20px 50px rgba(0,0,0,0.35);
+      --radius:24px;
+      --radius-sm:18px;
+      --max:1120px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+
+    body{
+      font-family:Inter,Arial,Helvetica,sans-serif;
+      color:var(--text);
+      line-height:1.65;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top left, rgba(239,68,68,.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(59,130,246,.10), transparent 25%),
+        linear-gradient(180deg,#07111f 0%,#081322 38%,#0b1628 100%);
+      overflow-x:hidden;
+    }
+
+    a{color:#9ed0ff;text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .noise{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.06;
+      background-image:radial-gradient(rgba(255,255,255,.35) .7px, transparent .7px);
+      background-size:18px 18px;
+      z-index:0;
+    }
+
+    .page{position:relative;z-index:1}
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      backdrop-filter:blur(14px);
+      background:rgba(7,17,31,.78);
+      border-bottom:1px solid var(--line);
+    }
+
+    .topbar-inner{
+      width:min(100% - 24px, var(--max));
+      margin:auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-badge{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:#fff;
+      background:linear-gradient(135deg,#ef4444,#3b82f6);
+      box-shadow:var(--shadow);
+      flex-shrink:0;
+    }
+
+    .brand-text h1{
+      font-size:1rem;
+      line-height:1.1;
+      font-weight:800;
+    }
+
+    .brand-text p{
+      color:var(--muted);
+      font-size:.84rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:flex-end;
+    }
+
+    .nav a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      font-size:.92rem;
+      transition:.25s ease;
+    }
+
+    .nav a:hover{
+      text-decoration:none;
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.08);
+      border-color:rgba(255,255,255,.2);
+    }
+
+    .hero{
+      width:min(100% - 24px, var(--max));
+      margin:34px auto 22px;
+      display:grid;
+      grid-template-columns:1.12fr .88fr;
+      gap:22px;
+    }
+
+    .hero-card,.summary-card,.form-card,.info-card,.contact-card{
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+
+    .hero-card{
+      padding:28px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      width:260px;
+      height:260px;
+      right:-85px;
+      top:-85px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(239,68,68,.18), transparent 70%);
+      pointer-events:none;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(239,68,68,.22);
+      background:rgba(239,68,68,.08);
+      color:#ffd7d7;
+      font-size:.86rem;
+      margin-bottom:14px;
+    }
+
+    .hero h2{
+      font-size:clamp(2rem, 4vw, 3rem);
+      line-height:1.02;
+      margin-bottom:14px;
+      letter-spacing:-.03em;
+    }
+
+    .hero p.lead{
+      color:var(--muted);
+      font-size:1.05rem;
+      max-width:760px;
+    }
+
+    .meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:20px;
+    }
+
+    .meta span{
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      font-size:.92rem;
+      color:#dce8ff;
+    }
+
+    .summary-card{
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      justify-content:center;
+    }
+
+    .summary-card h3{
+      font-size:1.15rem;
+      font-weight:800;
+    }
+
+    .summary-item{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .summary-item strong{
+      display:block;
+      margin-bottom:4px;
+      font-size:.96rem;
+    }
+
+    .summary-item span{
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .main{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 42px;
+      display:grid;
+      grid-template-columns:1.02fr .98fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .form-card,.info-card{
+      padding:24px;
+    }
+
+    .form-card h3,.info-card h3{
+      font-size:1.3rem;
+      margin-bottom:8px;
+    }
+
+    .subtext{
+      color:var(--muted);
+      margin-bottom:18px;
+    }
+
+    .notice{
+      padding:16px 18px;
+      border-radius:18px;
+      margin-bottom:18px;
+      font-size:.94rem;
+    }
+
+    .notice.warn{
+      background:rgba(239,68,68,.08);
+      border:1px solid rgba(239,68,68,.18);
+      color:#ffd7d7;
+    }
+
+    .notice.info{
+      background:rgba(59,130,246,.08);
+      border:1px solid rgba(59,130,246,.18);
+      color:#dceeff;
+    }
+
+    .notice.good{
+      background:rgba(34,197,94,.08);
+      border:1px solid rgba(34,197,94,.18);
+      color:#dafce7;
+      display:none;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    }
+
+    .field{
+      margin-bottom:14px;
+    }
+
+    .field label{
+      display:block;
+      margin-bottom:8px;
+      font-weight:700;
+      font-size:.95rem;
+      color:#e8f1ff;
+    }
+
+    .field input,
+    .field select,
+    .field textarea{
+      width:100%;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border-radius:14px;
+      padding:14px 14px;
+      font-size:.95rem;
+      outline:none;
+      transition:.2s ease;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder{
+      color:#8fa3c2;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus{
+      border-color:rgba(239,68,68,.45);
+      box-shadow:0 0 0 4px rgba(239,68,68,.10);
+    }
+
+    .field textarea{
+      min-height:140px;
+      resize:vertical;
+    }
+
+    .checks{
+      display:grid;
+      gap:12px;
+      margin:8px 0 18px;
+    }
+
+    .check{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color:var(--muted);
+      font-size:.93rem;
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.07);
+    }
+
+    .check input{
+      margin-top:3px;
+      accent-color:#ef4444;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:13px 18px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      text-decoration:none;
+      color:#fff;
+      transition:.25s ease;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--red2),var(--red));
+      border:none;
+    }
+
+    .btn.secondary{
+      background:rgba(255,255,255,.05);
+    }
+
+    .btn:hover{
+      text-decoration:none;
+      transform:translateY(-1px);
+      opacity:.97;
+    }
+
+    .list{
+      display:grid;
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .list-item{
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .list-item h4{
+      font-size:1rem;
+      margin-bottom:6px;
+    }
+
+    .list-item p{
+      color:var(--muted);
+      font-size:.93rem;
+    }
+
+    .contact-card{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 36px;
+      padding:24px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:center;
+    }
+
+    .contact-card h3{
+      font-size:1.35rem;
+      margin-bottom:8px;
+    }
+
+    .contact-card p{
+      color:var(--muted);
+    }
+
+    .contact-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:flex-end;
+    }
+
+    footer{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 40px;
+      color:var(--muted);
+      text-align:center;
+      padding:10px 0 40px;
+      font-size:.92rem;
+    }
+
+    @media (max-width: 980px){
+      .hero,.main,.contact-card{
+        grid-template-columns:1fr;
+      }
+
+      .contact-actions{
+        justify-content:flex-start;
+      }
+    }
+
+    @media (max-width: 700px){
+      .topbar-inner{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .nav{
+        width:100%;
+        justify-content:flex-start;
+      }
+
+      .grid-2{
+        grid-template-columns:1fr;
+      }
+
+      .hero-card,.summary-card,.form-card,.info-card,.contact-card{
+        border-radius:20px;
+      }
+
+      .hero-card,.summary-card,.form-card,.info-card{
+        padding:20px;
+      }
+
+      .meta span{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-badge">V</div>
+          <div class="brand-text">
+            <h1>Delete View Account</h1>
+            <p>View by Ceetify — Account deletion request</p>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a href="/index.html">Home</a>
+          <a href="/privacy.html">Privacy</a>
+          <a href="/terms.html">Terms</a>
+          <a href="/contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">Account Deletion • Data Removal • Final Action</div>
+        <h2>Delete your View account carefully.</h2>
+        <p class="lead">
+          This page helps you request deletion of your View account. Deleting your
+          account may remove your profile, posts, messages, settings, and access to
+          features connected to your account. Some information may still be retained
+          for limited periods where required for security, legal, fraud prevention,
+          backup, or operational reasons.
+        </p>
+
+        <div class="meta">
+          <span><strong>Action:</strong> Account deletion request</span>
+          <span><strong>Support:</strong> info.ceeticegroup@gmail.com</span>
+          <span><strong>Platform:</strong> View by Ceetify</span>
+        </div>
+      </div>
+
+      <aside class="summary-card">
+        <h3>Before you continue</h3>
+
+        <div class="summary-item">
+          <strong>You may lose access</strong>
+          <span>Your profile, login access, account settings, and linked activity may stop working.</span>
+        </div>
+
+        <div class="summary-item">
+          <strong>Some data may be removed</strong>
+          <span>Posts, profile details, uploaded content, and personal account data may be deleted or scheduled for deletion.</span>
+        </div>
+
+        <div class="summary-item">
+          <strong>Some data may remain temporarily</strong>
+          <span>Backups, logs, safety records, legal holds, and fraud-related records may be retained for a limited time.</span>
+        </div>
+
+        <div class="summary-item">
+          <strong>This action should be intentional</strong>
+          <span>Review carefully before requesting deletion.</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="main">
+      <div class="form-card">
+        <h3>Request account deletion</h3>
+        <p class="subtext">
+          This form prepares a deletion request email so support can verify and process it safely.
+        </p>
+
+        <div class="notice warn">
+          Deleting an account is a serious action. Review what happens below before sending your request.
+        </div>
+
+        <form id="deleteForm">
+          <div class="grid-2">
+            <div class="field">
+              <label for="fullName">Full name</label>
+              <input type="text" id="fullName" placeholder="Enter your full name" />
+            </div>
+
+            <div class="field">
+              <label for="email">Account email</label>
+              <input type="email" id="email" placeholder="Enter the email linked to your View account" />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="username">View username</label>
+              <input type="text" id="username" placeholder="@yourusername" />
+            </div>
+
+            <div class="field">
+              <label for="reason">Reason</label>
+              <select id="reason">
+                <option value="Privacy concern">Privacy concern</option>
+                <option value="No longer using the platform">No longer using the platform</option>
+                <option value="Too many notifications">Too many notifications</option>
+                <option value="Account safety concern">Account safety concern</option>
+                <option value="Created a new account">Created a new account</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="details">Additional details</label>
+            <textarea id="details" placeholder="Add any details that may help support identify and process your request."></textarea>
+          </div>
+
+          <div class="checks">
+            <label class="check">
+              <input type="checkbox" id="check1" />
+              <span>I understand that deleting my View account may remove my profile, posts, settings, and access to my account.</span>
+            </label>
+
+            <label class="check">
+              <input type="checkbox" id="check2" />
+              <span>I understand that some information may still be retained for limited legal, security, fraud prevention, backup, or operational reasons.</span>
+            </label>
+
+            <label class="check">
+              <input type="checkbox" id="check3" />
+              <span>I confirm that this request is made by the rightful owner of the account or by someone authorized to act for that account.</span>
+            </label>
+          </div>
+
+          <div class="btn-row">
+            <button type="submit" class="btn primary">Request Deletion by Email</button>
+            <a href="mailto:info.ceeticegroup@gmail.com?subject=View%20Account%20Deletion%20Request" class="btn secondary">Direct Email</a>
+          </div>
+
+          <div id="successBox" class="notice good" style="margin-top:18px;">
+            Opening your email app with a prepared account deletion request...
+          </div>
+        </form>
+      </div>
+
+      <aside class="info-card">
+        <h3>What happens when you delete your account</h3>
+        <p class="subtext">
+          The exact handling may depend on the type of data, technical setup, and any legal or safety obligations.
+        </p>
+
+        <div class="list">
+          <div class="list-item">
+            <h4>Profile and access</h4>
+            <p>Your profile and account access may be disabled, removed, or scheduled for deletion.</p>
+          </div>
+
+          <div class="list-item">
+            <h4>Posts and uploaded content</h4>
+            <p>Your public content may be removed or disassociated, depending on how the platform stores and displays it.</p>
+          </div>
+
+          <div class="list-item">
+            <h4>Messages and interactions</h4>
+            <p>Some message history or conversation records may remain visible to other participants where technically necessary.</p>
+          </div>
+
+          <div class="list-item">
+            <h4>Backups and logs</h4>
+            <p>Backups, diagnostics, and security logs may remain for a limited period before expiry or removal.</p>
+          </div>
+
+          <div class="list-item">
+            <h4>Legal and fraud-related retention</h4>
+            <p>Some records may be retained where required to comply with law, enforce policies, investigate abuse, or prevent fraud.</p>
+          </div>
+        </div>
+
+        <div class="notice info" style="margin-top:18px;">
+          If your issue is temporary, you may prefer changing notification settings, updating your privacy options, or contacting support before deleting your account.
+        </div>
+      </aside>
+    </section>
+
+    <section class="contact-card">
+      <div>
+        <h3>Need help before deleting your account?</h3>
+        <p>
+          If you are facing a login issue, privacy concern, harassment issue, or app
+          problem, contact support first. Some issues can be resolved without losing your account.
+        </p>
+      </div>
+
+      <div class="contact-actions">
+        <a class="btn secondary" href="/contact.html">Contact Support</a>
+        <a class="btn secondary" href="/privacy.html">View Privacy Policy</a>
+      </div>
+    </section>
+
+    <footer>
+      © 2026 View by Ceetify. All rights reserved.
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const form = document.getElementById('deleteForm');
+      const successBox = document.getElementById('successBox');
+
+      function val(id) {
+        return (document.getElementById(id).value || '').trim();
+      }
+
+      function checked(id) {
+        return document.getElementById(id).checked;
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const fullName = val('fullName');
+        const email = val('email');
+        const username = val('username');
+        const reason = val('reason');
+        const details = val('details');
+
+        if (!email && !username) {
+          alert('Please enter at least your account email or View username.');
+          return;
+        }
+
+        if (!checked('check1') || !checked('check2') || !checked('check3')) {
+          alert('Please confirm all deletion acknowledgements before continuing.');
+          return;
+        }
+
+        const subject = 'View Account Deletion Request';
+
+        const body = [
+          'Hello View Support,',
+          '',
+          'I am requesting deletion of my View account.',
+          '',
+          'Account details:',
+          'Full name: ' + (fullName || 'Not provided'),
+          'Account email: ' + (email || 'Not provided'),
+          'View username: ' + (username || 'Not provided'),
+          'Reason: ' + (reason || 'Not provided'),
+          '',
+          'Additional details:',
+          details || 'No additional details provided.',
+          '',
+          'Confirmations:',
+          '- I understand that deleting my account may remove profile, content, settings, and account access.',
+          '- I understand some records may remain temporarily for legal, security, fraud prevention, backup, or operational reasons.',
+          '- I confirm I am the rightful owner of this account or authorized to make this request.',
+          '',
+          'Sent from: view.ceetice.com/delete-account.html'
+        ].join('\n');
+
+        successBox.style.display = 'block';
+
+        const mailto = 'mailto:info.ceeticegroup@gmail.com'
+          + '?subject=' + encodeURIComponent(subject)
+          + '&body=' + encodeURIComponent(body);
+
+        window.location.href = mailto;
+      });
+    })();
+  </script>
+</body>
+</html>
