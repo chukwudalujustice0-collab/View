@@ -3,11 +3,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 serve(async (req) => {
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const facebookAppId = Deno.env.get("FACEBOOK_APP_ID")!;
-    const facebookAppSecret = Deno.env.get("FACEBOOK_APP_SECRET")!;
-    const callbackUrl = Deno.env.get("FACEBOOK_CALLBACK_URL")!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const facebookAppId = Deno.env.get("FACEBOOK_APP_ID");
+    const facebookAppSecret = Deno.env.get("FACEBOOK_APP_SECRET");
+    const callbackUrl = Deno.env.get("FACEBOOK_CALLBACK_URL");
+
+    if (!supabaseUrl || !serviceRoleKey || !facebookAppId || !facebookAppSecret || !callbackUrl) {
+      return new Response("Missing required environment variables", { status: 500 });
+    }
 
     const url = new URL(req.url);
     const code = url.searchParams.get("code");
@@ -19,7 +23,9 @@ serve(async (req) => {
 
     if (errorReason) {
       return Response.redirect(
-        `${fallbackRedirect}?status=error&message=${encodeURIComponent(errorDescription || "Facebook denied access")}`,
+        `${fallbackRedirect}?status=error&message=${encodeURIComponent(
+          errorDescription || "Facebook denied access"
+        )}`,
         302
       );
     }
@@ -32,6 +38,7 @@ serve(async (req) => {
     }
 
     let parsedState: { user_id: string; redirect_to: string; ts: number };
+
     try {
       parsedState = JSON.parse(atob(state));
     } catch {
@@ -58,12 +65,16 @@ serve(async (req) => {
       code,
     });
 
-    const tokenRes = await fetch(`https://graph.facebook.com/v23.0/oauth/access_token?${tokenParams.toString()}`);
+    const tokenRes = await fetch(
+      `https://graph.facebook.com/v23.0/oauth/access_token?${tokenParams.toString()}`
+    );
     const tokenJson = await tokenRes.json();
 
     if (!tokenRes.ok || !tokenJson.access_token) {
       return Response.redirect(
-        `${redirectTo}?status=error&message=${encodeURIComponent(tokenJson?.error?.message || "Failed to get access token")}`,
+        `${redirectTo}?status=error&message=${encodeURIComponent(
+          tokenJson?.error?.message || "Failed to get access token"
+        )}`,
         302
       );
     }
@@ -77,7 +88,9 @@ serve(async (req) => {
       fb_exchange_token: shortToken,
     });
 
-    const longTokenRes = await fetch(`https://graph.facebook.com/v23.0/oauth/access_token?${longTokenParams.toString()}`);
+    const longTokenRes = await fetch(
+      `https://graph.facebook.com/v23.0/oauth/access_token?${longTokenParams.toString()}`
+    );
     const longTokenJson = await longTokenRes.json();
 
     const finalToken = longTokenJson?.access_token || shortToken;
@@ -93,7 +106,9 @@ serve(async (req) => {
 
     if (!meRes.ok || !meJson?.id) {
       return Response.redirect(
-        `${redirectTo}?status=error&message=${encodeURIComponent(meJson?.error?.message || "Failed to fetch profile")}`,
+        `${redirectTo}?status=error&message=${encodeURIComponent(
+          meJson?.error?.message || "Failed to fetch Facebook profile"
+        )}`,
         302
       );
     }
@@ -102,55 +117,51 @@ serve(async (req) => {
       ? new Date(Date.now() + Number(expiresIn) * 1000).toISOString()
       : null;
 
-    const accountName = meJson?.name || null;
-    const accountHandle = meJson?.email || null;
-    const externalUserId = meJson?.id || null;
-    const avatarUrl = meJson?.picture?.data?.url || null;
-    const scope = "public_profile,email";
-
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
-    const existingRes = await admin
+    const { data: existingRows, error: existingError } = await admin
       .from("connected_accounts")
       .select("id")
       .eq("user_id", userId)
       .eq("platform", "facebook")
-      .order("updated_at", { ascending: false })
-      .limit(1);
+      .order("updated_at", { ascending: false });
 
-    const existingRows = existingRes.data || [];
-    const keepId = existingRows[0]?.id || null;
+    if (existingError) {
+      return Response.redirect(
+        `${redirectTo}?status=error&message=${encodeURIComponent(existingError.message)}`,
+        302
+      );
+    }
 
-    if (existingRows.length > 1) {
-      const deleteIds = existingRows.slice(1).map(row => row.id);
+    const keepId = existingRows?.[0]?.id || null;
+
+    if (existingRows && existingRows.length > 1) {
+      const deleteIds = existingRows.slice(1).map((row) => row.id);
       if (deleteIds.length) {
-        await admin
-          .from("connected_accounts")
-          .delete()
-          .in("id", deleteIds);
+        await admin.from("connected_accounts").delete().in("id", deleteIds);
       }
     }
 
     const payload = {
       user_id: userId,
       platform: "facebook",
-      account_name: accountName,
-      account_handle: accountHandle,
+      account_name: meJson?.name || null,
+      account_handle: meJson?.email || null,
       status: "connected",
       access_token: finalToken,
       refresh_token: null,
       token_expires_at: tokenExpiresAt,
-      external_user_id: externalUserId,
+      external_user_id: meJson?.id || null,
       external_page_id: null,
-      avatar_url: avatarUrl,
+      avatar_url: meJson?.picture?.data?.url || null,
       token_type: "Bearer",
-      scope,
+      scope: "public_profile,email",
       last_synced_at: new Date().toISOString(),
       last_error: null,
       updated_at: new Date().toISOString(),
     };
 
-    let saveError = null;
+    let saveError: { message?: string } | null = null;
 
     if (keepId) {
       const { error } = await admin
@@ -172,18 +183,24 @@ serve(async (req) => {
 
     if (saveError) {
       return Response.redirect(
-        `${redirectTo}?status=error&message=${encodeURIComponent(saveError.message || "Failed to save connection")}`,
+        `${redirectTo}?status=error&message=${encodeURIComponent(
+          saveError.message || "Failed to save connection"
+        )}`,
         302
       );
     }
 
     return Response.redirect(
-      `${redirectTo}?status=success&message=${encodeURIComponent("Facebook connected successfully")}`,
+      `${redirectTo}?status=success&message=${encodeURIComponent(
+        "Facebook connected successfully"
+      )}`,
       302
     );
   } catch (error) {
     return Response.redirect(
-      `https://view.ceetice.com/facebook-connect.html?status=error&message=${encodeURIComponent(error.message || "Unexpected callback error")}`,
+      `https://view.ceetice.com/facebook-connect.html?status=error&message=${encodeURIComponent(
+        error instanceof Error ? error.message : "Unexpected callback error"
+      )}`,
       302
     );
   }
