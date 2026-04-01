@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Facebook Connection Debug | View</title>
+  <title>Facebook Connection | View</title>
   <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -48,330 +48,130 @@
       margin-bottom:18px;
     }
 
-    .back-btn,.link-btn,.btn{
+    .back-btn,.link-btn,.btn,.page-btn{
       border:none;
       cursor:pointer;
       font:inherit;
     }
 
     .back-btn{
-      width:46px;
-      height:46px;
-      border-radius:14px;
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      border:1px solid var(--line);
+      width:46px;height:46px;border-radius:14px;
+      background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line);
     }
 
     .heading-wrap{flex:1;min-width:0}
-    .eyebrow{
-      color:var(--muted);
-      font-size:12px;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      margin-bottom:4px;
-    }
-
-    h1{
-      margin:0;
-      font-size:22px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
+    .eyebrow{color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+    h1{margin:0;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
     .link-btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:42px;
-      padding:0 14px;
-      border-radius:14px;
-      background:rgba(255,255,255,.05);
-      color:var(--muted);
-      border:1px solid var(--line);
-      text-decoration:none;
+      display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 14px;border-radius:14px;
+      background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--line);text-decoration:none;
     }
 
     .notice{
-      display:none;
-      margin-bottom:16px;
-      padding:14px 15px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      font-size:14px;
-      line-height:1.5;
-      word-break:break-word;
+      display:none;margin-bottom:16px;padding:14px 15px;border-radius:16px;border:1px solid var(--line);
+      font-size:14px;line-height:1.5;word-break:break-word;
     }
     .notice.show{display:block}
-    .notice.success{
-      background:rgba(16,185,129,.12);
-      border-color:rgba(16,185,129,.24);
-      color:#d1fae5;
-    }
-    .notice.warn{
-      background:rgba(245,158,11,.12);
-      border-color:rgba(245,158,11,.24);
-      color:#fef3c7;
-    }
-    .notice.error{
-      background:rgba(239,68,68,.12);
-      border-color:rgba(239,68,68,.24);
-      color:#fee2e2;
-    }
+    .notice.success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.24);color:#d1fae5}
+    .notice.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.24);color:#fef3c7}
+    .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#fee2e2}
 
-    .hero,.card,.debug-card{
+    .hero,.card{
       background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
       border:1px solid var(--line);
       box-shadow:var(--shadow);
     }
 
-    .hero{
-      border-radius:28px;
-      padding:22px 18px;
-      margin-bottom:16px;
-    }
-
-    .hero-top{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .brand{
-      display:flex;
-      gap:14px;
-      align-items:center;
-      min-width:0;
-    }
-
+    .hero{border-radius:28px;padding:22px 18px;margin-bottom:16px}
+    .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .brand{display:flex;gap:14px;align-items:center;min-width:0}
     .brand-icon{
-      width:58px;
-      height:58px;
-      border-radius:18px;
-      background:linear-gradient(180deg,#2b84ff,#1768d9);
-      display:grid;
-      place-items:center;
-      font-size:30px;
-      font-weight:900;
-      color:#fff;
-      flex:0 0 auto;
+      width:58px;height:58px;border-radius:18px;background:linear-gradient(180deg,#2b84ff,#1768d9);
+      display:grid;place-items:center;font-size:30px;font-weight:900;color:#fff;flex:0 0 auto;
     }
-
-    .brand-text h2{
-      margin:0 0 5px;
-      font-size:20px;
-    }
-
-    .brand-text p{
-      margin:0;
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.55;
-    }
+    .brand-text h2{margin:0 0 5px;font-size:20px}
+    .brand-text p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
 
     .chip{
-      padding:10px 12px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:700;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      color:var(--muted);
-      white-space:nowrap;
+      padding:10px 12px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--line);
+      background:rgba(255,255,255,.06);color:var(--muted);white-space:nowrap;
     }
-    .chip.connected{
-      color:#d1fae5;
-      background:rgba(16,185,129,.12);
-      border-color:rgba(16,185,129,.24);
-    }
-    .chip.disconnected{
-      color:#fef3c7;
-      background:rgba(245,158,11,.10);
-      border-color:rgba(245,158,11,.24);
-    }
+    .chip.connected{color:#d1fae5;background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.24)}
+    .chip.disconnected{color:#fef3c7;background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.24)}
 
-    .hero-copy{
-      color:#dbe7ff;
-      font-size:14px;
-      line-height:1.6;
-      margin:0 0 18px;
-    }
-
-    .actions{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-    }
+    .hero-copy{color:#dbe7ff;font-size:14px;line-height:1.6;margin:0 0 18px}
+    .actions{display:flex;flex-wrap:wrap;gap:12px}
 
     .btn{
-      min-height:48px;
-      border-radius:16px;
-      padding:0 16px;
-      font-weight:800;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
+      min-height:48px;border-radius:16px;padding:0 16px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:10px;
     }
     .btn[disabled]{opacity:.6;cursor:not-allowed}
-    .btn-primary{
-      background:linear-gradient(180deg,#2b84ff,#1768d9);
-      color:#fff;
-    }
-    .btn-secondary{
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      border:1px solid var(--line);
-    }
-    .btn-danger{
-      background:rgba(239,68,68,.12);
-      color:#fecaca;
-      border:1px solid rgba(239,68,68,.22);
-    }
+    .btn-primary{background:linear-gradient(180deg,#2b84ff,#1768d9);color:#fff}
+    .btn-secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}
+    .btn-danger{background:rgba(239,68,68,.12);color:#fecaca;border:1px solid rgba(239,68,68,.22)}
 
-    .grid{
-      display:grid;
-      gap:16px;
-      grid-template-columns:1fr;
-    }
+    .grid{display:grid;gap:16px;grid-template-columns:1fr}
+    .card{border-radius:24px;padding:18px}
+    .card h3{margin:0 0 14px;font-size:17px}
 
-    .card,.debug-card{
-      border-radius:24px;
-      padding:18px;
-    }
+    .rows{display:grid;gap:12px}
+    .row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line)}
+    .row:last-child{border-bottom:none;padding-bottom:0}
+    .label{color:var(--muted);font-size:13px;min-width:110px}
+    .value{text-align:right;font-size:14px;line-height:1.45;max-width:72%;word-break:break-word}
 
-    .card h3,.debug-card h3{
-      margin:0 0 14px;
-      font-size:17px;
-    }
-
-    .rows{
-      display:grid;
-      gap:12px;
-    }
-
-    .row{
-      display:flex;
-      justify-content:space-between;
-      gap:14px;
-      padding:12px 0;
-      border-bottom:1px dashed var(--line);
-    }
-    .row:last-child{
-      border-bottom:none;
-      padding-bottom:0;
-    }
-
-    .label{
-      color:var(--muted);
-      font-size:13px;
-      min-width:110px;
-    }
-
-    .value{
-      text-align:right;
-      font-size:14px;
-      line-height:1.45;
-      max-width:72%;
-      word-break:break-word;
-    }
-
-    .muted{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.55;
-    }
-
-    .perm-wrap{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-
-    .perm{
-      padding:11px 12px;
-      border-radius:15px;
-      background:rgba(255,255,255,.05);
-      border:1px solid var(--line);
-      font-size:13px;
-      color:#dce7ff;
-    }
-
+    .muted{color:var(--muted);font-size:14px;line-height:1.55}
     .hidden{display:none!important}
 
     .spinner{
-      width:16px;
-      height:16px;
-      border-radius:50%;
-      border:2px solid rgba(255,255,255,.35);
-      border-top-color:#fff;
-      display:none;
-      animation:spin 1s linear infinite;
+      width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);
+      border-top-color:#fff;display:none;animation:spin 1s linear infinite;
     }
     .spinner.show{display:inline-block}
 
-    .debug-card{
-      margin-top:16px;
-      border-color:rgba(245,158,11,.28);
-      background:linear-gradient(180deg, rgba(245,158,11,.08), rgba(255,255,255,.03));
-    }
-
-    .debug-actions{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-bottom:14px;
-    }
-
-    .debug-btn{
-      min-height:42px;
-      padding:0 14px;
-      border-radius:12px;
+    .pages-list{display:grid;gap:12px;margin-top:12px}
+    .page-item{
       border:1px solid var(--line);
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      cursor:pointer;
-      font:inherit;
-      font-weight:700;
+      background:rgba(255,255,255,.04);
+      border-radius:18px;
+      padding:14px;
     }
-
-    .debug-output{
-      background:#08101d;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px;
-      padding:12px;
-      min-height:180px;
-      max-height:360px;
-      overflow:auto;
-      white-space:pre-wrap;
-      word-break:break-word;
+    .page-item-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:8px;
+    }
+    .page-name{font-weight:800;font-size:15px}
+    .page-meta{font-size:13px;color:var(--muted);line-height:1.5}
+    .page-btn{
+      min-height:40px;padding:0 14px;border-radius:12px;background:linear-gradient(180deg,#2b84ff,#1768d9);color:#fff;font-weight:800;
+    }
+    .selected-badge{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
       font-size:12px;
-      line-height:1.5;
-      color:#d8e6ff;
+      font-weight:700;
+      color:#d1fae5;
+      background:rgba(16,185,129,.14);
+      border:1px solid rgba(16,185,129,.22);
     }
 
-    @keyframes spin{
-      to{transform:rotate(360deg)}
-    }
-
-    @media(min-width:760px){
-      .grid{grid-template-columns:1.1fr .9fr}
-    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(min-width:760px){.grid{grid-template-columns:1.1fr .9fr}}
   </style>
 </head>
 <body>
   <div class="page">
     <div class="topbar">
       <button class="back-btn" id="backBtn" type="button">←</button>
-
       <div class="heading-wrap">
         <div class="eyebrow">View account center</div>
-        <h1>Facebook connection debug</h1>
+        <h1>Facebook connection</h1>
       </div>
-
       <a class="link-btn" href="connect-account.html">All accounts</a>
     </div>
 
@@ -383,14 +183,14 @@
           <div class="brand-icon">f</div>
           <div class="brand-text">
             <h2>Connect Facebook</h2>
-            <p>Debug version to trace button clicks, session, and fetch requests.</p>
+            <p>Connect Facebook, list your pages, and select the page you want to use for publishing.</p>
           </div>
         </div>
         <div id="statusChip" class="chip disconnected">Not connected</div>
       </div>
 
       <p class="hero-copy">
-        This version prints every step into the debug panel so you can see exactly where the process stops.
+        This page loads your saved Facebook connection, fetches available pages, and lets you save one page for posting.
       </p>
 
       <div class="actions">
@@ -398,8 +198,8 @@
           <span id="connectSpinner" class="spinner"></span>
           <span id="connectBtnText">Connect Facebook</span>
         </button>
-
         <button id="refreshBtn" class="btn btn-secondary" type="button">Refresh status</button>
+        <button id="loadPagesBtn" class="btn btn-secondary" type="button">Load pages</button>
         <button id="disconnectBtn" class="btn btn-danger hidden" type="button">Disconnect</button>
       </div>
     </section>
@@ -412,7 +212,7 @@
           <div class="row"><div class="label">Name</div><div class="value" id="detailName">—</div></div>
           <div class="row"><div class="label">Handle / email</div><div class="value" id="detailHandle">—</div></div>
           <div class="row"><div class="label">Facebook user ID</div><div class="value" id="detailUserId">—</div></div>
-          <div class="row"><div class="label">Page ID</div><div class="value" id="detailPageId">—</div></div>
+          <div class="row"><div class="label">Selected page ID</div><div class="value" id="detailPageId">—</div></div>
           <div class="row"><div class="label">Scope</div><div class="value" id="detailScope">—</div></div>
           <div class="row"><div class="label">Token expiry</div><div class="value" id="detailExpiry">—</div></div>
           <div class="row"><div class="label">Last synced</div><div class="value" id="detailSynced">—</div></div>
@@ -420,24 +220,11 @@
       </div>
 
       <div class="card">
-        <h3>Permissions requested</h3>
-        <p class="muted" style="margin-bottom:14px;">This version starts with profile connection.</p>
-        <div class="perm-wrap">
-          <div class="perm">public_profile</div>
-          <div class="perm">email</div>
-        </div>
+        <h3>Available pages</h3>
+        <p class="muted">After connecting, tap “Load pages” to see your Facebook Pages and choose one.</p>
+        <div id="pagesEmpty" class="muted">No pages loaded yet.</div>
+        <div id="pagesList" class="pages-list"></div>
       </div>
-    </section>
-
-    <section class="debug-card">
-      <h3>Debug panel</h3>
-      <div class="debug-actions">
-        <button id="testSessionBtn" class="debug-btn" type="button">Test session</button>
-        <button id="testStatusBtn" class="debug-btn" type="button">Test status fetch</button>
-        <button id="testConnectBtn" class="debug-btn" type="button">Test connect fetch</button>
-        <button id="clearDebugBtn" class="debug-btn" type="button">Clear logs</button>
-      </div>
-      <div id="debugOutput" class="debug-output">Debug logs will appear here...</div>
     </section>
   </div>
 
@@ -446,6 +233,7 @@
       const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
       const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
       const FN_BASE = `${SUPABASE_URL}/functions/v1`;
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
       const els = {
         backBtn: document.getElementById("backBtn"),
@@ -455,6 +243,7 @@
         connectSpinner: document.getElementById("connectSpinner"),
         connectBtnText: document.getElementById("connectBtnText"),
         refreshBtn: document.getElementById("refreshBtn"),
+        loadPagesBtn: document.getElementById("loadPagesBtn"),
         disconnectBtn: document.getElementById("disconnectBtn"),
         detailStatus: document.getElementById("detailStatus"),
         detailName: document.getElementById("detailName"),
@@ -464,42 +253,15 @@
         detailScope: document.getElementById("detailScope"),
         detailExpiry: document.getElementById("detailExpiry"),
         detailSynced: document.getElementById("detailSynced"),
-        debugOutput: document.getElementById("debugOutput"),
-        testSessionBtn: document.getElementById("testSessionBtn"),
-        testStatusBtn: document.getElementById("testStatusBtn"),
-        testConnectBtn: document.getElementById("testConnectBtn"),
-        clearDebugBtn: document.getElementById("clearDebugBtn")
+        pagesList: document.getElementById("pagesList"),
+        pagesEmpty: document.getElementById("pagesEmpty")
       };
 
-      let supabase = null;
-
-      function debug(msg, obj) {
-        const time = new Date().toLocaleTimeString();
-        let text = `[${time}] ${msg}`;
-        if (obj !== undefined) {
-          try {
-            text += `\n${JSON.stringify(obj, null, 2)}`;
-          } catch {
-            text += `\n${String(obj)}`;
-          }
-        }
-        console.log(text);
-        els.debugOutput.textContent += `\n\n${text}`;
-        els.debugOutput.scrollTop = els.debugOutput.scrollHeight;
-      }
-
-      function clearDebug() {
-        els.debugOutput.textContent = "Debug logs cleared.";
-      }
+      let currentAccount = null;
 
       function showNotice(message, type = "warn") {
         els.notice.className = `notice show ${type}`;
         els.notice.textContent = message;
-      }
-
-      function hideNotice() {
-        els.notice.className = "notice";
-        els.notice.textContent = "";
       }
 
       function fmtDate(value) {
@@ -518,12 +280,14 @@
       function setBusy(state) {
         els.connectBtn.disabled = state;
         els.refreshBtn.disabled = state;
+        els.loadPagesBtn.disabled = state;
         els.disconnectBtn.disabled = state;
         els.connectSpinner.classList.toggle("show", state);
         els.connectBtnText.textContent = state ? "Please wait..." : "Connect Facebook";
       }
 
       function setDisconnectedUI() {
+        currentAccount = null;
         els.statusChip.textContent = "Not connected";
         els.statusChip.className = "chip disconnected";
         els.disconnectBtn.classList.add("hidden");
@@ -535,9 +299,13 @@
         els.detailScope.textContent = "—";
         els.detailExpiry.textContent = "—";
         els.detailSynced.textContent = "—";
+        els.pagesList.innerHTML = "";
+        els.pagesEmpty.textContent = "No pages loaded yet.";
+        els.pagesEmpty.classList.remove("hidden");
       }
 
       function setConnectedUI(data) {
+        currentAccount = data;
         els.statusChip.textContent = "Connected";
         els.statusChip.className = "chip connected";
         els.disconnectBtn.classList.remove("hidden");
@@ -551,77 +319,29 @@
         els.detailSynced.textContent = fmtDate(data.last_synced_at || data.updated_at || data.created_at);
       }
 
-      function initSupabase() {
-        debug("Initializing Supabase...");
-        debug("SUPABASE_URL", SUPABASE_URL);
-        debug("Anon key exists", !!SUPABASE_ANON_KEY);
-
-        if (!window.supabase || !window.supabase.createClient) {
-          throw new Error("Supabase library did not load.");
-        }
-
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        debug("Supabase initialized successfully.");
-      }
-
       async function getSessionOrWarn() {
-        debug("Checking session...");
         const { data, error } = await supabase.auth.getSession();
-
-        debug("Session error", error || null);
-        debug("Session data", data || null);
-
         if (error) throw error;
-
         const session = data?.session || null;
-
         if (!session?.access_token) {
           showNotice("You are not signed in. Please login first.", "warn");
-          debug("No session access token found.");
           return null;
         }
-
-        debug("Session exists", {
-          hasAccessToken: !!session.access_token,
-          userId: session.user?.id || null,
-          email: session.user?.email || null
-        });
-
         return session;
       }
 
       async function safeFetch(url, options = {}, timeoutMs = 20000) {
-        debug("Starting fetch", { url, options });
-
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
         try {
-          const res = await fetch(url, { ...options, signal: controller.signal });
-          debug("Fetch response received", {
-            url,
-            status: res.status,
-            ok: res.ok,
-            type: res.type
-          });
-          return res;
-        } catch (err) {
-          debug("Fetch failed", {
-            url,
-            name: err?.name || null,
-            message: err?.message || String(err)
-          });
-          throw err;
+          return await fetch(url, { ...options, signal: controller.signal });
         } finally {
           clearTimeout(timeout);
         }
       }
 
       async function loadStatus() {
-        hideNotice();
         setBusy(true);
-        debug("loadStatus called");
-
         try {
           const session = await getSessionOrWarn();
           if (!session) {
@@ -629,55 +349,37 @@
             return;
           }
 
-          debug("Calling facebook-status endpoint...");
           const res = await safeFetch(`${FN_BASE}/facebook-status`, {
             method: "GET",
-            headers: {
-              "Authorization": `Bearer ${session.access_token}`
-            }
+            headers: { "Authorization": `Bearer ${session.access_token}` }
           });
 
           const data = await res.json().catch(() => ({}));
-          debug("facebook-status response body", data);
 
-          if (!res.ok) {
-            throw new Error(data?.error || `Status failed (${res.status})`);
-          }
+          if (!res.ok) throw new Error(data?.error || `Status failed (${res.status})`);
 
           if (data.connected && data.account) {
             setConnectedUI(data.account);
             showNotice("Facebook status loaded.", "success");
-            debug("Facebook account is connected.");
           } else {
             setDisconnectedUI();
             showNotice("No Facebook account is connected yet.", "warn");
-            debug("No connected Facebook account found.");
           }
         } catch (err) {
-          console.error("facebook-status error:", err);
           setDisconnectedUI();
-          const message =
-            err.name === "AbortError"
-              ? "facebook-status request timed out."
-              : (err.message || "Could not load Facebook status.");
-          showNotice(message, "error");
-          debug("loadStatus failed", { message });
+          showNotice(err.message || "Could not load Facebook status.", "error");
         } finally {
           setBusy(false);
         }
       }
 
       async function connectFacebook() {
-        hideNotice();
         setBusy(true);
-        debug("connectFacebook called");
-
         try {
           const session = await getSessionOrWarn();
           if (!session) return;
 
           const redirect_to = `${window.location.origin}/facebook-connect.html`;
-          debug("Using redirect_to", redirect_to);
 
           const res = await safeFetch(`${FN_BASE}/facebook-connect`, {
             method: "POST",
@@ -689,46 +391,23 @@
           });
 
           const data = await res.json().catch(() => ({}));
-          debug("facebook-connect response body", data);
 
-          if (!res.ok) {
-            throw new Error(data?.error || `Connect failed (${res.status})`);
-          }
+          if (!res.ok) throw new Error(data?.error || `Connect failed (${res.status})`);
+          if (!data?.auth_url) throw new Error("facebook-connect did not return auth_url.");
 
-          if (!data?.auth_url) {
-            throw new Error("facebook-connect did not return auth_url.");
-          }
-
-          showNotice("Opening Facebook login...", "success");
-          debug("Redirecting to Facebook auth_url", data.auth_url);
-
-          setTimeout(() => {
-            window.location.href = data.auth_url;
-          }, 400);
+          window.location.href = data.auth_url;
         } catch (err) {
-          console.error("facebook-connect error:", err);
-          const message =
-            err.name === "AbortError"
-              ? "facebook-connect request timed out."
-              : (err.message || "Failed to start Facebook login.");
-          showNotice(message, "error");
-          debug("connectFacebook failed", { message });
+          showNotice(err.message || "Failed to start Facebook login.", "error");
         } finally {
           setBusy(false);
         }
       }
 
       async function disconnectFacebook() {
-        hideNotice();
-        debug("disconnectFacebook called");
-
         const ok = confirm("Disconnect saved Facebook account?");
-        debug("Disconnect confirmed", ok);
-
         if (!ok) return;
 
         setBusy(true);
-
         try {
           const session = await getSessionOrWarn();
           if (!session) return;
@@ -742,98 +421,115 @@
           });
 
           const data = await res.json().catch(() => ({}));
-          debug("facebook-disconnect response body", data);
-
-          if (!res.ok) {
-            throw new Error(data?.error || `Disconnect failed (${res.status})`);
-          }
+          if (!res.ok) throw new Error(data?.error || `Disconnect failed (${res.status})`);
 
           setDisconnectedUI();
           showNotice("Facebook disconnected successfully.", "success");
-          debug("Facebook disconnected successfully.");
         } catch (err) {
-          console.error("facebook-disconnect error:", err);
-          const message =
-            err.name === "AbortError"
-              ? "facebook-disconnect request timed out."
-              : (err.message || "Disconnect failed.");
-          showNotice(message, "error");
-          debug("disconnectFacebook failed", { message });
+          showNotice(err.message || "Disconnect failed.", "error");
         } finally {
           setBusy(false);
         }
       }
 
-      async function testSessionOnly() {
-        hideNotice();
-        debug("Manual session test started");
-        try {
-          const session = await getSessionOrWarn();
-          if (session) {
-            showNotice("Session exists.", "success");
-          }
-        } catch (err) {
-          showNotice(err.message || "Session test failed.", "error");
-          debug("Session test failed", err);
-        }
-      }
-
-      async function testStatusFetchOnly() {
-        hideNotice();
-        debug("Manual status fetch test started");
+      async function loadPages() {
+        setBusy(true);
         try {
           const session = await getSessionOrWarn();
           if (!session) return;
 
-          const res = await safeFetch(`${FN_BASE}/facebook-status`, {
+          const res = await safeFetch(`${FN_BASE}/facebook-pages`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${session.access_token}`
             }
           });
 
-          const text = await res.text();
-          debug("Manual status raw response", {
-            status: res.status,
-            body: text
-          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.error || `Load pages failed (${res.status})`);
 
-          showNotice(`Status fetch returned ${res.status}.`, res.ok ? "success" : "warn");
+          renderPages(Array.isArray(data.pages) ? data.pages : []);
+          showNotice("Facebook pages loaded.", "success");
         } catch (err) {
-          showNotice(err.message || "Manual status fetch failed.", "error");
-          debug("Manual status fetch failed", err);
+          renderPages([]);
+          showNotice(err.message || "Could not load Facebook pages.", "error");
+        } finally {
+          setBusy(false);
         }
       }
 
-      async function testConnectFetchOnly() {
-        hideNotice();
-        debug("Manual connect fetch test started");
+      async function selectPage(page) {
+        setBusy(true);
         try {
           const session = await getSessionOrWarn();
           if (!session) return;
 
-          const redirect_to = `${window.location.origin}/facebook-connect.html`;
-
-          const res = await safeFetch(`${FN_BASE}/facebook-connect`, {
+          const res = await safeFetch(`${FN_BASE}/facebook-select-page`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${session.access_token}`
             },
-            body: JSON.stringify({ redirect_to })
+            body: JSON.stringify({
+              page_id: page.id,
+              page_name: page.name,
+              page_access_token: page.access_token
+            })
           });
 
-          const text = await res.text();
-          debug("Manual connect raw response", {
-            status: res.status,
-            body: text
-          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.error || `Select page failed (${res.status})`);
 
-          showNotice(`Connect fetch returned ${res.status}.`, res.ok ? "success" : "warn");
+          showNotice(data?.message || "Page selected successfully.", "success");
+          await loadStatus();
+          await loadPages();
         } catch (err) {
-          showNotice(err.message || "Manual connect fetch failed.", "error");
-          debug("Manual connect fetch failed", err);
+          showNotice(err.message || "Could not save selected page.", "error");
+        } finally {
+          setBusy(false);
         }
+      }
+
+      function renderPages(pages) {
+        els.pagesList.innerHTML = "";
+
+        if (!pages.length) {
+          els.pagesEmpty.textContent = "No pages found for this account.";
+          els.pagesEmpty.classList.remove("hidden");
+          return;
+        }
+
+        els.pagesEmpty.classList.add("hidden");
+
+        pages.forEach((page) => {
+          const wrap = document.createElement("div");
+          wrap.className = "page-item";
+
+          const isSelected = currentAccount?.external_page_id && String(currentAccount.external_page_id) === String(page.id);
+
+          wrap.innerHTML = `
+            <div class="page-item-top">
+              <div>
+                <div class="page-name">${page.name || "Unnamed Page"}</div>
+                <div class="page-meta">
+                  ID: ${page.id || "—"}<br>
+                  Category: ${page.category || "—"}
+                </div>
+              </div>
+              ${isSelected ? '<span class="selected-badge">Selected</span>' : ''}
+            </div>
+          `;
+
+          const btn = document.createElement("button");
+          btn.className = "page-btn";
+          btn.type = "button";
+          btn.textContent = isSelected ? "Selected page" : "Use this page";
+          btn.disabled = isSelected;
+          btn.addEventListener("click", () => selectPage(page));
+
+          wrap.appendChild(btn);
+          els.pagesList.appendChild(wrap);
+        });
       }
 
       function readQueryMessage() {
@@ -843,60 +539,23 @@
 
         if (status === "success") {
           showNotice(message || "Facebook connected successfully.", "success");
-          debug("Callback success message detected", message || null);
         } else if (status === "error") {
           showNotice(message || "Facebook connection failed.", "error");
-          debug("Callback error message detected", message || null);
         }
-      }
-
-      function cleanQuery() {
-        const url = new URL(window.location.href);
-        if (url.search) {
-          url.search = "";
-          window.history.replaceState({}, document.title, url.toString());
-        }
-      }
-
-      try {
-        initSupabase();
-      } catch (err) {
-        showNotice(err.message || "Could not initialize Supabase.", "error");
-        debug("Supabase initialization failed", err);
       }
 
       els.backBtn.addEventListener("click", () => {
-        debug("Back button clicked");
         if (document.referrer) history.back();
         else window.location.href = "connect-account.html";
       });
 
-      els.connectBtn.addEventListener("click", () => {
-        debug("Connect button clicked");
-        showNotice("Connect button clicked...", "warn");
-        connectFacebook();
-      });
-
-      els.refreshBtn.addEventListener("click", () => {
-        debug("Refresh button clicked");
-        showNotice("Refresh button clicked...", "warn");
-        loadStatus();
-      });
-
-      els.disconnectBtn.addEventListener("click", () => {
-        debug("Disconnect button clicked");
-        showNotice("Disconnect button clicked...", "warn");
-        disconnectFacebook();
-      });
-
-      els.testSessionBtn.addEventListener("click", testSessionOnly);
-      els.testStatusBtn.addEventListener("click", testStatusFetchOnly);
-      els.testConnectBtn.addEventListener("click", testConnectFetchOnly);
-      els.clearDebugBtn.addEventListener("click", clearDebug);
+      els.connectBtn.addEventListener("click", connectFacebook);
+      els.refreshBtn.addEventListener("click", loadStatus);
+      els.loadPagesBtn.addEventListener("click", loadPages);
+      els.disconnectBtn.addEventListener("click", disconnectFacebook);
 
       readQueryMessage();
       loadStatus();
-      setTimeout(cleanQuery, 1200);
     });
   </script>
 </body>
