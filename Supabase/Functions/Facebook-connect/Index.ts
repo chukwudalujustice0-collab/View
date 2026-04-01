@@ -1,71 +1,83 @@
-// Facebook Connect Edge Function (Supabase)
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-// Get secrets from Supabase
-const FACEBOOK_APP_ID = Deno.env.get("FACEBOOK_APP_ID")!;
-const FACEBOOK_APP_SECRET = Deno.env.get("FACEBOOK_APP_SECRET")!;
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
 serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   try {
-    const url = new URL(req.url);
-    const code = url.searchParams.get("code");
-
-    // Step 1: Redirect user to Facebook login
-    if (!code) {
-      const redirectUri = "http://localhost:8080/connected-accounts.html";
-
-      const facebookLoginUrl =
-        `https://www.facebook.com/v19.0/dialog/oauth?` +
-        `client_id=${FACEBOOK_APP_ID}` +
-        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        `&scope=public_profile,email,pages_manage_posts,pages_read_engagement` +
-        `&response_type=code`;
-
-      return Response.redirect(facebookLoginUrl);
+    if (req.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), {
+        status: 405,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // Step 2: Exchange code for access token
-    const redirectUri = "http://localhost:8080/connected-accounts.html";
-
-    const tokenRes = await fetch(
-      `https://graph.facebook.com/v19.0/oauth/access_token?` +
-        `client_id=${FACEBOOK_APP_ID}` +
-        `&client_secret=${FACEBOOK_APP_SECRET}` +
-        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        `&code=${code}`
-    );
-
-    const tokenData = await tokenRes.json();
-
-    if (!tokenData.access_token) {
-      return new Response(
-        JSON.stringify({ error: "Failed to get access token", details: tokenData }),
-        { status: 400 }
-      );
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Missing authorization header" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const accessToken = tokenData.access_token;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const facebookAppId = Deno.env.get("FACEBOOK_APP_ID")!;
+    const callbackUrl = Deno.env.get("FACEBOOK_CALLBACK_URL")!;
 
-    // Step 3: Get user profile
-    const userRes = await fetch(
-      `https://graph.facebook.com/me?fields=id,name,email&access_token=${accessToken}`
-    );
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
 
-    const userData = await userRes.json();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        user: userData,
-        access_token: accessToken,
-      }),
-      { headers: { "Content-Type": "application/json" } }
-    );
-  } catch (err) {
-    return new Response(
-      JSON.stringify({ error: err.message }),
-      { status: 500 }
-    );
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized user" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const redirect_to = body?.redirect_to || `${new URL(req.url).origin}/facebook-connect.html`;
+
+    const statePayload = {
+      user_id: user.id,
+      redirect_to,
+      ts: Date.now(),
+    };
+
+    const state = btoa(JSON.stringify(statePayload));
+
+    const params = new URLSearchParams({
+      client_id: facebookAppId,
+      redirect_uri: callbackUrl,
+      state,
+      response_type: "code",
+      scope: "public_profile,email",
+    });
+
+    const auth_url = `https://www.facebook.com/v23.0/dialog/oauth?${params.toString()}`;
+
+    return new Response(JSON.stringify({ auth_url }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message || "Unexpected error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
