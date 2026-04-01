@@ -3,62 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Connect Facebook | View</title>
-  <meta name="theme-color" content="#ffffff" />
+  <title>Facebook Connection | View</title>
+  <meta name="theme-color" content="#08111f" />
+  <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{
-      --bg:#f6f8fc;
-      --card:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --line:#e5e7eb;
+      --bg:#08111f;
+      --bg2:#0d1830;
+      --card:rgba(255,255,255,.06);
+      --line:rgba(255,255,255,.09);
+      --text:#f5f7ff;
+      --muted:#9fb1d7;
       --primary:#1877f2;
-      --primary2:#0f5fd4;
-      --success:#059669;
-      --danger:#dc2626;
-      --info:#1d4ed8;
-      --shadow:0 12px 30px rgba(15,23,42,.08);
-      --safe-bottom:env(safe-area-inset-bottom);
+      --primary2:#2563eb;
+      --success:#10b981;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --shadow:0 18px 45px rgba(0,0,0,.28);
+      --radius:24px;
+      --safe-top:env(safe-area-inset-top,0px);
+      --safe-bottom:env(safe-area-inset-bottom,0px);
     }
 
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-      font-family:Arial,sans-serif;
-      -webkit-tap-highlight-color:transparent;
-    }
-
-    html,body{
-      min-height:100%;
-      background:
-        radial-gradient(circle at top left, rgba(24,119,242,.06), transparent 24%),
-        radial-gradient(circle at bottom right, rgba(15,95,212,.05), transparent 20%),
-        linear-gradient(180deg,#fbfcff 0%, #f5f7fb 100%);
-      color:var(--text);
-    }
-
+    *{box-sizing:border-box;margin:0;padding:0}
     body{
-      padding:18px 14px calc(24px + var(--safe-bottom));
+      font-family:Arial,Helvetica,sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(24,119,242,.22), transparent 28%),
+        radial-gradient(circle at top left, rgba(124,58,237,.16), transparent 22%),
+        linear-gradient(180deg,#08111f 0%, #0c162b 100%);
+      color:var(--text);
+      min-height:100vh;
     }
 
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
+    a{text-decoration:none;color:inherit}
+    button{font:inherit}
 
-    button{
-      border:none;
-      outline:none;
-      cursor:pointer;
-      font:inherit;
-    }
-
-    .wrap{
-      width:min(100%, 860px);
+    .page{
+      max-width:820px;
       margin:0 auto;
+      padding:calc(18px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
     }
 
     .topbar{
@@ -66,280 +52,406 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:16px;
+      margin-bottom:18px;
     }
 
-    .top-left{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-      flex:1;
-    }
-
-    .icon-btn{
-      width:48px;
-      height:48px;
-      min-width:48px;
-      border-radius:16px;
-      background:#fff;
+    .back-btn{
+      border:none;
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      cursor:pointer;
       border:1px solid var(--line);
       box-shadow:var(--shadow);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:18px;
-      color:var(--text);
+      font-size:20px;
     }
 
-    .title-box{
-      min-width:0;
+    .heading-wrap{
       flex:1;
+      min-width:0;
     }
 
-    .title{
-      font-size:24px;
-      font-weight:800;
-      margin-bottom:4px;
+    .eyebrow{
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:5px;
+    }
+
+    h1{
+      font-size:22px;
+      line-height:1.15;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .sub{
+    .link-btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
       color:var(--muted);
+      padding:11px 14px;
+      border-radius:14px;
       font-size:13px;
       white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
     }
 
     .notice{
       display:none;
-      padding:14px 16px;
-      border-radius:16px;
+      margin-bottom:16px;
+      padding:14px 15px;
+      border-radius:18px;
       font-size:14px;
-      line-height:1.6;
-      white-space:pre-wrap;
-      margin-bottom:14px;
-      box-shadow:var(--shadow);
+      line-height:1.5;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
     }
-
     .notice.show{display:block}
-    .notice.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8}
-    .notice.success{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
-    .notice.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-
-    .card{
-      background:rgba(255,255,255,.94);
-      border:1px solid rgba(255,255,255,.7);
-      border-radius:24px;
-      box-shadow:var(--shadow);
-      padding:18px;
-      margin-bottom:14px;
+    .notice.success{
+      background:rgba(16,185,129,.12);
+      border-color:rgba(16,185,129,.25);
+      color:#d1fae5;
+    }
+    .notice.error{
+      background:rgba(239,68,68,.12);
+      border-color:rgba(239,68,68,.25);
+      color:#fee2e2;
+    }
+    .notice.warn{
+      background:rgba(245,158,11,.12);
+      border-color:rgba(245,158,11,.25);
+      color:#fef3c7;
     }
 
     .hero{
-      display:grid;
-      gap:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background:
+        linear-gradient(135deg, rgba(24,119,242,.22), rgba(37,99,235,.10)),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border-radius:30px;
+      padding:22px 18px;
+      box-shadow:var(--shadow);
+      margin-bottom:16px;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      width:180px;
+      height:180px;
+      right:-35px;
+      bottom:-35px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(24,119,242,.30), transparent 65%);
+      pointer-events:none;
     }
 
     .hero-top{
       display:flex;
-      gap:14px;
       align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
     }
 
-    .fb-badge{
-      width:68px;
-      height:68px;
-      min-width:68px;
-      border-radius:22px;
-      background:linear-gradient(135deg,#1877f2,#0f5fd4);
-      color:#fff;
+    .brand{
       display:flex;
       align-items:center;
-      justify-content:center;
-      font-size:30px;
-      font-weight:800;
-      box-shadow:0 16px 34px rgba(24,119,242,.22);
+      gap:14px;
+      min-width:0;
     }
 
-    .hero-copy h2{
-      font-size:24px;
-      font-weight:800;
-      line-height:1.2;
-      margin-bottom:8px;
+    .brand-icon{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      background:linear-gradient(180deg,#2990ff,#1767d7);
+      display:grid;
+      place-items:center;
+      font-size:32px;
+      font-weight:900;
+      box-shadow:0 14px 28px rgba(24,119,242,.25);
+      border:1px solid rgba(255,255,255,.18);
+      flex:0 0 auto;
     }
 
-    .hero-copy p{
+    .brand-text h2{
+      font-size:20px;
+      margin-bottom:5px;
+    }
+
+    .brand-text p{
       color:var(--muted);
-      line-height:1.65;
       font-size:14px;
+      line-height:1.55;
+    }
+
+    .chip{
+      padding:10px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .chip.connected{
+      color:#d1fae5;
+      background:rgba(16,185,129,.12);
+      border-color:rgba(16,185,129,.24);
+    }
+    .chip.disconnected{
+      color:#fef3c7;
+      background:rgba(245,158,11,.10);
+      border-color:rgba(245,158,11,.24);
+    }
+
+    .hero-copy{
+      color:#dbe7ff;
+      font-size:14px;
+      line-height:1.6;
+      margin-bottom:18px;
+      max-width:640px;
     }
 
     .actions{
       display:flex;
-      gap:10px;
       flex-wrap:wrap;
+      gap:12px;
     }
 
     .btn{
-      min-height:52px;
-      padding:0 18px;
+      border:none;
+      min-height:48px;
       border-radius:16px;
-      font-size:14px;
-      font-weight:700;
-      display:flex;
+      padding:0 16px;
+      display:inline-flex;
       align-items:center;
       justify-content:center;
-      transition:.18s ease;
+      gap:10px;
+      font-weight:800;
+      cursor:pointer;
     }
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
 
-    .btn.primary{
-      flex:1;
-      min-width:210px;
+    .btn-primary{
       color:#fff;
-      background:linear-gradient(135deg,#1877f2,#0f5fd4);
+      background:linear-gradient(180deg,#2b84ff,#1768d9);
+      box-shadow:0 14px 28px rgba(24,119,242,.28);
     }
 
-    .btn.secondary{
-      flex:1;
-      min-width:150px;
-      color:#111827;
-      background:#fff;
+    .btn-secondary{
+      color:var(--text);
+      background:rgba(255,255,255,.06);
       border:1px solid var(--line);
     }
 
-    .btn.disabled{
-      opacity:.7;
-      pointer-events:none;
+    .btn-danger{
+      color:#fecaca;
+      background:rgba(239,68,68,.12);
+      border:1px solid rgba(239,68,68,.22);
     }
 
-    .helper{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.65;
-    }
-
-    .status-grid{
+    .grid{
       display:grid;
-      grid-template-columns:repeat(2,1fr);
+      gap:16px;
+      grid-template-columns:1fr;
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:26px;
+      padding:18px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+
+    .card h3{
+      margin-bottom:14px;
+      font-size:17px;
+    }
+
+    .rows{
+      display:grid;
+      gap:12px;
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      border-bottom:1px dashed var(--line);
+      padding:12px 0;
+    }
+
+    .row:last-child{
+      border-bottom:none;
+      padding-bottom:0;
+    }
+
+    .label{
+      color:var(--muted);
+      font-size:13px;
+      min-width:110px;
+    }
+
+    .value{
+      text-align:right;
+      font-size:14px;
+      line-height:1.45;
+      word-break:break-word;
+      max-width:72%;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.55;
+    }
+
+    .perm-wrap{
+      display:flex;
+      flex-wrap:wrap;
       gap:10px;
     }
 
-    .status-box{
+    .perm{
+      padding:11px 12px;
+      border-radius:15px;
+      background:rgba(255,255,255,.05);
       border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px;
-      background:#fafcff;
-      min-height:100px;
-    }
-
-    .status-label{
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:7px;
-    }
-
-    .status-value{
       font-size:13px;
-      font-weight:800;
-      line-height:1.55;
-      word-break:break-word;
+      color:#dce7ff;
     }
 
-    .result-box{
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px;
-      background:#fff;
-      display:grid;
-      gap:8px;
+    .hidden{display:none !important}
+
+    .spinner{
+      width:16px;
+      height:16px;
+      border:2px solid rgba(255,255,255,.35);
+      border-top-color:#fff;
+      border-radius:50%;
+      display:none;
+      animation:spin 1s linear infinite;
+    }
+    .spinner.show{display:inline-block}
+
+    @keyframes spin{
+      to{transform:rotate(360deg)}
     }
 
-    code{
-      background:#f3f4f6;
-      padding:2px 6px;
-      border-radius:6px;
-      font-size:12px;
-      word-break:break-all;
-    }
-
-    @media (max-width:720px){
-      .status-grid{
-        grid-template-columns:1fr;
-      }
-
-      .hero-top{
-        flex-direction:column;
-        align-items:flex-start;
-      }
+    @media(min-width:760px){
+      .grid{grid-template-columns:1.1fr .9fr}
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header class="topbar">
-      <div class="top-left">
-        <button class="icon-btn" type="button" onclick="history.back()">←</button>
-        <div class="title-box">
-          <div class="title">Connect Facebook</div>
-          <div class="sub">Basic login test for your Facebook connection flow</div>
-        </div>
+  <div class="page">
+    <div class="topbar">
+      <button class="back-btn" id="backBtn">←</button>
+
+      <div class="heading-wrap">
+        <div class="eyebrow">View account center</div>
+        <h1>Facebook connection</h1>
       </div>
-      <a class="icon-btn" href="connected-accounts.html">✕</a>
-    </header>
+
+      <a href="connect-account.html" class="link-btn">All accounts</a>
+    </div>
 
     <div id="notice" class="notice"></div>
 
-    <section class="card hero">
+    <section class="hero">
       <div class="hero-top">
-        <div class="fb-badge">f</div>
-        <div class="hero-copy">
-          <h2>Test Facebook login first</h2>
-          <p>
-            This version uses only <code>public_profile</code> so Facebook should allow login and redirect back. It also saves a basic Facebook connection row after success.
-          </p>
+        <div class="brand">
+          <div class="brand-icon">f</div>
+          <div class="brand-text">
+            <h2>Connect Facebook</h2>
+            <p>
+              Connect your Facebook account and save it to your View profile so you can use it later for publishing and account management.
+            </p>
+          </div>
         </div>
+
+        <div id="statusChip" class="chip disconnected">Not connected</div>
       </div>
+
+      <p class="hero-copy">
+        This page checks your saved Facebook connection, starts the login flow, stores the connected account in Supabase, and lets you disconnect it anytime.
+      </p>
 
       <div class="actions">
-        <a id="loginLink" class="btn primary disabled" href="#">Preparing Facebook Login...</a>
-        <a id="manualLink" class="btn secondary" href="#" style="display:none;">Open Facebook Manually</a>
-        <a href="connected-accounts.html" class="btn secondary">Back</a>
-      </div>
+        <button id="connectBtn" class="btn btn-primary">
+          <span id="connectSpinner" class="spinner"></span>
+          <span id="connectBtnText">Connect Facebook</span>
+        </button>
 
-      <div class="helper">
-        This confirms login and saves a basic Facebook connection. It is not yet full Page-posting setup.
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="status-grid">
-        <div class="status-box">
-          <div class="status-label">Meta App ID</div>
-          <div class="status-value" id="appIdText">-</div>
-        </div>
-        <div class="status-box">
-          <div class="status-label">Redirect URI</div>
-          <div class="status-value" id="redirectUri">-</div>
-        </div>
-        <div class="status-box">
-          <div class="status-label">Requested scope</div>
-          <div class="status-value" id="scopeText">-</div>
-        </div>
-        <div class="status-box">
-          <div class="status-label">Current state</div>
-          <div class="status-value" id="stateText">Waiting for login</div>
-        </div>
+        <button id="refreshBtn" class="btn btn-secondary">Refresh status</button>
+        <button id="disconnectBtn" class="btn btn-danger hidden">Disconnect</button>
       </div>
     </section>
 
-    <section class="card">
-      <div class="title" style="font-size:20px; margin-bottom:12px;">Login Result</div>
-      <div id="resultBox" class="result-box">
-        <div class="helper">No login result yet.</div>
+    <section class="grid">
+      <div class="card">
+        <h3>Connection details</h3>
+
+        <div class="rows">
+          <div class="row">
+            <div class="label">Status</div>
+            <div class="value" id="detailStatus">—</div>
+          </div>
+
+          <div class="row">
+            <div class="label">Facebook name</div>
+            <div class="value" id="detailName">—</div>
+          </div>
+
+          <div class="row">
+            <div class="label">Facebook ID</div>
+            <div class="value" id="detailFacebookId">—</div>
+          </div>
+
+          <div class="row">
+            <div class="label">Username</div>
+            <div class="value" id="detailUsername">—</div>
+          </div>
+
+          <div class="row">
+            <div class="label">Token expiry</div>
+            <div class="value" id="detailExpiry">—</div>
+          </div>
+
+          <div class="row">
+            <div class="label">Connected at</div>
+            <div class="value" id="detailConnectedAt">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Permissions this setup requests</h3>
+        <p class="muted" style="margin-bottom:14px;">
+          Adjust these later if you want page posting or deeper Facebook integration.
+        </p>
+
+        <div class="perm-wrap">
+          <div class="perm">public_profile</div>
+          <div class="perm">email</div>
+        </div>
+
+        <div style="height:16px;"></div>
+
+        <h3>Important</h3>
+        <p class="muted">
+          Your Meta redirect URI must exactly match your callback URL. Also add your site domain in Meta app settings before testing live.
+        </p>
       </div>
     </section>
   </div>
@@ -348,202 +460,236 @@
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: "pkce"
-      }
-    });
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const FACEBOOK_APP_ID = "921040053900296";
-    const REDIRECT_URI = "https://view.ceetice.com/facebook-connect.html";
-    const FACEBOOK_SCOPES = ["public_profile"];
+    const FN_BASE = `${SUPABASE_URL}/functions/v1`;
 
-    const noticeEl = document.getElementById("notice");
-    const loginLink = document.getElementById("loginLink");
-    const manualLink = document.getElementById("manualLink");
-    const appIdTextEl = document.getElementById("appIdText");
-    const redirectUriEl = document.getElementById("redirectUri");
-    const scopeTextEl = document.getElementById("scopeText");
-    const stateTextEl = document.getElementById("stateText");
-    const resultBoxEl = document.getElementById("resultBox");
+    const els = {
+      backBtn: document.getElementById("backBtn"),
+      notice: document.getElementById("notice"),
+      statusChip: document.getElementById("statusChip"),
+      connectBtn: document.getElementById("connectBtn"),
+      connectSpinner: document.getElementById("connectSpinner"),
+      connectBtnText: document.getElementById("connectBtnText"),
+      refreshBtn: document.getElementById("refreshBtn"),
+      disconnectBtn: document.getElementById("disconnectBtn"),
+      detailStatus: document.getElementById("detailStatus"),
+      detailName: document.getElementById("detailName"),
+      detailFacebookId: document.getElementById("detailFacebookId"),
+      detailUsername: document.getElementById("detailUsername"),
+      detailExpiry: document.getElementById("detailExpiry"),
+      detailConnectedAt: document.getElementById("detailConnectedAt")
+    };
 
-    appIdTextEl.textContent = FACEBOOK_APP_ID;
-    redirectUriEl.textContent = REDIRECT_URI;
-    scopeTextEl.textContent = FACEBOOK_SCOPES.join(", ");
+    let session = null;
 
-    function showNotice(message, type = "info") {
-      noticeEl.className = `notice show ${type}`;
-      noticeEl.textContent = message;
+    function showNotice(message, type = "warn"){
+      els.notice.className = `notice show ${type}`;
+      els.notice.textContent = message;
     }
 
-    async function requireUser() {
-      const { data, error } = await supabaseClient.auth.getUser();
-      if (error) throw error;
-
-      if (!data?.user) {
-        window.location.href = "login.html?next=facebook-connect.html";
-        return null;
-      }
-
-      return data.user;
+    function hideNotice(){
+      els.notice.className = "notice";
+      els.notice.textContent = "";
     }
 
-    function buildFacebookAuthUrl(userId) {
-      const params = new URLSearchParams({
-        client_id: FACEBOOK_APP_ID,
-        redirect_uri: REDIRECT_URI,
-        response_type: "token",
-        scope: FACEBOOK_SCOPES.join(","),
-        state: userId,
-        display: "touch"
+    function fmtDate(value){
+      if(!value) return "—";
+      const d = new Date(value);
+      if(Number.isNaN(d.getTime())) return value;
+      return d.toLocaleString([], {
+        year:"numeric",
+        month:"short",
+        day:"numeric",
+        hour:"numeric",
+        minute:"2-digit"
       });
-
-      return `https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`;
     }
 
-    function parseHashToken() {
-      const hash = window.location.hash.startsWith("#")
-        ? window.location.hash.slice(1)
-        : window.location.hash;
-
-      if (!hash) return null;
-
-      const params = new URLSearchParams(hash);
-      const accessToken = params.get("access_token");
-      const expiresIn = params.get("expires_in");
-      const state = params.get("state");
-
-      if (!accessToken) return null;
-
-      return {
-        access_token: accessToken,
-        expires_in: expiresIn,
-        state
-      };
+    function setBusy(state){
+      els.connectBtn.disabled = state;
+      els.refreshBtn.disabled = state;
+      els.disconnectBtn.disabled = state;
+      els.connectSpinner.classList.toggle("show", state);
+      els.connectBtnText.textContent = state ? "Please wait..." : "Connect Facebook";
     }
 
-    async function saveBasicFacebookConnection(user, token) {
-      const payload = {
-        user_id: user.id,
-        platform: "facebook",
-        account_name: user.user_metadata?.full_name || user.email || "Facebook Basic Login",
-        external_user_id: user.id,
-        access_token: token,
-        status: "connected",
-        last_synced_at: new Date().toISOString(),
-        last_error: null
-      };
+    function setDisconnectedUI(){
+      els.statusChip.textContent = "Not connected";
+      els.statusChip.className = "chip disconnected";
+      els.disconnectBtn.classList.add("hidden");
+      els.detailStatus.textContent = "No saved connection";
+      els.detailName.textContent = "—";
+      els.detailFacebookId.textContent = "—";
+      els.detailUsername.textContent = "—";
+      els.detailExpiry.textContent = "—";
+      els.detailConnectedAt.textContent = "—";
+    }
 
-      const { error } = await supabaseClient
-        .from("connected_accounts")
-        .upsert(payload, {
-          onConflict: "user_id,platform"
+    function setConnectedUI(data){
+      els.statusChip.textContent = "Connected";
+      els.statusChip.className = "chip connected";
+      els.disconnectBtn.classList.remove("hidden");
+      els.detailStatus.textContent = "Connected successfully";
+      els.detailName.textContent = data.facebook_name || "—";
+      els.detailFacebookId.textContent = data.facebook_user_id || "—";
+      els.detailUsername.textContent = data.facebook_username || "—";
+      els.detailExpiry.textContent = fmtDate(data.token_expires_at);
+      els.detailConnectedAt.textContent = fmtDate(data.connected_at || data.updated_at || data.created_at);
+    }
+
+    async function getSession(){
+      const { data, error } = await supabase.auth.getSession();
+      if(error) throw error;
+      session = data?.session || null;
+      return session;
+    }
+
+    async function loadStatus(){
+      hideNotice();
+
+      try{
+        const s = await getSession();
+
+        if(!s?.access_token){
+          setDisconnectedUI();
+          showNotice("Please sign in first.", "warn");
+          return;
+        }
+
+        const res = await fetch(`${FN_BASE}/facebook-status`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${s.access_token}`
+          }
         });
 
-      if (error) {
-        throw new Error(`Could not save Facebook basic connection: ${error.message}`);
-      }
-    }
+        const result = await res.json();
 
-    async function prepareFacebookLinks() {
-      try {
-        if (!FACEBOOK_APP_ID || FACEBOOK_APP_ID.trim().length < 10) {
-          throw new Error("Meta App ID is missing or invalid.");
+        if(!res.ok){
+          throw new Error(result?.error || "Unable to load status");
         }
 
-        const user = await requireUser();
-        if (!user) return;
-
-        const authUrl = buildFacebookAuthUrl(user.id);
-
-        loginLink.href = authUrl;
-        manualLink.href = authUrl;
-
-        loginLink.textContent = "Login with Facebook";
-        loginLink.classList.remove("disabled");
-        manualLink.style.display = "flex";
-
-        stateTextEl.textContent = "Ready to open Facebook";
-        showNotice("Facebook basic login is ready.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not prepare Facebook login.", "error");
-        stateTextEl.textContent = "Login setup failed";
-        loginLink.textContent = "Login setup failed";
+        if(result.connected && result.account){
+          setConnectedUI(result.account);
+        }else{
+          setDisconnectedUI();
+        }
+      }catch(err){
+        console.error(err);
+        setDisconnectedUI();
+        showNotice(err.message || "Could not load Facebook status.", "error");
       }
     }
 
-    loginLink.addEventListener("click", () => {
-      showNotice("Opening Facebook login...", "info");
-      stateTextEl.textContent = "Opening Facebook";
-    });
+    async function connectFacebook(){
+      hideNotice();
 
-    manualLink.addEventListener("click", () => {
-      showNotice("Opening Facebook manually...", "info");
-      stateTextEl.textContent = "Opening Facebook manually";
-    });
+      try{
+        const s = await getSession();
+        if(!s?.access_token){
+          showNotice("Please sign in first.", "warn");
+          return;
+        }
 
-    async function handleFacebookReturn() {
+        setBusy(true);
+
+        const redirect_to = `${window.location.origin}/facebook-connect.html`;
+
+        const res = await fetch(`${FN_BASE}/facebook-connect`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${s.access_token}`
+          },
+          body: JSON.stringify({ redirect_to })
+        });
+
+        const result = await res.json();
+
+        if(!res.ok || !result?.auth_url){
+          throw new Error(result?.error || "Could not start Facebook login");
+        }
+
+        window.location.href = result.auth_url;
+      }catch(err){
+        console.error(err);
+        showNotice(err.message || "Failed to start Facebook login.", "error");
+        setBusy(false);
+      }
+    }
+
+    async function disconnectFacebook(){
+      hideNotice();
+
+      try{
+        const ok = confirm("Disconnect saved Facebook account?");
+        if(!ok) return;
+
+        const s = await getSession();
+        if(!s?.access_token){
+          showNotice("Please sign in first.", "warn");
+          return;
+        }
+
+        setBusy(true);
+
+        const res = await fetch(`${FN_BASE}/facebook-disconnect`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${s.access_token}`
+          }
+        });
+
+        const result = await res.json();
+
+        if(!res.ok){
+          throw new Error(result?.error || "Failed to disconnect");
+        }
+
+        showNotice("Facebook disconnected successfully.", "success");
+        await loadStatus();
+      }catch(err){
+        console.error(err);
+        showNotice(err.message || "Disconnect failed.", "error");
+      }finally{
+        setBusy(false);
+      }
+    }
+
+    function readQueryMessage(){
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get("status");
+      const message = params.get("message");
+
+      if(status === "success"){
+        showNotice(message || "Facebook connected successfully.", "success");
+      }else if(status === "error"){
+        showNotice(message || "Facebook connection failed.", "error");
+      }
+    }
+
+    function cleanQuery(){
       const url = new URL(window.location.href);
-      const hashData = parseHashToken();
-      const queryError = url.searchParams.get("error");
-      const queryErrorReason = url.searchParams.get("error_reason");
-      const queryErrorDescription = url.searchParams.get("error_description");
-
-      if (queryError) {
-        showNotice(
-          `Facebook connection failed: ${queryErrorReason || queryError}\n${queryErrorDescription || ""}`.trim(),
-          "error"
-        );
-        stateTextEl.textContent = "Facebook denied access";
-        resultBoxEl.innerHTML = `
-          <div><strong>Status:</strong> Failed</div>
-          <div><strong>Reason:</strong> ${queryErrorReason || queryError}</div>
-          <div><strong>Details:</strong> ${queryErrorDescription || "-"}</div>
-        `;
-        return;
-      }
-
-      if (!hashData?.access_token) return;
-
-      try {
-        const user = await requireUser();
-        if (!user) return;
-
-        if (!hashData.state || hashData.state !== user.id) {
-          throw new Error("State mismatch. Please restart Facebook connection.");
-        }
-
-        showNotice("Facebook basic login worked. Saving connection...", "success");
-        stateTextEl.textContent = "Basic login successful";
-
-        resultBoxEl.innerHTML = `
-          <div><strong>Status:</strong> Success</div>
-          <div><strong>User ID:</strong> <code>${user.id}</code></div>
-          <div><strong>Returned token:</strong> <code>${hashData.access_token.slice(0, 30)}...</code></div>
-        `;
-
-        await saveBasicFacebookConnection(user, hashData.access_token);
-
-        history.replaceState({}, document.title, REDIRECT_URI);
-
-        setTimeout(() => {
-          window.location.href = "connected-accounts.html?facebook=basic-connected";
-        }, 1200);
-      } catch (error) {
-        showNotice(error.message || "Facebook login failed.", "error");
-        stateTextEl.textContent = "Login failed";
-        resultBoxEl.innerHTML = `
-          <div><strong>Status:</strong> Failed</div>
-          <div><strong>Error:</strong> ${error.message || "Unknown error"}</div>
-        `;
+      if(url.search){
+        url.search = "";
+        window.history.replaceState({}, document.title, url.toString());
       }
     }
 
-    prepareFacebookLinks();
-    handleFacebookReturn();
+    els.backBtn.addEventListener("click", () => {
+      if(document.referrer) history.back();
+      else window.location.href = "connect-account.html";
+    });
+
+    els.connectBtn.addEventListener("click", connectFacebook);
+    els.refreshBtn.addEventListener("click", loadStatus);
+    els.disconnectBtn.addEventListener("click", disconnectFacebook);
+
+    readQueryMessage();
+    loadStatus();
+    setTimeout(cleanQuery, 1200);
   </script>
 </body>
 </html>
