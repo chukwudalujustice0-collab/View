@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Facebook Connection | View</title>
+  <title>Facebook Connection Debug | View</title>
   <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -35,7 +35,7 @@
     }
 
     .page{
-      max-width:820px;
+      max-width:860px;
       margin:0 auto;
       padding:calc(18px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
     }
@@ -120,7 +120,7 @@
       color:#fee2e2;
     }
 
-    .hero,.card{
+    .hero,.card,.debug-card{
       background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
       border:1px solid var(--line);
       box-shadow:var(--shadow);
@@ -238,12 +238,12 @@
       grid-template-columns:1fr;
     }
 
-    .card{
+    .card,.debug-card{
       border-radius:24px;
       padding:18px;
     }
 
-    .card h3{
+    .card h3,.debug-card h3{
       margin:0 0 14px;
       font-size:17px;
     }
@@ -313,6 +313,46 @@
     }
     .spinner.show{display:inline-block}
 
+    .debug-card{
+      margin-top:16px;
+      border-color:rgba(245,158,11,.28);
+      background:linear-gradient(180deg, rgba(245,158,11,.08), rgba(255,255,255,.03));
+    }
+
+    .debug-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .debug-btn{
+      min-height:42px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      cursor:pointer;
+      font:inherit;
+      font-weight:700;
+    }
+
+    .debug-output{
+      background:#08101d;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:12px;
+      min-height:180px;
+      max-height:360px;
+      overflow:auto;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-size:12px;
+      line-height:1.5;
+      color:#d8e6ff;
+    }
+
     @keyframes spin{
       to{transform:rotate(360deg)}
     }
@@ -329,7 +369,7 @@
 
       <div class="heading-wrap">
         <div class="eyebrow">View account center</div>
-        <h1>Facebook connection</h1>
+        <h1>Facebook connection debug</h1>
       </div>
 
       <a class="link-btn" href="connect-account.html">All accounts</a>
@@ -343,14 +383,14 @@
           <div class="brand-icon">f</div>
           <div class="brand-text">
             <h2>Connect Facebook</h2>
-            <p>Connect and save your Facebook account to your View profile.</p>
+            <p>Debug version to trace button clicks, session, and fetch requests.</p>
           </div>
         </div>
         <div id="statusChip" class="chip disconnected">Not connected</div>
       </div>
 
       <p class="hero-copy">
-        This page checks saved Facebook status, starts the connect flow, refreshes status, and disconnects a saved account.
+        This version prints every step into the debug panel so you can see exactly where the process stops.
       </p>
 
       <div class="actions">
@@ -388,6 +428,17 @@
         </div>
       </div>
     </section>
+
+    <section class="debug-card">
+      <h3>Debug panel</h3>
+      <div class="debug-actions">
+        <button id="testSessionBtn" class="debug-btn" type="button">Test session</button>
+        <button id="testStatusBtn" class="debug-btn" type="button">Test status fetch</button>
+        <button id="testConnectBtn" class="debug-btn" type="button">Test connect fetch</button>
+        <button id="clearDebugBtn" class="debug-btn" type="button">Clear logs</button>
+      </div>
+      <div id="debugOutput" class="debug-output">Debug logs will appear here...</div>
+    </section>
   </div>
 
   <script>
@@ -412,10 +463,34 @@
         detailPageId: document.getElementById("detailPageId"),
         detailScope: document.getElementById("detailScope"),
         detailExpiry: document.getElementById("detailExpiry"),
-        detailSynced: document.getElementById("detailSynced")
+        detailSynced: document.getElementById("detailSynced"),
+        debugOutput: document.getElementById("debugOutput"),
+        testSessionBtn: document.getElementById("testSessionBtn"),
+        testStatusBtn: document.getElementById("testStatusBtn"),
+        testConnectBtn: document.getElementById("testConnectBtn"),
+        clearDebugBtn: document.getElementById("clearDebugBtn")
       };
 
-      let supabase;
+      let supabase = null;
+
+      function debug(msg, obj) {
+        const time = new Date().toLocaleTimeString();
+        let text = `[${time}] ${msg}`;
+        if (obj !== undefined) {
+          try {
+            text += `\n${JSON.stringify(obj, null, 2)}`;
+          } catch {
+            text += `\n${String(obj)}`;
+          }
+        }
+        console.log(text);
+        els.debugOutput.textContent += `\n\n${text}`;
+        els.debugOutput.scrollTop = els.debugOutput.scrollHeight;
+      }
+
+      function clearDebug() {
+        els.debugOutput.textContent = "Debug logs cleared.";
+      }
 
       function showNotice(message, type = "warn") {
         els.notice.className = `notice show ${type}`;
@@ -477,28 +552,66 @@
       }
 
       function initSupabase() {
+        debug("Initializing Supabase...");
+        debug("SUPABASE_URL", SUPABASE_URL);
+        debug("Anon key exists", !!SUPABASE_ANON_KEY);
+
         if (!window.supabase || !window.supabase.createClient) {
           throw new Error("Supabase library did not load.");
         }
+
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        debug("Supabase initialized successfully.");
       }
 
       async function getSessionOrWarn() {
+        debug("Checking session...");
         const { data, error } = await supabase.auth.getSession();
+
+        debug("Session error", error || null);
+        debug("Session data", data || null);
+
         if (error) throw error;
+
         const session = data?.session || null;
+
         if (!session?.access_token) {
           showNotice("You are not signed in. Please login first.", "warn");
+          debug("No session access token found.");
           return null;
         }
+
+        debug("Session exists", {
+          hasAccessToken: !!session.access_token,
+          userId: session.user?.id || null,
+          email: session.user?.email || null
+        });
+
         return session;
       }
 
       async function safeFetch(url, options = {}, timeoutMs = 20000) {
+        debug("Starting fetch", { url, options });
+
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
         try {
-          return await fetch(url, { ...options, signal: controller.signal });
+          const res = await fetch(url, { ...options, signal: controller.signal });
+          debug("Fetch response received", {
+            url,
+            status: res.status,
+            ok: res.ok,
+            type: res.type
+          });
+          return res;
+        } catch (err) {
+          debug("Fetch failed", {
+            url,
+            name: err?.name || null,
+            message: err?.message || String(err)
+          });
+          throw err;
         } finally {
           clearTimeout(timeout);
         }
@@ -507,6 +620,7 @@
       async function loadStatus() {
         hideNotice();
         setBusy(true);
+        debug("loadStatus called");
 
         try {
           const session = await getSessionOrWarn();
@@ -515,6 +629,7 @@
             return;
           }
 
+          debug("Calling facebook-status endpoint...");
           const res = await safeFetch(`${FN_BASE}/facebook-status`, {
             method: "GET",
             headers: {
@@ -523,6 +638,7 @@
           });
 
           const data = await res.json().catch(() => ({}));
+          debug("facebook-status response body", data);
 
           if (!res.ok) {
             throw new Error(data?.error || `Status failed (${res.status})`);
@@ -531,20 +647,21 @@
           if (data.connected && data.account) {
             setConnectedUI(data.account);
             showNotice("Facebook status loaded.", "success");
+            debug("Facebook account is connected.");
           } else {
             setDisconnectedUI();
             showNotice("No Facebook account is connected yet.", "warn");
+            debug("No connected Facebook account found.");
           }
         } catch (err) {
           console.error("facebook-status error:", err);
           setDisconnectedUI();
-          showNotice(
+          const message =
             err.name === "AbortError"
               ? "facebook-status request timed out."
-              : (err.message || "Could not load Facebook status."),
-            "error"
-          );
-          alert(err.message || "Could not load Facebook status.");
+              : (err.message || "Could not load Facebook status.");
+          showNotice(message, "error");
+          debug("loadStatus failed", { message });
         } finally {
           setBusy(false);
         }
@@ -553,12 +670,14 @@
       async function connectFacebook() {
         hideNotice();
         setBusy(true);
+        debug("connectFacebook called");
 
         try {
           const session = await getSessionOrWarn();
           if (!session) return;
 
           const redirect_to = `${window.location.origin}/facebook-connect.html`;
+          debug("Using redirect_to", redirect_to);
 
           const res = await safeFetch(`${FN_BASE}/facebook-connect`, {
             method: "POST",
@@ -570,6 +689,7 @@
           });
 
           const data = await res.json().catch(() => ({}));
+          debug("facebook-connect response body", data);
 
           if (!res.ok) {
             throw new Error(data?.error || `Connect failed (${res.status})`);
@@ -580,18 +700,19 @@
           }
 
           showNotice("Opening Facebook login...", "success");
+          debug("Redirecting to Facebook auth_url", data.auth_url);
+
           setTimeout(() => {
             window.location.href = data.auth_url;
-          }, 300);
+          }, 400);
         } catch (err) {
           console.error("facebook-connect error:", err);
-          showNotice(
+          const message =
             err.name === "AbortError"
               ? "facebook-connect request timed out."
-              : (err.message || "Failed to start Facebook login."),
-            "error"
-          );
-          alert(err.message || "Failed to start Facebook login.");
+              : (err.message || "Failed to start Facebook login.");
+          showNotice(message, "error");
+          debug("connectFacebook failed", { message });
         } finally {
           setBusy(false);
         }
@@ -599,8 +720,11 @@
 
       async function disconnectFacebook() {
         hideNotice();
+        debug("disconnectFacebook called");
 
         const ok = confirm("Disconnect saved Facebook account?");
+        debug("Disconnect confirmed", ok);
+
         if (!ok) return;
 
         setBusy(true);
@@ -618,6 +742,7 @@
           });
 
           const data = await res.json().catch(() => ({}));
+          debug("facebook-disconnect response body", data);
 
           if (!res.ok) {
             throw new Error(data?.error || `Disconnect failed (${res.status})`);
@@ -625,17 +750,89 @@
 
           setDisconnectedUI();
           showNotice("Facebook disconnected successfully.", "success");
+          debug("Facebook disconnected successfully.");
         } catch (err) {
           console.error("facebook-disconnect error:", err);
-          showNotice(
+          const message =
             err.name === "AbortError"
               ? "facebook-disconnect request timed out."
-              : (err.message || "Disconnect failed."),
-            "error"
-          );
-          alert(err.message || "Disconnect failed.");
+              : (err.message || "Disconnect failed.");
+          showNotice(message, "error");
+          debug("disconnectFacebook failed", { message });
         } finally {
           setBusy(false);
+        }
+      }
+
+      async function testSessionOnly() {
+        hideNotice();
+        debug("Manual session test started");
+        try {
+          const session = await getSessionOrWarn();
+          if (session) {
+            showNotice("Session exists.", "success");
+          }
+        } catch (err) {
+          showNotice(err.message || "Session test failed.", "error");
+          debug("Session test failed", err);
+        }
+      }
+
+      async function testStatusFetchOnly() {
+        hideNotice();
+        debug("Manual status fetch test started");
+        try {
+          const session = await getSessionOrWarn();
+          if (!session) return;
+
+          const res = await safeFetch(`${FN_BASE}/facebook-status`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${session.access_token}`
+            }
+          });
+
+          const text = await res.text();
+          debug("Manual status raw response", {
+            status: res.status,
+            body: text
+          });
+
+          showNotice(`Status fetch returned ${res.status}.`, res.ok ? "success" : "warn");
+        } catch (err) {
+          showNotice(err.message || "Manual status fetch failed.", "error");
+          debug("Manual status fetch failed", err);
+        }
+      }
+
+      async function testConnectFetchOnly() {
+        hideNotice();
+        debug("Manual connect fetch test started");
+        try {
+          const session = await getSessionOrWarn();
+          if (!session) return;
+
+          const redirect_to = `${window.location.origin}/facebook-connect.html`;
+
+          const res = await safeFetch(`${FN_BASE}/facebook-connect`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ redirect_to })
+          });
+
+          const text = await res.text();
+          debug("Manual connect raw response", {
+            status: res.status,
+            body: text
+          });
+
+          showNotice(`Connect fetch returned ${res.status}.`, res.ok ? "success" : "warn");
+        } catch (err) {
+          showNotice(err.message || "Manual connect fetch failed.", "error");
+          debug("Manual connect fetch failed", err);
         }
       }
 
@@ -646,8 +843,10 @@
 
         if (status === "success") {
           showNotice(message || "Facebook connected successfully.", "success");
+          debug("Callback success message detected", message || null);
         } else if (status === "error") {
           showNotice(message || "Facebook connection failed.", "error");
+          debug("Callback error message detected", message || null);
         }
       }
 
@@ -663,28 +862,37 @@
         initSupabase();
       } catch (err) {
         showNotice(err.message || "Could not initialize Supabase.", "error");
-        alert(err.message || "Could not initialize Supabase.");
+        debug("Supabase initialization failed", err);
       }
 
       els.backBtn.addEventListener("click", () => {
+        debug("Back button clicked");
         if (document.referrer) history.back();
         else window.location.href = "connect-account.html";
       });
 
       els.connectBtn.addEventListener("click", () => {
+        debug("Connect button clicked");
         showNotice("Connect button clicked...", "warn");
         connectFacebook();
       });
 
       els.refreshBtn.addEventListener("click", () => {
+        debug("Refresh button clicked");
         showNotice("Refresh button clicked...", "warn");
         loadStatus();
       });
 
       els.disconnectBtn.addEventListener("click", () => {
+        debug("Disconnect button clicked");
         showNotice("Disconnect button clicked...", "warn");
         disconnectFacebook();
       });
+
+      els.testSessionBtn.addEventListener("click", testSessionOnly);
+      els.testStatusBtn.addEventListener("click", testStatusFetchOnly);
+      els.testConnectBtn.addEventListener("click", testConnectFetchOnly);
+      els.clearDebugBtn.addEventListener("click", clearDebug);
 
       readQueryMessage();
       loadStatus();
