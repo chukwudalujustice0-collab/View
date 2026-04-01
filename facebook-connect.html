@@ -22,7 +22,6 @@
       --danger:#ef4444;
       --warn:#f59e0b;
       --shadow:0 18px 45px rgba(0,0,0,.28);
-      --radius:24px;
       --safe-top:env(safe-area-inset-top,0px);
       --safe-bottom:env(safe-area-inset-bottom,0px);
     }
@@ -66,6 +65,7 @@
       border:1px solid var(--line);
       box-shadow:var(--shadow);
       font-size:20px;
+      flex:0 0 auto;
     }
 
     .heading-wrap{
@@ -97,6 +97,7 @@
       border-radius:14px;
       font-size:13px;
       white-space:nowrap;
+      flex:0 0 auto;
     }
 
     .notice{
@@ -108,6 +109,7 @@
       line-height:1.5;
       border:1px solid var(--line);
       background:rgba(255,255,255,.06);
+      word-break:break-word;
     }
     .notice.show{display:block}
     .notice.success{
@@ -237,7 +239,9 @@
       gap:10px;
       font-weight:800;
       cursor:pointer;
+      transition:transform .15s ease, opacity .15s ease;
     }
+    .btn:active{transform:scale(.985)}
     .btn[disabled]{opacity:.6;cursor:not-allowed}
 
     .btn-primary{
@@ -356,7 +360,7 @@
 <body>
   <div class="page">
     <div class="topbar">
-      <button class="back-btn" id="backBtn">←</button>
+      <button class="back-btn" id="backBtn" type="button">←</button>
 
       <div class="heading-wrap">
         <div class="eyebrow">View account center</div>
@@ -384,17 +388,17 @@
       </div>
 
       <p class="hero-copy">
-        This page checks your saved Facebook account, starts the Facebook login flow, saves it in Supabase, refreshes its status, and disconnects it when needed.
+        This page checks your saved Facebook account, starts the Facebook login flow, refreshes status, and disconnects it when needed.
       </p>
 
       <div class="actions">
-        <button id="connectBtn" class="btn btn-primary">
+        <button id="connectBtn" class="btn btn-primary" type="button">
           <span id="connectSpinner" class="spinner"></span>
           <span id="connectBtnText">Connect Facebook</span>
         </button>
 
-        <button id="refreshBtn" class="btn btn-secondary">Refresh status</button>
-        <button id="disconnectBtn" class="btn btn-danger hidden">Disconnect</button>
+        <button id="refreshBtn" class="btn btn-secondary" type="button">Refresh status</button>
+        <button id="disconnectBtn" class="btn btn-danger hidden" type="button">Disconnect</button>
       </div>
     </section>
 
@@ -460,251 +464,296 @@
 
         <h3>Important</h3>
         <p class="muted">
-          Your Meta redirect URI must exactly match the callback function URL. Your site domain must also be added in Meta app settings.
+          Your Meta redirect URI must exactly match the callback function URL, and the Facebook Edge Functions must already be deployed in Supabase.
         </p>
       </div>
     </section>
   </div>
 
   <script>
-    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.addEventListener("DOMContentLoaded", () => {
+      const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    const FN_BASE = `${SUPABASE_URL}/functions/v1`;
+      const FN_BASE = `${SUPABASE_URL}/functions/v1`;
 
-    const els = {
-      backBtn: document.getElementById("backBtn"),
-      notice: document.getElementById("notice"),
-      statusChip: document.getElementById("statusChip"),
-      connectBtn: document.getElementById("connectBtn"),
-      connectSpinner: document.getElementById("connectSpinner"),
-      connectBtnText: document.getElementById("connectBtnText"),
-      refreshBtn: document.getElementById("refreshBtn"),
-      disconnectBtn: document.getElementById("disconnectBtn"),
-      detailStatus: document.getElementById("detailStatus"),
-      detailName: document.getElementById("detailName"),
-      detailHandle: document.getElementById("detailHandle"),
-      detailUserId: document.getElementById("detailUserId"),
-      detailPageId: document.getElementById("detailPageId"),
-      detailScope: document.getElementById("detailScope"),
-      detailExpiry: document.getElementById("detailExpiry"),
-      detailSynced: document.getElementById("detailSynced")
-    };
+      const els = {
+        backBtn: document.getElementById("backBtn"),
+        notice: document.getElementById("notice"),
+        statusChip: document.getElementById("statusChip"),
+        connectBtn: document.getElementById("connectBtn"),
+        connectSpinner: document.getElementById("connectSpinner"),
+        connectBtnText: document.getElementById("connectBtnText"),
+        refreshBtn: document.getElementById("refreshBtn"),
+        disconnectBtn: document.getElementById("disconnectBtn"),
+        detailStatus: document.getElementById("detailStatus"),
+        detailName: document.getElementById("detailName"),
+        detailHandle: document.getElementById("detailHandle"),
+        detailUserId: document.getElementById("detailUserId"),
+        detailPageId: document.getElementById("detailPageId"),
+        detailScope: document.getElementById("detailScope"),
+        detailExpiry: document.getElementById("detailExpiry"),
+        detailSynced: document.getElementById("detailSynced")
+      };
 
-    let session = null;
+      let supabase = null;
+      let session = null;
 
-    function showNotice(message, type = "warn"){
-      els.notice.className = `notice show ${type}`;
-      els.notice.textContent = message;
-    }
-
-    function hideNotice(){
-      els.notice.className = "notice";
-      els.notice.textContent = "";
-    }
-
-    function fmtDate(value){
-      if(!value) return "—";
-      const d = new Date(value);
-      if(Number.isNaN(d.getTime())) return value;
-      return d.toLocaleString([], {
-        year:"numeric",
-        month:"short",
-        day:"numeric",
-        hour:"numeric",
-        minute:"2-digit"
-      });
-    }
-
-    function setBusy(state){
-      els.connectBtn.disabled = state;
-      els.refreshBtn.disabled = state;
-      els.disconnectBtn.disabled = state;
-      els.connectSpinner.classList.toggle("show", state);
-      els.connectBtnText.textContent = state ? "Please wait..." : "Connect Facebook";
-    }
-
-    function setDisconnectedUI(){
-      els.statusChip.textContent = "Not connected";
-      els.statusChip.className = "chip disconnected";
-      els.disconnectBtn.classList.add("hidden");
-      els.detailStatus.textContent = "No saved Facebook connection";
-      els.detailName.textContent = "—";
-      els.detailHandle.textContent = "—";
-      els.detailUserId.textContent = "—";
-      els.detailPageId.textContent = "—";
-      els.detailScope.textContent = "—";
-      els.detailExpiry.textContent = "—";
-      els.detailSynced.textContent = "—";
-    }
-
-    function setConnectedUI(data){
-      els.statusChip.textContent = "Connected";
-      els.statusChip.className = "chip connected";
-      els.disconnectBtn.classList.remove("hidden");
-      els.detailStatus.textContent = data.status || "connected";
-      els.detailName.textContent = data.account_name || "—";
-      els.detailHandle.textContent = data.account_handle || "—";
-      els.detailUserId.textContent = data.external_user_id || "—";
-      els.detailPageId.textContent = data.external_page_id || "—";
-      els.detailScope.textContent = data.scope || "—";
-      els.detailExpiry.textContent = fmtDate(data.token_expires_at);
-      els.detailSynced.textContent = fmtDate(data.last_synced_at || data.updated_at || data.created_at);
-    }
-
-    async function getSession(){
-      const { data, error } = await supabase.auth.getSession();
-      if(error) throw error;
-      session = data?.session || null;
-      return session;
-    }
-
-    async function loadStatus(){
-      hideNotice();
-
-      try{
-        const s = await getSession();
-
-        if(!s?.access_token){
-          setDisconnectedUI();
-          showNotice("Please sign in first.", "warn");
-          return;
-        }
-
-        const res = await fetch(`${FN_BASE}/facebook-status`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${s.access_token}`
-          }
-        });
-
-        const result = await res.json();
-
-        if(!res.ok){
-          throw new Error(result?.error || "Unable to load status");
-        }
-
-        if(result.connected && result.account){
-          setConnectedUI(result.account);
-        }else{
-          setDisconnectedUI();
-        }
-      }catch(err){
-        console.error(err);
-        setDisconnectedUI();
-        showNotice(err.message || "Could not load Facebook status.", "error");
+      function showNotice(message, type = "warn"){
+        els.notice.className = `notice show ${type}`;
+        els.notice.textContent = message;
       }
-    }
 
-    async function connectFacebook(){
-      hideNotice();
+      function hideNotice(){
+        els.notice.className = "notice";
+        els.notice.textContent = "";
+      }
 
-      try{
-        const s = await getSession();
-        if(!s?.access_token){
-          showNotice("Please sign in first.", "warn");
-          return;
+      function fmtDate(value){
+        if(!value) return "—";
+        const d = new Date(value);
+        if(Number.isNaN(d.getTime())) return String(value);
+        return d.toLocaleString([], {
+          year:"numeric",
+          month:"short",
+          day:"numeric",
+          hour:"numeric",
+          minute:"2-digit"
+        });
+      }
+
+      function setBusy(state){
+        els.connectBtn.disabled = state;
+        els.refreshBtn.disabled = state;
+        els.disconnectBtn.disabled = state;
+        els.connectSpinner.classList.toggle("show", state);
+        els.connectBtnText.textContent = state ? "Please wait..." : "Connect Facebook";
+      }
+
+      function setDisconnectedUI(){
+        els.statusChip.textContent = "Not connected";
+        els.statusChip.className = "chip disconnected";
+        els.disconnectBtn.classList.add("hidden");
+        els.detailStatus.textContent = "No saved Facebook connection";
+        els.detailName.textContent = "—";
+        els.detailHandle.textContent = "—";
+        els.detailUserId.textContent = "—";
+        els.detailPageId.textContent = "—";
+        els.detailScope.textContent = "—";
+        els.detailExpiry.textContent = "—";
+        els.detailSynced.textContent = "—";
+      }
+
+      function setConnectedUI(data){
+        els.statusChip.textContent = "Connected";
+        els.statusChip.className = "chip connected";
+        els.disconnectBtn.classList.remove("hidden");
+        els.detailStatus.textContent = data.status || "connected";
+        els.detailName.textContent = data.account_name || "—";
+        els.detailHandle.textContent = data.account_handle || "—";
+        els.detailUserId.textContent = data.external_user_id || "—";
+        els.detailPageId.textContent = data.external_page_id || "—";
+        els.detailScope.textContent = data.scope || "—";
+        els.detailExpiry.textContent = fmtDate(data.token_expires_at);
+        els.detailSynced.textContent = fmtDate(data.last_synced_at || data.updated_at || data.created_at);
+      }
+
+      async function initSupabase(){
+        try{
+          if(!window.supabase || !window.supabase.createClient){
+            throw new Error("Supabase library failed to load.");
+          }
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          return true;
+        }catch(err){
+          console.error(err);
+          showNotice(err.message || "Supabase could not initialize.", "error");
+          return false;
+        }
+      }
+
+      async function getSession(){
+        if(!supabase){
+          const ok = await initSupabase();
+          if(!ok) return null;
         }
 
+        const { data, error } = await supabase.auth.getSession();
+        if(error) throw error;
+        session = data?.session || null;
+        return session;
+      }
+
+      async function callFunction(path, options = {}){
+        const res = await fetch(`${FN_BASE}/${path}`, options);
+        let data = {};
+        try{
+          data = await res.json();
+        }catch(_){
+          data = {};
+        }
+        return { res, data };
+      }
+
+      async function loadStatus(){
+        hideNotice();
         setBusy(true);
 
-        const redirect_to = `${window.location.origin}/facebook-connect.html`;
+        try{
+          const s = await getSession();
 
-        const res = await fetch(`${FN_BASE}/facebook-connect`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${s.access_token}`
-          },
-          body: JSON.stringify({ redirect_to })
-        });
+          if(!s?.access_token){
+            setDisconnectedUI();
+            showNotice("Please sign in first.", "warn");
+            return;
+          }
 
-        const result = await res.json();
+          const { res, data } = await callFunction("facebook-status", {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${s.access_token}`
+            }
+          });
 
-        if(!res.ok || !result?.auth_url){
-          throw new Error(result?.error || "Could not start Facebook login");
+          if(!res.ok){
+            throw new Error(data?.error || "Unable to load Facebook status.");
+          }
+
+          if(data.connected && data.account){
+            setConnectedUI(data.account);
+          }else{
+            setDisconnectedUI();
+          }
+        }catch(err){
+          console.error("facebook-status error:", err);
+          setDisconnectedUI();
+          showNotice(err.message || "Could not load Facebook status.", "error");
+        }finally{
+          setBusy(false);
         }
-
-        window.location.href = result.auth_url;
-      }catch(err){
-        console.error(err);
-        showNotice(err.message || "Failed to start Facebook login.", "error");
-        setBusy(false);
       }
-    }
 
-    async function disconnectFacebook(){
-      hideNotice();
+      async function connectFacebook(){
+        hideNotice();
+        setBusy(true);
 
-      try{
+        try{
+          const s = await getSession();
+
+          if(!s?.access_token){
+            showNotice("Please sign in first.", "warn");
+            return;
+          }
+
+          const redirect_to = `${window.location.origin}/facebook-connect.html`;
+
+          const { res, data } = await callFunction("facebook-connect", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${s.access_token}`
+            },
+            body: JSON.stringify({ redirect_to })
+          });
+
+          if(!res.ok){
+            throw new Error(data?.error || "Could not start Facebook login.");
+          }
+
+          if(!data?.auth_url){
+            throw new Error("Facebook auth URL was not returned by the function.");
+          }
+
+          showNotice("Opening Facebook login...", "success");
+          window.location.href = data.auth_url;
+        }catch(err){
+          console.error("facebook-connect error:", err);
+          showNotice(err.message || "Failed to start Facebook login.", "error");
+          alert(err.message || "Failed to start Facebook login.");
+        }finally{
+          setBusy(false);
+        }
+      }
+
+      async function disconnectFacebook(){
+        hideNotice();
+
         const ok = confirm("Disconnect saved Facebook account?");
         if(!ok) return;
 
-        const s = await getSession();
-        if(!s?.access_token){
-          showNotice("Please sign in first.", "warn");
-          return;
-        }
-
         setBusy(true);
 
-        const res = await fetch(`${FN_BASE}/facebook-disconnect`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${s.access_token}`
+        try{
+          const s = await getSession();
+
+          if(!s?.access_token){
+            showNotice("Please sign in first.", "warn");
+            return;
           }
-        });
 
-        const result = await res.json();
+          const { res, data } = await callFunction("facebook-disconnect", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${s.access_token}`
+            }
+          });
 
-        if(!res.ok){
-          throw new Error(result?.error || "Failed to disconnect");
+          if(!res.ok){
+            throw new Error(data?.error || "Failed to disconnect Facebook.");
+          }
+
+          showNotice("Facebook disconnected successfully.", "success");
+          await loadStatus();
+        }catch(err){
+          console.error("facebook-disconnect error:", err);
+          showNotice(err.message || "Disconnect failed.", "error");
+          alert(err.message || "Disconnect failed.");
+        }finally{
+          setBusy(false);
         }
-
-        showNotice("Facebook disconnected successfully.", "success");
-        await loadStatus();
-      }catch(err){
-        console.error(err);
-        showNotice(err.message || "Disconnect failed.", "error");
-      }finally{
-        setBusy(false);
       }
-    }
 
-    function readQueryMessage(){
-      const params = new URLSearchParams(window.location.search);
-      const status = params.get("status");
-      const message = params.get("message");
+      function readQueryMessage(){
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get("status");
+        const message = params.get("message");
 
-      if(status === "success"){
-        showNotice(message || "Facebook connected successfully.", "success");
-      }else if(status === "error"){
-        showNotice(message || "Facebook connection failed.", "error");
+        if(status === "success"){
+          showNotice(message || "Facebook connected successfully.", "success");
+        }else if(status === "error"){
+          showNotice(message || "Facebook connection failed.", "error");
+        }
       }
-    }
 
-    function cleanQuery(){
-      const url = new URL(window.location.href);
-      if(url.search){
-        url.search = "";
-        window.history.replaceState({}, document.title, url.toString());
+      function cleanQuery(){
+        const url = new URL(window.location.href);
+        if(url.search){
+          url.search = "";
+          window.history.replaceState({}, document.title, url.toString());
+        }
       }
-    }
 
-    els.backBtn.addEventListener("click", () => {
-      if(document.referrer) history.back();
-      else window.location.href = "connect-account.html";
+      els.backBtn.addEventListener("click", () => {
+        if(document.referrer){
+          history.back();
+        }else{
+          window.location.href = "connect-account.html";
+        }
+      });
+
+      els.connectBtn.addEventListener("click", connectFacebook);
+      els.refreshBtn.addEventListener("click", loadStatus);
+      els.disconnectBtn.addEventListener("click", disconnectFacebook);
+
+      readQueryMessage();
+      initSupabase().then((ok) => {
+        if(ok){
+          loadStatus();
+        }
+      });
+      setTimeout(cleanQuery, 1200);
     });
-
-    els.connectBtn.addEventListener("click", connectFacebook);
-    els.refreshBtn.addEventListener("click", loadStatus);
-    els.disconnectBtn.addEventListener("click", disconnectFacebook);
-
-    readQueryMessage();
-    loadStatus();
-    setTimeout(cleanQuery, 1200);
   </script>
 </body>
 </html>
