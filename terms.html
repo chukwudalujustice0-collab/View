@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>Terms of Use | View</title>
+  <meta
+    name="description"
+    content="Terms of Use for View by Ceetify. Read the rules, responsibilities, and conditions for using the View platform."
+  />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="icon" href="/favicon.ico" />
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg2:#0b1628;
+      --card:rgba(255,255,255,0.08);
+      --card2:rgba(255,255,255,0.05);
+      --text:#eaf2ff;
+      --muted:#a9bbd6;
+      --line:rgba(255,255,255,0.12);
+      --blue:#3b82f6;
+      --cyan:#22d3ee;
+      --red:#ef4444;
+      --amber:#f59e0b;
+      --green:#22c55e;
+      --shadow:0 20px 50px rgba(0,0,0,0.35);
+      --radius:24px;
+      --max:1100px;
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+
+    html{
+      scroll-behavior:smooth;
+    }
+
+    body{
+      font-family:Inter, Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(34,211,238,0.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(59,130,246,0.12), transparent 25%),
+        linear-gradient(180deg, #07111f 0%, #081322 38%, #0b1628 100%);
+      color:var(--text);
+      min-height:100vh;
+      line-height:1.65;
+      overflow-x:hidden;
+    }
+
+    a{
+      color:#9ed0ff;
+      text-decoration:none;
+    }
+
+    a:hover{
+      text-decoration:underline;
+    }
+
+    .noise{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.06;
+      background-image:radial-gradient(rgba(255,255,255,.35) 0.7px, transparent 0.7px);
+      background-size:18px 18px;
+      z-index:0;
+    }
+
+    .page{
+      position:relative;
+      z-index:1;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      backdrop-filter:blur(14px);
+      background:rgba(7,17,31,0.75);
+      border-bottom:1px solid var(--line);
+    }
+
+    .topbar-inner{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-badge{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      background:linear-gradient(135deg, rgba(239,68,68,.95), rgba(59,130,246,.95));
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:#fff;
+      box-shadow:var(--shadow);
+      letter-spacing:.5px;
+      flex-shrink:0;
+    }
+
+    .brand-text h1{
+      font-size:1rem;
+      line-height:1.1;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .brand-text p{
+      color:var(--muted);
+      font-size:.84rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      gap:10px;
+    }
+
+    .nav a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 14px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      color:var(--text);
+      background:rgba(255,255,255,0.04);
+      font-size:.92rem;
+      text-decoration:none;
+      transition:.25s ease;
+    }
+
+    .nav a:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,0.08);
+      border-color:rgba(255,255,255,0.2);
+    }
+
+    .hero{
+      width:min(100% - 24px, var(--max));
+      margin:34px auto 22px;
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:22px;
+    }
+
+    .hero-card,
+    .summary-card,
+    .section,
+    .contact-card,
+    .toc{
+      background:linear-gradient(180deg, var(--card), var(--card2));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+
+    .hero-card{
+      padding:28px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      width:240px;
+      height:240px;
+      right:-70px;
+      top:-70px;
+      background:radial-gradient(circle, rgba(245,158,11,0.16), transparent 70%);
+      border-radius:50%;
+      pointer-events:none;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border:1px solid rgba(245,158,11,0.25);
+      border-radius:999px;
+      background:rgba(245,158,11,0.08);
+      color:#ffe3ad;
+      font-size:.86rem;
+      margin-bottom:14px;
+    }
+
+    .hero h2{
+      font-size:clamp(2rem, 4vw, 3.2rem);
+      line-height:1.02;
+      margin-bottom:14px;
+      letter-spacing:-.03em;
+    }
+
+    .hero p.lead{
+      color:var(--muted);
+      font-size:1.04rem;
+      max-width:760px;
+    }
+
+    .meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:20px;
+    }
+
+    .meta span{
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.05);
+      font-size:.92rem;
+      color:#dce8ff;
+    }
+
+    .summary-card{
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      justify-content:center;
+    }
+
+    .summary-card h3{
+      font-size:1.15rem;
+      font-weight:800;
+    }
+
+    .summary-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .summary-item{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .summary-item strong{
+      display:block;
+      font-size:.96rem;
+      margin-bottom:4px;
+    }
+
+    .summary-item span{
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .layout{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 48px;
+      display:grid;
+      grid-template-columns:320px 1fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .toc{
+      position:sticky;
+      top:92px;
+      padding:18px;
+    }
+
+    .toc h3{
+      font-size:1rem;
+      margin-bottom:12px;
+      font-weight:800;
+    }
+
+    .toc a{
+      display:block;
+      padding:11px 12px;
+      border-radius:14px;
+      color:#dbeafe;
+      font-size:.94rem;
+      text-decoration:none;
+      transition:.2s ease;
+      border:1px solid transparent;
+    }
+
+    .toc a:hover{
+      background:rgba(255,255,255,0.06);
+      border-color:rgba(255,255,255,0.08);
+    }
+
+    .content{
+      display:grid;
+      gap:18px;
+    }
+
+    .section{
+      padding:26px;
+    }
+
+    .section h3{
+      font-size:1.35rem;
+      font-weight:800;
+      margin-bottom:12px;
+      letter-spacing:-.01em;
+    }
+
+    .section h4{
+      font-size:1rem;
+      margin:18px 0 10px;
+      color:#dfeeff;
+      font-weight:800;
+    }
+
+    .section p{
+      color:var(--muted);
+      margin-bottom:12px;
+    }
+
+    .section ul{
+      padding-left:20px;
+      color:var(--muted);
+      margin:10px 0 14px;
+    }
+
+    .section li{
+      margin-bottom:8px;
+    }
+
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .pill{
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(59,130,246,0.10);
+      border:1px solid rgba(59,130,246,0.22);
+      color:#dceeff;
+      font-size:.9rem;
+    }
+
+    .highlight{
+      padding:16px 18px;
+      border-radius:18px;
+      background:rgba(34,197,94,0.08);
+      border:1px solid rgba(34,197,94,0.18);
+      color:#dafce7;
+      margin-top:14px;
+    }
+
+    .warn{
+      padding:16px 18px;
+      border-radius:18px;
+      background:rgba(239,68,68,0.08);
+      border:1px solid rgba(239,68,68,0.18);
+      color:#ffd7d7;
+      margin-top:14px;
+    }
+
+    .contact-card{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 36px;
+      padding:24px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:center;
+    }
+
+    .contact-card h3{
+      font-size:1.35rem;
+      margin-bottom:8px;
+    }
+
+    .contact-card p{
+      color:var(--muted);
+    }
+
+    .contact-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:13px 18px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      text-decoration:none;
+      color:#fff;
+      transition:.25s ease;
+      font-weight:700;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg, var(--blue), var(--cyan));
+      border:none;
+    }
+
+    .btn.secondary{
+      background:rgba(255,255,255,0.05);
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      opacity:.96;
+      text-decoration:none;
+    }
+
+    footer{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 40px;
+      color:var(--muted);
+      text-align:center;
+      padding:10px 0 40px;
+      font-size:.92rem;
+    }
+
+    @media (max-width: 960px){
+      .hero,
+      .layout,
+      .contact-card{
+        grid-template-columns:1fr;
+      }
+
+      .toc{
+        position:relative;
+        top:0;
+      }
+
+      .contact-actions{
+        justify-content:flex-start;
+      }
+    }
+
+    @media (max-width: 640px){
+      .topbar-inner{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .nav{
+        width:100%;
+        justify-content:flex-start;
+      }
+
+      .hero-card,
+      .summary-card,
+      .section,
+      .toc,
+      .contact-card{
+        border-radius:20px;
+      }
+
+      .hero-card,
+      .summary-card,
+      .section{
+        padding:20px;
+      }
+
+      .meta span{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-badge">V</div>
+          <div class="brand-text">
+            <h1>View Terms of Use</h1>
+            <p>View by Ceetify — Rules for using the platform</p>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a href="/index.html">Home</a>
+          <a href="/privacy.html">Privacy</a>
+          <a href="mailto:info.ceeticegroup@gmail.com">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">Terms • Responsibilities • Platform Rules</div>
+        <h2>These terms govern your use of View.</h2>
+        <p class="lead">
+          Please read these Terms of Use carefully. By accessing or using View,
+          you agree to follow these terms, our rules, and any policies referenced
+          here. If you do not agree, do not use the service.
+        </p>
+
+        <div class="meta">
+          <span><strong>Effective date:</strong> March 30, 2026</span>
+          <span><strong>Platform:</strong> View by Ceetify</span>
+          <span><strong>Contact:</strong> info.ceeticegroup@gmail.com</span>
+        </div>
+      </div>
+
+      <aside class="summary-card">
+        <h3>Quick summary</h3>
+
+        <div class="summary-list">
+          <div class="summary-item">
+            <strong>Your account</strong>
+            <span>You are responsible for your account, login details, and activity under it.</span>
+          </div>
+
+          <div class="summary-item">
+            <strong>Your content</strong>
+            <span>You keep ownership of your content, but you give View permission to host and display it.</span>
+          </div>
+
+          <div class="summary-item">
+            <strong>What is not allowed</strong>
+            <span>No abuse, impersonation, spam, fraud, illegal activity, or harmful misuse of the platform.</span>
+          </div>
+
+          <div class="summary-item">
+            <strong>Our rights</strong>
+            <span>We may suspend content or accounts, update features, and enforce our platform rules when needed.</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="layout">
+      <aside class="toc">
+        <h3>Contents</h3>
+        <a href="#acceptance">1. Acceptance of Terms</a>
+        <a href="#eligibility">2. Eligibility & Accounts</a>
+        <a href="#use-of-service">3. Use of the Service</a>
+        <a href="#user-content">4. User Content</a>
+        <a href="#prohibited">5. Prohibited Conduct</a>
+        <a href="#connected-services">6. Connected Services & Cross-Posting</a>
+        <a href="#intellectual-property">7. Intellectual Property</a>
+        <a href="#termination">8. Suspension & Termination</a>
+        <a href="#disclaimers">9. Disclaimers</a>
+        <a href="#liability">10. Limitation of Liability</a>
+        <a href="#indemnity">11. Indemnity</a>
+        <a href="#changes">12. Changes to the Service or Terms</a>
+        <a href="#governing">13. Governing Rules</a>
+        <a href="#contact-us">14. Contact Us</a>
+      </aside>
+
+      <main class="content">
+        <section class="section" id="acceptance">
+          <h3>1. Acceptance of Terms</h3>
+          <p>
+            These Terms of Use govern your access to and use of View, including the
+            website, mobile experience, messaging tools, creator features, media
+            tools, connected account tools, and any other related services provided
+            under the View platform.
+          </p>
+          <p>
+            By using View, creating an account, or accessing any part of the
+            service, you agree to these Terms of Use and any related policies,
+            including our Privacy Policy.
+          </p>
+        </section>
+
+        <section class="section" id="eligibility">
+          <h3>2. Eligibility & Accounts</h3>
+
+          <h4>a. Eligibility</h4>
+          <p>
+            You must be legally allowed to use the service in your location and
+            meet the minimum age required by applicable law.
+          </p>
+
+          <h4>b. Account responsibility</h4>
+          <ul>
+            <li>You are responsible for keeping your login credentials secure.</li>
+            <li>You are responsible for activity that happens under your account.</li>
+            <li>You must provide accurate information when creating or updating your account.</li>
+            <li>You must not sell, lend, or transfer your account without permission.</li>
+          </ul>
+
+          <h4>c. Unauthorized access</h4>
+          <p>
+            If you believe your account has been compromised, you should change
+            your password immediately and contact support.
+          </p>
+
+          <div class="pill-row">
+            <span class="pill">Account security</span>
+            <span class="pill">Accurate details</span>
+            <span class="pill">Personal responsibility</span>
+          </div>
+        </section>
+
+        <section class="section" id="use-of-service">
+          <h3>3. Use of the Service</h3>
+          <p>
+            View gives you a limited, revocable, non-exclusive, non-transferable
+            right to use the platform in accordance with these terms.
+          </p>
+          <ul>
+            <li>You may use View for personal, creative, social, communication, and lawful business-related purposes allowed by the platform.</li>
+            <li>You must use the platform only in a lawful and respectful manner.</li>
+            <li>You must follow all feature-specific rules, community standards, and platform restrictions.</li>
+          </ul>
+
+          <div class="highlight">
+            We may improve, change, pause, or remove features at any time to keep
+            the platform secure, compliant, and usable.
+          </div>
+        </section>
+
+        <section class="section" id="user-content">
+          <h3>4. User Content</h3>
+          <p>
+            View may allow you to post, upload, publish, message, stream, comment,
+            react, or otherwise submit content, including text, images, audio,
+            video, profile materials, and linked content.
+          </p>
+
+          <h4>a. Ownership</h4>
+          <p>
+            You keep ownership of content you create and upload, to the extent you
+            legally own it.
+          </p>
+
+          <h4>b. License to View</h4>
+          <p>
+            By submitting content to View, you give us a worldwide, non-exclusive,
+            royalty-free license to host, store, reproduce, process, adapt,
+            publish, display, distribute, and make that content available as needed
+            to operate, improve, promote, secure, and provide the service.
+          </p>
+
+          <h4>c. Your responsibility</h4>
+          <ul>
+            <li>You must have the rights needed to upload or share the content.</li>
+            <li>You are responsible for ensuring your content does not violate law or the rights of others.</li>
+            <li>You understand that public content may be viewed, reshared, or discussed by other users depending on platform settings.</li>
+          </ul>
+
+          <div class="warn">
+            Do not upload content you do not own, do not have permission to use,
+            or that unlawfully exposes someone else’s private information.
+          </div>
+        </section>
+
+        <section class="section" id="prohibited">
+          <h3>5. Prohibited Conduct</h3>
+          <p>You agree not to use View to do any of the following:</p>
+          <ul>
+            <li>Break any law, regulation, or third-party right.</li>
+            <li>Impersonate a person, brand, organization, or public figure in a misleading way.</li>
+            <li>Post or transmit spam, scams, fraud, phishing, or deceptive content.</li>
+            <li>Upload malicious code, viruses, bots, scrapers, or harmful automation.</li>
+            <li>Harass, threaten, bully, exploit, or abuse other users.</li>
+            <li>Promote illegal services, financial fraud, unauthorized access, or dangerous misuse of the platform.</li>
+            <li>Interfere with platform security, reverse engineer protected systems, or bypass access controls.</li>
+            <li>Use the platform to infringe copyrights, trademarks, privacy rights, or other intellectual property rights.</li>
+            <li>Collect user data without authorization.</li>
+            <li>Use View in any way that could damage, overload, disable, or compromise the service.</li>
+          </ul>
+        </section>
+
+        <section class="section" id="connected-services">
+          <h3>6. Connected Services & Cross-Posting</h3>
+          <p>
+            View may let you connect third-party accounts or services for sign-in,
+            sync, media import, publishing, cross-posting, or related actions.
+          </p>
+          <ul>
+            <li>You are responsible for complying with the terms of any connected platform.</li>
+            <li>You authorize View to interact with connected services only as needed to provide the features you enable.</li>
+            <li>We are not responsible for downtime, policy changes, restrictions, or actions taken by third-party platforms.</li>
+            <li>Third-party services may suspend permissions or change how integrations work at any time.</li>
+          </ul>
+          <p>
+            Your use of connected features may also be subject to the terms and
+            privacy policies of those third-party providers.
+          </p>
+        </section>
+
+        <section class="section" id="intellectual-property">
+          <h3>7. Intellectual Property</h3>
+          <p>
+            View, its branding, software, design, interface elements, logos,
+            service structure, and platform materials are protected by applicable
+            intellectual property laws.
+          </p>
+          <ul>
+            <li>You may not copy, sell, license, modify, distribute, or exploit View’s protected materials except as permitted by law or written permission.</li>
+            <li>You may not remove proprietary notices, branding, credits, or rights statements.</li>
+            <li>Feedback you provide about View may be used by us without restriction or compensation, unless otherwise agreed in writing.</li>
+          </ul>
+        </section>
+
+        <section class="section" id="termination">
+          <h3>8. Suspension & Termination</h3>
+          <p>
+            We may suspend, limit, restrict, or terminate access to View, remove
+            content, or disable features at any time if:
+          </p>
+          <ul>
+            <li>You violate these terms or our platform rules.</li>
+            <li>We believe your activity may harm users, third parties, or the service.</li>
+            <li>We need to investigate abuse, fraud, security incidents, or legal complaints.</li>
+            <li>We are required to do so by law, regulation, or technical necessity.</li>
+          </ul>
+          <p>
+            You may also stop using View at any time. Termination does not erase
+            obligations that by nature should continue after use ends.
+          </p>
+        </section>
+
+        <section class="section" id="disclaimers">
+          <h3>9. Disclaimers</h3>
+          <p>
+            View is provided on an “as is” and “as available” basis, to the fullest
+            extent permitted by applicable law.
+          </p>
+          <ul>
+            <li>We do not guarantee uninterrupted, error-free, or always-available service.</li>
+            <li>We do not guarantee that all content on the platform will be accurate, safe, or reliable.</li>
+            <li>We are not responsible for content posted by users or third parties.</li>
+            <li>We are not responsible for third-party websites, apps, links, or services connected to View.</li>
+          </ul>
+        </section>
+
+        <section class="section" id="liability">
+          <h3>10. Limitation of Liability</h3>
+          <p>
+            To the fullest extent permitted by law, View, Ceetify, Ceetify
+            Multi-Ventures Ltd, and related owners, operators, staff, partners, and
+            service providers will not be liable for indirect, incidental, special,
+            consequential, exemplary, or punitive damages arising out of or related
+            to your use of the platform.
+          </p>
+          <p>
+            This includes loss of data, profits, goodwill, business opportunities,
+            reputation, content, or service access, even if we were advised such
+            damages might occur.
+          </p>
+        </section>
+
+        <section class="section" id="indemnity">
+          <h3>11. Indemnity</h3>
+          <p>
+            You agree to defend, indemnify, and hold harmless View, Ceetify,
+            Ceetify Multi-Ventures Ltd, and related affiliates, officers,
+            directors, staff, contractors, and partners from claims, liabilities,
+            damages, losses, and expenses arising out of:
+          </p>
+          <ul>
+            <li>Your use or misuse of the service.</li>
+            <li>Your content or your violation of these terms.</li>
+            <li>Your violation of any law or third-party rights.</li>
+            <li>Your actions through a connected account or third-party platform.</li>
+          </ul>
+        </section>
+
+        <section class="section" id="changes">
+          <h3>12. Changes to the Service or Terms</h3>
+          <p>
+            We may modify these terms from time to time. When we do, we may update
+            the effective date and provide notice where appropriate.
+          </p>
+          <p>
+            We may also change, update, suspend, or discontinue any feature,
+            section, or part of View at any time without liability, subject to
+            applicable law.
+          </p>
+          <p>
+            Continued use of the platform after updated terms take effect means you
+            accept the revised terms.
+          </p>
+        </section>
+
+        <section class="section" id="governing">
+          <h3>13. Governing Rules</h3>
+          <p>
+            These terms will be interpreted in accordance with applicable laws of
+            the jurisdiction governing the operation of the service, except where
+            consumer protection laws require otherwise.
+          </p>
+          <p>
+            If any part of these terms is found unenforceable, the remaining parts
+            will remain in effect to the fullest extent possible.
+          </p>
+        </section>
+
+        <section class="section" id="contact-us">
+          <h3>14. Contact Us</h3>
+          <p>
+            If you have questions about these Terms of Use, platform rules, account
+            actions, or legal requests, contact us:
+          </p>
+
+          <ul>
+            <li><strong>App:</strong> View</li>
+            <li><strong>Company:</strong> Ceetify / Ceetify Multi-Ventures Ltd</li>
+            <li><strong>Email:</strong> <a href="mailto:info.ceeticegroup@gmail.com">info.ceeticegroup@gmail.com</a></li>
+            <li><strong>Website:</strong> <a href="https://view.ceetice.com">view.ceetice.com</a></li>
+          </ul>
+
+          <div class="highlight">
+            For support requests, include your username, account email, and a short
+            explanation of the issue.
+          </div>
+        </section>
+      </main>
+    </section>
+
+    <section class="contact-card">
+      <div>
+        <h3>Need help with account, content, or platform rules?</h3>
+        <p>
+          Contact support for questions about these terms, moderation, account
+          access, or platform use.
+        </p>
+      </div>
+
+      <div class="contact-actions">
+        <a class="btn primary" href="mailto:info.ceeticegroup@gmail.com">Email Support</a>
+        <a class="btn secondary" href="/privacy.html">View Privacy Policy</a>
+      </div>
+    </section>
+
+    <footer>
+      © 2026 View by Ceetify. All rights reserved.
+    </footer>
+  </div>
+</body>
+</html>
