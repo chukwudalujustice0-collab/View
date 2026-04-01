@@ -35,7 +35,7 @@
     }
 
     .page{
-      max-width:920px;
+      max-width:900px;
       margin:0 auto;
       padding:calc(18px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
     }
@@ -255,8 +255,8 @@
       border:1px solid rgba(255,255,255,.08);
       border-radius:16px;
       padding:14px;
-      min-height:260px;
-      max-height:560px;
+      min-height:220px;
+      max-height:480px;
       overflow:auto;
       white-space:pre-wrap;
       word-break:break-word;
@@ -299,14 +299,14 @@
           <div class="brand-icon">f</div>
           <div class="brand-text">
             <h2>Facebook pages diagnosis</h2>
-            <p>This temporary page shows the exact `facebook-pages` response, including permissions and raw Facebook page data.</p>
+            <p>This temporary page shows the exact response from your `facebook-pages` function.</p>
           </div>
         </div>
         <div id="statusChip" class="chip disconnected">Unknown</div>
       </div>
 
       <p class="hero-copy">
-        Refresh status first, then tap Load pages to inspect the actual token and page response.
+        Tap refresh to confirm session and connection. Tap load pages to see the full JSON from Facebook.
       </p>
 
       <div class="actions">
@@ -336,11 +336,11 @@
       </div>
 
       <div class="card">
-        <h3>What matters most</h3>
+        <h3>What to look for</h3>
         <div class="rows">
-          <div class="row"><div class="label">pages_count</div><div class="value">must be 1 or more</div></div>
-          <div class="row"><div class="label">permissions</div><div class="value">should include granted page scopes</div></div>
-          <div class="row"><div class="label">raw_pages_response</div><div class="value">must not contain token authorization error</div></div>
+          <div class="row"><div class="label">pages_count</div><div class="value">0 or more</div></div>
+          <div class="row"><div class="label">pages</div><div class="value">actual page objects</div></div>
+          <div class="row"><div class="label">raw_pages_response</div><div class="value">Facebook raw response</div></div>
         </div>
       </div>
     </section>
