@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Cookie Policy | View</title>
+  <meta name="description" content="Cookie Policy for View by Ceetify. Learn how cookies, local storage, and similar technologies are used on the View platform." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="icon" href="/favicon.ico" />
+
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg2:#0b1628;
+      --card:rgba(255,255,255,0.08);
+      --card2:rgba(255,255,255,0.05);
+      --text:#eaf2ff;
+      --muted:#a9bbd6;
+      --line:rgba(255,255,255,0.12);
+      --blue:#3b82f6;
+      --cyan:#22d3ee;
+      --red:#ef4444;
+      --green:#22c55e;
+      --amber:#f59e0b;
+      --shadow:0 20px 50px rgba(0,0,0,0.35);
+      --radius:24px;
+      --max:1120px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+
+    body{
+      font-family:Inter,Arial,Helvetica,sans-serif;
+      color:var(--text);
+      line-height:1.65;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top left, rgba(34,211,238,.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(59,130,246,.12), transparent 25%),
+        linear-gradient(180deg,#07111f 0%,#081322 38%,#0b1628 100%);
+      overflow-x:hidden;
+    }
+
+    a{color:#9ed0ff;text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .noise{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.06;
+      background-image:radial-gradient(rgba(255,255,255,.35) .7px, transparent .7px);
+      background-size:18px 18px;
+      z-index:0;
+    }
+
+    .page{position:relative;z-index:1}
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      backdrop-filter:blur(14px);
+      background:rgba(7,17,31,.78);
+      border-bottom:1px solid var(--line);
+    }
+
+    .topbar-inner{
+      width:min(100% - 24px, var(--max));
+      margin:auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-badge{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:#fff;
+      background:linear-gradient(135deg,#ef4444,#3b82f6);
+      box-shadow:var(--shadow);
+      flex-shrink:0;
+    }
+
+    .brand-text h1{
+      font-size:1rem;
+      line-height:1.1;
+      font-weight:800;
+    }
+
+    .brand-text p{
+      color:var(--muted);
+      font-size:.84rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:flex-end;
+    }
+
+    .nav a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      font-size:.92rem;
+      transition:.25s ease;
+    }
+
+    .nav a:hover{
+      text-decoration:none;
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.08);
+      border-color:rgba(255,255,255,.2);
+    }
+
+    .hero{
+      width:min(100% - 24px, var(--max));
+      margin:34px auto 22px;
+      display:grid;
+      grid-template-columns:1.18fr .82fr;
+      gap:22px;
+    }
+
+    .hero-card,.summary-card,.section,.toc,.contact-card{
+      background:linear-gradient(180deg,var(--card),var(--card2));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+
+    .hero-card{
+      padding:28px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      width:260px;
+      height:260px;
+      right:-90px;
+      top:-90px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(59,130,246,.18), transparent 70%);
+      pointer-events:none;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(59,130,246,.22);
+      background:rgba(59,130,246,.08);
+      color:#dceeff;
+      font-size:.86rem;
+      margin-bottom:14px;
+    }
+
+    .hero h2{
+      font-size:clamp(2rem, 4vw, 3.1rem);
+      line-height:1.02;
+      margin-bottom:14px;
+      letter-spacing:-.03em;
+    }
+
+    .hero p.lead{
+      color:var(--muted);
+      font-size:1.05rem;
+      max-width:760px;
+    }
+
+    .meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:20px;
+    }
+
+    .meta span{
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      font-size:.92rem;
+      color:#dce8ff;
+    }
+
+    .summary-card{
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      justify-content:center;
+    }
+
+    .summary-card h3{
+      font-size:1.15rem;
+      font-weight:800;
+    }
+
+    .summary-item{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .summary-item strong{
+      display:block;
+      margin-bottom:4px;
+      font-size:.96rem;
+    }
+
+    .summary-item span{
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .layout{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 48px;
+      display:grid;
+      grid-template-columns:320px 1fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .toc{
+      position:sticky;
+      top:92px;
+      padding:18px;
+    }
+
+    .toc h3{
+      font-size:1rem;
+      margin-bottom:12px;
+      font-weight:800;
+    }
+
+    .toc a{
+      display:block;
+      padding:11px 12px;
+      border-radius:14px;
+      color:#dbeafe;
+      font-size:.94rem;
+      border:1px solid transparent;
+      transition:.2s ease;
+    }
+
+    .toc a:hover{
+      text-decoration:none;
+      background:rgba(255,255,255,.06);
+      border-color:rgba(255,255,255,.08);
+    }
+
+    .content{
+      display:grid;
+      gap:18px;
+    }
+
+    .section{
+      padding:26px;
+    }
+
+    .section h3{
+      font-size:1.35rem;
+      font-weight:800;
+      margin-bottom:12px;
+      letter-spacing:-.01em;
+    }
+
+    .section h4{
+      font-size:1rem;
+      margin:18px 0 10px;
+      color:#dfeeff;
+      font-weight:800;
+    }
+
+    .section p{
+      color:var(--muted);
+      margin-bottom:12px;
+    }
+
+    .section ul{
+      padding-left:20px;
+      color:var(--muted);
+      margin:10px 0 14px;
+    }
+
+    .section li{
+      margin-bottom:8px;
+    }
+
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .pill{
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(59,130,246,.10);
+      border:1px solid rgba(59,130,246,.22);
+      color:#dceeff;
+      font-size:.9rem;
+    }
+
+    .highlight{
+      padding:16px 18px;
+      border-radius:18px;
+      background:rgba(34,197,94,.08);
+      border:1px solid rgba(34,197,94,.18);
+      color:#dafce7;
+      margin-top:14px;
+    }
+
+    .note{
+      padding:16px 18px;
+      border-radius:18px;
+      background:rgba(245,158,11,.08);
+      border:1px solid rgba(245,158,11,.18);
+      color:#ffe6b8;
+      margin-top:14px;
+    }
+
+    .contact-card{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 36px;
+      padding:24px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:center;
+    }
+
+    .contact-card h3{
+      font-size:1.35rem;
+      margin-bottom:8px;
+    }
+
+    .contact-card p{
+      color:var(--muted);
+    }
+
+    .contact-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:13px 18px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      text-decoration:none;
+      color:#fff;
+      transition:.25s ease;
+      font-weight:700;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--blue),var(--cyan));
+      border:none;
+    }
+
+    .btn.secondary{
+      background:rgba(255,255,255,.05);
+    }
+
+    .btn:hover{
+      text-decoration:none;
+      transform:translateY(-1px);
+      opacity:.97;
+    }
+
+    footer{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 40px;
+      color:var(--muted);
+      text-align:center;
+      padding:10px 0 40px;
+      font-size:.92rem;
+    }
+
+    @media (max-width: 980px){
+      .hero,.layout,.contact-card{
+        grid-template-columns:1fr;
+      }
+      .toc{
+        position:relative;
+        top:0;
+      }
+      .contact-actions{
+        justify-content:flex-start;
+      }
+    }
+
+    @media (max-width: 700px){
+      .topbar-inner{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .nav{
+        width:100%;
+        justify-content:flex-start;
+      }
+
+      .hero-card,.summary-card,.section,.toc,.contact-card{
+        border-radius:20px;
+      }
+
+      .hero-card,.summary-card,.section{
+        padding:20px;
+      }
+
+      .meta span{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-badge">V</div>
+          <div class="brand-text">
+            <h1>View Cookie Policy</h1>
+            <p>View by Ceetify — Cookies, storage, and similar technologies</p>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a href="/index.html">Home</a>
+          <a href="/privacy.html">Privacy</a>
+          <a href="/terms.html">Terms</a>
+          <a href="/contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">Cookies • Local Storage • Sessions</div>
+        <h2>How View uses cookies and similar technologies.</h2>
+        <p class="lead">
+          This Cookie Policy explains how View may use cookies, local storage,
+          session storage, browser storage, pixels, and similar tools to keep the
+          platform working, improve user experience, maintain security, and support
+          analytics and notifications.
+        </p>
+
+        <div class="meta">
+          <span><strong>Effective date:</strong> March 30, 2026</span>
+          <span><strong>Platform:</strong> View by Ceetify</span>
+          <span><strong>Contact:</strong> info.ceeticegroup@gmail.com</span>
+        </div>
+      </div>
+
+      <aside class="summary-card">
+        <h3>Quick summary</h3>
+
+        <div class="summary-item">
+          <strong>Why we use them</strong>
+          <span>To sign you in, keep sessions active, remember settings, improve performance, and support security.</span>
+        </div>
+
+        <div class="summary-item">
+          <strong>What may be used</strong>
+          <span>Cookies, local storage, session storage, cache, device identifiers, and related tools.</span>
+        </div>
+
+        <div class="summary-item">
+          <strong>Your control</strong>
+          <span>You may control some storage through browser or device settings, but some features may stop working properly.</span>
+        </div>
+
+        <div class="summary-item">
+          <strong>Related policy</strong>
+          <span>This page should be read together with the View Privacy Policy.</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="layout">
+      <aside class="toc">
+        <h3>Contents</h3>
+        <a href="#what-are-cookies">1. What Cookies Are</a>
+        <a href="#what-we-use">2. What We Use</a>
+        <a href="#why-we-use">3. Why We Use Them</a>
+        <a href="#essential">4. Essential Technologies</a>
+        <a href="#performance">5. Performance & Analytics</a>
+        <a href="#preferences">6. Preferences & Convenience</a>
+        <a href="#security">7. Security & Fraud Prevention</a>
+        <a href="#push">8. Notifications, Tokens & Device Storage</a>
+        <a href="#third-party">9. Third-Party Services</a>
+        <a href="#manage">10. How to Manage Them</a>
+        <a href="#changes">11. Changes to This Policy</a>
+        <a href="#contact-us">12. Contact Us</a>
+      </aside>
+
+      <main class="content">
+        <section class="section" id="what-are-cookies">
+          <h3>1. What Cookies Are</h3>
+          <p>
+            Cookies are small data files that websites can store on your browser
+            or device. Similar technologies include local storage, session storage,
+            cached files, browser memory, scripts, device identifiers, and other
+            tools that help websites and apps remember actions or settings.
+          </p>
+          <p>
+            Some technologies are needed for the platform to work properly, while
+            others help improve speed, security, settings, or measurement.
+          </p>
+        </section>
+
+        <section class="section" id="what-we-use">
+          <h3>2. What We Use</h3>
+          <p>Depending on how View is built and used, the platform may use:</p>
+          <ul>
+            <li>Browser cookies</li>
+            <li>Local storage</li>
+            <li>Session storage</li>
+            <li>Cached files and offline storage</li>
+            <li>Device or browser tokens for push notifications</li>
+            <li>Authentication session data</li>
+            <li>Security-related storage tools</li>
+          </ul>
+
+          <div class="pill-row">
+            <span class="pill">Cookies</span>
+            <span class="pill">Local storage</span>
+            <span class="pill">Session storage</span>
+            <span class="pill">Push tokens</span>
+            <span class="pill">Offline cache</span>
+          </div>
+        </section>
+
+        <section class="section" id="why-we-use">
+          <h3>3. Why We Use Them</h3>
+          <p>View may use these technologies for purposes such as:</p>
+          <ul>
+            <li>Keeping users signed in securely</li>
+            <li>Remembering app or site preferences</li>
+            <li>Maintaining sessions between pages or reloads</li>
+            <li>Supporting performance and loading speed</li>
+            <li>Helping detect suspicious activity or abuse</li>
+            <li>Enabling notification or device-specific features</li>
+            <li>Understanding feature usage and product performance</li>
+          </ul>
+        </section>
+
+        <section class="section" id="essential">
+          <h3>4. Essential Technologies</h3>
+          <p>
+            Some storage and cookie-like technologies are necessary for View to function.
+            Without them, important parts of the platform may not work correctly.
+          </p>
+          <ul>
+            <li>Sign-in and account authentication</li>
+            <li>Secure session handling</li>
+            <li>Page navigation consistency</li>
+            <li>Account state and access control</li>
+            <li>Basic fraud and abuse protection</li>
+          </ul>
+
+          <div class="highlight">
+            Essential technologies are usually required for core platform features
+            such as login, access control, and security.
+          </div>
+        </section>
+
+        <section class="section" id="performance">
+          <h3>5. Performance & Analytics</h3>
+          <p>
+            View may use measurement or analytics-related storage to understand how
+            the platform performs and how users interact with features.
+          </p>
+          <ul>
+            <li>Page and feature usage measurement</li>
+            <li>Error tracking and debugging support</li>
+            <li>Performance improvement</li>
+            <li>Feature testing and product optimization</li>
+          </ul>
+          <p>
+            This helps us improve speed, reliability, and user experience across
+            the platform.
+          </p>
+        </section>
+
+        <section class="section" id="preferences">
+          <h3>6. Preferences & Convenience</h3>
+          <p>
+            Some technologies help remember choices you make so you do not need to
+            re-enter them each time.
+          </p>
+          <ul>
+            <li>Theme or appearance settings</li>
+            <li>Language or region preferences</li>
+            <li>Navigation state</li>
+            <li>Dismissed notices or prompts</li>
+            <li>Saved interface preferences</li>
+          </ul>
+        </section>
+
+        <section class="section" id="security">
+          <h3>7. Security & Fraud Prevention</h3>
+          <p>
+            View may use cookies or similar storage for security, abuse detection,
+            and fraud prevention.
+          </p>
+          <ul>
+            <li>Protecting against suspicious login behavior</li>
+            <li>Identifying repeated abuse or automated misuse</li>
+            <li>Protecting sessions from unauthorized access</li>
+            <li>Supporting moderation and risk controls</li>
+          </ul>
+
+          <div class="note">
+            Some security-related storage may remain necessary even when other
+            optional technologies are limited.
+          </div>
+        </section>
+
+        <section class="section" id="push">
+          <h3>8. Notifications, Tokens & Device Storage</h3>
+          <p>
+            If View supports browser or device notifications, your device or browser
+            may create identifiers or tokens needed to send those notifications.
+          </p>
+          <ul>
+            <li>Push subscription tokens</li>
+            <li>Notification permission states</li>
+            <li>Service worker cache or offline assets</li>
+            <li>Installable app-related storage for PWA features</li>
+          </ul>
+          <p>
+            Disabling certain browser storage may affect notifications, offline use,
+            or installable app features.
+          </p>
+        </section>
+
+        <section class="section" id="third-party">
+          <h3>9. Third-Party Services</h3>
+          <p>
+            Some third-party tools integrated into View may also use cookies or similar
+            technologies, depending on how the platform is configured.
+          </p>
+          <ul>
+            <li>Authentication providers</li>
+            <li>Analytics providers</li>
+            <li>Embedded media or social integrations</li>
+            <li>Security, hosting, or infrastructure services</li>
+          </ul>
+          <p>
+            Those third parties may have their own policies and data practices.
+          </p>
+        </section>
+
+        <section class="section" id="manage">
+          <h3>10. How to Manage Them</h3>
+          <p>
+            You may be able to manage cookies and similar storage through your browser,
+            device, or app settings.
+          </p>
+          <ul>
+            <li>Clear cookies and site data in your browser settings</li>
+            <li>Block some cookies through browser privacy controls</li>
+            <li>Clear local storage and cached site data</li>
+            <li>Disable or manage notification permissions from device or browser settings</li>
+          </ul>
+          <p>
+            Please note that limiting or removing certain technologies may affect
+            login, saved preferences, notifications, and other View features.
+          </p>
+        </section>
+
+        <section class="section" id="changes">
+          <h3>11. Changes to This Policy</h3>
+          <p>
+            We may update this Cookie Policy from time to time to reflect changes
+            in View, our technical setup, legal requirements, or platform features.
+          </p>
+          <p>
+            When updates are made, the effective date at the top of this page may
+            also be updated.
+          </p>
+        </section>
+
+        <section class="section" id="contact-us">
+          <h3>12. Contact Us</h3>
+          <p>
+            If you have questions about this Cookie Policy or how storage-related
+            technologies are used on View, contact us:
+          </p>
+
+          <ul>
+            <li><strong>App:</strong> View</li>
+            <li><strong>Company:</strong> Ceetify / Ceetify Multi-Ventures Ltd</li>
+            <li><strong>Email:</strong> <a href="mailto:info.ceeticegroup@gmail.com">info.ceeticegroup@gmail.com</a></li>
+            <li><strong>Website:</strong> <a href="https://view.ceetice.com">view.ceetice.com</a></li>
+          </ul>
+
+          <div class="highlight">
+            For broader information about data collection and use, please also read
+            the View Privacy Policy.
+          </div>
+        </section>
+      </main>
+    </section>
+
+    <section class="contact-card">
+      <div>
+        <h3>Want to understand how your data is handled?</h3>
+        <p>
+          Read the full privacy details or contact support for questions about
+          cookies, storage, sessions, or notifications on View.
+        </p>
+      </div>
+
+      <div class="contact-actions">
+        <a class="btn primary" href="/privacy.html">View Privacy Policy</a>
+        <a class="btn secondary" href="/contact.html">Contact Support</a>
+      </div>
+    </section>
+
+    <footer>
+      © 2026 View by Ceetify. All rights reserved.
+    </footer>
+  </div>
+</body>
+</html>
