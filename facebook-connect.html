@@ -3,234 +3,515 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Connect Facebook | View</title>
-
+  <title>Facebook Pages Debug | View</title>
+  <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root{
       --bg:#08111f;
       --card:#101b31;
+      --line:rgba(255,255,255,.08);
       --text:#f4f7ff;
       --muted:#9fb1d7;
       --primary:#1877f2;
       --success:#10b981;
+      --warn:#f59e0b;
       --danger:#ef4444;
+      --shadow:0 14px 40px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top,0px);
+      --safe-bottom:env(safe-area-inset-bottom,0px);
     }
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Arial, sans-serif;
-    }
-
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
     body{
-      background:linear-gradient(135deg,#08111f,#0f1c3f);
+      font-family:Arial,Helvetica,sans-serif;
+      min-height:100vh;
       color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(24,119,242,.18), transparent 28%),
+        radial-gradient(circle at top left, rgba(124,58,237,.16), transparent 22%),
+        linear-gradient(180deg,#08111f 0%, #0c162b 100%);
+    }
+
+    .page{
+      max-width:920px;
+      margin:0 auto;
+      padding:calc(18px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
+    }
+
+    .topbar{
       display:flex;
-      justify-content:center;
       align-items:center;
-      height:100vh;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
     }
 
-    .card{
-      width:100%;
-      max-width:400px;
-      background:var(--card);
-      border-radius:20px;
-      padding:25px;
-      box-shadow:0 10px 40px rgba(0,0,0,.4);
-      text-align:center;
+    .back-btn,.link-btn,.btn{
+      border:none;
+      cursor:pointer;
+      font:inherit;
     }
 
-    .logo{
-      font-size:22px;
-      font-weight:bold;
-      margin-bottom:10px;
+    .back-btn{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border:1px solid var(--line);
     }
 
-    .desc{
-      font-size:14px;
+    .heading-wrap{flex:1;min-width:0}
+    .eyebrow{
       color:var(--muted);
-      margin-bottom:25px;
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      margin-bottom:4px;
+    }
+
+    h1{
+      margin:0;
+      font-size:22px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .link-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:42px;
+      padding:0 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+      border:1px solid var(--line);
+      text-decoration:none;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:16px;
+      padding:14px 15px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      font-size:14px;
+      line-height:1.5;
+      word-break:break-word;
+    }
+    .notice.show{display:block}
+    .notice.success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.24);color:#d1fae5}
+    .notice.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.24);color:#fef3c7}
+    .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#fee2e2}
+
+    .hero,.card,.debug-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+    }
+
+    .hero{
+      border-radius:28px;
+      padding:22px 18px;
+      margin-bottom:16px;
+    }
+
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .brand{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      min-width:0;
+    }
+
+    .brand-icon{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      background:linear-gradient(180deg,#2b84ff,#1768d9);
+      display:grid;
+      place-items:center;
+      font-size:30px;
+      font-weight:900;
+      color:#fff;
+      flex:0 0 auto;
+    }
+
+    .brand-text h2{
+      margin:0 0 5px;
+      font-size:20px;
+    }
+
+    .brand-text p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.55;
+    }
+
+    .chip{
+      padding:10px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .chip.connected{color:#d1fae5;background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.24)}
+    .chip.disconnected{color:#fef3c7;background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.24)}
+
+    .hero-copy{
+      color:#dbe7ff;
+      font-size:14px;
+      line-height:1.6;
+      margin:0 0 18px;
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
     }
 
     .btn{
-      width:100%;
-      padding:14px;
-      border:none;
-      border-radius:12px;
-      font-size:15px;
-      cursor:pointer;
-      margin-top:10px;
+      min-height:48px;
+      border-radius:16px;
+      padding:0 16px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .btn-primary{background:linear-gradient(180deg,#2b84ff,#1768d9);color:#fff}
+    .btn-secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}
+    .btn-danger{background:rgba(239,68,68,.12);color:#fecaca;border:1px solid rgba(239,68,68,.22)}
+
+    .grid{
+      display:grid;
+      gap:16px;
+      grid-template-columns:1fr;
     }
 
-    .facebook{
-      background:#1877f2;
-      color:#fff;
-      font-weight:bold;
+    .card,.debug-card{
+      border-radius:24px;
+      padding:18px;
     }
 
-    .disconnect{
-      background:#ef4444;
-      color:#fff;
+    .card h3,.debug-card h3{
+      margin:0 0 14px;
+      font-size:17px;
     }
 
-    .status{
-      margin-top:15px;
-      font-size:13px;
+    .rows{
+      display:grid;
+      gap:12px;
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      padding:12px 0;
+      border-bottom:1px dashed var(--line);
+    }
+    .row:last-child{border-bottom:none;padding-bottom:0}
+
+    .label{
       color:var(--muted);
+      font-size:13px;
+      min-width:110px;
     }
 
-    .success{
-      color:var(--success);
+    .value{
+      text-align:right;
+      font-size:14px;
+      line-height:1.45;
+      max-width:72%;
+      word-break:break-word;
     }
 
-    .error{
-      color:var(--danger);
+    .debug-card{
+      margin-top:16px;
+      border-color:rgba(59,130,246,.25);
     }
 
+    .debug-box{
+      background:#08101d;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:14px;
+      min-height:260px;
+      max-height:560px;
+      overflow:auto;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-size:12px;
+      line-height:1.5;
+      color:#d8e6ff;
+    }
+
+    .spinner{
+      width:16px;height:16px;border-radius:50%;
+      border:2px solid rgba(255,255,255,.35);
+      border-top-color:#fff;
+      display:none;
+      animation:spin 1s linear infinite;
+    }
+    .spinner.show{display:inline-block}
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(min-width:760px){.grid{grid-template-columns:1.1fr .9fr}}
   </style>
 </head>
 <body>
+  <div class="page">
+    <div class="topbar">
+      <button class="back-btn" id="backBtn" type="button">←</button>
 
-<div class="card">
-  <div class="logo">Connect Facebook</div>
-  <div class="desc">
-    Link your Facebook account to publish posts directly from View.
+      <div class="heading-wrap">
+        <div class="eyebrow">View account center</div>
+        <h1>Facebook pages debug</h1>
+      </div>
+
+      <a class="link-btn" href="connect-account.html">All accounts</a>
+    </div>
+
+    <div id="notice" class="notice"></div>
+
+    <section class="hero">
+      <div class="hero-top">
+        <div class="brand">
+          <div class="brand-icon">f</div>
+          <div class="brand-text">
+            <h2>Facebook pages diagnosis</h2>
+            <p>This temporary page shows the exact `facebook-pages` response, including permissions and raw Facebook page data.</p>
+          </div>
+        </div>
+        <div id="statusChip" class="chip disconnected">Unknown</div>
+      </div>
+
+      <p class="hero-copy">
+        Refresh status first, then tap Load pages to inspect the actual token and page response.
+      </p>
+
+      <div class="actions">
+        <button id="refreshBtn" class="btn btn-secondary" type="button">
+          <span id="refreshSpinner" class="spinner"></span>
+          <span id="refreshBtnText">Refresh status</span>
+        </button>
+
+        <button id="loadPagesBtn" class="btn btn-primary" type="button">
+          <span id="pagesSpinner" class="spinner"></span>
+          <span id="pagesBtnText">Load pages</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h3>Connection details</h3>
+        <div class="rows">
+          <div class="row"><div class="label">Status</div><div class="value" id="detailStatus">—</div></div>
+          <div class="row"><div class="label">Name</div><div class="value" id="detailName">—</div></div>
+          <div class="row"><div class="label">Handle / email</div><div class="value" id="detailHandle">—</div></div>
+          <div class="row"><div class="label">Facebook user ID</div><div class="value" id="detailUserId">—</div></div>
+          <div class="row"><div class="label">Selected page ID</div><div class="value" id="detailPageId">—</div></div>
+          <div class="row"><div class="label">Scope</div><div class="value" id="detailScope">—</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>What matters most</h3>
+        <div class="rows">
+          <div class="row"><div class="label">pages_count</div><div class="value">must be 1 or more</div></div>
+          <div class="row"><div class="label">permissions</div><div class="value">should include granted page scopes</div></div>
+          <div class="row"><div class="label">raw_pages_response</div><div class="value">must not contain token authorization error</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="debug-card">
+      <h3>Raw `facebook-pages` response</h3>
+      <div id="debugBox" class="debug-box">No response yet. Tap “Load pages”.</div>
+    </section>
   </div>
 
-  <!-- ✅ CONNECT BUTTON -->
-  <button class="btn facebook" id="connectBtn">
-    Continue with Facebook
-  </button>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+      const FN_BASE = `${SUPABASE_URL}/functions/v1`;
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  <!-- DISCONNECT -->
-  <button class="btn disconnect" id="disconnectBtn" style="display:none;">
-    Disconnect Facebook
-  </button>
+      const els = {
+        backBtn: document.getElementById("backBtn"),
+        notice: document.getElementById("notice"),
+        statusChip: document.getElementById("statusChip"),
+        refreshBtn: document.getElementById("refreshBtn"),
+        refreshSpinner: document.getElementById("refreshSpinner"),
+        refreshBtnText: document.getElementById("refreshBtnText"),
+        loadPagesBtn: document.getElementById("loadPagesBtn"),
+        pagesSpinner: document.getElementById("pagesSpinner"),
+        pagesBtnText: document.getElementById("pagesBtnText"),
+        detailStatus: document.getElementById("detailStatus"),
+        detailName: document.getElementById("detailName"),
+        detailHandle: document.getElementById("detailHandle"),
+        detailUserId: document.getElementById("detailUserId"),
+        detailPageId: document.getElementById("detailPageId"),
+        detailScope: document.getElementById("detailScope"),
+        debugBox: document.getElementById("debugBox")
+      };
 
-  <div class="status" id="status"></div>
-</div>
+      function showNotice(message, type = "warn") {
+        els.notice.className = `notice show ${type}`;
+        els.notice.textContent = message;
+      }
 
-<script>
-/* ================= CONFIG ================= */
-const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-const SUPABASE_ANON = "YOUR_ANON_KEY"; // keep your real key
+      function setRefreshBusy(state) {
+        els.refreshBtn.disabled = state;
+        els.refreshSpinner.classList.toggle("show", state);
+        els.refreshBtnText.textContent = state ? "Please wait..." : "Refresh status";
+      }
 
-const FACEBOOK_APP_ID = "YOUR_FACEBOOK_APP_ID";
-const REDIRECT_URI = window.location.origin + "/facebook-connect.html";
+      function setPagesBusy(state) {
+        els.loadPagesBtn.disabled = state;
+        els.pagesSpinner.classList.toggle("show", state);
+        els.pagesBtnText.textContent = state ? "Please wait..." : "Load pages";
+      }
 
-/* ========================================= */
+      function setDisconnectedUI() {
+        els.statusChip.textContent = "Not connected";
+        els.statusChip.className = "chip disconnected";
+        els.detailStatus.textContent = "No saved Facebook connection";
+        els.detailName.textContent = "—";
+        els.detailHandle.textContent = "—";
+        els.detailUserId.textContent = "—";
+        els.detailPageId.textContent = "—";
+        els.detailScope.textContent = "—";
+      }
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+      function setConnectedUI(data) {
+        els.statusChip.textContent = "Connected";
+        els.statusChip.className = "chip connected";
+        els.detailStatus.textContent = data.status || "connected";
+        els.detailName.textContent = data.account_name || "—";
+        els.detailHandle.textContent = data.account_handle || "—";
+        els.detailUserId.textContent = data.external_user_id || "—";
+        els.detailPageId.textContent = data.external_page_id || "—";
+        els.detailScope.textContent = data.scope || "—";
+      }
 
-const connectBtn = document.getElementById("connectBtn");
-const disconnectBtn = document.getElementById("disconnectBtn");
-const statusDiv = document.getElementById("status");
+      async function getSessionOrWarn() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        const session = data?.session || null;
+        if (!session?.access_token) {
+          showNotice("You are not signed in. Please login first.", "warn");
+          return null;
+        }
+        return session;
+      }
 
-/* ================= CHECK SESSION ================= */
-async function getUser(){
-  const { data } = await supabase.auth.getUser();
-  return data?.user;
-}
+      async function safeFetch(url, options = {}, timeoutMs = 25000) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          return await fetch(url, { ...options, signal: controller.signal });
+        } finally {
+          clearTimeout(timeout);
+        }
+      }
 
-/* ================= FACEBOOK LOGIN ================= */
-connectBtn.onclick = async () => {
-  const user = await getUser();
+      async function loadStatus() {
+        setRefreshBusy(true);
+        try {
+          const session = await getSessionOrWarn();
+          if (!session) {
+            setDisconnectedUI();
+            return;
+          }
 
-  if(!user){
-    statusDiv.innerHTML = "Login first";
-    statusDiv.className = "status error";
-    return;
-  }
+          const res = await safeFetch(`${FN_BASE}/facebook-status`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${session.access_token}`
+            }
+          });
 
-  const scope = "pages_manage_posts,pages_read_engagement,publish_to_groups";
+          const data = await res.json().catch(() => ({}));
 
-  const url = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}&response_type=token`;
+          if (!res.ok) throw new Error(data?.error || `Status failed (${res.status})`);
 
-  window.location.href = url;
-};
+          if (data.connected && data.account) {
+            setConnectedUI(data.account);
+            showNotice("Facebook status loaded.", "success");
+          } else {
+            setDisconnectedUI();
+            showNotice("No Facebook account is connected yet.", "warn");
+          }
+        } catch (err) {
+          setDisconnectedUI();
+          showNotice(err.message || "Could not load Facebook status.", "error");
+        } finally {
+          setRefreshBusy(false);
+        }
+      }
 
-/* ================= HANDLE REDIRECT ================= */
-function handleFacebookRedirect(){
-  const hash = window.location.hash;
+      async function loadPages() {
+        setPagesBusy(true);
+        try {
+          const session = await getSessionOrWarn();
+          if (!session) return;
 
-  if(hash.includes("access_token")){
-    const params = new URLSearchParams(hash.substring(1));
-    const access_token = params.get("access_token");
+          const res = await safeFetch(`${FN_BASE}/facebook-pages`, {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${session.access_token}`
+            }
+          });
 
-    saveFacebookToken(access_token);
-  }
-}
+          const data = await res.json().catch(() => ({}));
 
-/* ================= SAVE TOKEN ================= */
-async function saveFacebookToken(token){
-  const user = await getUser();
+          els.debugBox.textContent = JSON.stringify(data, null, 2);
+          alert(JSON.stringify(data, null, 2));
 
-  const { error } = await supabase
-    .from("connected_accounts")
-    .upsert({
-      user_id: user.id,
-      provider: "facebook",
-      access_token: token
+          if (!res.ok) throw new Error(data?.error || `Load pages failed (${res.status})`);
+
+          showNotice(`facebook-pages returned. pages_count: ${data?.pages_count ?? "unknown"}`, "success");
+        } catch (err) {
+          els.debugBox.textContent = String(err.message || err);
+          showNotice(err.message || "Could not load Facebook pages.", "error");
+          alert(err.message || "Could not load Facebook pages.");
+        } finally {
+          setPagesBusy(false);
+        }
+      }
+
+      els.backBtn.addEventListener("click", () => {
+        if (document.referrer) history.back();
+        else window.location.href = "connect-account.html";
+      });
+
+      els.refreshBtn.addEventListener("click", loadStatus);
+      els.loadPagesBtn.addEventListener("click", loadPages);
+
+      loadStatus();
     });
-
-  if(error){
-    statusDiv.innerHTML = "Error saving account";
-    statusDiv.className = "status error";
-  } else {
-    statusDiv.innerHTML = "Facebook connected successfully";
-    statusDiv.className = "status success";
-
-    connectBtn.style.display = "none";
-    disconnectBtn.style.display = "block";
-  }
-}
-
-/* ================= CHECK IF CONNECTED ================= */
-async function checkConnection(){
-  const user = await getUser();
-  if(!user) return;
-
-  const { data } = await supabase
-    .from("connected_accounts")
-    .select("*")
-    .eq("user_id", user.id)
-    .eq("provider", "facebook")
-    .single();
-
-  if(data){
-    connectBtn.style.display = "none";
-    disconnectBtn.style.display = "block";
-    statusDiv.innerHTML = "Facebook already connected";
-    statusDiv.className = "status success";
-  }
-}
-
-/* ================= DISCONNECT ================= */
-disconnectBtn.onclick = async () => {
-  const user = await getUser();
-
-  await supabase
-    .from("connected_accounts")
-    .delete()
-    .eq("user_id", user.id)
-    .eq("provider", "facebook");
-
-  statusDiv.innerHTML = "Disconnected";
-  statusDiv.className = "status";
-
-  connectBtn.style.display = "block";
-  disconnectBtn.style.display = "none";
-};
-
-/* ================= INIT ================= */
-handleFacebookRedirect();
-checkConnection();
-
-</script>
-
+  </script>
 </body>
 </html>
