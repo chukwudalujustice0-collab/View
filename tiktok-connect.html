@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>Connect TikTok | View</title>
+  <meta name="theme-color" content="#08111f" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --bg:#08111f;
+      --bg2:#0d1730;
+      --card:#101b31;
+      --card2:#13213d;
+      --line:rgba(255,255,255,.08);
+      --text:#f4f7ff;
+      --muted:#9fb1d7;
+      --primary:#2563eb;
+      --primary2:#7c3aed;
+      --pink:#ff2d55;
+      --cyan:#25f4ee;
+      --success:#10b981;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 18px 50px rgba(0,0,0,.34);
+      --radius:22px;
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.22), transparent 32%),
+        radial-gradient(circle at top right, rgba(124,58,237,.18), transparent 28%),
+        radial-gradient(circle at bottom, rgba(255,45,85,.10), transparent 25%),
+        linear-gradient(180deg, #08111f 0%, #0b1328 100%);
+      padding-top:calc(10px + var(--safe-top));
+      padding-bottom:calc(24px + var(--safe-bottom));
+    }
+
+    a{text-decoration:none;color:inherit}
+
+    .wrap{
+      width:min(100%, 760px);
+      margin:0 auto;
+      padding:14px 14px 0;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .left-top{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      display:grid;
+      place-items:center;
+      color:#fff;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+
+    .title-wrap{min-width:0}
+    .eyebrow{
+      font-size:12px;
+      color:var(--muted);
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      margin-bottom:3px;
+    }
+    .title{
+      font-size:20px;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
+        linear-gradient(135deg, rgba(37,99,235,.28), rgba(124,58,237,.22));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:28px;
+      padding:22px 18px 18px;
+      box-shadow:var(--shadow);
+      margin-bottom:16px;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:auto -30px -30px auto;
+      width:140px;
+      height:140px;
+      background:radial-gradient(circle, rgba(37,244,238,.28), transparent 65%);
+      pointer-events:none;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:-20px auto auto -20px;
+      width:140px;
+      height:140px;
+      background:radial-gradient(circle, rgba(255,45,85,.18), transparent 70%);
+      pointer-events:none;
+    }
+
+    .brand-line{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+      position:relative;
+      z-index:1;
+    }
+
+    .brand-badge{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      background:#0a0a0f;
+      border:1px solid rgba(255,255,255,.12);
+      display:grid;
+      place-items:center;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04), 0 14px 30px rgba(0,0,0,.25);
+      position:relative;
+    }
+
+    .brand-badge svg{
+      width:28px;
+      height:28px;
+      display:block;
+    }
+
+    .hero h1{
+      margin:0 0 8px;
+      font-size:24px;
+      line-height:1.2;
+    }
+
+    .hero p{
+      margin:0;
+      color:#d8e3ff;
+      line-height:1.6;
+      font-size:14px;
+      position:relative;
+      z-index:1;
+    }
+
+    .chips{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:14px;
+      position:relative;
+      z-index:1;
+    }
+
+    .chip{
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#eef4ff;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:16px;
+      padding:14px 15px;
+      border-radius:18px;
+      border:1px solid transparent;
+      font-size:14px;
+      line-height:1.55;
+    }
+    .notice.show{display:block}
+    .notice.info{background:rgba(37,99,235,.12); border-color:rgba(37,99,235,.28); color:#dbeafe}
+    .notice.success{background:rgba(16,185,129,.12); border-color:rgba(16,185,129,.28); color:#dcfce7}
+    .notice.warn{background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.28); color:#fef3c7}
+    .notice.error{background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.28); color:#fee2e2}
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:16px;
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius:26px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      backdrop-filter:blur(10px);
+    }
+
+    .card-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:18px 18px 12px;
+    }
+
+    .card-title{
+      font-size:17px;
+      font-weight:800;
+      margin:0;
+    }
+
+    .status-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      border:1px solid var(--line);
+      white-space:nowrap;
+    }
+
+    .status-pill::before{
+      content:"";
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:currentColor;
+      opacity:.95;
+    }
+
+    .connected{color:#34d399; background:rgba(16,185,129,.10)}
+    .disconnected{color:#f59e0b; background:rgba(245,158,11,.10)}
+
+    .body{
+      padding:0 18px 18px;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    .profile{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:rgba(255,255,255,.03);
+      margin-top:12px;
+    }
+
+    .avatar{
+      width:66px;
+      height:66px;
+      border-radius:20px;
+      object-fit:cover;
+      background:linear-gradient(135deg, rgba(37,244,238,.18), rgba(255,45,85,.18));
+      border:1px solid rgba(255,255,255,.10);
+      flex:0 0 auto;
+    }
+
+    .avatar.fallback{
+      display:grid;
+      place-items:center;
+      font-size:24px;
+      font-weight:800;
+      color:#fff;
+    }
+
+    .profile-main{min-width:0}
+    .profile-name{
+      font-size:17px;
+      font-weight:800;
+      margin:0 0 4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .profile-sub{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+      word-break:break-word;
+    }
+
+    .kv{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .kv-item{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+    }
+
+    .kv-label{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:6px;
+    }
+
+    .kv-value{
+      font-size:14px;
+      font-weight:800;
+      word-break:break-word;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+      margin-top:16px;
+    }
+
+    .btn{
+      border:none;
+      outline:none;
+      cursor:pointer;
+      padding:15px 16px;
+      border-radius:18px;
+      font-size:15px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      transition:.2s ease;
+      min-height:54px;
+    }
+
+    .btn:active{transform:scale(.985)}
+
+    .btn-primary{
+      color:#fff;
+      background:linear-gradient(135deg, var(--primary), var(--primary2));
+      box-shadow:0 16px 28px rgba(37,99,235,.24);
+    }
+
+    .btn-dark{
+      color:#fff;
+      background:linear-gradient(135deg, #111827, #1f2937);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .btn-danger{
+      color:#fff;
+      background:linear-gradient(135deg, #b91c1c, #ef4444);
+      box-shadow:0 16px 28px rgba(239,68,68,.20);
+    }
+
+    .btn-soft{
+      color:#eef4ff;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+    }
+
+    .list{
+      display:grid;
+      gap:10px;
+      margin-top:6px;
+    }
+
+    .list-item{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:13px 14px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      font-size:14px;
+      line-height:1.55;
+      color:#eaf1ff;
+    }
+
+    .dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:linear-gradient(135deg, var(--cyan), var(--pink));
+      margin-top:6px;
+      flex:0 0 auto;
+    }
+
+    .input-wrap{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .field{
+      width:100%;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:#fff;
+      padding:15px 16px;
+      font-size:14px;
+      outline:none;
+    }
+
+    .field::placeholder{color:#93a6cb}
+
+    .footer-space{height:8px}
+
+    @media (min-width:720px){
+      .grid{
+        grid-template-columns:1.08fr .92fr;
+        align-items:start;
+      }
+      .actions{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="left-top">
+        <button class="icon-btn" id="backBtn" aria-label="Go back">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="title-wrap">
+          <div class="eyebrow">View social</div>
+          <div class="title">TikTok Connection</div>
+        </div>
+      </div>
+
+      <a class="icon-btn" href="connect-account.html" aria-label="Connected accounts">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="2"/>
+          <path d="M8 12h8M8 9h4M8 15h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </a>
+    </div>
+
+    <section class="hero">
+      <div class="brand-line">
+        <div class="brand-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15.95 5.8c.86.98 1.9 1.73 3.1 2.12v2.63a8.15 8.15 0 0 1-3.3-.9l.02 4.9c0 3.08-2.39 5.48-5.56 5.48A5.48 5.48 0 0 1 4.7 14.6a5.52 5.52 0 0 1 8.85-4.4v2.74a2.83 2.83 0 0 0-1.9-.72c-1.56 0-2.82 1.23-2.82 2.75 0 1.61 1.21 2.77 2.88 2.77 1.56 0 2.71-1.1 2.82-2.6l.02-10.34h2.4Z" fill="white"/>
+            <path d="M14.55 5.2h1.45c.3.58.67 1.11 1.1 1.58-.75-.22-1.43-.61-2.03-1.17-.18-.13-.35-.27-.52-.41Z" fill="#25F4EE" opacity=".95"/>
+            <path d="M13.8 6.1v10.25c-.1 1.49-1.26 2.6-2.82 2.6a2.72 2.72 0 0 1-2.18-1.02c.46.29 1 .45 1.61.45 1.56 0 2.72-1.12 2.82-2.62V5.44c.17.24.37.47.57.66Z" fill="#FF2D55" opacity=".95"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Connect your TikTok account</h1>
+          <p>
+            Link TikTok to View so you can prepare your account for future creator tools,
+            cross-post workflows, and faster publishing connections.
+          </p>
+        </div>
+      </div>
+
+      <div class="chips">
+        <div class="chip">Secure sign-in</div>
+        <div class="chip">Creator ready</div>
+        <div class="chip">Cross-post flow</div>
+      </div>
+    </section>
+
+    <div id="notice" class="notice"></div>
+
+    <div class="grid">
+      <section class="card">
+        <div class="card-head">
+          <h2 class="card-title">Connection Status</h2>
+          <div id="statusPill" class="status-pill disconnected">Not connected</div>
+        </div>
+
+        <div class="body">
+          <p class="muted" id="statusText">
+            Your TikTok account is not connected yet.
+          </p>
+
+          <div class="profile" id="profileBox" style="display:none;">
+            <img id="avatar" class="avatar" alt="TikTok avatar" />
+            <div id="avatarFallback" class="avatar fallback" style="display:none;">T</div>
+
+            <div class="profile-main">
+              <h3 class="profile-name" id="accountName">TikTok Account</h3>
+              <p class="profile-sub" id="accountMeta">No account details yet</p>
+            </div>
+          </div>
+
+          <div class="kv" id="metaGrid" style="display:none;">
+            <div class="kv-item">
+              <div class="kv-label">Platform</div>
+              <div class="kv-value">TikTok</div>
+            </div>
+            <div class="kv-item">
+              <div class="kv-label">Connection</div>
+              <div class="kv-value" id="connectionTime">—</div>
+            </div>
+            <div class="kv-item">
+              <div class="kv-label">Open ID</div>
+              <div class="kv-value" id="openIdText">—</div>
+            </div>
+            <div class="kv-item">
+              <div class="kv-label">Expires</div>
+              <div class="kv-value" id="expiresText">—</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="connectBtn">
+              <span>Connect TikTok</span>
+            </button>
+            <button class="btn btn-soft" id="refreshBtn">
+              <span>Refresh Status</span>
+            </button>
+            <button class="btn btn-dark" id="copyBtn">
+              <span>Copy Callback URL</span>
+            </button>
+            <button class="btn btn-danger" id="disconnectBtn">
+              <span>Disconnect</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2 class="card-title">Setup & Manual Fallback</h2>
+        </div>
+
+        <div class="body">
+          <div class="list">
+            <div class="list-item">
+              <span class="dot"></span>
+              <span>Use the connect button to open your TikTok auth flow from your backend.</span>
+            </div>
+            <div class="list-item">
+              <span class="dot"></span>
+              <span>Your callback should return to this page with account details in the URL.</span>
+            </div>
+            <div class="list-item">
+              <span class="dot"></span>
+              <span>This file stores the connection locally and can also send it to your backend endpoint automatically.</span>
+            </div>
+          </div>
+
+          <div class="input-wrap">
+            <input
+              id="manualName"
+              class="field"
+              type="text"
+              placeholder="Manual account name or username"
+            />
+            <input
+              id="manualOpenId"
+              class="field"
+              type="text"
+              placeholder="Manual TikTok open_id or user id"
+            />
+            <input
+              id="manualAvatar"
+              class="field"
+              type="url"
+              placeholder="Manual avatar URL (optional)"
+            />
+            <button class="btn btn-dark" id="saveManualBtn">
+              Save Manual Connection
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer-space"></div>
+  </div>
+
+  <script>
+    /* ===========================
+       VIEW APP CONFIG
+       =========================== */
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    /* ===========================
+       DOM
+       =========================== */
+    const notice = document.getElementById("notice");
+    const statusPill = document.getElementById("statusPill");
+    const statusText = document.getElementById("statusText");
+    const profileBox = document.getElementById("profileBox");
+    const avatar = document.getElementById("avatar");
+    const avatarFallback = document.getElementById("avatarFallback");
+    const accountName = document.getElementById("accountName");
+    const accountMeta = document.getElementById("accountMeta");
+    const metaGrid = document.getElementById("metaGrid");
+    const connectionTime = document.getElementById("connectionTime");
+    const openIdText = document.getElementById("openIdText");
+    const expiresText = document.getElementById("expiresText");
+
+    const backBtn = document.getElementById("backBtn");
+    const connectBtn = document.getElementById("connectBtn");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const disconnectBtn = document.getElementById("disconnectBtn");
+    const saveManualBtn = document.getElementById("saveManualBtn");
+
+    const manualName = document.getElementById("manualName");
+    const manualOpenId = document.getElementById("manualOpenId");
+    const manualAvatar = document.getElementById("manualAvatar");
+
+    /* ===========================
+       STORAGE KEYS
+       =========================== */
+    const STORAGE_KEY = "view_tiktok_connection";
+    const CALLBACK_URL = window.location.origin + window.location.pathname;
+
+    /* ===========================
+       HELPERS
+       =========================== */
+    function showNotice(message, type = "info") {
+      notice.className = "notice show " + type;
+      notice.textContent = message;
+    }
+
+    function clearNotice() {
+      notice.className = "notice";
+      notice.textContent = "";
+    }
+
+    function safeText(value, fallback = "—") {
+      return (value === null || value === undefined || value === "") ? fallback : String(value);
+    }
+
+    function formatDate(value) {
+      if (!value) return "—";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return String(value);
+      return d.toLocaleString();
+    }
+
+    function formatExpiry(value) {
+      if (!value) return "—";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return String(value);
+      const now = Date.now();
+      if (d.getTime() < now) return "Expired";
+      return d.toLocaleString();
+    }
+
+    function initialsFromName(name) {
+      const clean = (name || "TikTok").trim();
+      return clean.charAt(0).toUpperCase() || "T";
+    }
+
+    function loadStoredConnection() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function saveStoredConnection(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function clearStoredConnection() {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
+    function setConnectedUI(data) {
+      statusPill.className = "status-pill connected";
+      statusPill.textContent = "Connected";
+      statusText.textContent = "Your TikTok account is connected to View.";
+
+      profileBox.style.display = "flex";
+      metaGrid.style.display = "grid";
+
+      const displayName = data.account_name || data.username || data.display_name || "TikTok Account";
+      const openId = data.open_id || data.tiktok_user_id || data.account_id || "";
+      const avatarUrl = data.avatar_url || data.avatar || data.profile_image || "";
+      const connectedAt = data.connected_at || data.saved_at || new Date().toISOString();
+      const expiresAt = data.expires_at || "";
+
+      accountName.textContent = displayName;
+      accountMeta.textContent = openId ? ("Open ID: " + openId) : "TikTok linked successfully";
+      connectionTime.textContent = formatDate(connectedAt);
+      openIdText.textContent = safeText(openId);
+      expiresText.textContent = formatExpiry(expiresAt);
+
+      if (avatarUrl) {
+        avatar.style.display = "block";
+        avatarFallback.style.display = "none";
+        avatar.src = avatarUrl;
+        avatar.onerror = function() {
+          avatar.style.display = "none";
+          avatarFallback.style.display = "grid";
+          avatarFallback.textContent = initialsFromName(displayName);
+        };
+      } else {
+        avatar.style.display = "none";
+        avatarFallback.style.display = "grid";
+        avatarFallback.textContent = initialsFromName(displayName);
+      }
+    }
+
+    function setDisconnectedUI() {
+      statusPill.className = "status-pill disconnected";
+      statusPill.textContent = "Not connected";
+      statusText.textContent = "Your TikTok account is not connected yet.";
+      profileBox.style.display = "none";
+      metaGrid.style.display = "none";
+      avatar.src = "";
+    }
+
+    function getQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        status: params.get("status"),
+        code: params.get("code"),
+        error: params.get("error"),
+        message: params.get("message"),
+        account_name: params.get("account_name"),
+        username: params.get("username"),
+        open_id: params.get("open_id"),
+        avatar_url: params.get("avatar_url"),
+        access_token: params.get("access_token"),
+        refresh_token: params.get("refresh_token"),
+        expires_in: params.get("expires_in"),
+        expires_at: params.get("expires_at")
+      };
+    }
+
+    function stripQueryFromUrl() {
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+
+    async function getCurrentUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) return null;
+      return data?.user || null;
+    }
+
+    function buildConnectionPayloadFromCallback(q) {
+      const now = new Date();
+      let expiresAt = q.expires_at || "";
+      if (!expiresAt && q.expires_in) {
+        const seconds = Number(q.expires_in);
+        if (!Number.isNaN(seconds) && seconds > 0) {
+          expiresAt = new Date(Date.now() + seconds * 1000).toISOString();
+        }
+      }
+
+      return {
+        platform: "tiktok",
+        provider: "tiktok",
+        account_name: q.account_name || q.username || "TikTok Account",
+        username: q.username || q.account_name || "",
+        open_id: q.open_id || "",
+        avatar_url: q.avatar_url || "",
+        access_token: q.access_token || "",
+        refresh_token: q.refresh_token || "",
+        expires_at: expiresAt,
+        connected_at: now.toISOString(),
+        saved_at: now.toISOString()
+      };
+    }
+
+    async function sendConnectionToBackend(payload, user) {
+      try {
+        const res = await fetch("/api/tiktok/store-connection", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(user?.id ? { "x-view-user-id": user.id } : {})
+          },
+          body: JSON.stringify({
+            ...payload,
+            user_id: user?.id || null
+          })
+        });
+
+        if (!res.ok) {
+          return false;
+        }
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function sendDisconnectToBackend(user) {
+      try {
+        const res = await fetch("/api/tiktok/disconnect", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(user?.id ? { "x-view-user-id": user.id } : {})
+          },
+          body: JSON.stringify({
+            platform: "tiktok",
+            user_id: user?.id || null
+          })
+        });
+
+        return res.ok;
+      } catch {
+        return false;
+      }
+    }
+
+    async function getBackendAuthUrl(user) {
+      try {
+        const res = await fetch("/api/tiktok/auth-url?redirect_uri=" + encodeURIComponent(CALLBACK_URL), {
+          headers: user?.id ? { "x-view-user-id": user.id } : {}
+        });
+
+        if (!res.ok) throw new Error("Failed to get auth URL");
+        const data = await res.json();
+        return data?.url || "";
+      } catch {
+        return "";
+      }
+    }
+
+    async function connectTikTok() {
+      clearNotice();
+      connectBtn.disabled = true;
+      connectBtn.textContent = "Preparing...";
+
+      try {
+        const user = await getCurrentUser();
+        const authUrl = await getBackendAuthUrl(user);
+
+        if (authUrl) {
+          window.location.href = authUrl;
+          return;
+        }
+
+        const fallbackUrl =
+          "/api/tiktok/login?redirect_uri=" + encodeURIComponent(CALLBACK_URL);
+
+        showNotice(
+          "Backend auth URL was not found automatically. Make sure your backend supports /api/tiktok/auth-url or /api/tiktok/login, then continue.",
+          "warn"
+        );
+
+        setTimeout(() => {
+          window.location.href = fallbackUrl;
+        }, 900);
+      } catch (err) {
+        showNotice(err?.message || "Unable to start TikTok connection.", "error");
+      } finally {
+        connectBtn.disabled = false;
+        connectBtn.textContent = "Connect TikTok";
+      }
+    }
+
+    async function disconnectTikTok() {
+      const user = await getCurrentUser();
+      clearStoredConnection();
+      setDisconnectedUI();
+      await sendDisconnectToBackend(user);
+      showNotice("TikTok account disconnected.", "success");
+    }
+
+    async function saveManualConnection() {
+      const name = manualName.value.trim();
+      const openId = manualOpenId.value.trim();
+      const avatarUrl = manualAvatar.value.trim();
+
+      if (!name && !openId) {
+        showNotice("Enter at least an account name or open ID.", "warn");
+        return;
+      }
+
+      const payload = {
+        platform: "tiktok",
+        provider: "tiktok",
+        account_name: name || "TikTok Account",
+        username: name || "",
+        open_id: openId || "",
+        avatar_url: avatarUrl || "",
+        connected_at: new Date().toISOString(),
+        saved_at: new Date().toISOString(),
+        manual: true
+      };
+
+      saveStoredConnection(payload);
+      setConnectedUI(payload);
+
+      const user = await getCurrentUser();
+      await sendConnectionToBackend(payload, user);
+
+      showNotice("Manual TikTok connection saved.", "success");
+    }
+
+    async function handleCallbackParams() {
+      const q = getQueryParams();
+
+      if (q.error) {
+        showNotice(q.message || q.error || "TikTok connection failed.", "error");
+        stripQueryFromUrl();
+        return;
+      }
+
+      const hasCallbackData =
+        q.status || q.code || q.account_name || q.username || q.open_id || q.access_token;
+
+      if (!hasCallbackData) return;
+
+      if (q.status && q.status.toLowerCase() === "success" || q.code || q.account_name || q.open_id) {
+        const payload = buildConnectionPayloadFromCallback(q);
+        saveStoredConnection(payload);
+        setConnectedUI(payload);
+
+        const user = await getCurrentUser();
+        await sendConnectionToBackend(payload, user);
+
+        showNotice("TikTok account connected successfully.", "success");
+        stripQueryFromUrl();
+        return;
+      }
+
+      stripQueryFromUrl();
+    }
+
+    async function renderState() {
+      const connection = loadStoredConnection();
+      if (connection) {
+        setConnectedUI(connection);
+      } else {
+        setDisconnectedUI();
+      }
+    }
+
+    async function copyCallbackUrl() {
+      try {
+        await navigator.clipboard.writeText(CALLBACK_URL);
+        showNotice("Callback URL copied: " + CALLBACK_URL, "success");
+      } catch {
+        showNotice("Could not copy callback URL. Use this: " + CALLBACK_URL, "info");
+      }
+    }
+
+    /* ===========================
+       EVENTS
+       =========================== */
+    backBtn.addEventListener("click", () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "connect-account.html";
+      }
+    });
+
+    connectBtn.addEventListener("click", connectTikTok);
+    refreshBtn.addEventListener("click", renderState);
+    copyBtn.addEventListener("click", copyCallbackUrl);
+    disconnectBtn.addEventListener("click", disconnectTikTok);
+    saveManualBtn.addEventListener("click", saveManualConnection);
+
+    /* ===========================
+       INIT
+       =========================== */
+    (async function init() {
+      await renderState();
+      await handleCallbackParams();
+      await renderState();
+    })();
+  </script>
+</body>
+</html>
