@@ -151,6 +151,7 @@
       place-items:center;
       box-shadow:inset 0 0 0 1px rgba(255,255,255,.04), 0 14px 30px rgba(0,0,0,.25);
       position:relative;
+      flex:0 0 auto;
     }
 
     .brand-badge svg{
@@ -201,6 +202,7 @@
       border:1px solid transparent;
       font-size:14px;
       line-height:1.55;
+      word-break:break-word;
     }
     .notice.show{display:block}
     .notice.info{background:rgba(37,99,235,.12); border-color:rgba(37,99,235,.28); color:#dbeafe}
@@ -366,6 +368,11 @@
       min-height:54px;
     }
 
+    .btn:disabled{
+      opacity:.7;
+      cursor:not-allowed;
+    }
+
     .btn:active{transform:scale(.985)}
 
     .btn-primary{
@@ -487,8 +494,8 @@
         <div>
           <h1>Connect your TikTok account</h1>
           <p>
-            Link TikTok to View so you can prepare your account for future creator tools,
-            cross-post workflows, and faster publishing connections.
+            Link TikTok to View so your users can prepare for creator tools,
+            account connection, and future cross-post publishing flow.
           </p>
         </div>
       </div>
@@ -569,15 +576,15 @@
           <div class="list">
             <div class="list-item">
               <span class="dot"></span>
-              <span>Use the connect button to open your TikTok auth flow from your backend.</span>
+              <span>The connect button opens your backend TikTok OAuth route.</span>
             </div>
             <div class="list-item">
               <span class="dot"></span>
-              <span>Your callback should return to this page with account details in the URL.</span>
+              <span>Your backend callback exchanges the code and redirects back here with the account details.</span>
             </div>
             <div class="list-item">
               <span class="dot"></span>
-              <span>This file stores the connection locally and can also send it to your backend endpoint automatically.</span>
+              <span>This page stores connection locally and can also send it to your backend save endpoint.</span>
             </div>
           </div>
 
@@ -598,7 +605,7 @@
               id="manualAvatar"
               class="field"
               type="url"
-              placeholder="Manual avatar URL (optional)"
+              placeholder="Manual avatar URL optional"
             />
             <button class="btn btn-dark" id="saveManualBtn">
               Save Manual Connection
@@ -612,17 +619,14 @@
   </div>
 
   <script>
-    /* ===========================
-       VIEW APP CONFIG
-       =========================== */
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    /* ===========================
-       DOM
-       =========================== */
+    const STORAGE_KEY = "view_tiktok_connection";
+    const FRONTEND_CALLBACK_URL = window.location.origin + window.location.pathname;
+    const BACKEND_CALLBACK_URL = window.location.origin + "/api/tiktok/callback";
+
     const notice = document.getElementById("notice");
     const statusPill = document.getElementById("statusPill");
     const statusText = document.getElementById("statusText");
@@ -647,15 +651,6 @@
     const manualOpenId = document.getElementById("manualOpenId");
     const manualAvatar = document.getElementById("manualAvatar");
 
-    /* ===========================
-       STORAGE KEYS
-       =========================== */
-    const STORAGE_KEY = "view_tiktok_connection";
-    const CALLBACK_URL = window.location.origin + window.location.pathname;
-
-    /* ===========================
-       HELPERS
-       =========================== */
     function showNotice(message, type = "info") {
       notice.className = "notice show " + type;
       notice.textContent = message;
@@ -681,8 +676,7 @@
       if (!value) return "—";
       const d = new Date(value);
       if (Number.isNaN(d.getTime())) return String(value);
-      const now = Date.now();
-      if (d.getTime() < now) return "Expired";
+      if (d.getTime() < Date.now()) return "Expired";
       return d.toLocaleString();
     }
 
@@ -732,7 +726,7 @@
         avatar.style.display = "block";
         avatarFallback.style.display = "none";
         avatar.src = avatarUrl;
-        avatar.onerror = function() {
+        avatar.onerror = function () {
           avatar.style.display = "none";
           avatarFallback.style.display = "grid";
           avatarFallback.textContent = initialsFromName(displayName);
@@ -772,18 +766,20 @@
     }
 
     function stripQueryFromUrl() {
-      const cleanUrl = window.location.origin + window.location.pathname;
-      window.history.replaceState({}, document.title, cleanUrl);
+      window.history.replaceState({}, document.title, FRONTEND_CALLBACK_URL);
     }
 
     async function getCurrentUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) return null;
-      return data?.user || null;
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) return null;
+        return data?.user || null;
+      } catch {
+        return null;
+      }
     }
 
     function buildConnectionPayloadFromCallback(q) {
-      const now = new Date();
       let expiresAt = q.expires_at || "";
       if (!expiresAt && q.expires_in) {
         const seconds = Number(q.expires_in);
@@ -802,8 +798,8 @@
         access_token: q.access_token || "",
         refresh_token: q.refresh_token || "",
         expires_at: expiresAt,
-        connected_at: now.toISOString(),
-        saved_at: now.toISOString()
+        connected_at: new Date().toISOString(),
+        saved_at: new Date().toISOString()
       };
     }
 
@@ -820,11 +816,7 @@
             user_id: user?.id || null
           })
         });
-
-        if (!res.ok) {
-          return false;
-        }
-        return true;
+        return res.ok;
       } catch {
         return false;
       }
@@ -843,7 +835,6 @@
             user_id: user?.id || null
           })
         });
-
         return res.ok;
       } catch {
         return false;
@@ -852,9 +843,12 @@
 
     async function getBackendAuthUrl(user) {
       try {
-        const res = await fetch("/api/tiktok/auth-url?redirect_uri=" + encodeURIComponent(CALLBACK_URL), {
-          headers: user?.id ? { "x-view-user-id": user.id } : {}
-        });
+        const res = await fetch(
+          "/api/tiktok/auth-url?redirect_uri=" + encodeURIComponent(BACKEND_CALLBACK_URL),
+          {
+            headers: user?.id ? { "x-view-user-id": user.id } : {}
+          }
+        );
 
         if (!res.ok) throw new Error("Failed to get auth URL");
         const data = await res.json();
@@ -878,17 +872,10 @@
           return;
         }
 
-        const fallbackUrl =
-          "/api/tiktok/login?redirect_uri=" + encodeURIComponent(CALLBACK_URL);
-
         showNotice(
-          "Backend auth URL was not found automatically. Make sure your backend supports /api/tiktok/auth-url or /api/tiktok/login, then continue.",
-          "warn"
+          "Could not get TikTok auth URL from backend. Make sure /api/tiktok/auth-url.js is in your Vercel api folder.",
+          "error"
         );
-
-        setTimeout(() => {
-          window.location.href = fallbackUrl;
-        }, 900);
       } catch (err) {
         showNotice(err?.message || "Unable to start TikTok connection.", "error");
       } finally {
@@ -898,10 +885,12 @@
     }
 
     async function disconnectTikTok() {
-      const user = await getCurrentUser();
       clearStoredConnection();
       setDisconnectedUI();
+
+      const user = await getCurrentUser();
       await sendDisconnectToBackend(user);
+
       showNotice("TikTok account disconnected.", "success");
     }
 
@@ -950,19 +939,25 @@
 
       if (!hasCallbackData) return;
 
-      if (q.status && q.status.toLowerCase() === "success" || q.code || q.account_name || q.open_id) {
-        const payload = buildConnectionPayloadFromCallback(q);
-        saveStoredConnection(payload);
-        setConnectedUI(payload);
+      const isSuccess =
+        (q.status && q.status.toLowerCase() === "success") ||
+        !!q.code ||
+        !!q.account_name ||
+        !!q.open_id;
 
-        const user = await getCurrentUser();
-        await sendConnectionToBackend(payload, user);
-
-        showNotice("TikTok account connected successfully.", "success");
+      if (!isSuccess) {
         stripQueryFromUrl();
         return;
       }
 
+      const payload = buildConnectionPayloadFromCallback(q);
+      saveStoredConnection(payload);
+      setConnectedUI(payload);
+
+      const user = await getCurrentUser();
+      await sendConnectionToBackend(payload, user);
+
+      showNotice("TikTok account connected successfully.", "success");
       stripQueryFromUrl();
     }
 
@@ -977,16 +972,13 @@
 
     async function copyCallbackUrl() {
       try {
-        await navigator.clipboard.writeText(CALLBACK_URL);
-        showNotice("Callback URL copied: " + CALLBACK_URL, "success");
+        await navigator.clipboard.writeText(BACKEND_CALLBACK_URL);
+        showNotice("Callback URL copied: " + BACKEND_CALLBACK_URL, "success");
       } catch {
-        showNotice("Could not copy callback URL. Use this: " + CALLBACK_URL, "info");
+        showNotice("Could not copy automatically. Use: " + BACKEND_CALLBACK_URL, "info");
       }
     }
 
-    /* ===========================
-       EVENTS
-       =========================== */
     backBtn.addEventListener("click", () => {
       if (window.history.length > 1) {
         window.history.back();
@@ -1001,9 +993,6 @@
     disconnectBtn.addEventListener("click", disconnectTikTok);
     saveManualBtn.addEventListener("click", saveManualConnection);
 
-    /* ===========================
-       INIT
-       =========================== */
     (async function init() {
       await renderState();
       await handleCallbackParams();
