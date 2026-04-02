@@ -1,47 +1,16 @@
 export default async function handler(req, res) {
   try {
-    const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY || process.env.TIKTOK_CLIENT_ID;
-    const TIKTOK_REDIRECT_URI =
-      req.query.redirect_uri ||
-      process.env.TIKTOK_REDIRECT_URI ||
-      "https://view.ceetice.com/tiktok-connect.html";
+    const clientKey = process.env.TIKTOK_CLIENT_KEY;
+    const redirectUri = process.env.TIKTOK_REDIRECT_URI;
 
-    if (!TIKTOK_CLIENT_KEY) {
-      return res.status(500).json({
-        error: "Missing TikTok client key",
-        message: "Set TIKTOK_CLIENT_KEY or TIKTOK_CLIENT_ID in your environment variables."
-      });
-    }
+    const state = Math.random().toString(36).substring(2);
 
-    const state =
-      "view_" +
-      Math.random().toString(36).slice(2) +
-      Date.now().toString(36);
+    const url = `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientKey}&response_type=code&scope=user.info.basic&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
 
-    const scopes = [
-      "user.info.basic",
-      "video.publish"
-    ].join(",");
-
-    const authUrl =
-      "https://www.tiktok.com/v2/auth/authorize/?" +
-      new URLSearchParams({
-        client_key: TIKTOK_CLIENT_KEY,
-        scope: scopes,
-        response_type: "code",
-        redirect_uri: TIKTOK_REDIRECT_URI,
-        state
-      }).toString();
-
-    return res.status(200).json({
-      ok: true,
-      url: authUrl,
-      state,
-      redirect_uri: TIKTOK_REDIRECT_URI
-    });
+    return res.status(200).json({ url });
   } catch (error) {
     return res.status(500).json({
-      error: "Failed to build TikTok auth URL",
+      error: "Failed to generate TikTok auth URL",
       message: error.message
     });
   }
