@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Connect TikTok | View</title>
   <meta name="theme-color" content="#08111f" />
   <link rel="manifest" href="/manifest.json" />
@@ -14,9 +11,7 @@
   <style>
     :root{
       --bg:#08111f;
-      --bg2:#0d1730;
       --card:#101b31;
-      --card2:#13213d;
       --line:rgba(255,255,255,.08);
       --text:#f4f7ff;
       --muted:#9fb1d7;
@@ -28,13 +23,19 @@
       --warn:#f59e0b;
       --danger:#ef4444;
       --shadow:0 18px 50px rgba(0,0,0,.34);
-      --radius:22px;
       --safe-top:env(safe-area-inset-top);
       --safe-bottom:env(safe-area-inset-bottom);
     }
 
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter,Arial,sans-serif;
+    }
+
     body{
       min-height:100vh;
       background:
@@ -51,7 +52,7 @@
     .wrap{
       width:min(100%, 760px);
       margin:0 auto;
-      padding:14px 14px 0;
+      padding:14px 14px 20px;
     }
 
     .topbar{
@@ -150,7 +151,6 @@
       display:grid;
       place-items:center;
       box-shadow:inset 0 0 0 1px rgba(255,255,255,.04), 0 14px 30px rgba(0,0,0,.25);
-      position:relative;
       flex:0 0 auto;
     }
 
@@ -257,15 +257,12 @@
       height:8px;
       border-radius:50%;
       background:currentColor;
-      opacity:.95;
     }
 
-    .connected{color:#34d399; background:rgba(16,185,129,.10)}
-    .disconnected{color:#f59e0b; background:rgba(245,158,11,.10)}
+    .connected{color:#34d399;background:rgba(16,185,129,.10)}
+    .disconnected{color:#f59e0b;background:rgba(245,158,11,.10)}
 
-    .body{
-      padding:0 18px 18px;
-    }
+    .body{padding:0 18px 18px}
 
     .muted{
       color:var(--muted);
@@ -364,16 +361,12 @@
       align-items:center;
       justify-content:center;
       gap:10px;
-      transition:.2s ease;
       min-height:54px;
-    }
-
-    .btn:disabled{
-      opacity:.7;
-      cursor:not-allowed;
+      transition:.2s ease;
     }
 
     .btn:active{transform:scale(.985)}
+    .btn:disabled{opacity:.65;cursor:not-allowed}
 
     .btn-primary{
       color:#fff;
@@ -446,8 +439,6 @@
 
     .field::placeholder{color:#93a6cb}
 
-    .footer-space{height:8px}
-
     @media (min-width:720px){
       .grid{
         grid-template-columns:1.08fr .92fr;
@@ -463,8 +454,8 @@
   <div class="wrap">
     <div class="topbar">
       <div class="left-top">
-        <button class="icon-btn" id="backBtn" aria-label="Go back">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <button class="icon-btn" id="backBtn" type="button" aria-label="Go back">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
@@ -475,7 +466,7 @@
       </div>
 
       <a class="icon-btn" href="connect-account.html" aria-label="Connected accounts">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="2"/>
           <path d="M8 12h8M8 9h4M8 15h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
@@ -494,8 +485,7 @@
         <div>
           <h1>Connect your TikTok account</h1>
           <p>
-            Link TikTok to View so your users can prepare for creator tools,
-            account connection, and future cross-post publishing flow.
+            Link TikTok to View for account connection, creator tools, and future publishing flow.
           </p>
         </div>
       </div>
@@ -517,9 +507,7 @@
         </div>
 
         <div class="body">
-          <p class="muted" id="statusText">
-            Your TikTok account is not connected yet.
-          </p>
+          <p class="muted" id="statusText">Your TikTok account is not connected yet.</p>
 
           <div class="profile" id="profileBox" style="display:none;">
             <img id="avatar" class="avatar" alt="TikTok avatar" />
@@ -551,452 +539,455 @@
           </div>
 
           <div class="actions">
-            <button class="btn btn-primary" id="connectBtn">
-              <span>Connect TikTok</span>
-            </button>
-            <button class="btn btn-soft" id="refreshBtn">
-              <span>Refresh Status</span>
-            </button>
-            <button class="btn btn-dark" id="copyBtn">
-              <span>Copy Callback URL</span>
-            </button>
-            <button class="btn btn-danger" id="disconnectBtn">
-              <span>Disconnect</span>
-            </button>
+            <button class="btn btn-primary" id="connectBtn" type="button">Connect TikTok</button>
+            <button class="btn btn-soft" id="refreshBtn" type="button">Refresh Status</button>
+            <button class="btn btn-dark" id="copyBtn" type="button">Copy Callback URL</button>
+            <button class="btn btn-danger" id="disconnectBtn" type="button">Disconnect</button>
           </div>
         </div>
       </section>
 
       <section class="card">
         <div class="card-head">
-          <h2 class="card-title">Setup & Manual Fallback</h2>
+          <h2 class="card-title">Manual Fallback</h2>
         </div>
 
         <div class="body">
           <div class="list">
             <div class="list-item">
               <span class="dot"></span>
-              <span>The connect button opens your backend TikTok OAuth route.</span>
+              <span>Connect TikTok opens your backend OAuth route when available.</span>
             </div>
             <div class="list-item">
               <span class="dot"></span>
-              <span>Your backend callback exchanges the code and redirects back here with the account details.</span>
+              <span>Copy Callback URL copies the callback address for TikTok developer settings.</span>
             </div>
             <div class="list-item">
               <span class="dot"></span>
-              <span>This page stores connection locally and can also send it to your backend save endpoint.</span>
+              <span>Manual save lets you test the page even before backend is finished.</span>
             </div>
           </div>
 
           <div class="input-wrap">
-            <input
-              id="manualName"
-              class="field"
-              type="text"
-              placeholder="Manual account name or username"
-            />
-            <input
-              id="manualOpenId"
-              class="field"
-              type="text"
-              placeholder="Manual TikTok open_id or user id"
-            />
-            <input
-              id="manualAvatar"
-              class="field"
-              type="url"
-              placeholder="Manual avatar URL optional"
-            />
-            <button class="btn btn-dark" id="saveManualBtn">
-              Save Manual Connection
-            </button>
+            <input id="manualName" class="field" type="text" placeholder="Manual account name or username" />
+            <input id="manualOpenId" class="field" type="text" placeholder="Manual TikTok open_id or user id" />
+            <input id="manualAvatar" class="field" type="url" placeholder="Manual avatar URL optional" />
+            <button class="btn btn-dark" id="saveManualBtn" type="button">Save Manual Connection</button>
           </div>
         </div>
       </section>
     </div>
-
-    <div class="footer-space"></div>
   </div>
 
   <script>
-    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    (() => {
+      const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+      const STORAGE_KEY = "view_tiktok_connection";
+      const FRONTEND_CALLBACK_URL = window.location.origin + window.location.pathname;
+      const BACKEND_CALLBACK_URL = window.location.origin + "/api/tiktok/callback";
 
-    const STORAGE_KEY = "view_tiktok_connection";
-    const FRONTEND_CALLBACK_URL = window.location.origin + window.location.pathname;
-    const BACKEND_CALLBACK_URL = window.location.origin + "/api/tiktok/callback";
+      let supabaseClient = null;
 
-    const notice = document.getElementById("notice");
-    const statusPill = document.getElementById("statusPill");
-    const statusText = document.getElementById("statusText");
-    const profileBox = document.getElementById("profileBox");
-    const avatar = document.getElementById("avatar");
-    const avatarFallback = document.getElementById("avatarFallback");
-    const accountName = document.getElementById("accountName");
-    const accountMeta = document.getElementById("accountMeta");
-    const metaGrid = document.getElementById("metaGrid");
-    const connectionTime = document.getElementById("connectionTime");
-    const openIdText = document.getElementById("openIdText");
-    const expiresText = document.getElementById("expiresText");
+      const els = {};
 
-    const backBtn = document.getElementById("backBtn");
-    const connectBtn = document.getElementById("connectBtn");
-    const refreshBtn = document.getElementById("refreshBtn");
-    const copyBtn = document.getElementById("copyBtn");
-    const disconnectBtn = document.getElementById("disconnectBtn");
-    const saveManualBtn = document.getElementById("saveManualBtn");
-
-    const manualName = document.getElementById("manualName");
-    const manualOpenId = document.getElementById("manualOpenId");
-    const manualAvatar = document.getElementById("manualAvatar");
-
-    function showNotice(message, type = "info") {
-      notice.className = "notice show " + type;
-      notice.textContent = message;
-    }
-
-    function clearNotice() {
-      notice.className = "notice";
-      notice.textContent = "";
-    }
-
-    function safeText(value, fallback = "—") {
-      return (value === null || value === undefined || value === "") ? fallback : String(value);
-    }
-
-    function formatDate(value) {
-      if (!value) return "—";
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return String(value);
-      return d.toLocaleString();
-    }
-
-    function formatExpiry(value) {
-      if (!value) return "—";
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return String(value);
-      if (d.getTime() < Date.now()) return "Expired";
-      return d.toLocaleString();
-    }
-
-    function initialsFromName(name) {
-      const clean = (name || "TikTok").trim();
-      return clean.charAt(0).toUpperCase() || "T";
-    }
-
-    function loadStoredConnection() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : null;
-      } catch {
-        return null;
+      function $(id) {
+        return document.getElementById(id);
       }
-    }
 
-    function saveStoredConnection(data) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
-
-    function clearStoredConnection() {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-
-    function setConnectedUI(data) {
-      statusPill.className = "status-pill connected";
-      statusPill.textContent = "Connected";
-      statusText.textContent = "Your TikTok account is connected to View.";
-
-      profileBox.style.display = "flex";
-      metaGrid.style.display = "grid";
-
-      const displayName = data.account_name || data.username || data.display_name || "TikTok Account";
-      const openId = data.open_id || data.tiktok_user_id || data.account_id || "";
-      const avatarUrl = data.avatar_url || data.avatar || data.profile_image || "";
-      const connectedAt = data.connected_at || data.saved_at || new Date().toISOString();
-      const expiresAt = data.expires_at || "";
-
-      accountName.textContent = displayName;
-      accountMeta.textContent = openId ? ("Open ID: " + openId) : "TikTok linked successfully";
-      connectionTime.textContent = formatDate(connectedAt);
-      openIdText.textContent = safeText(openId);
-      expiresText.textContent = formatExpiry(expiresAt);
-
-      if (avatarUrl) {
-        avatar.style.display = "block";
-        avatarFallback.style.display = "none";
-        avatar.src = avatarUrl;
-        avatar.onerror = function () {
-          avatar.style.display = "none";
-          avatarFallback.style.display = "grid";
-          avatarFallback.textContent = initialsFromName(displayName);
-        };
-      } else {
-        avatar.style.display = "none";
-        avatarFallback.style.display = "grid";
-        avatarFallback.textContent = initialsFromName(displayName);
+      function bindElements() {
+        els.notice = $("notice");
+        els.statusPill = $("statusPill");
+        els.statusText = $("statusText");
+        els.profileBox = $("profileBox");
+        els.avatar = $("avatar");
+        els.avatarFallback = $("avatarFallback");
+        els.accountName = $("accountName");
+        els.accountMeta = $("accountMeta");
+        els.metaGrid = $("metaGrid");
+        els.connectionTime = $("connectionTime");
+        els.openIdText = $("openIdText");
+        els.expiresText = $("expiresText");
+        els.backBtn = $("backBtn");
+        els.connectBtn = $("connectBtn");
+        els.refreshBtn = $("refreshBtn");
+        els.copyBtn = $("copyBtn");
+        els.disconnectBtn = $("disconnectBtn");
+        els.saveManualBtn = $("saveManualBtn");
+        els.manualName = $("manualName");
+        els.manualOpenId = $("manualOpenId");
+        els.manualAvatar = $("manualAvatar");
       }
-    }
 
-    function setDisconnectedUI() {
-      statusPill.className = "status-pill disconnected";
-      statusPill.textContent = "Not connected";
-      statusText.textContent = "Your TikTok account is not connected yet.";
-      profileBox.style.display = "none";
-      metaGrid.style.display = "none";
-      avatar.src = "";
-    }
-
-    function getQueryParams() {
-      const params = new URLSearchParams(window.location.search);
-      return {
-        status: params.get("status"),
-        code: params.get("code"),
-        error: params.get("error"),
-        message: params.get("message"),
-        account_name: params.get("account_name"),
-        username: params.get("username"),
-        open_id: params.get("open_id"),
-        avatar_url: params.get("avatar_url"),
-        access_token: params.get("access_token"),
-        refresh_token: params.get("refresh_token"),
-        expires_in: params.get("expires_in"),
-        expires_at: params.get("expires_at")
-      };
-    }
-
-    function stripQueryFromUrl() {
-      window.history.replaceState({}, document.title, FRONTEND_CALLBACK_URL);
-    }
-
-    async function getCurrentUser() {
-      try {
-        const { data, error } = await supabase.auth.getUser();
-        if (error) return null;
-        return data?.user || null;
-      } catch {
-        return null;
-      }
-    }
-
-    function buildConnectionPayloadFromCallback(q) {
-      let expiresAt = q.expires_at || "";
-      if (!expiresAt && q.expires_in) {
-        const seconds = Number(q.expires_in);
-        if (!Number.isNaN(seconds) && seconds > 0) {
-          expiresAt = new Date(Date.now() + seconds * 1000).toISOString();
+      function initSupabase() {
+        try {
+          if (window.supabase && window.supabase.createClient && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          }
+        } catch (err) {
+          console.warn("Supabase failed to initialize:", err);
         }
       }
 
-      return {
-        platform: "tiktok",
-        provider: "tiktok",
-        account_name: q.account_name || q.username || "TikTok Account",
-        username: q.username || q.account_name || "",
-        open_id: q.open_id || "",
-        avatar_url: q.avatar_url || "",
-        access_token: q.access_token || "",
-        refresh_token: q.refresh_token || "",
-        expires_at: expiresAt,
-        connected_at: new Date().toISOString(),
-        saved_at: new Date().toISOString()
-      };
-    }
-
-    async function sendConnectionToBackend(payload, user) {
-      try {
-        const res = await fetch("/api/tiktok/store-connection", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(user?.id ? { "x-view-user-id": user.id } : {})
-          },
-          body: JSON.stringify({
-            ...payload,
-            user_id: user?.id || null
-          })
-        });
-        return res.ok;
-      } catch {
-        return false;
+      function showNotice(message, type = "info") {
+        els.notice.className = "notice show " + type;
+        els.notice.textContent = message;
       }
-    }
 
-    async function sendDisconnectToBackend(user) {
-      try {
-        const res = await fetch("/api/tiktok/disconnect", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(user?.id ? { "x-view-user-id": user.id } : {})
-          },
-          body: JSON.stringify({
-            platform: "tiktok",
-            user_id: user?.id || null
-          })
-        });
-        return res.ok;
-      } catch {
-        return false;
+      function clearNotice() {
+        els.notice.className = "notice";
+        els.notice.textContent = "";
       }
-    }
 
-    async function getBackendAuthUrl(user) {
-      try {
-        const res = await fetch(
-          "/api/tiktok/auth-url?redirect_uri=" + encodeURIComponent(BACKEND_CALLBACK_URL),
-          {
-            headers: user?.id ? { "x-view-user-id": user.id } : {}
+      function safeText(value, fallback = "—") {
+        return value === undefined || value === null || value === "" ? fallback : String(value);
+      }
+
+      function formatDate(value) {
+        if (!value) return "—";
+        const d = new Date(value);
+        return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleString();
+      }
+
+      function formatExpiry(value) {
+        if (!value) return "—";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return String(value);
+        return d.getTime() < Date.now() ? "Expired" : d.toLocaleString();
+      }
+
+      function initialsFromName(name) {
+        const clean = (name || "TikTok").trim();
+        return clean ? clean.charAt(0).toUpperCase() : "T";
+      }
+
+      function loadStoredConnection() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          return raw ? JSON.parse(raw) : null;
+        } catch (err) {
+          console.warn("Storage read error:", err);
+          return null;
+        }
+      }
+
+      function saveStoredConnection(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }
+
+      function clearStoredConnection() {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+
+      function setDisconnectedUI() {
+        els.statusPill.className = "status-pill disconnected";
+        els.statusPill.textContent = "Not connected";
+        els.statusText.textContent = "Your TikTok account is not connected yet.";
+        els.profileBox.style.display = "none";
+        els.metaGrid.style.display = "none";
+        els.avatar.removeAttribute("src");
+      }
+
+      function setConnectedUI(data) {
+        const displayName = data.account_name || data.username || "TikTok Account";
+        const openId = data.open_id || "";
+        const avatarUrl = data.avatar_url || "";
+        const connectedAt = data.connected_at || data.saved_at || new Date().toISOString();
+        const expiresAt = data.expires_at || "";
+
+        els.statusPill.className = "status-pill connected";
+        els.statusPill.textContent = "Connected";
+        els.statusText.textContent = "Your TikTok account is connected to View.";
+        els.profileBox.style.display = "flex";
+        els.metaGrid.style.display = "grid";
+
+        els.accountName.textContent = displayName;
+        els.accountMeta.textContent = openId ? "Open ID: " + openId : "TikTok linked successfully";
+        els.connectionTime.textContent = formatDate(connectedAt);
+        els.openIdText.textContent = safeText(openId);
+        els.expiresText.textContent = formatExpiry(expiresAt);
+
+        if (avatarUrl) {
+          els.avatar.style.display = "block";
+          els.avatarFallback.style.display = "none";
+          els.avatar.src = avatarUrl;
+          els.avatar.onerror = () => {
+            els.avatar.style.display = "none";
+            els.avatarFallback.style.display = "grid";
+            els.avatarFallback.textContent = initialsFromName(displayName);
+          };
+        } else {
+          els.avatar.style.display = "none";
+          els.avatarFallback.style.display = "grid";
+          els.avatarFallback.textContent = initialsFromName(displayName);
+        }
+      }
+
+      function renderState() {
+        const connection = loadStoredConnection();
+        if (connection) {
+          setConnectedUI(connection);
+        } else {
+          setDisconnectedUI();
+        }
+      }
+
+      function getQueryParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+          status: params.get("status"),
+          code: params.get("code"),
+          error: params.get("error"),
+          message: params.get("message"),
+          account_name: params.get("account_name"),
+          username: params.get("username"),
+          open_id: params.get("open_id"),
+          avatar_url: params.get("avatar_url"),
+          access_token: params.get("access_token"),
+          refresh_token: params.get("refresh_token"),
+          expires_in: params.get("expires_in"),
+          expires_at: params.get("expires_at")
+        };
+      }
+
+      function stripQueryFromUrl() {
+        window.history.replaceState({}, document.title, FRONTEND_CALLBACK_URL);
+      }
+
+      async function getCurrentUser() {
+        try {
+          if (!supabaseClient) return null;
+          const { data, error } = await supabaseClient.auth.getUser();
+          if (error) return null;
+          return data?.user || null;
+        } catch {
+          return null;
+        }
+      }
+
+      function buildConnectionPayloadFromCallback(q) {
+        let expiresAt = q.expires_at || "";
+        if (!expiresAt && q.expires_in) {
+          const seconds = Number(q.expires_in);
+          if (!Number.isNaN(seconds) && seconds > 0) {
+            expiresAt = new Date(Date.now() + seconds * 1000).toISOString();
           }
-        );
+        }
 
-        if (!res.ok) throw new Error("Failed to get auth URL");
-        const data = await res.json();
-        return data?.url || "";
-      } catch {
-        return "";
+        return {
+          platform: "tiktok",
+          provider: "tiktok",
+          account_name: q.account_name || q.username || "TikTok Account",
+          username: q.username || "",
+          open_id: q.open_id || "",
+          avatar_url: q.avatar_url || "",
+          access_token: q.access_token || "",
+          refresh_token: q.refresh_token || "",
+          expires_at: expiresAt,
+          connected_at: new Date().toISOString(),
+          saved_at: new Date().toISOString()
+        };
       }
-    }
 
-    async function connectTikTok() {
-      clearNotice();
-      connectBtn.disabled = true;
-      connectBtn.textContent = "Preparing...";
+      async function sendConnectionToBackend(payload, user) {
+        try {
+          const res = await fetch("/api/tiktok/store-connection", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(user?.id ? { "x-view-user-id": user.id } : {})
+            },
+            body: JSON.stringify({
+              ...payload,
+              user_id: user?.id || null
+            })
+          });
+          return res.ok;
+        } catch {
+          return false;
+        }
+      }
 
-      try {
-        const user = await getCurrentUser();
-        const authUrl = await getBackendAuthUrl(user);
+      async function sendDisconnectToBackend(user) {
+        try {
+          const res = await fetch("/api/tiktok/disconnect", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(user?.id ? { "x-view-user-id": user.id } : {})
+            },
+            body: JSON.stringify({
+              platform: "tiktok",
+              user_id: user?.id || null
+            })
+          });
+          return res.ok;
+        } catch {
+          return false;
+        }
+      }
 
-        if (authUrl) {
-          window.location.href = authUrl;
+      async function getBackendAuthUrl(user) {
+        try {
+          const res = await fetch(
+            "/api/tiktok/auth-url?redirect_uri=" + encodeURIComponent(BACKEND_CALLBACK_URL),
+            {
+              method: "GET",
+              headers: user?.id ? { "x-view-user-id": user.id } : {}
+            }
+          );
+          if (!res.ok) return "";
+          const data = await res.json();
+          return data?.url || "";
+        } catch {
+          return "";
+        }
+      }
+
+      async function handleCallbackParams() {
+        const q = getQueryParams();
+
+        if (q.error) {
+          showNotice(q.message || q.error || "TikTok connection failed.", "error");
+          stripQueryFromUrl();
           return;
         }
 
-        showNotice(
-          "Could not get TikTok auth URL from backend. Make sure /api/tiktok/auth-url.js is in your Vercel api folder.",
-          "error"
-        );
-      } catch (err) {
-        showNotice(err?.message || "Unable to start TikTok connection.", "error");
-      } finally {
-        connectBtn.disabled = false;
-        connectBtn.textContent = "Connect TikTok";
-      }
-    }
+        const hasCallbackData =
+          q.status || q.code || q.account_name || q.username || q.open_id || q.access_token;
 
-    async function disconnectTikTok() {
-      clearStoredConnection();
-      setDisconnectedUI();
+        if (!hasCallbackData) return;
 
-      const user = await getCurrentUser();
-      await sendDisconnectToBackend(user);
+        const success =
+          (q.status && q.status.toLowerCase() === "success") ||
+          !!q.code ||
+          !!q.account_name ||
+          !!q.open_id;
 
-      showNotice("TikTok account disconnected.", "success");
-    }
+        if (!success) {
+          stripQueryFromUrl();
+          return;
+        }
 
-    async function saveManualConnection() {
-      const name = manualName.value.trim();
-      const openId = manualOpenId.value.trim();
-      const avatarUrl = manualAvatar.value.trim();
+        const payload = buildConnectionPayloadFromCallback(q);
+        saveStoredConnection(payload);
+        setConnectedUI(payload);
 
-      if (!name && !openId) {
-        showNotice("Enter at least an account name or open ID.", "warn");
-        return;
-      }
+        const user = await getCurrentUser();
+        await sendConnectionToBackend(payload, user);
 
-      const payload = {
-        platform: "tiktok",
-        provider: "tiktok",
-        account_name: name || "TikTok Account",
-        username: name || "",
-        open_id: openId || "",
-        avatar_url: avatarUrl || "",
-        connected_at: new Date().toISOString(),
-        saved_at: new Date().toISOString(),
-        manual: true
-      };
-
-      saveStoredConnection(payload);
-      setConnectedUI(payload);
-
-      const user = await getCurrentUser();
-      await sendConnectionToBackend(payload, user);
-
-      showNotice("Manual TikTok connection saved.", "success");
-    }
-
-    async function handleCallbackParams() {
-      const q = getQueryParams();
-
-      if (q.error) {
-        showNotice(q.message || q.error || "TikTok connection failed.", "error");
+        showNotice("TikTok account connected successfully.", "success");
         stripQueryFromUrl();
-        return;
       }
 
-      const hasCallbackData =
-        q.status || q.code || q.account_name || q.username || q.open_id || q.access_token;
+      async function onConnect() {
+        clearNotice();
+        els.connectBtn.disabled = true;
+        els.connectBtn.textContent = "Preparing...";
 
-      if (!hasCallbackData) return;
+        try {
+          const user = await getCurrentUser();
+          const authUrl = await getBackendAuthUrl(user);
 
-      const isSuccess =
-        (q.status && q.status.toLowerCase() === "success") ||
-        !!q.code ||
-        !!q.account_name ||
-        !!q.open_id;
+          if (authUrl) {
+            window.location.href = authUrl;
+            return;
+          }
 
-      if (!isSuccess) {
-        stripQueryFromUrl();
-        return;
+          showNotice(
+            "Backend auth URL not found. Make sure /api/tiktok/auth-url.js is deployed on Vercel.",
+            "error"
+          );
+        } catch (err) {
+          showNotice(err?.message || "Unable to start TikTok connection.", "error");
+        } finally {
+          els.connectBtn.disabled = false;
+          els.connectBtn.textContent = "Connect TikTok";
+        }
       }
 
-      const payload = buildConnectionPayloadFromCallback(q);
-      saveStoredConnection(payload);
-      setConnectedUI(payload);
+      function onRefresh() {
+        clearNotice();
+        renderState();
+        showNotice("Status refreshed.", "info");
+      }
 
-      const user = await getCurrentUser();
-      await sendConnectionToBackend(payload, user);
+      async function onCopy() {
+        try {
+          await navigator.clipboard.writeText(BACKEND_CALLBACK_URL);
+          showNotice("Callback URL copied: " + BACKEND_CALLBACK_URL, "success");
+        } catch {
+          showNotice("Copy failed. Use this URL: " + BACKEND_CALLBACK_URL, "warn");
+        }
+      }
 
-      showNotice("TikTok account connected successfully.", "success");
-      stripQueryFromUrl();
-    }
-
-    async function renderState() {
-      const connection = loadStoredConnection();
-      if (connection) {
-        setConnectedUI(connection);
-      } else {
+      async function onDisconnect() {
+        clearStoredConnection();
         setDisconnectedUI();
+
+        const user = await getCurrentUser();
+        await sendDisconnectToBackend(user);
+
+        showNotice("TikTok account disconnected.", "success");
       }
-    }
 
-    async function copyCallbackUrl() {
-      try {
-        await navigator.clipboard.writeText(BACKEND_CALLBACK_URL);
-        showNotice("Callback URL copied: " + BACKEND_CALLBACK_URL, "success");
-      } catch {
-        showNotice("Could not copy automatically. Use: " + BACKEND_CALLBACK_URL, "info");
+      async function onSaveManual() {
+        const name = els.manualName.value.trim();
+        const openId = els.manualOpenId.value.trim();
+        const avatarUrl = els.manualAvatar.value.trim();
+
+        if (!name && !openId) {
+          showNotice("Enter at least an account name or open ID.", "warn");
+          return;
+        }
+
+        const payload = {
+          platform: "tiktok",
+          provider: "tiktok",
+          account_name: name || "TikTok Account",
+          username: name || "",
+          open_id: openId || "",
+          avatar_url: avatarUrl || "",
+          connected_at: new Date().toISOString(),
+          saved_at: new Date().toISOString(),
+          manual: true
+        };
+
+        saveStoredConnection(payload);
+        setConnectedUI(payload);
+
+        const user = await getCurrentUser();
+        await sendConnectionToBackend(payload, user);
+
+        showNotice("Manual TikTok connection saved.", "success");
       }
-    }
 
-    backBtn.addEventListener("click", () => {
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        window.location.href = "connect-account.html";
+      function bindEvents() {
+        els.backBtn.addEventListener("click", () => {
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            window.location.href = "connect-account.html";
+          }
+        });
+
+        els.connectBtn.addEventListener("click", onConnect);
+        els.refreshBtn.addEventListener("click", onRefresh);
+        els.copyBtn.addEventListener("click", onCopy);
+        els.disconnectBtn.addEventListener("click", onDisconnect);
+        els.saveManualBtn.addEventListener("click", onSaveManual);
       }
-    });
 
-    connectBtn.addEventListener("click", connectTikTok);
-    refreshBtn.addEventListener("click", renderState);
-    copyBtn.addEventListener("click", copyCallbackUrl);
-    disconnectBtn.addEventListener("click", disconnectTikTok);
-    saveManualBtn.addEventListener("click", saveManualConnection);
+      async function init() {
+        bindElements();
+        initSupabase();
+        bindEvents();
+        renderState();
+        await handleCallbackParams();
+        renderState();
+      }
 
-    (async function init() {
-      await renderState();
-      await handleCallbackParams();
-      await renderState();
+      document.addEventListener("DOMContentLoaded", init);
     })();
   </script>
 </body>
