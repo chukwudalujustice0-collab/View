@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>Connect Telegram | View</title>
+  <meta name="theme-color" content="#08111f" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg-2:#0b1730;
+      --card:#0f1d39;
+      --card-2:rgba(17,27,51,.86);
+      --line:rgba(255,255,255,.08);
+      --text:#f5f8ff;
+      --muted:#9eb1d6;
+      --primary:#229ED9;
+      --primary-2:#4f46e5;
+      --success:#10b981;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 14px 42px rgba(0,0,0,.28);
+      --radius:24px;
+      --safe-bottom:env(safe-area-inset-bottom, 0px);
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family:Inter, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(34,158,217,.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(79,70,229,.15), transparent 26%),
+        linear-gradient(180deg, #06101d 0%, #091427 42%, #07111f 100%);
+      min-height:100vh;
+    }
+
+    a{color:inherit;text-decoration:none}
+
+    .page{
+      width:min(100%, 860px);
+      margin:0 auto;
+      padding:18px 16px calc(98px + var(--safe-bottom));
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .icon-btn{
+      height:44px;
+      min-width:44px;
+      border:none;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .brand-badge{
+      width:48px;
+      height:48px;
+      border-radius:16px;
+      background:linear-gradient(135deg, rgba(34,158,217,.22), rgba(79,70,229,.24));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      font-size:22px;
+      font-weight:800;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:19px;
+      line-height:1.1;
+    }
+
+    .brand p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:30px;
+      padding:22px;
+      background:
+        linear-gradient(135deg, rgba(34,158,217,.18), rgba(79,70,229,.18)),
+        rgba(12,22,42,.8);
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-40px;
+      bottom:-40px;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.12), transparent 68%);
+      pointer-events:none;
+    }
+
+    .hero h2{
+      margin:0 0 10px;
+      font-size:26px;
+      line-height:1.15;
+    }
+
+    .hero p{
+      margin:0;
+      color:#d8e3fb;
+      line-height:1.6;
+      max-width:640px;
+    }
+
+    .hero-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .tag{
+      padding:10px 14px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.06);
+      color:#eef4ff;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:16px;
+      margin-top:16px;
+    }
+
+    .card{
+      background:var(--card-2);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+
+    .section{
+      padding:18px;
+    }
+
+    .section h3{
+      margin:0 0 14px;
+      font-size:17px;
+    }
+
+    .status-box{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.06);
+      margin-bottom:12px;
+    }
+
+    .status-dot{
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      margin-top:4px;
+      background:var(--warn);
+      box-shadow:0 0 0 5px rgba(245,158,11,.12);
+      flex:none;
+    }
+
+    .status-dot.connected{
+      background:var(--success);
+      box-shadow:0 0 0 5px rgba(16,185,129,.12);
+    }
+
+    .status-dot.error{
+      background:var(--danger);
+      box-shadow:0 0 0 5px rgba(239,68,68,.12);
+    }
+
+    .muted{color:var(--muted)}
+    .tiny{font-size:12px}
+    .small{font-size:13px}
+
+    .steps{
+      display:grid;
+      gap:10px;
+    }
+
+    .step{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .step-num{
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg, var(--primary), var(--primary-2));
+      font-size:12px;
+      font-weight:800;
+      flex:none;
+    }
+
+    form{
+      display:grid;
+      gap:14px;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    label{
+      font-size:13px;
+      color:#dfe8fa;
+      font-weight:600;
+    }
+
+    input,select,textarea{
+      width:100%;
+      border:none;
+      outline:none;
+      color:var(--text);
+      background:rgba(255,255,255,.055);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:16px;
+      padding:14px 14px;
+      font-size:15px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+    }
+
+    textarea{
+      resize:vertical;
+      min-height:110px;
+    }
+
+    input::placeholder,
+    textarea::placeholder{
+      color:#7f94bd;
+    }
+
+    .two{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .checkbox{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      border:1px solid rgba(255,255,255,.07);
+      background:rgba(255,255,255,.04);
+      border-radius:16px;
+      padding:12px 14px;
+    }
+
+    .checkbox input{
+      width:18px;
+      height:18px;
+      margin-top:2px;
+      accent-color:var(--primary);
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:4px;
+    }
+
+    button{
+      border:none;
+      cursor:pointer;
+      font-weight:700;
+      border-radius:16px;
+      padding:14px 16px;
+      font-size:14px;
+      transition:.2s ease;
+    }
+
+    .btn-primary{
+      color:white;
+      background:linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow:0 12px 26px rgba(34,158,217,.24);
+    }
+
+    .btn-secondary{
+      color:var(--text);
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .btn-danger{
+      color:#fff;
+      background:linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow:0 12px 26px rgba(239,68,68,.18);
+    }
+
+    button:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+
+    .info-list{
+      display:grid;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .info-item{
+      padding:12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .connected-card{
+      display:none;
+      margin-top:14px;
+      padding:14px;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(16,185,129,.14), rgba(34,158,217,.12));
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .connected-card.show{display:block}
+
+    .kvs{
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .kv{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom:1px dashed rgba(255,255,255,.08);
+      padding-bottom:10px;
+    }
+
+    .kv:last-child{
+      border-bottom:none;
+      padding-bottom:0;
+    }
+
+    .banner{
+      margin-top:16px;
+      padding:14px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(245,158,11,.08);
+      color:#fee6b2;
+      line-height:1.55;
+    }
+
+    .footer-nav{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:30;
+      padding:10px 16px calc(12px + var(--safe-bottom));
+      background:linear-gradient(180deg, rgba(7,17,31,0), rgba(7,17,31,.85) 25%, rgba(7,17,31,.98));
+      backdrop-filter:blur(12px);
+    }
+
+    .footer-wrap{
+      width:min(100%, 860px);
+      margin:0 auto;
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+    }
+
+    .footer-link{
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      min-height:52px;
+      border-radius:18px;
+      color:#dbe7ff;
+      border:1px solid rgba(255,255,255,.07);
+      background:rgba(255,255,255,.05);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .toast{
+      position:fixed;
+      top:18px;
+      left:50%;
+      transform:translateX(-50%) translateY(-14px);
+      width:min(calc(100% - 28px), 620px);
+      padding:14px 16px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#0d1a33;
+      color:#fff;
+      box-shadow:var(--shadow);
+      opacity:0;
+      pointer-events:none;
+      transition:.25s ease;
+      z-index:100;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
+
+    .toast.success{background:#08251d}
+    .toast.error{background:#2a1015}
+    .toast.warn{background:#2b1f0d}
+
+    @media (max-width: 760px){
+      .grid,.two{grid-template-columns:1fr}
+      .hero h2{font-size:23px}
+    }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+
+  <div class="page">
+    <div class="topbar">
+      <a class="icon-btn" href="connect-account.html" aria-label="Back">←</a>
+
+      <div class="brand">
+        <div class="brand-badge">✈</div>
+        <div>
+          <h1>Telegram Connection</h1>
+          <p>Connect your bot and target channel/group for cross-posting on View</p>
+        </div>
+      </div>
+
+      <a class="icon-btn" href="settings.html" aria-label="Settings">⚙</a>
+    </div>
+
+    <section class="hero">
+      <h2>Connect Telegram for auto publishing</h2>
+      <p>
+        Use your Telegram bot token and target channel or group details to let View publish updates
+        directly to Telegram. This page verifies your bot first, checks the target chat, and stores
+        the connection for later posting.
+      </p>
+
+      <div class="hero-tags">
+        <span class="tag">Bot verification</span>
+        <span class="tag">Channel / group support</span>
+        <span class="tag">Sample post test</span>
+        <span class="tag">Saved to your connection profile</span>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card section">
+        <h3>Connect your Telegram account</h3>
+
+        <form id="telegramForm">
+          <div class="field">
+            <label for="displayName">Connection name</label>
+            <input
+              id="displayName"
+              type="text"
+              placeholder="e.g. View Main Telegram Channel"
+              maxlength="80"
+            />
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label for="targetType">Target type</label>
+              <select id="targetType">
+                <option value="channel">Channel</option>
+                <option value="group">Group</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="privacyType">Publishing mode</label>
+              <select id="privacyType">
+                <option value="public">Public username</option>
+                <option value="private">Private chat ID</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="botToken">Telegram bot token</label>
+            <input
+              id="botToken"
+              type="password"
+              placeholder="123456789:AA..."
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label for="botUsername">Bot username</label>
+              <input
+                id="botUsername"
+                type="text"
+                placeholder="@view_ceetice_bot"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="field">
+              <label for="targetUsername">Target username</label>
+              <input
+                id="targetUsername"
+                type="text"
+                placeholder="@yourchannel or @yourgroup"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label for="chatId">Chat ID</label>
+              <input
+                id="chatId"
+                type="text"
+                placeholder="-1001234567890"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="field">
+              <label for="defaultCaption">Default post footer</label>
+              <input
+                id="defaultCaption"
+                type="text"
+                placeholder="Posted from View"
+                maxlength="120"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="aboutConnection">Notes</label>
+            <textarea
+              id="aboutConnection"
+              placeholder="Optional notes for this connection"
+            ></textarea>
+          </div>
+
+          <label class="checkbox">
+            <input id="testAfterConnect" type="checkbox" checked />
+            <span class="small muted">
+              Send a sample test message immediately after successful verification.
+            </span>
+          </label>
+
+          <div class="actions">
+            <button type="submit" class="btn-primary" id="connectBtn">Verify & Connect</button>
+            <button type="button" class="btn-secondary" id="testBtn">Send Test Post</button>
+            <button type="button" class="btn-danger" id="disconnectBtn">Disconnect</button>
+          </div>
+        </form>
+
+        <div class="connected-card" id="connectedCard">
+          <strong>Connected Telegram profile</strong>
+          <div class="kvs" id="connectedInfo"></div>
+        </div>
+
+        <div class="banner">
+          Telegram personal account posting is not handled by the Bot API.
+          This page is built for bot-based posting to a Telegram channel or group.
+          Make sure your bot is already added as an admin in the target channel or group before connecting.
+        </div>
+      </section>
+
+      <section class="card section">
+        <h3>Connection status</h3>
+
+        <div class="status-box">
+          <span class="status-dot" id="statusDot"></span>
+          <div>
+            <div id="statusTitle"><strong>Not connected yet</strong></div>
+            <div class="muted small" id="statusText">
+              Enter your bot token and target details, then verify the connection.
+            </div>
+          </div>
+        </div>
+
+        <div class="info-list">
+          <div class="info-item">
+            <strong class="small">Public channel/group</strong>
+            <div class="muted tiny" style="margin-top:6px">
+              Use the target username field, like <b>@mychannel</b>.
+            </div>
+          </div>
+
+          <div class="info-item">
+            <strong class="small">Private channel/group</strong>
+            <div class="muted tiny" style="margin-top:6px">
+              Use the chat ID field, usually starting with <b>-100</b>.
+            </div>
+          </div>
+
+          <div class="info-item">
+            <strong class="small">Bot must be admin</strong>
+            <div class="muted tiny" style="margin-top:6px">
+              Without posting permission, verification may pass but message sending will fail.
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:18px">Quick setup</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>
+              <strong class="small">Create or use your Telegram bot</strong>
+              <div class="muted tiny" style="margin-top:4px">Get the token from BotFather.</div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>
+              <strong class="small">Add the bot to your channel or group</strong>
+              <div class="muted tiny" style="margin-top:4px">Make it admin with posting rights.</div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>
+              <strong class="small">Paste the token and target details here</strong>
+              <div class="muted tiny" style="margin-top:4px">Then click Verify & Connect.</div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">4</div>
+            <div>
+              <strong class="small">Test before publishing from View</strong>
+              <div class="muted tiny" style="margin-top:4px">Use the sample post button.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <nav class="footer-nav">
+    <div class="footer-wrap">
+      <a class="footer-link" href="home.html">Home</a>
+      <a class="footer-link" href="connect-account.html">Accounts</a>
+      <a class="footer-link" href="create-post.html">Create Post</a>
+      <a class="footer-link" href="settings.html">Settings</a>
+    </div>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const els = {
+      form: document.getElementById("telegramForm"),
+      displayName: document.getElementById("displayName"),
+      targetType: document.getElementById("targetType"),
+      privacyType: document.getElementById("privacyType"),
+      botToken: document.getElementById("botToken"),
+      botUsername: document.getElementById("botUsername"),
+      targetUsername: document.getElementById("targetUsername"),
+      chatId: document.getElementById("chatId"),
+      defaultCaption: document.getElementById("defaultCaption"),
+      aboutConnection: document.getElementById("aboutConnection"),
+      testAfterConnect: document.getElementById("testAfterConnect"),
+      connectBtn: document.getElementById("connectBtn"),
+      testBtn: document.getElementById("testBtn"),
+      disconnectBtn: document.getElementById("disconnectBtn"),
+      statusDot: document.getElementById("statusDot"),
+      statusTitle: document.getElementById("statusTitle"),
+      statusText: document.getElementById("statusText"),
+      connectedCard: document.getElementById("connectedCard"),
+      connectedInfo: document.getElementById("connectedInfo"),
+      toast: document.getElementById("toast")
+    };
+
+    let currentUser = null;
+    let connection = null;
+
+    const LOCAL_PREFIX = "view_telegram_connection_";
+
+    function normalizeHandle(value){
+      const v = (value || "").trim();
+      if (!v) return "";
+      return v.startsWith("@") ? v : "@" + v.replace(/^@+/, "");
+    }
+
+    function normalizeChatId(value){
+      return (value || "").trim();
+    }
+
+    function maskToken(token){
+      if (!token) return "";
+      if (token.length <= 10) return "••••••";
+      return token.slice(0, 6) + "••••••••••" + token.slice(-4);
+    }
+
+    function toast(message, type = "success"){
+      els.toast.textContent = message;
+      els.toast.className = `toast show ${type}`;
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        els.toast.className = "toast";
+      }, 3200);
+    }
+
+    function setStatus(type, title, text){
+      els.statusDot.className = "status-dot";
+      if (type === "connected") els.statusDot.classList.add("connected");
+      if (type === "error") els.statusDot.classList.add("error");
+      els.statusTitle.innerHTML = `<strong>${title}</strong>`;
+      els.statusText.textContent = text;
+    }
+
+    function storageKey(){
+      return LOCAL_PREFIX + (currentUser?.id || "guest");
+    }
+
+    function renderConnectionCard(data){
+      if (!data){
+        els.connectedCard.classList.remove("show");
+        els.connectedInfo.innerHTML = "";
+        return;
+      }
+
+      const rows = [
+        ["Connection", data.display_name || "Telegram connection"],
+        ["Bot", data.bot_username || "Verified bot"],
+        ["Target type", capitalize(data.target_type || "channel")],
+        ["Target username", data.target_username || "—"],
+        ["Chat ID", data.chat_id || "—"],
+        ["Footer", data.default_caption || "Posted from View"],
+        ["Token", maskToken(data.bot_token || "")]
+      ];
+
+      els.connectedInfo.innerHTML = rows.map(([k,v]) => `
+        <div class="kv">
+          <span class="muted small">${escapeHtml(k)}</span>
+          <strong class="small">${escapeHtml(v)}</strong>
+        </div>
+      `).join("");
+
+      els.connectedCard.classList.add("show");
+    }
+
+    function fillForm(data){
+      if (!data) return;
+      els.displayName.value = data.display_name || "";
+      els.targetType.value = data.target_type || "channel";
+      els.privacyType.value = data.privacy_type || "public";
+      els.botToken.value = data.bot_token || "";
+      els.botUsername.value = data.bot_username || "";
+      els.targetUsername.value = data.target_username || "";
+      els.chatId.value = data.chat_id || "";
+      els.defaultCaption.value = data.default_caption || "Posted from View";
+      els.aboutConnection.value = data.notes || "";
+    }
+
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function capitalize(v){
+      return String(v || "").charAt(0).toUpperCase() + String(v || "").slice(1);
+    }
+
+    async function getSessionUser(){
+      try{
+        const { data } = await supabase.auth.getUser();
+        currentUser = data?.user || null;
+      }catch{
+        currentUser = null;
+      }
+    }
+
+    function loadLocalConnection(){
+      try{
+        const raw = localStorage.getItem(storageKey());
+        connection = raw ? JSON.parse(raw) : null;
+      }catch{
+        connection = null;
+      }
+    }
+
+    function saveLocalConnection(data){
+      connection = data;
+      localStorage.setItem(storageKey(), JSON.stringify(data));
+    }
+
+    function removeLocalConnection(){
+      localStorage.removeItem(storageKey());
+      connection = null;
+    }
+
+    async function verifyBot(token){
+      const res = await fetch(`https://api.telegram.org/bot${token}/getMe`);
+      const data = await res.json();
+      if (!data.ok){
+        throw new Error(data.description || "Unable to verify Telegram bot.");
+      }
+      return data.result;
+    }
+
+    async function verifyTarget(token, target){
+      const res = await fetch(`https://api.telegram.org/bot${token}/getChat?chat_id=${encodeURIComponent(target)}`);
+      const data = await res.json();
+      if (!data.ok){
+        throw new Error(data.description || "Unable to verify target chat.");
+      }
+      return data.result;
+    }
+
+    async function sendTelegramMessage(token, target, message){
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: target,
+          text: message,
+          parse_mode: "HTML",
+          disable_web_page_preview: false
+        })
+      });
+
+      const data = await res.json();
+      if (!data.ok){
+        throw new Error(data.description || "Telegram test message failed.");
+      }
+      return data.result;
+    }
+
+    async function saveRemoteConnection(data){
+      if (!currentUser) return false;
+
+      const payload = {
+        user_id: currentUser.id,
+        platform: "telegram",
+        provider: "telegram",
+        account_name: data.display_name || "Telegram",
+        account_username: data.target_username || data.bot_username || null,
+        account_id: data.chat_id || null,
+        access_token: data.bot_token,
+        status: "connected",
+        metadata: {
+          target_type: data.target_type,
+          privacy_type: data.privacy_type,
+          bot_username: data.bot_username,
+          bot_id: data.bot_id,
+          chat_id: data.chat_id,
+          chat_title: data.chat_title,
+          chat_username: data.chat_username,
+          default_caption: data.default_caption,
+          notes: data.notes
+        },
+        updated_at: new Date().toISOString()
+      };
+
+      const tableTries = [
+        async () => {
+          const { error } = await supabase.from("connected_accounts").upsert(payload, { onConflict: "user_id,platform" });
+          if (error) throw error;
+          return true;
+        },
+        async () => {
+          const singularPayload = {
+            user_id: currentUser.id,
+            service: "telegram",
+            provider: "telegram",
+            account_name: data.display_name || "Telegram",
+            account_username: data.target_username || data.bot_username || null,
+            account_id: data.chat_id || null,
+            access_token: data.bot_token,
+            status: "connected",
+            details: payload.metadata,
+            updated_at: new Date().toISOString()
+          };
+          const { error } = await supabase.from("connected_account").upsert(singularPayload, { onConflict: "user_id,service" });
+          if (error) throw error;
+          return true;
+        }
+      ];
+
+      for (const attempt of tableTries){
+        try{
+          await attempt();
+          return true;
+        }catch(err){
+          console.warn("Remote save attempt failed:", err?.message || err);
+        }
+      }
+
+      return false;
+    }
+
+    async function deleteRemoteConnection(){
+      if (!currentUser) return false;
+
+      const tries = [
+        async () => {
+          const { error } = await supabase
+            .from("connected_accounts")
+            .delete()
+            .eq("user_id", currentUser.id)
+            .eq("platform", "telegram");
+          if (error) throw error;
+          return true;
+        },
+        async () => {
+          const { error } = await supabase
+            .from("connected_account")
+            .delete()
+            .eq("user_id", currentUser.id)
+            .eq("service", "telegram");
+          if (error) throw error;
+          return true;
+        }
+      ];
+
+      for (const attempt of tries){
+        try{
+          await attempt();
+          return true;
+        }catch(err){
+          console.warn("Remote delete attempt failed:", err?.message || err);
+        }
+      }
+      return false;
+    }
+
+    function getTargetValue(){
+      const privacy = els.privacyType.value;
+      const username = normalizeHandle(els.targetUsername.value);
+      const chatId = normalizeChatId(els.chatId.value);
+
+      if (privacy === "public"){
+        return username;
+      }
+      return chatId;
+    }
+
+    function validateForm(){
+      const token = els.botToken.value.trim();
+      const target = getTargetValue();
+
+      if (!token || !token.includes(":")){
+        throw new Error("Enter a valid Telegram bot token.");
+      }
+
+      if (!target){
+        if (els.privacyType.value === "public"){
+          throw new Error("Enter the channel or group username.");
+        }
+        throw new Error("Enter the target chat ID.");
+      }
+
+      return {
+        display_name: els.displayName.value.trim() || "Telegram Connection",
+        target_type: els.targetType.value,
+        privacy_type: els.privacyType.value,
+        bot_token: token,
+        bot_username: normalizeHandle(els.botUsername.value),
+        target_username: normalizeHandle(els.targetUsername.value),
+        chat_id: normalizeChatId(els.chatId.value),
+        default_caption: els.defaultCaption.value.trim() || "Posted from View",
+        notes: els.aboutConnection.value.trim()
+      };
+    }
+
+    async function connectTelegram(){
+      let values;
+      try{
+        values = validateForm();
+      }catch(err){
+        setStatus("error", "Connection failed", err.message);
+        toast(err.message, "error");
+        return;
+      }
+
+      els.connectBtn.disabled = true;
+      setStatus("pending", "Verifying Telegram bot...", "Please wait while the bot and target are checked.");
+
+      try{
+        const bot = await verifyBot(values.bot_token);
+
+        if (!values.bot_username){
+          values.bot_username = bot.username ? "@" + bot.username : "";
+        }
+        values.bot_id = String(bot.id);
+
+        const target = getTargetValue();
+        const chat = await verifyTarget(values.bot_token, target);
+
+        values.chat_id = String(chat.id);
+        values.chat_title = chat.title || chat.first_name || "Telegram chat";
+        values.chat_username = chat.username ? "@" + chat.username : values.target_username;
+
+        if (els.testAfterConnect.checked){
+          const sample = [
+            "✅ <b>Telegram connected successfully</b>",
+            "",
+            `<b>Target:</b> ${escapeHtml(values.chat_title)}`,
+            `<b>Type:</b> ${escapeHtml(capitalize(values.target_type))}`,
+            "",
+            `${escapeHtml(values.default_caption)}`
+          ].join("\n");
+
+          await sendTelegramMessage(values.bot_token, values.chat_id, sample);
+        }
+
+        saveLocalConnection(values);
+        await saveRemoteConnection(values);
+
+        fillForm(values);
+        renderConnectionCard(values);
+        setStatus("connected", "Telegram connected", `Connected to ${values.chat_title}.`);
+        toast("Telegram connected successfully.", "success");
+      }catch(err){
+        console.error(err);
+        setStatus("error", "Connection failed", err.message || "Telegram verification failed.");
+        toast(err.message || "Telegram verification failed.", "error");
+      }finally{
+        els.connectBtn.disabled = false;
+      }
+    }
+
+    async function sendTestPost(){
+      const data = connection || (() => {
+        try{ return validateForm(); } catch { return null; }
+      })();
+
+      if (!data){
+        toast("Connect Telegram first or complete the form.", "warn");
+        return;
+      }
+
+      const target = data.chat_id || data.target_username || getTargetValue();
+
+      if (!data.bot_token || !target){
+        toast("Bot token or target is missing.", "error");
+        return;
+      }
+
+      els.testBtn.disabled = true;
+      try{
+        const now = new Date();
+        const sample = [
+          "🚀 <b>View test post</b>",
+          "",
+          "Your Telegram integration is ready.",
+          "",
+          `<b>Time:</b> ${escapeHtml(now.toLocaleString())}`,
+          `<b>Footer:</b> ${escapeHtml(data.default_caption || "Posted from View")}`
+        ].join("\n");
+
+        await sendTelegramMessage(data.bot_token, target, sample);
+        toast("Test post sent successfully.", "success");
+        setStatus("connected", "Test post sent", "Your Telegram target accepted the test message.");
+      }catch(err){
+        console.error(err);
+        toast(err.message || "Failed to send test post.", "error");
+        setStatus("error", "Test post failed", err.message || "Telegram message failed.");
+      }finally{
+        els.testBtn.disabled = false;
+      }
+    }
+
+    async function disconnectTelegram(){
+      removeLocalConnection();
+      await deleteRemoteConnection();
+
+      els.form.reset();
+      els.defaultCaption.value = "Posted from View";
+      renderConnectionCard(null);
+      setStatus("pending", "Disconnected", "Telegram connection removed from this device.");
+      toast("Telegram disconnected.", "warn");
+    }
+
+    function applyPrivacyRules(){
+      const isPublic = els.privacyType.value === "public";
+      els.targetUsername.disabled = !isPublic;
+      els.chatId.disabled = isPublic;
+
+      if (isPublic){
+        els.targetUsername.placeholder = "@yourchannel or @yourgroup";
+        els.chatId.placeholder = "Disabled for public mode";
+      }else{
+        els.targetUsername.placeholder = "Disabled for private mode";
+        els.chatId.placeholder = "-1001234567890";
+      }
+    }
+
+    async function boot(){
+      els.defaultCaption.value = "Posted from View";
+      applyPrivacyRules();
+
+      await getSessionUser();
+      loadLocalConnection();
+
+      if (connection){
+        fillForm(connection);
+        renderConnectionCard(connection);
+        setStatus("connected", "Telegram connected", "A saved Telegram connection was found on this device.");
+      }else{
+        setStatus("pending", "Not connected yet", "Enter your Telegram bot details to begin.");
+      }
+    }
+
+    els.privacyType.addEventListener("change", applyPrivacyRules);
+    els.form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await connectTelegram();
+    });
+    els.testBtn.addEventListener("click", sendTestPost);
+    els.disconnectBtn.addEventListener("click", disconnectTelegram);
+
+    boot();
+  </script>
+</body>
+</html>
