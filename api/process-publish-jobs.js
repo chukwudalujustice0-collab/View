@@ -6,33 +6,32 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const POSTS_TABLE = process.env.POSTS_TABLE || "posts";
 const JOBS_TABLE = process.env.JOBS_TABLE || "post_publish_jobs";
 const CONNECTIONS_TABLE = process.env.CONNECTIONS_TABLE || "connected_accounts";
-
+const BATCH_SIZE = Number(process.env.PUBLISH_BATCH_SIZE || 10);
+const FACEBOOK_GRAPH_VERSION = process.env.FACEBOOK_GRAPH_VERSION || "v23.0";
 const LINKEDIN_VERSION = process.env.LINKEDIN_VERSION || "202603";
-const DEFAULT_BATCH_SIZE = Number(process.env.PUBLISH_JOB_BATCH_SIZE || 10);
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false }
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
+  }
 });
 
 export default async function handler(req, res) {
   if (!["GET", "POST"].includes(req.method)) {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
 
   try {
-    const limit = clampInt(req.query.limit, 1, 50, DEFAULT_BATCH_SIZE);
-    const result = await processQueuedJobs(limit);
-
-    return res.status(200).json({
-      ok: true,
-      ...result
-    });
+    const limit = Math.max(1, Math.min(50, Number(req.query.limit || BATCH_SIZE)));
+    const result = await processJobs(limit);
+    return res.status(200).json({ ok: true, ...result });
   } catch (error) {
-    console.error("process-publish-jobs fatal error:", error);
+    console.error("Worker fatal error:", error);
     return res.status(500).json({
       ok: false,
       error: error.message || "Unexpected error"
@@ -40,10 +39,10 @@ export default async function handler(req, res) {
   }
 }
 
-async function processQueuedJobs(limit) {
+async function processJobs(limit) {
   const { data: jobs, error } = await supabase
     .from(JOBS_TABLE)
-    .select("id, post_id, user_id, platform, status, attempts")
+    .select("*")
     .in("status", ["queued", "retry"])
     .order("created_at", { ascending: true })
     .limit(limit);
@@ -56,10 +55,8 @@ async function processQueuedJobs(limit) {
   let skipped = 0;
 
   for (const job of jobs || []) {
-    const jobId = job.id;
-
     try {
-      await markJob(jobId, {
+      await updateJob(job.id, {
         status: "processing",
         started_at: new Date().toISOString(),
         attempts: (job.attempts || 0) + 1,
@@ -67,54 +64,53 @@ async function processQueuedJobs(limit) {
       });
 
       const post = await getPost(job.post_id);
-      if (!post) {
-        throw new Error(`Post ${job.post_id} not found`);
-      }
+      if (!post) throw new Error(`Post ${job.post_id} not found`);
 
-      const platform = normalizePlatformKey(job.platform);
-      const connection = platform === "view"
-        ? null
-        : await getConnection(job.user_id, platform);
+      const platform = normalizePlatform(job.platform);
+      const connection = platform === "view" ? null : await getConnection(job.user_id, platform);
 
-      const publishResult = await publishToPlatform({
+      const result = await publishToPlatform({
         platform,
         post,
         connection
       });
 
-      await markJob(jobId, {
-        status: publishResult.status || "success",
+      await updateJob(job.id, {
+        status: result.status || "success",
         completed_at: new Date().toISOString(),
-        provider_post_id: publishResult.providerPostId || null,
-        provider_response: safeJson(publishResult.raw || publishResult),
-        published_url: publishResult.url || null,
-        error_message: publishResult.errorMessage || null
+        provider_post_id: result.providerPostId || null,
+        published_url: result.url || null,
+        provider_response: safeJson(result.raw || result),
+        error_message: result.errorMessage || null
       });
+
+      await updatePostAfterJob(post.id);
 
       processed.push({
-        job_id: jobId,
+        job_id: job.id,
         platform,
-        result: publishResult.status || "success"
+        status: result.status || "success"
       });
 
-      if (publishResult.status === "skipped") skipped += 1;
+      if (result.status === "skipped") skipped += 1;
       else success += 1;
     } catch (error) {
-      console.error(`Job ${jobId} failed:`, error);
+      console.error(`Job ${job.id} failed:`, error);
 
-      await markJob(jobId, {
+      await updateJob(job.id, {
         status: "failed",
         completed_at: new Date().toISOString(),
         error_message: truncate(error.message || "Publishing failed", 1800),
         provider_response: safeJson({
+          message: error.message || "Publishing failed",
           stack: error.stack || null
         })
       });
 
       processed.push({
-        job_id: jobId,
-        platform: normalizePlatformKey(job.platform),
-        result: "failed",
+        job_id: job.id,
+        platform: normalizePlatform(job.platform),
+        status: "failed",
         error: error.message || "Publishing failed"
       });
 
@@ -152,7 +148,11 @@ async function publishToPlatform({ platform, post, connection }) {
     case "whatsapp":
       return await publishToWhatsApp(post, connection);
     default:
-      throw new Error(`Unsupported platform: ${platform}`);
+      return {
+        status: "skipped",
+        errorMessage: `Unsupported platform: ${platform}`,
+        raw: { unsupported: platform }
+      };
   }
 }
 
@@ -176,8 +176,12 @@ async function publishToView(post) {
 async function publishToFacebook(post, connection) {
   requireConnection(connection, "facebook");
 
-  const token = getConnectionConfig(connection).accessToken;
-  const pageId = getConnectionConfig(connection).targetId;
+  const token = connection.access_token;
+  const pageId =
+    connection.external_page_id ||
+    connection.metadata?.page_id ||
+    connection.metadata?.target_id ||
+    null;
 
   if (!token) throw new Error("Facebook access token missing");
   if (!pageId) throw new Error("Facebook page id missing");
@@ -185,7 +189,7 @@ async function publishToFacebook(post, connection) {
   const message = buildMessage(post);
 
   if (post.media_url && isVideo(post.media_type)) {
-    const data = await fetchJson(`https://graph.facebook.com/v23.0/${encodeURIComponent(pageId)}/videos`, {
+    const data = await fetchJson(`https://graph.facebook.com/${FACEBOOK_GRAPH_VERSION}/${encodeURIComponent(pageId)}/videos`, {
       method: "POST",
       body: toFormData({
         access_token: token,
@@ -197,13 +201,12 @@ async function publishToFacebook(post, connection) {
     return {
       status: "success",
       providerPostId: data.id || null,
-      raw: data,
-      url: null
+      raw: data
     };
   }
 
   if (post.media_url) {
-    const data = await fetchJson(`https://graph.facebook.com/v23.0/${encodeURIComponent(pageId)}/photos`, {
+    const data = await fetchJson(`https://graph.facebook.com/${FACEBOOK_GRAPH_VERSION}/${encodeURIComponent(pageId)}/photos`, {
       method: "POST",
       body: toFormData({
         access_token: token,
@@ -215,12 +218,11 @@ async function publishToFacebook(post, connection) {
     return {
       status: "success",
       providerPostId: data.post_id || data.id || null,
-      raw: data,
-      url: null
+      raw: data
     };
   }
 
-  const data = await fetchJson(`https://graph.facebook.com/v23.0/${encodeURIComponent(pageId)}/feed`, {
+  const data = await fetchJson(`https://graph.facebook.com/${FACEBOOK_GRAPH_VERSION}/${encodeURIComponent(pageId)}/feed`, {
     method: "POST",
     body: toFormData({
       access_token: token,
@@ -231,29 +233,30 @@ async function publishToFacebook(post, connection) {
   return {
     status: "success",
     providerPostId: data.id || null,
-    raw: data,
-    url: null
+    raw: data
   };
 }
 
 async function publishToInstagram(post, connection) {
   requireConnection(connection, "instagram");
 
-  const cfg = getConnectionConfig(connection);
-  const token = cfg.accessToken;
-  const igUserId = cfg.targetId;
+  const token = connection.access_token;
+  const igUserId =
+    connection.external_page_id ||
+    connection.external_user_id ||
+    connection.metadata?.instagram_user_id ||
+    connection.metadata?.ig_user_id ||
+    null;
 
   if (!token) throw new Error("Instagram access token missing");
   if (!igUserId) throw new Error("Instagram user id missing");
-  if (!post.media_url) {
-    throw new Error("Instagram publishing requires image or video media_url");
-  }
-
+  if (!post.media_url) throw new Error("Instagram publishing requires media");
   const caption = buildMessage(post);
+
   let container;
 
   if (isVideo(post.media_type)) {
-    container = await fetchJson(`https://graph.facebook.com/v23.0/${encodeURIComponent(igUserId)}/media`, {
+    container = await fetchJson(`https://graph.facebook.com/${FACEBOOK_GRAPH_VERSION}/${encodeURIComponent(igUserId)}/media`, {
       method: "POST",
       body: toFormData({
         access_token: token,
@@ -263,7 +266,7 @@ async function publishToInstagram(post, connection) {
       })
     });
   } else {
-    container = await fetchJson(`https://graph.facebook.com/v23.0/${encodeURIComponent(igUserId)}/media`, {
+    container = await fetchJson(`https://graph.facebook.com/${FACEBOOK_GRAPH_VERSION}/${encodeURIComponent(igUserId)}/media`, {
       method: "POST",
       body: toFormData({
         access_token: token,
@@ -279,7 +282,7 @@ async function publishToInstagram(post, connection) {
 
   await wait(3500);
 
-  const published = await fetchJson(`https://graph.facebook.com/v23.0/${encodeURIComponent(igUserId)}/media_publish`, {
+  const published = await fetchJson(`https://graph.facebook.com/${FACEBOOK_GRAPH_VERSION}/${encodeURIComponent(igUserId)}/media_publish`, {
     method: "POST",
     body: toFormData({
       access_token: token,
@@ -300,14 +303,21 @@ async function publishToInstagram(post, connection) {
 async function publishToTelegram(post, connection) {
   requireConnection(connection, "telegram");
 
-  const cfg = getConnectionConfig(connection);
-  const botToken = cfg.accessToken;
-  const chatId = cfg.targetId;
+  const token =
+    connection.access_token ||
+    connection.metadata?.access_token ||
+    null;
 
-  if (!botToken) throw new Error("Telegram bot token missing");
-  if (!chatId) throw new Error("Telegram chat_id missing");
+  const chatId =
+    connection.telegram_chat_id ||
+    connection.metadata?.telegram_chat_id ||
+    connection.metadata?.chat_id ||
+    null;
 
-  const base = `https://api.telegram.org/bot${botToken}`;
+  if (!token) throw new Error("Telegram bot token missing");
+  if (!chatId) throw new Error("Telegram chat id missing");
+
+  const base = `https://api.telegram.org/bot${token}`;
   const caption = buildMessage(post);
 
   if (post.media_url && isVideo(post.media_type)) {
@@ -316,8 +326,7 @@ async function publishToTelegram(post, connection) {
       body: toFormData({
         chat_id: chatId,
         video: post.media_url,
-        caption: caption || "",
-        parse_mode: "HTML"
+        caption: caption || ""
       })
     });
 
@@ -334,8 +343,7 @@ async function publishToTelegram(post, connection) {
       body: toFormData({
         chat_id: chatId,
         photo: post.media_url,
-        caption: caption || "",
-        parse_mode: "HTML"
+        caption: caption || ""
       })
     });
 
@@ -350,9 +358,7 @@ async function publishToTelegram(post, connection) {
     method: "POST",
     body: toFormData({
       chat_id: chatId,
-      text: caption || "",
-      parse_mode: "HTML",
-      disable_web_page_preview: "false"
+      text: caption || "New post from View"
     })
   });
 
@@ -366,12 +372,17 @@ async function publishToTelegram(post, connection) {
 async function publishToLinkedIn(post, connection) {
   requireConnection(connection, "linkedin");
 
-  const cfg = getConnectionConfig(connection);
-  const token = cfg.accessToken;
-  const authorUrn = cfg.targetId;
+  const token = connection.access_token;
+  const ownerUrn =
+    connection.external_page_id ||
+    connection.external_user_id ||
+    connection.metadata?.author_urn ||
+    connection.metadata?.owner_urn ||
+    connection.metadata?.linkedin_author_urn ||
+    null;
 
   if (!token) throw new Error("LinkedIn access token missing");
-  if (!authorUrn) throw new Error("LinkedIn author URN missing");
+  if (!ownerUrn) throw new Error("LinkedIn owner URN missing");
 
   let content = null;
 
@@ -380,7 +391,7 @@ async function publishToLinkedIn(post, connection) {
       mediaUrl: post.media_url,
       mediaType: post.media_type,
       accessToken: token,
-      ownerUrn: authorUrn
+      ownerUrn
     });
 
     content = {
@@ -392,9 +403,9 @@ async function publishToLinkedIn(post, connection) {
   }
 
   const payload = {
-    author: authorUrn,
+    author: ownerUrn,
     commentary: buildMessage(post),
-    visibility: mapLinkedInVisibility(post.privacy),
+    visibility: "PUBLIC",
     distribution: {
       feedDistribution: "MAIN_FEED",
       targetEntities: [],
@@ -434,38 +445,29 @@ async function publishToLinkedIn(post, connection) {
 async function publishToX(post, connection) {
   requireConnection(connection, "x");
 
-  const cfg = getConnectionConfig(connection);
-  const token = cfg.accessToken;
-
+  const token = connection.access_token;
   if (!token) throw new Error("X access token missing");
 
   let mediaIds = [];
 
   if (post.media_url) {
-    try {
-      const mediaId = await uploadMediaToX({
-        mediaUrl: post.media_url,
-        mediaType: post.media_type,
-        accessToken: token
-      });
-      mediaIds = mediaId ? [mediaId] : [];
-    } catch (error) {
-      if (!buildMessage(post)) {
-        throw new Error(`X media upload failed and no text fallback exists: ${error.message}`);
-      }
-      console.warn("X media upload failed; falling back to text-only post:", error.message);
-    }
+    const mediaId = await uploadMediaToX({
+      mediaUrl: post.media_url,
+      mediaType: post.media_type,
+      accessToken: token
+    });
+    if (mediaId) mediaIds.push(mediaId);
   }
 
   const payload = {
-    text: buildMessage(post)
+    text: buildMessage(post) || ""
   };
 
   if (mediaIds.length) {
     payload.media = { media_ids: mediaIds };
   }
 
-  const data = await fetchJson("https://api.x.com/2/posts", {
+  const data = await fetchJson("https://api.x.com/2/tweets", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -485,17 +487,14 @@ async function publishToX(post, connection) {
 async function publishToTikTok(post, connection) {
   requireConnection(connection, "tiktok");
 
-  const cfg = getConnectionConfig(connection);
-  const token = cfg.accessToken;
-
+  const token = connection.access_token;
   if (!token) throw new Error("TikTok access token missing");
   if (!post.media_url) throw new Error("TikTok publishing requires media_url");
-  if (!isVideo(post.media_type) && !isImage(post.media_type)) {
-    throw new Error("TikTok publishing requires image/* or video/* media");
-  }
+
+  const title = buildMessage(post);
 
   if (isImage(post.media_type)) {
-    const init = await fetchJson("https://open.tiktokapis.com/v2/post/publish/content/init/", {
+    const data = await fetchJson("https://open.tiktokapis.com/v2/post/publish/content/init/", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -503,8 +502,8 @@ async function publishToTikTok(post, connection) {
       },
       body: JSON.stringify({
         post_info: {
-          title: buildMessage(post),
-          privacy_level: mapTikTokPrivacy(post.privacy)
+          title: title,
+          privacy_level: "PUBLIC_TO_EVERYONE"
         },
         source_info: {
           source: "PULL_FROM_URL",
@@ -515,12 +514,12 @@ async function publishToTikTok(post, connection) {
 
     return {
       status: "success",
-      providerPostId: init?.data?.publish_id || init?.data?.post_id || null,
-      raw: init
+      providerPostId: data?.data?.publish_id || data?.data?.post_id || null,
+      raw: data
     };
   }
 
-  const init = await fetchJson("https://open.tiktokapis.com/v2/post/publish/video/init/", {
+  const data = await fetchJson("https://open.tiktokapis.com/v2/post/publish/video/init/", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -528,8 +527,8 @@ async function publishToTikTok(post, connection) {
     },
     body: JSON.stringify({
       post_info: {
-        title: buildMessage(post),
-        privacy_level: mapTikTokPrivacy(post.privacy),
+        title: title,
+        privacy_level: "PUBLIC_TO_EVERYONE",
         disable_comment: false,
         disable_duet: false,
         disable_stitch: false
@@ -543,20 +542,18 @@ async function publishToTikTok(post, connection) {
 
   return {
     status: "success",
-    providerPostId: init?.data?.publish_id || init?.data?.post_id || null,
-    raw: init
+    providerPostId: data?.data?.publish_id || data?.data?.post_id || null,
+    raw: data
   };
 }
 
 async function publishToYouTube(post, connection) {
   requireConnection(connection, "youtube");
 
-  const cfg = getConnectionConfig(connection);
-  const token = cfg.accessToken;
-
+  const token = connection.access_token;
   if (!token) throw new Error("YouTube access token missing");
-  if (!post.media_url) throw new Error("YouTube publishing requires a video media_url");
-  if (!isVideo(post.media_type)) throw new Error("YouTube only accepts video uploads here");
+  if (!post.media_url) throw new Error("YouTube publishing requires media_url");
+  if (!isVideo(post.media_type)) throw new Error("YouTube requires video media");
 
   const media = await fetchBinary(post.media_url);
   const metadata = {
@@ -565,7 +562,7 @@ async function publishToYouTube(post, connection) {
       description: buildMessage(post) || ""
     },
     status: {
-      privacyStatus: mapYouTubePrivacy(post.privacy)
+      privacyStatus: "public"
     }
   };
 
@@ -587,7 +584,7 @@ async function publishToYouTube(post, connection) {
 
   const uploadUrl = start.headers.get("location");
   if (!uploadUrl) {
-    throw new Error("YouTube resumable upload location missing");
+    throw new Error("YouTube resumable upload URL missing");
   }
 
   const uploadResponse = await fetch(uploadUrl, {
@@ -617,35 +614,41 @@ async function publishToYouTube(post, connection) {
 async function publishToWhatsApp(post, connection) {
   requireConnection(connection, "whatsapp");
 
-  const cfg = getConnectionConfig(connection);
-  const token = cfg.accessToken;
-  const phoneNumberId = cfg.phoneNumberId;
-  const recipient = cfg.targetId;
+  const token = connection.access_token;
+  const phoneNumberId =
+    connection.external_page_id ||
+    connection.metadata?.phone_number_id ||
+    connection.metadata?.whatsapp_phone_number_id ||
+    null;
+
+  const recipient =
+    connection.external_user_id ||
+    connection.metadata?.recipient_phone ||
+    connection.metadata?.to ||
+    null;
 
   if (!token) throw new Error("WhatsApp access token missing");
   if (!phoneNumberId) throw new Error("WhatsApp phone_number_id missing");
-  if (!recipient) throw new Error("WhatsApp recipient phone missing");
+  if (!recipient) throw new Error("WhatsApp recipient number missing");
 
-  const url = `https://graph.facebook.com/v23.0/${encodeURIComponent(phoneNumberId)}/messages`;
+  const url = `https://graph.facebook.com/${FACEBOOK_GRAPH_VERSION}/${encodeURIComponent(phoneNumberId)}/messages`;
 
   if (post.media_url && isVideo(post.media_type)) {
-    const payload = {
-      messaging_product: "whatsapp",
-      to: recipient,
-      type: "video",
-      video: {
-        link: post.media_url,
-        caption: buildMessage(post) || ""
-      }
-    };
-
     const data = await fetchJson(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to: recipient,
+        type: "video",
+        video: {
+          link: post.media_url,
+          caption: buildMessage(post) || ""
+        }
+      })
     });
 
     return {
@@ -656,23 +659,21 @@ async function publishToWhatsApp(post, connection) {
   }
 
   if (post.media_url) {
-    const payload = {
-      messaging_product: "whatsapp",
-      to: recipient,
-      type: "image",
-      image: {
-        link: post.media_url,
-        caption: buildMessage(post) || ""
-      }
-    };
-
     const data = await fetchJson(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to: recipient,
+        type: "image",
+        image: {
+          link: post.media_url,
+          caption: buildMessage(post) || ""
+        }
+      })
     });
 
     return {
@@ -682,22 +683,20 @@ async function publishToWhatsApp(post, connection) {
     };
   }
 
-  const payload = {
-    messaging_product: "whatsapp",
-    to: recipient,
-    type: "text",
-    text: {
-      body: buildMessage(post) || ""
-    }
-  };
-
   const data = await fetchJson(url, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to: recipient,
+      type: "text",
+      text: {
+        body: buildMessage(post) || "New message from View"
+      }
+    })
   });
 
   return {
@@ -707,86 +706,7 @@ async function publishToWhatsApp(post, connection) {
   };
 }
 
-async function uploadMediaToLinkedIn({ mediaUrl, mediaType, accessToken, ownerUrn }) {
-  const binary = await fetchBinary(mediaUrl);
-  const isVid = isVideo(mediaType);
-  const recipe = isVid
-    ? "urn:li:digitalmediaRecipe:feedshare-video"
-    : "urn:li:digitalmediaRecipe:feedshare-image";
-
-  const register = await fetchJson("https://api.linkedin.com/rest/assets?action=registerUpload", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "X-Restli-Protocol-Version": "2.0.0",
-      "Linkedin-Version": LINKEDIN_VERSION
-    },
-    body: JSON.stringify({
-      registerUploadRequest: {
-        owner: ownerUrn,
-        recipes: [recipe],
-        serviceRelationships: [
-          {
-            identifier: "urn:li:userGeneratedContent",
-            relationshipType: "OWNER"
-          }
-        ],
-        ...(isVid ? {} : { supportedUploadMechanism: ["SYNCHRONOUS_UPLOAD"] })
-      }
-    })
-  });
-
-  const uploadUrl = register?.value?.uploadMechanism?.["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"]?.uploadUrl;
-  const asset = register?.value?.asset;
-
-  if (!uploadUrl || !asset) {
-    throw new Error("LinkedIn asset registration failed");
-  }
-
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": mediaType || (isVid ? "video/mp4" : "image/jpeg")
-    },
-    body: binary
-  });
-
-  if (!put.ok) {
-    const text = await put.text();
-    throw new Error(`LinkedIn asset upload failed: ${text}`);
-  }
-
-  const assetId = asset.split(":").pop();
-  const assetUrn = isVid ? `urn:li:video:${assetId}` : `urn:li:image:${assetId}`;
-
-  return { assetUrn, asset };
-}
-
-async function uploadMediaToX({ mediaUrl, mediaType, accessToken }) {
-  const binary = await fetchBinary(mediaUrl);
-
-  const form = new FormData();
-  form.append("media", new Blob([binary], { type: mediaType || "application/octet-stream" }), "upload");
-
-  const response = await fetch("https://api.x.com/2/media/upload", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    },
-    body: form
-  });
-
-  const text = await response.text();
-  const data = parseMaybeJson(text) || {};
-
-  if (!response.ok) {
-    throw new Error(`X media upload failed: ${text}`);
-  }
-
-  return data?.data?.id || data?.id || null;
-}
+/* ----------------------------- DB HELPERS ----------------------------- */
 
 async function getPost(postId) {
   const { data, error } = await supabase
@@ -808,25 +728,11 @@ async function getConnection(userId, platform) {
     .eq("status", "connected")
     .maybeSingle();
 
-  if (!error && data) return data;
-
-  const aliases = reverseAliases(platform);
-  if (!aliases.length) return null;
-
-  const { data: aliasRow, error: aliasError } = await supabase
-    .from(CONNECTIONS_TABLE)
-    .select("*")
-    .eq("user_id", userId)
-    .in("platform", aliases)
-    .eq("status", "connected")
-    .limit(1)
-    .maybeSingle();
-
-  if (aliasError) throw aliasError;
-  return aliasRow || null;
+  if (error) throw error;
+  return normalizeConnection(data);
 }
 
-async function markJob(jobId, patch) {
+async function updateJob(jobId, patch) {
   const { error } = await supabase
     .from(JOBS_TABLE)
     .update(patch)
@@ -835,46 +741,64 @@ async function markJob(jobId, patch) {
   if (error) throw error;
 }
 
-function getConnectionConfig(connection) {
-  const meta = parseMeta(connection?.metadata);
+async function updatePostAfterJob(postId) {
+  const { data: jobs, error } = await supabase
+    .from(JOBS_TABLE)
+    .select("status")
+    .eq("post_id", postId);
 
-  const accessToken = pickFirst(connection, meta, [
-    "access_token",
-    "token",
-    "page_access_token",
-    "bot_token"
-  ]);
+  if (error) throw error;
 
-  const targetId = pickFirst(connection, meta, [
-    "target_id",
-    "page_id",
-    "instagram_user_id",
-    "ig_user_id",
-    "telegram_chat_id",
-    "chat_id",
-    "linkedin_author_urn",
-    "author_urn",
-    "person_urn",
-    "organization_urn",
-    "recipient_phone",
-    "to",
-    "phone",
-    "phone_number",
-    "channel_id",
-    "external_user_id",
-    "account_handle"
-  ]);
+  const statuses = (jobs || []).map(j => j.status);
+  if (!statuses.length) return;
 
-  const phoneNumberId = pickFirst(connection, meta, [
-    "phone_number_id",
-    "whatsapp_phone_number_id"
-  ]);
+  let publishStatus = "queued";
+  if (statuses.every(s => s === "success" || s === "skipped")) {
+    publishStatus = "published";
+  } else if (statuses.some(s => s === "failed")) {
+    publishStatus = "partial_failed";
+  } else if (statuses.some(s => s === "processing")) {
+    publishStatus = "processing";
+  }
+
+  await supabase
+    .from(POSTS_TABLE)
+    .update({
+      publish_status: publishStatus,
+      status: publishStatus === "published" ? "published" : "queued",
+      published_at: publishStatus === "published" ? new Date().toISOString() : null
+    })
+    .eq("id", postId);
+}
+
+/* -------------------------- PLATFORM HELPERS -------------------------- */
+
+function normalizeConnection(connection) {
+  if (!connection) return null;
+
+  let metadata = connection.metadata || {};
+  if (typeof metadata === "string") {
+    try {
+      metadata = JSON.parse(metadata);
+    } catch {
+      metadata = {};
+    }
+  }
 
   return {
-    accessToken,
-    targetId,
-    phoneNumberId
+    ...connection,
+    metadata
   };
+}
+
+function normalizePlatform(value) {
+  const platform = String(value || "").trim().toLowerCase();
+  const aliases = {
+    twitter: "x",
+    linkedln: "linkedin",
+    linked_in: "linkedin"
+  };
+  return aliases[platform] || platform;
 }
 
 function requireConnection(connection, platform) {
@@ -883,60 +807,20 @@ function requireConnection(connection, platform) {
   }
 }
 
-function normalizePlatformKey(value) {
-  const key = String(value || "").trim().toLowerCase();
-  const map = {
-    twitter: "x",
-    linkedln: "linkedin",
-    linked_in: "linkedin"
-  };
-  return map[key] || key;
-}
-
-function reverseAliases(platform) {
-  const aliases = {
-    x: ["twitter", "x"],
-    linkedin: ["linkedin", "linkedln", "linked_in"]
-  };
-  return aliases[platform] || [];
-}
-
 function buildMessage(post) {
-  const text = String(post?.content || "").trim();
-  return truncate(text, 2200);
+  return truncate(String(post?.content || "").trim(), 2200);
 }
 
 function deriveYouTubeTitle(post) {
-  const text = String(post?.content || "").trim();
-  if (!text) return post?.media_name || "View upload";
-  return truncate(text.split("\n")[0], 100);
+  const content = String(post?.content || "").trim();
+  if (!content) return post?.media_name || "View upload";
+  return truncate(content.split("\n")[0], 100);
 }
 
 function inferMediaTitle(post) {
   if (post?.media_name) return truncate(post.media_name, 100);
   if (post?.content) return truncate(post.content, 100);
   return "View media";
-}
-
-function mapTikTokPrivacy(privacy) {
-  const value = String(privacy || "public").toLowerCase();
-  if (value === "private") return "SELF_ONLY";
-  if (value === "friends") return "FOLLOWER_OF_CREATOR";
-  return "PUBLIC_TO_EVERYONE";
-}
-
-function mapYouTubePrivacy(privacy) {
-  const value = String(privacy || "public").toLowerCase();
-  if (value === "private") return "private";
-  if (value === "friends") return "unlisted";
-  return "public";
-}
-
-function mapLinkedInVisibility(privacy) {
-  const value = String(privacy || "public").toLowerCase();
-  if (value === "private") return "LOGGED_IN";
-  if (value === "friends") return "CONNECTIONS";
-  return "PUBLIC";
 }
 
 function isVideo(mediaType) {
@@ -947,13 +831,101 @@ function isImage(mediaType) {
   return String(mediaType || "").toLowerCase().startsWith("image/");
 }
 
+/* ---------------------------- API HELPERS ----------------------------- */
+
+async function uploadMediaToLinkedIn({ mediaUrl, mediaType, accessToken, ownerUrn }) {
+  const binary = await fetchBinary(mediaUrl);
+  const isVid = isVideo(mediaType);
+
+  const register = await fetchJson("https://api.linkedin.com/rest/assets?action=registerUpload", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      "X-Restli-Protocol-Version": "2.0.0",
+      "Linkedin-Version": LINKEDIN_VERSION
+    },
+    body: JSON.stringify({
+      registerUploadRequest: {
+        owner: ownerUrn,
+        recipes: [
+          isVid
+            ? "urn:li:digitalmediaRecipe:feedshare-video"
+            : "urn:li:digitalmediaRecipe:feedshare-image"
+        ],
+        serviceRelationships: [
+          {
+            identifier: "urn:li:userGeneratedContent",
+            relationshipType: "OWNER"
+          }
+        ]
+      }
+    })
+  });
+
+  const uploadUrl =
+    register?.value?.uploadMechanism?.["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"]?.uploadUrl;
+  const asset = register?.value?.asset;
+
+  if (!uploadUrl || !asset) {
+    throw new Error("LinkedIn asset registration failed");
+  }
+
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": mediaType || (isVid ? "video/mp4" : "image/jpeg")
+    },
+    body: binary
+  });
+
+  if (!put.ok) {
+    const text = await put.text();
+    throw new Error(`LinkedIn asset upload failed: ${text}`);
+  }
+
+  const assetId = asset.split(":").pop();
+  return {
+    assetUrn: isVid ? `urn:li:video:${assetId}` : `urn:li:image:${assetId}`,
+    rawAsset: asset
+  };
+}
+
+async function uploadMediaToX({ mediaUrl, mediaType, accessToken }) {
+  const binary = await fetchBinary(mediaUrl);
+  const base64 = binary.toString("base64");
+
+  const category = isVideo(mediaType)
+    ? "tweet_video"
+    : isImage(mediaType)
+      ? "tweet_image"
+      : "tweet_image";
+
+  const data = await fetchJson("https://api.x.com/2/media/upload", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      media: base64,
+      media_category: category,
+      media_type: mediaType || "application/octet-stream",
+      shared: false
+    })
+  });
+
+  return data?.data?.id || data?.id || null;
+}
+
 async function fetchBinary(url) {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to fetch media from ${url}`);
+    throw new Error(`Failed to fetch media: ${url}`);
   }
-  const ab = await response.arrayBuffer();
-  return Buffer.from(ab);
+  const buffer = await response.arrayBuffer();
+  return Buffer.from(buffer);
 }
 
 async function fetchJson(url, options = {}) {
@@ -976,14 +948,6 @@ function parseMaybeJson(text) {
   }
 }
 
-function safeJson(value) {
-  try {
-    return JSON.parse(JSON.stringify(value ?? null));
-  } catch {
-    return { value: String(value) };
-  }
-}
-
 function toFormData(obj) {
   const fd = new FormData();
   for (const [key, value] of Object.entries(obj || {})) {
@@ -993,37 +957,17 @@ function toFormData(obj) {
   return fd;
 }
 
-function parseMeta(metadata) {
-  if (!metadata) return {};
-  if (typeof metadata === "object") return metadata;
+function safeJson(value) {
   try {
-    return JSON.parse(metadata);
+    return JSON.parse(JSON.stringify(value ?? null));
   } catch {
-    return {};
+    return { value: String(value) };
   }
-}
-
-function pickFirst(connection, meta, keys) {
-  for (const key of keys) {
-    if (connection && connection[key] !== undefined && connection[key] !== null && connection[key] !== "") {
-      return connection[key];
-    }
-    if (meta && meta[key] !== undefined && meta[key] !== null && meta[key] !== "") {
-      return meta[key];
-    }
-  }
-  return null;
 }
 
 function truncate(value, max) {
   const text = String(value || "");
   return text.length > max ? text.slice(0, max) : text;
-}
-
-function clampInt(value, min, max, fallback) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.min(max, Math.max(min, Math.floor(n)));
 }
 
 function wait(ms) {
