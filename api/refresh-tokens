@@ -1,0 +1,73 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL"),
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+);
+
+export default async function handler(req) {
+  try {
+    const { data: accounts, error } = await supabase
+      .from("connected_accounts")
+      .select("*")
+      .eq("status", "connected")
+      .lte("token_expires_at", new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString());
+
+    if (error) throw error;
+
+    for (const acc of accounts) {
+      try {
+        let newTokenData = null;
+
+        // FACEBOOK / INSTAGRAM
+        if (acc.platform === "facebook") {
+          const res = await fetch(
+            `https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${Deno.env.get("FB_APP_ID")}&client_secret=${Deno.env.get("FB_APP_SECRET")}&fb_exchange_token=${acc.access_token}`
+          );
+          newTokenData = await res.json();
+        }
+
+        // TIKTOK
+        if (acc.platform === "tiktok") {
+          const res = await fetch("https://open.tiktokapis.com/v2/oauth/token/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              client_key: Deno.env.get("TIKTOK_CLIENT_KEY"),
+              client_secret: Deno.env.get("TIKTOK_CLIENT_SECRET"),
+              grant_type: "refresh_token",
+              refresh_token: acc.refresh_token,
+            }),
+          });
+
+          newTokenData = await res.json();
+        }
+
+        // UPDATE DB
+        if (newTokenData?.access_token) {
+          await supabase.from("connected_accounts").update({
+            access_token: newTokenData.access_token,
+            refresh_token: newTokenData.refresh_token ?? acc.refresh_token,
+            token_expires_at: new Date(Date.now() + (newTokenData.expires_in || 5184000) * 1000),
+            last_refreshed_at: new Date(),
+            last_error: null,
+            status: "connected",
+          }).eq("id", acc.id);
+        } else {
+          throw new Error("No token returned");
+        }
+
+      } catch (err) {
+        await supabase.from("connected_accounts").update({
+          last_error: err.message,
+          status: "error",
+        }).eq("id", acc.id);
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true }), { status: 200 });
+
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+  }
+}
