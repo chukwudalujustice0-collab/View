@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+const { createClient } = require("@supabase/supabase-js");
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -21,15 +21,34 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   }
 });
 
-export default async function handler(req, res) {
+function setCors(res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+}
+
+module.exports = async function handler(req, res) {
+  setCors(res);
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (!["GET", "POST"].includes(req.method)) {
-    return res.status(405).json({ ok: false, error: "Method not allowed" });
+    return res.status(405).json({
+      ok: false,
+      error: "Method not allowed"
+    });
   }
 
   try {
     const limit = Math.max(1, Math.min(50, Number(req.query.limit || BATCH_SIZE)));
     const result = await processJobs(limit);
-    return res.status(200).json({ ok: true, ...result });
+
+    return res.status(200).json({
+      ok: true,
+      ...result
+    });
   } catch (error) {
     console.error("Worker fatal error:", error);
     return res.status(500).json({
@@ -37,7 +56,7 @@ export default async function handler(req, res) {
       error: error.message || "Unexpected error"
     });
   }
-}
+};
 
 async function processJobs(limit) {
   const { data: jobs, error } = await supabase
@@ -84,7 +103,7 @@ async function processJobs(limit) {
         error_message: result.errorMessage || null
       });
 
-      await updatePostAfterJob(post.id);
+      await refreshPostStatus(post.id);
 
       processed.push({
         job_id: job.id,
@@ -106,6 +125,8 @@ async function processJobs(limit) {
           stack: error.stack || null
         })
       });
+
+      await refreshPostStatus(job.post_id);
 
       processed.push({
         job_id: job.id,
@@ -131,12 +152,12 @@ async function publishToPlatform({ platform, post, connection }) {
   switch (platform) {
     case "view":
       return await publishToView(post);
+    case "telegram":
+      return await publishToTelegram(post, connection);
     case "facebook":
       return await publishToFacebook(post, connection);
     case "instagram":
       return await publishToInstagram(post, connection);
-    case "telegram":
-      return await publishToTelegram(post, connection);
     case "linkedin":
       return await publishToLinkedIn(post, connection);
     case "x":
@@ -156,6 +177,8 @@ async function publishToPlatform({ platform, post, connection }) {
   }
 }
 
+/* ---------------- LOCAL VIEW ---------------- */
+
 async function publishToView(post) {
   await supabase
     .from(POSTS_TABLE)
@@ -172,6 +195,75 @@ async function publishToView(post) {
     raw: { local: true }
   };
 }
+
+/* ---------------- TELEGRAM ---------------- */
+
+async function publishToTelegram(post, connection) {
+  requireConnection(connection, "telegram");
+
+  const token = connection.access_token || connection.metadata?.access_token || null;
+  const chatId =
+    connection.telegram_chat_id ||
+    connection.metadata?.telegram_chat_id ||
+    connection.metadata?.chat_id ||
+    null;
+
+  if (!token) throw new Error("Telegram bot token missing");
+  if (!chatId) throw new Error("Telegram chat id missing");
+
+  const base = `https://api.telegram.org/bot${token}`;
+  const caption = buildMessage(post);
+
+  if (post.media_url && isVideo(post.media_type)) {
+    const data = await fetchJson(`${base}/sendVideo`, {
+      method: "POST",
+      body: toFormData({
+        chat_id: chatId,
+        video: post.media_url,
+        caption: caption || ""
+      })
+    });
+
+    return {
+      status: "success",
+      providerPostId: data?.result?.message_id || null,
+      raw: data
+    };
+  }
+
+  if (post.media_url) {
+    const data = await fetchJson(`${base}/sendPhoto`, {
+      method: "POST",
+      body: toFormData({
+        chat_id: chatId,
+        photo: post.media_url,
+        caption: caption || ""
+      })
+    });
+
+    return {
+      status: "success",
+      providerPostId: data?.result?.message_id || null,
+      raw: data
+    };
+  }
+
+  const data = await fetchJson(`${base}/sendMessage`, {
+    method: "POST",
+    body: toFormData({
+      chat_id: chatId,
+      text: caption || "New post from View"
+    })
+  });
+
+  return {
+    status: "success",
+    providerPostId: data?.result?.message_id || null,
+    raw: data
+  };
+}
+
+/* ---------------- FACEBOOK ---------------- */
 
 async function publishToFacebook(post, connection) {
   requireConnection(connection, "facebook");
@@ -237,6 +329,8 @@ async function publishToFacebook(post, connection) {
   };
 }
 
+/* ---------------- INSTAGRAM ---------------- */
+
 async function publishToInstagram(post, connection) {
   requireConnection(connection, "instagram");
 
@@ -251,8 +345,8 @@ async function publishToInstagram(post, connection) {
   if (!token) throw new Error("Instagram access token missing");
   if (!igUserId) throw new Error("Instagram user id missing");
   if (!post.media_url) throw new Error("Instagram publishing requires media");
-  const caption = buildMessage(post);
 
+  const caption = buildMessage(post);
   let container;
 
   if (isVideo(post.media_type)) {
@@ -300,74 +394,7 @@ async function publishToInstagram(post, connection) {
   };
 }
 
-async function publishToTelegram(post, connection) {
-  requireConnection(connection, "telegram");
-
-  const token =
-    connection.access_token ||
-    connection.metadata?.access_token ||
-    null;
-
-  const chatId =
-    connection.telegram_chat_id ||
-    connection.metadata?.telegram_chat_id ||
-    connection.metadata?.chat_id ||
-    null;
-
-  if (!token) throw new Error("Telegram bot token missing");
-  if (!chatId) throw new Error("Telegram chat id missing");
-
-  const base = `https://api.telegram.org/bot${token}`;
-  const caption = buildMessage(post);
-
-  if (post.media_url && isVideo(post.media_type)) {
-    const data = await fetchJson(`${base}/sendVideo`, {
-      method: "POST",
-      body: toFormData({
-        chat_id: chatId,
-        video: post.media_url,
-        caption: caption || ""
-      })
-    });
-
-    return {
-      status: "success",
-      providerPostId: data?.result?.message_id || null,
-      raw: data
-    };
-  }
-
-  if (post.media_url) {
-    const data = await fetchJson(`${base}/sendPhoto`, {
-      method: "POST",
-      body: toFormData({
-        chat_id: chatId,
-        photo: post.media_url,
-        caption: caption || ""
-      })
-    });
-
-    return {
-      status: "success",
-      providerPostId: data?.result?.message_id || null,
-      raw: data
-    };
-  }
-
-  const data = await fetchJson(`${base}/sendMessage`, {
-    method: "POST",
-    body: toFormData({
-      chat_id: chatId,
-      text: caption || "New post from View"
-    })
-  });
-
-  return {
-    status: "success",
-    providerPostId: data?.result?.message_id || null,
-    raw: data
-  };
-}
+/* ---------------- LINKEDIN ---------------- */
 
 async function publishToLinkedIn(post, connection) {
   requireConnection(connection, "linkedin");
@@ -442,6 +469,8 @@ async function publishToLinkedIn(post, connection) {
   };
 }
 
+/* ---------------- X ---------------- */
+
 async function publishToX(post, connection) {
   requireConnection(connection, "x");
 
@@ -484,6 +513,8 @@ async function publishToX(post, connection) {
   };
 }
 
+/* ---------------- TIKTOK ---------------- */
+
 async function publishToTikTok(post, connection) {
   requireConnection(connection, "tiktok");
 
@@ -502,7 +533,7 @@ async function publishToTikTok(post, connection) {
       },
       body: JSON.stringify({
         post_info: {
-          title: title,
+          title,
           privacy_level: "PUBLIC_TO_EVERYONE"
         },
         source_info: {
@@ -527,7 +558,7 @@ async function publishToTikTok(post, connection) {
     },
     body: JSON.stringify({
       post_info: {
-        title: title,
+        title,
         privacy_level: "PUBLIC_TO_EVERYONE",
         disable_comment: false,
         disable_duet: false,
@@ -546,6 +577,8 @@ async function publishToTikTok(post, connection) {
     raw: data
   };
 }
+
+/* ---------------- YOUTUBE ---------------- */
 
 async function publishToYouTube(post, connection) {
   requireConnection(connection, "youtube");
@@ -610,6 +643,8 @@ async function publishToYouTube(post, connection) {
     url: data.id ? `https://www.youtube.com/watch?v=${data.id}` : null
   };
 }
+
+/* ---------------- WHATSAPP ---------------- */
 
 async function publishToWhatsApp(post, connection) {
   requireConnection(connection, "whatsapp");
@@ -706,7 +741,7 @@ async function publishToWhatsApp(post, connection) {
   };
 }
 
-/* ----------------------------- DB HELPERS ----------------------------- */
+/* ---------------- DB HELPERS ---------------- */
 
 async function getPost(postId) {
   const { data, error } = await supabase
@@ -741,7 +776,7 @@ async function updateJob(jobId, patch) {
   if (error) throw error;
 }
 
-async function updatePostAfterJob(postId) {
+async function refreshPostStatus(postId) {
   const { data: jobs, error } = await supabase
     .from(JOBS_TABLE)
     .select("status")
@@ -753,12 +788,13 @@ async function updatePostAfterJob(postId) {
   if (!statuses.length) return;
 
   let publishStatus = "queued";
+
   if (statuses.every(s => s === "success" || s === "skipped")) {
     publishStatus = "published";
-  } else if (statuses.some(s => s === "failed")) {
-    publishStatus = "partial_failed";
   } else if (statuses.some(s => s === "processing")) {
     publishStatus = "processing";
+  } else if (statuses.some(s => s === "failed")) {
+    publishStatus = "partial_failed";
   }
 
   await supabase
@@ -771,7 +807,7 @@ async function updatePostAfterJob(postId) {
     .eq("id", postId);
 }
 
-/* -------------------------- PLATFORM HELPERS -------------------------- */
+/* ---------------- UTILITIES ---------------- */
 
 function normalizeConnection(connection) {
   if (!connection) return null;
@@ -831,8 +867,6 @@ function isImage(mediaType) {
   return String(mediaType || "").toLowerCase().startsWith("image/");
 }
 
-/* ---------------------------- API HELPERS ----------------------------- */
-
 async function uploadMediaToLinkedIn({ mediaUrl, mediaType, accessToken, ownerUrn }) {
   const binary = await fetchBinary(mediaUrl);
   const isVid = isVideo(mediaType);
@@ -886,9 +920,9 @@ async function uploadMediaToLinkedIn({ mediaUrl, mediaType, accessToken, ownerUr
   }
 
   const assetId = asset.split(":").pop();
+
   return {
-    assetUrn: isVid ? `urn:li:video:${assetId}` : `urn:li:image:${assetId}`,
-    rawAsset: asset
+    assetUrn: isVid ? `urn:li:video:${assetId}` : `urn:li:image:${assetId}`
   };
 }
 
