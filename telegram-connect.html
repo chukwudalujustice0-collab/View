@@ -263,6 +263,7 @@
       border-radius:12px;
       padding:10px;
       color:#cfe5ff;
+      white-space:pre-wrap;
     }
 
     .actions{
@@ -320,8 +321,9 @@
       color:#dbe7ff;
     }
 
-    .good{color:#86efac}
-    .bad{color:#fca5a5}
+    .connected{
+      color:#86efac;
+    }
 
     .bottom-nav{
       position:fixed;
@@ -376,7 +378,7 @@
         <button class="icon-btn" type="button" onclick="history.back()">←</button>
         <div class="title-box">
           <div class="title">Connect Telegram</div>
-          <div class="sub">Link your bot and destination chat to publish from View</div>
+          <div class="sub">Link your bot and target chat to publish from View</div>
         </div>
       </div>
       <button class="icon-btn" id="refreshBtn" type="button">↻</button>
@@ -384,22 +386,22 @@
 
     <section class="hero">
       <div class="hero-badge">✈</div>
-      <h2>Connect your Telegram bot for real publishing</h2>
+      <h2>Telegram bot connection</h2>
       <p>
-        Create a bot with BotFather, add the bot to your group or channel, send one message in the target chat,
-        then paste the bot token here and detect the chat automatically.
+        Paste your bot token, test it, detect your target chat, then save.
+        This will store the bot token in <b>access_token</b> and the target chat in <b>telegram_chat_id</b>.
       </p>
       <div id="connectionStatus" class="status-pill">Status: Not connected</div>
     </section>
 
     <section class="section">
       <div class="section-body">
-        <div class="card-title">Quick setup</div>
+        <div class="card-title">Quick steps</div>
         <div class="steps">
-          <div class="step">1. Create a bot in Telegram using <b>@BotFather</b> and copy the bot token.</div>
-          <div class="step">2. Add the bot to the group or channel where you want posts to go.</div>
-          <div class="step">3. Make the bot an admin if posting to a channel.</div>
-          <div class="step">4. Send any message in that chat or channel, then tap <b>Detect Chat</b>.</div>
+          <div class="step">1. Create a Telegram bot from <b>@BotFather</b>.</div>
+          <div class="step">2. Add that bot to your target private chat, group, or channel.</div>
+          <div class="step">3. For channels, make the bot an admin.</div>
+          <div class="step">4. Send one message in that target chat, then tap <b>Detect Chat</b>.</div>
         </div>
       </div>
     </section>
@@ -409,20 +411,20 @@
         <div class="field">
           <label class="label" for="botToken">Bot Token</label>
           <input id="botToken" class="input" type="text" placeholder="123456789:AA..." />
-          <div class="hint">This token is used to call Telegram Bot API methods like getMe, getUpdates, sendMessage, sendPhoto and sendVideo. 1</div>
+          <div class="hint">This will be saved into your existing <b>access_token</b> column for platform telegram.</div>
         </div>
 
         <div class="grid">
           <div class="field">
-            <label class="label" for="chatId">Detected Chat ID</label>
+            <label class="label" for="chatId">Telegram Chat ID</label>
             <input id="chatId" class="input" type="text" placeholder="-1001234567890" />
-            <div class="hint">For channels and supergroups this is often a negative ID like <span class="mono">-100...</span>.</div>
+            <div class="hint">This will be saved into your existing <b>telegram_chat_id</b> column.</div>
           </div>
 
           <div class="field">
-            <label class="label" for="chatTitle">Chat / Channel Title</label>
+            <label class="label" for="chatTitle">Chat Title</label>
             <input id="chatTitle" class="input" type="text" placeholder="My Telegram Channel" />
-            <div class="hint">This fills automatically when detection succeeds.</div>
+            <div class="hint">Saved into <b>account_name</b>.</div>
           </div>
         </div>
 
@@ -439,15 +441,16 @@
           </div>
 
           <div class="field">
-            <label class="label" for="accountHandle">Bot Username</label>
-            <input id="accountHandle" class="input" type="text" placeholder="@view_ceetice_bot" />
+            <label class="label" for="botUsername">Bot Username</label>
+            <input id="botUsername" class="input" type="text" placeholder="@view_ceetice_bot" />
+            <div class="hint">Saved into <b>account_handle</b>.</div>
           </div>
         </div>
 
         <div class="actions">
           <button id="testBotBtn" class="btn primary" type="button">Test Bot</button>
           <button id="detectChatBtn" class="btn warn" type="button">Detect Chat</button>
-          <button id="saveBtn" class="btn success" type="button">Save Telegram Connection</button>
+          <button id="saveBtn" class="btn success" type="button">Save Telegram</button>
         </div>
       </div>
     </section>
@@ -498,7 +501,7 @@
     const chatId = document.getElementById("chatId");
     const chatTitle = document.getElementById("chatTitle");
     const chatType = document.getElementById("chatType");
-    const accountHandle = document.getElementById("accountHandle");
+    const botUsername = document.getElementById("botUsername");
 
     const testBotBtn = document.getElementById("testBotBtn");
     const detectChatBtn = document.getElementById("detectChatBtn");
@@ -508,7 +511,7 @@
     const chatDetectResult = document.getElementById("chatDetectResult");
 
     let currentUser = null;
-    let detectedPayload = null;
+    let detectedChat = null;
 
     function showNotice(message, type = "info", duration = 3500) {
       notice.className = `notice show ${type}`;
@@ -523,13 +526,15 @@
     }
 
     function setBusy(state) {
-      [refreshBtn, testBotBtn, detectChatBtn, saveBtn, botToken, chatId, chatTitle, chatType, accountHandle]
-        .forEach(el => el.disabled = !!state);
+      [
+        refreshBtn, testBotBtn, detectChatBtn, saveBtn,
+        botToken, chatId, chatTitle, chatType, botUsername
+      ].forEach(el => el.disabled = !!state);
     }
 
-    function setConnectionStatus(text, good = false) {
+    function setConnectionStatus(text, connected = false) {
       connectionStatus.textContent = `Status: ${text}`;
-      connectionStatus.className = `status-pill ${good ? "good" : ""}`;
+      connectionStatus.className = `status-pill ${connected ? "connected" : ""}`;
     }
 
     async function requireUser() {
@@ -543,11 +548,16 @@
       return true;
     }
 
-    async function callEdge(action, payload = {}) {
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
+    async function getSessionToken() {
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) throw error;
+      const token = data?.session?.access_token;
       if (!token) throw new Error("You are not logged in.");
+      return token;
+    }
+
+    async function callEdge(action, payload = {}) {
+      const token = await getSessionToken();
 
       const response = await fetch(TELEGRAM_CONNECT_API, {
         method: "POST",
@@ -563,7 +573,6 @@
 
       const text = await response.text();
       let json = null;
-
       try { json = JSON.parse(text); } catch {}
 
       if (!response.ok) {
@@ -574,50 +583,68 @@
     }
 
     async function loadExistingConnection() {
-      const { data, error } = await supabaseClient
-        .from("connected_accounts")
-        .select("*")
-        .eq("user_id", currentUser.id)
-        .eq("platform", "telegram")
-        .maybeSingle();
+      try {
+        setBusy(true);
 
-      if (error) throw error;
+        const { data, error } = await supabaseClient
+          .from("connected_accounts")
+          .select("*")
+          .eq("user_id", currentUser.id)
+          .eq("platform", "telegram")
+          .maybeSingle();
 
-      if (!data) {
-        setConnectionStatus("Not connected", false);
-        return;
+        if (error) throw error;
+
+        if (!data) {
+          setConnectionStatus("Not connected", false);
+          botCheckResult.textContent = "No Telegram connection saved yet.";
+          return;
+        }
+
+        const meta = typeof data.metadata === "string"
+          ? (() => { try { return JSON.parse(data.metadata); } catch { return {}; } })()
+          : (data.metadata || {});
+
+        botToken.value = data.access_token || "";
+        chatId.value = data.telegram_chat_id || meta.chat_id || "";
+        chatTitle.value = data.account_name || meta.chat_title || "";
+        botUsername.value = data.account_handle || meta.bot_username || "";
+        chatType.value = meta.chat_type || "";
+
+        setConnectionStatus(data.status === "connected" ? "Connected" : (data.status || "Saved"), data.status === "connected");
+        botCheckResult.textContent = JSON.stringify({
+          platform: data.platform,
+          status: data.status,
+          account_name: data.account_name,
+          account_handle: data.account_handle,
+          telegram_chat_id: data.telegram_chat_id,
+          provider: data.provider,
+          connected_at: data.connected_at
+        }, null, 2);
+      } catch (error) {
+        showNotice(error.message || "Could not load Telegram connection.", "error");
+      } finally {
+        setBusy(false);
       }
-
-      const metadata = typeof data.metadata === "string"
-        ? (() => { try { return JSON.parse(data.metadata); } catch { return {}; } })()
-        : (data.metadata || {});
-
-      botToken.value = data.access_token || metadata.access_token || "";
-      chatId.value = data.telegram_chat_id || metadata.telegram_chat_id || metadata.chat_id || "";
-      chatTitle.value = data.account_name || metadata.chat_title || "";
-      chatType.value = metadata.chat_type || "";
-      accountHandle.value = data.account_handle || metadata.bot_username || "";
-      setConnectionStatus(data.status === "connected" ? "Connected" : (data.status || "Saved"), data.status === "connected");
     }
 
     async function testBot() {
       const token = botToken.value.trim();
       if (!token) {
-        showNotice("Paste your Telegram bot token first.", "warn");
+        showNotice("Paste your bot token first.", "warn");
         return;
       }
 
-      setBusy(true);
       try {
+        setBusy(true);
         const result = await callEdge("test_bot", { bot_token: token });
         botCheckResult.textContent = JSON.stringify(result, null, 2);
 
-        if (result.ok) {
-          accountHandle.value = result.bot?.username ? `@${result.bot.username}` : accountHandle.value;
-          showNotice("Bot token is valid.", "success");
-        } else {
-          showNotice("Bot check failed.", "error");
+        if (result?.bot?.username) {
+          botUsername.value = `@${String(result.bot.username).replace(/^@/, "")}`;
         }
+
+        showNotice("Bot token is valid.", "success");
       } catch (error) {
         botCheckResult.textContent = error.message || "Bot check failed.";
         showNotice(error.message || "Bot check failed.", "error");
@@ -629,31 +656,32 @@
     async function detectChat() {
       const token = botToken.value.trim();
       if (!token) {
-        showNotice("Paste your Telegram bot token first.", "warn");
+        showNotice("Paste your bot token first.", "warn");
         return;
       }
 
-      setBusy(true);
       try {
+        setBusy(true);
         const result = await callEdge("detect_chat", { bot_token: token });
         chatDetectResult.textContent = JSON.stringify(result, null, 2);
 
-        if (!result.ok || !result.chat) {
-          throw new Error(result.error || "No Telegram chat found. Send a message in the target group/channel/private chat and try again.");
+        if (!result?.ok || !result?.chat) {
+          throw new Error(result?.error || "No chat found. Send one message in the target chat and try again.");
         }
 
-        detectedPayload = result.chat;
+        detectedChat = result.chat;
         chatId.value = result.chat.id || "";
         chatTitle.value = result.chat.title || result.chat.username || result.chat.first_name || "";
         chatType.value = result.chat.type || "";
-        if (!accountHandle.value && result.bot?.username) {
-          accountHandle.value = `@${result.bot.username}`;
+
+        if (!botUsername.value && result?.bot?.username) {
+          botUsername.value = `@${String(result.bot.username).replace(/^@/, "")}`;
         }
 
-        showNotice("Telegram chat detected successfully.", "success");
+        showNotice("Telegram chat detected.", "success");
       } catch (error) {
-        chatDetectResult.textContent = error.message || "Chat detect failed.";
-        showNotice(error.message || "Chat detect failed.", "error", 5000);
+        chatDetectResult.textContent = error.message || "Chat detection failed.";
+        showNotice(error.message || "Chat detection failed.", "error", 5000);
       } finally {
         setBusy(false);
       }
@@ -661,34 +689,36 @@
 
     async function saveConnection() {
       const token = botToken.value.trim();
-      const cId = chatId.value.trim();
-      const cTitle = chatTitle.value.trim();
-      const cType = chatType.value.trim();
-      const handle = accountHandle.value.trim();
+      const tgChatId = chatId.value.trim();
+      const title = chatTitle.value.trim();
+      const type = chatType.value.trim();
+      const handle = botUsername.value.trim();
 
       if (!token) {
         showNotice("Bot token is required.", "warn");
         return;
       }
-      if (!cId) {
-        showNotice("Chat ID is required.", "warn");
+
+      if (!tgChatId) {
+        showNotice("Telegram chat ID is required.", "warn");
         return;
       }
 
-      setBusy(true);
       try {
+        setBusy(true);
+
         const result = await callEdge("save_connection", {
           bot_token: token,
-          telegram_chat_id: cId,
-          chat_title: cTitle,
-          chat_type: cType,
+          telegram_chat_id: tgChatId,
+          chat_title: title,
+          chat_type: type,
           bot_username: handle,
-          detected_chat: detectedPayload
+          detected_chat: detectedChat
         });
 
+        botCheckResult.textContent = JSON.stringify(result, null, 2);
         setConnectionStatus("Connected", true);
         showNotice("Telegram connected successfully.", "success");
-        botCheckResult.textContent = JSON.stringify(result, null, 2);
       } catch (error) {
         showNotice(error.message || "Could not save Telegram connection.", "error");
       } finally {
@@ -700,14 +730,15 @@
       try {
         const ok = await requireUser();
         if (!ok) return;
-        await loadExistingConnection();
 
         testBotBtn.addEventListener("click", testBot);
         detectChatBtn.addEventListener("click", detectChat);
         saveBtn.addEventListener("click", saveConnection);
         refreshBtn.addEventListener("click", loadExistingConnection);
+
+        await loadExistingConnection();
       } catch (error) {
-        showNotice(error.message || "Could not load Telegram page.", "error");
+        showNotice(error.message || "Could not load page.", "error");
       }
     }
 
