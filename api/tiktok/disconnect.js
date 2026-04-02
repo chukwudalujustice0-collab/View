@@ -6,10 +6,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      return res.status(500).json({ error: "Missing Supabase server environment variables" });
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const body = req.body || {};
     const userId = body.user_id || req.headers["x-view-user-id"] || null;
@@ -30,6 +34,8 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ ok: true });
   } catch (error) {
-    return res.status(500).json({ error: error.message || "Server error" });
+    return res.status(500).json({
+      error: error.message || "Server error"
+    });
   }
 }
