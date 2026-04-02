@@ -484,9 +484,7 @@
         </div>
         <div>
           <h1>Connect your TikTok account</h1>
-          <p>
-            Link TikTok to View for account connection, creator tools, and future publishing flow.
-          </p>
+          <p>Link TikTok to View for account connection, creator tools, and future publishing flow.</p>
         </div>
       </div>
 
@@ -554,18 +552,9 @@
 
         <div class="body">
           <div class="list">
-            <div class="list-item">
-              <span class="dot"></span>
-              <span>Connect TikTok opens your backend OAuth route when available.</span>
-            </div>
-            <div class="list-item">
-              <span class="dot"></span>
-              <span>Copy Callback URL copies the callback address for TikTok developer settings.</span>
-            </div>
-            <div class="list-item">
-              <span class="dot"></span>
-              <span>Manual save lets you test the page even before backend is finished.</span>
-            </div>
+            <div class="list-item"><span class="dot"></span><span>Connect uses the Vercel backend, not GitHub Pages.</span></div>
+            <div class="list-item"><span class="dot"></span><span>Copy Callback URL gives the TikTok redirect callback you add in TikTok dashboard.</span></div>
+            <div class="list-item"><span class="dot"></span><span>Manual save lets you test the UI immediately.</span></div>
           </div>
 
           <div class="input-wrap">
@@ -582,18 +571,17 @@
   <script>
     (() => {
       const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+      const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+      const API_BASE = "https://view-psi-lac.vercel.app";
       const STORAGE_KEY = "view_tiktok_connection";
       const FRONTEND_CALLBACK_URL = window.location.origin + window.location.pathname;
-      const BACKEND_CALLBACK_URL = window.location.origin + "/api/tiktok/callback";
+      const BACKEND_CALLBACK_URL = API_BASE + "/api/tiktok/callback";
 
       let supabaseClient = null;
-
       const els = {};
 
-      function $(id) {
-        return document.getElementById(id);
-      }
+      function $(id){ return document.getElementById(id); }
 
       function bindElements() {
         els.notice = $("notice");
@@ -625,7 +613,7 @@
             supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
           }
         } catch (err) {
-          console.warn("Supabase failed to initialize:", err);
+          console.warn("Supabase init failed:", err);
         }
       }
 
@@ -665,8 +653,7 @@
         try {
           const raw = localStorage.getItem(STORAGE_KEY);
           return raw ? JSON.parse(raw) : null;
-        } catch (err) {
-          console.warn("Storage read error:", err);
+        } catch {
           return null;
         }
       }
@@ -725,11 +712,8 @@
 
       function renderState() {
         const connection = loadStoredConnection();
-        if (connection) {
-          setConnectedUI(connection);
-        } else {
-          setDisconnectedUI();
-        }
+        if (connection) setConnectedUI(connection);
+        else setDisconnectedUI();
       }
 
       function getQueryParams() {
@@ -791,7 +775,7 @@
 
       async function sendConnectionToBackend(payload, user) {
         try {
-          const res = await fetch("/api/tiktok/store-connection", {
+          const res = await fetch(API_BASE + "/api/tiktok/store-connection", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -810,7 +794,7 @@
 
       async function sendDisconnectToBackend(user) {
         try {
-          const res = await fetch("/api/tiktok/disconnect", {
+          const res = await fetch(API_BASE + "/api/tiktok/disconnect", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -830,7 +814,7 @@
       async function getBackendAuthUrl(user) {
         try {
           const res = await fetch(
-            "/api/tiktok/auth-url?redirect_uri=" + encodeURIComponent(BACKEND_CALLBACK_URL),
+            API_BASE + "/api/tiktok/auth-url?redirect_uri=" + encodeURIComponent(BACKEND_CALLBACK_URL),
             {
               method: "GET",
               headers: user?.id ? { "x-view-user-id": user.id } : {}
@@ -853,17 +837,10 @@
           return;
         }
 
-        const hasCallbackData =
-          q.status || q.code || q.account_name || q.username || q.open_id || q.access_token;
-
+        const hasCallbackData = q.status || q.code || q.account_name || q.username || q.open_id || q.access_token;
         if (!hasCallbackData) return;
 
-        const success =
-          (q.status && q.status.toLowerCase() === "success") ||
-          !!q.code ||
-          !!q.account_name ||
-          !!q.open_id;
-
+        const success = (q.status && q.status.toLowerCase() === "success") || !!q.code || !!q.account_name || !!q.open_id;
         if (!success) {
           stripQueryFromUrl();
           return;
@@ -894,10 +871,7 @@
             return;
           }
 
-          showNotice(
-            "Backend auth URL not found. Make sure /api/tiktok/auth-url.js is deployed on Vercel.",
-            "error"
-          );
+          showNotice("Backend auth URL not found. Make sure the Vercel API files are deployed.", "error");
         } catch (err) {
           showNotice(err?.message || "Unable to start TikTok connection.", "error");
         } finally {
@@ -915,80 +889,4 @@
       async function onCopy() {
         try {
           await navigator.clipboard.writeText(BACKEND_CALLBACK_URL);
-          showNotice("Callback URL copied: " + BACKEND_CALLBACK_URL, "success");
-        } catch {
-          showNotice("Copy failed. Use this URL: " + BACKEND_CALLBACK_URL, "warn");
-        }
-      }
-
-      async function onDisconnect() {
-        clearStoredConnection();
-        setDisconnectedUI();
-
-        const user = await getCurrentUser();
-        await sendDisconnectToBackend(user);
-
-        showNotice("TikTok account disconnected.", "success");
-      }
-
-      async function onSaveManual() {
-        const name = els.manualName.value.trim();
-        const openId = els.manualOpenId.value.trim();
-        const avatarUrl = els.manualAvatar.value.trim();
-
-        if (!name && !openId) {
-          showNotice("Enter at least an account name or open ID.", "warn");
-          return;
-        }
-
-        const payload = {
-          platform: "tiktok",
-          provider: "tiktok",
-          account_name: name || "TikTok Account",
-          username: name || "",
-          open_id: openId || "",
-          avatar_url: avatarUrl || "",
-          connected_at: new Date().toISOString(),
-          saved_at: new Date().toISOString(),
-          manual: true
-        };
-
-        saveStoredConnection(payload);
-        setConnectedUI(payload);
-
-        const user = await getCurrentUser();
-        await sendConnectionToBackend(payload, user);
-
-        showNotice("Manual TikTok connection saved.", "success");
-      }
-
-      function bindEvents() {
-        els.backBtn.addEventListener("click", () => {
-          if (window.history.length > 1) {
-            window.history.back();
-          } else {
-            window.location.href = "connect-account.html";
-          }
-        });
-
-        els.connectBtn.addEventListener("click", onConnect);
-        els.refreshBtn.addEventListener("click", onRefresh);
-        els.copyBtn.addEventListener("click", onCopy);
-        els.disconnectBtn.addEventListener("click", onDisconnect);
-        els.saveManualBtn.addEventListener("click", onSaveManual);
-      }
-
-      async function init() {
-        bindElements();
-        initSupabase();
-        bindEvents();
-        renderState();
-        await handleCallbackParams();
-        renderState();
-      }
-
-      document.addEventListener("DOMContentLoaded", init);
-    })();
-  </script>
-</body>
-</html>
+          showNotice("Callback URL copied: " + BACKEND_CALLBACK
