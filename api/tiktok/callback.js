@@ -1,15 +1,14 @@
 export default async function handler(req, res) {
   try {
+    const FRONTEND_CALLBACK =
+      process.env.TIKTOK_FRONTEND_CALLBACK || "https://view.ceetice.com/tiktok-connect.html";
+
     const {
       code = "",
       error = "",
       error_description = "",
       state = ""
     } = req.query || {};
-
-    const FRONTEND_CALLBACK =
-      process.env.TIKTOK_FRONTEND_CALLBACK ||
-      "https://view.ceetice.com/tiktok-connect.html";
 
     if (error) {
       const failUrl =
@@ -35,19 +34,17 @@ export default async function handler(req, res) {
       return res.redirect(failUrl);
     }
 
-    const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY || process.env.TIKTOK_CLIENT_ID;
-    const TIKTOK_CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
-    const TIKTOK_REDIRECT_URI =
-      process.env.TIKTOK_REDIRECT_URI ||
-      "https://view.ceetice.com/api/tiktok/callback";
+    const clientKey = process.env.TIKTOK_CLIENT_KEY;
+    const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
+    const redirectUri = process.env.TIKTOK_REDIRECT_URI;
 
-    if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET) {
+    if (!clientKey || !clientSecret || !redirectUri) {
       const failUrl =
         FRONTEND_CALLBACK +
         "?" +
         new URLSearchParams({
           error: "server_config_error",
-          message: "TikTok client credentials are missing on the server"
+          message: "TikTok server configuration is incomplete"
         }).toString();
 
       return res.redirect(failUrl);
@@ -59,11 +56,11 @@ export default async function handler(req, res) {
         "Content-Type": "application/x-www-form-urlencoded"
       },
       body: new URLSearchParams({
-        client_key: TIKTOK_CLIENT_KEY,
-        client_secret: TIKTOK_CLIENT_SECRET,
+        client_key: clientKey,
+        client_secret: clientSecret,
         code,
         grant_type: "authorization_code",
-        redirect_uri: TIKTOK_REDIRECT_URI
+        redirect_uri: redirectUri
       }).toString()
     });
 
@@ -75,7 +72,7 @@ export default async function handler(req, res) {
         "?" +
         new URLSearchParams({
           error: tokenData.error || "token_exchange_failed",
-          message: tokenData.error_description || tokenData.message || "Could not exchange TikTok auth code"
+          message: tokenData.error_description || tokenData.message || "Could not exchange auth code"
         }).toString();
 
       return res.redirect(failUrl);
@@ -92,7 +89,7 @@ export default async function handler(req, res) {
 
     if (accessToken) {
       const profileRes = await fetch(
-        "https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name,username",
+        "https://open.tiktokapis.com/v2/user/info/?fields=open_id,avatar_url,display_name,username",
         {
           method: "GET",
           headers: {
@@ -114,7 +111,6 @@ export default async function handler(req, res) {
       "?" +
       new URLSearchParams({
         status: "success",
-        code,
         state,
         open_id: openId,
         username,
@@ -128,15 +124,14 @@ export default async function handler(req, res) {
     return res.redirect(successUrl);
   } catch (error) {
     const FRONTEND_CALLBACK =
-      process.env.TIKTOK_FRONTEND_CALLBACK ||
-      "https://view.ceetice.com/tiktok-connect.html";
+      process.env.TIKTOK_FRONTEND_CALLBACK || "https://view.ceetice.com/tiktok-connect.html";
 
     const failUrl =
       FRONTEND_CALLBACK +
       "?" +
       new URLSearchParams({
         error: "server_error",
-        message: error.message || "Unexpected TikTok callback error"
+        message: error.message || "Unexpected callback error"
       }).toString();
 
     return res.redirect(failUrl);
