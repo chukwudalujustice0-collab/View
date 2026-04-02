@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Connect WhatsApp | View</title>
+  <meta name="theme-color" content="#08111f" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --bg:#08111f;
+      --bg2:#0f1b35;
+      --card:rgba(16,27,49,.88);
+      --card2:rgba(255,255,255,.05);
+      --line:rgba(255,255,255,.09);
+      --text:#f4f7ff;
+      --muted:#9fb1d7;
+      --primary:#25D366;
+      --primary2:#128C7E;
+      --blue:#2563eb;
+      --success:#10b981;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 18px 60px rgba(0,0,0,.34);
+      --radius:24px;
+      --safe-bottom:env(safe-area-inset-bottom, 0px);
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:Inter,Arial,sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(37,211,102,.12), transparent 22%),
+        radial-gradient(circle at top left, rgba(37,99,235,.10), transparent 25%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      color:var(--text);
+      min-height:100%;
+    }
+
+    a{text-decoration:none;color:inherit}
+
+    .wrap{
+      width:min(980px, calc(100% - 24px));
+      margin:0 auto;
+      padding:18px 0 calc(110px + var(--safe-bottom));
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .icon{
+      width:50px;
+      height:50px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg, rgba(37,211,102,.25), rgba(18,140,126,.16));
+      border:1px solid rgba(37,211,102,.25);
+      box-shadow:var(--shadow);
+      font-size:24px;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:1.14rem;
+      font-weight:800;
+    }
+
+    .brand p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .top-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border:none;
+      outline:none;
+      cursor:pointer;
+      padding:13px 16px;
+      border-radius:16px;
+      font-weight:800;
+      font-size:.95rem;
+      transition:.2s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+    .btn.primary{
+      background:linear-gradient(135deg, var(--primary), var(--primary2));
+      color:#fff;
+      box-shadow:0 14px 30px rgba(37,211,102,.22);
+    }
+
+    .btn.soft{
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    .btn.danger{
+      background:linear-gradient(135deg, #ef4444, #dc2626);
+      color:#fff;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border-radius:30px;
+      background:
+        linear-gradient(135deg, rgba(37,211,102,.14), rgba(37,99,235,.10)),
+        rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      padding:22px;
+      margin-bottom:18px;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-30px;
+      top:-30px;
+      width:160px;
+      height:160px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(37,211,102,.24), transparent 66%);
+      pointer-events:none;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:18px;
+      align-items:stretch;
+    }
+
+    .hero h2{
+      margin:0 0 8px;
+      font-size:1.55rem;
+      line-height:1.18;
+    }
+
+    .hero p{
+      margin:0;
+      color:#d7e3ff;
+      line-height:1.7;
+      font-size:.97rem;
+    }
+
+    .pill-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .pill{
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.06);
+      color:#eef4ff;
+      font-size:.84rem;
+      font-weight:700;
+    }
+
+    .hero-card{
+      background:rgba(0,0,0,.14);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .stat{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:12px 14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .stat b{
+      display:block;
+      margin-bottom:4px;
+      font-size:.92rem;
+    }
+
+    .stat span{
+      color:var(--muted);
+      font-size:.84rem;
+    }
+
+    .dot{
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      background:#64748b;
+      box-shadow:0 0 0 4px rgba(255,255,255,.05);
+    }
+    .dot.ok{background:var(--success)}
+    .dot.warn{background:var(--warn)}
+    .dot.off{background:#64748b}
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:18px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .card-head{
+      padding:18px 18px 0;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+    }
+
+    .card-head h3{
+      margin:0;
+      font-size:1.03rem;
+    }
+
+    .card-head p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.6;
+    }
+
+    .card-body{padding:18px}
+
+    .banner{
+      display:none;
+      margin-bottom:16px;
+      padding:14px 15px;
+      border-radius:16px;
+      font-size:.93rem;
+      line-height:1.55;
+      border:1px solid transparent;
+    }
+    .banner.show{display:block}
+    .banner.info{
+      background:rgba(37,99,235,.12);
+      border-color:rgba(37,99,235,.25);
+      color:#d9e8ff;
+    }
+    .banner.success{
+      background:rgba(16,185,129,.12);
+      border-color:rgba(16,185,129,.24);
+      color:#dbfff1;
+    }
+    .banner.warn{
+      background:rgba(245,158,11,.12);
+      border-color:rgba(245,158,11,.22);
+      color:#fff3da;
+    }
+    .banner.error{
+      background:rgba(239,68,68,.12);
+      border-color:rgba(239,68,68,.22);
+      color:#ffe1e1;
+    }
+
+    .connected-box{
+      display:none;
+      margin-bottom:16px;
+      padding:16px;
+      border-radius:22px;
+      background:linear-gradient(180deg, rgba(37,211,102,.10), rgba(255,255,255,.03));
+      border:1px solid rgba(37,211,102,.18);
+    }
+    .connected-box.show{display:block}
+
+    .connected-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:.83rem;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .badge.success{color:#dbfff1;border-color:rgba(16,185,129,.24)}
+    .badge.warn{color:#fff4db;border-color:rgba(245,158,11,.24)}
+
+    .kv{
+      display:grid;
+      grid-template-columns:140px 1fr;
+      gap:8px 14px;
+      font-size:.92rem;
+    }
+
+    .kv .k{color:var(--muted)}
+    .kv .v{color:var(--text);word-break:break-word}
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .field.full{grid-column:1/-1}
+
+    .label{
+      font-size:.9rem;
+      color:#e9f1ff;
+      font-weight:700;
+    }
+
+    .hint{
+      font-size:.82rem;
+      color:var(--muted);
+      line-height:1.5;
+      margin-top:-2px;
+    }
+
+    .input,.textarea{
+      width:100%;
+      border:none;
+      outline:none;
+      color:var(--text);
+      background:var(--card2);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:14px 14px;
+      font-size:.95rem;
+      transition:.2s ease;
+    }
+
+    .input:focus,.textarea:focus{
+      border-color:rgba(37,211,102,.4);
+      box-shadow:0 0 0 4px rgba(37,211,102,.08);
+      background:rgba(255,255,255,.08);
+    }
+
+    .input[readonly]{
+      opacity:.95;
+      cursor:default;
+    }
+
+    .textarea{
+      min-height:100px;
+      resize:vertical;
+      line-height:1.6;
+    }
+
+    .inline{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .mini-btn{
+      border:none;
+      outline:none;
+      cursor:pointer;
+      padding:12px 13px;
+      min-width:100px;
+      border-radius:14px;
+      font-weight:700;
+      color:#fff;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .mini-btn.copy{background:rgba(37,99,235,.14)}
+    .mini-btn.test{background:rgba(16,185,129,.16)}
+    .mini-btn.reset{background:rgba(239,68,68,.14)}
+
+    .steps{
+      display:grid;
+      gap:12px;
+    }
+
+    .step{
+      display:grid;
+      grid-template-columns:42px 1fr;
+      gap:12px;
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.07);
+    }
+
+    .step-no{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:#fff;
+      background:linear-gradient(135deg, rgba(37,211,102,.22), rgba(18,140,126,.12));
+      border:1px solid rgba(37,211,102,.18);
+    }
+
+    .step h4{
+      margin:0 0 5px;
+      font-size:.95rem;
+    }
+
+    .step p{
+      margin:0;
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.6;
+    }
+
+    .muted{
+      color:var(--muted);
+      font-size:.88rem;
+      line-height:1.65;
+    }
+
+    .sticky-actions{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:40;
+      padding:14px 12px calc(14px + var(--safe-bottom));
+      background:linear-gradient(180deg, rgba(8,17,31,0), rgba(8,17,31,.82) 28%, rgba(8,17,31,.98));
+      backdrop-filter:blur(8px);
+    }
+
+    .sticky-inner{
+      width:min(980px, calc(100% - 24px));
+      margin:0 auto;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .sticky-inner .btn{
+      flex:1 1 180px;
+    }
+
+    @media (max-width: 860px){
+      .hero-grid,.grid{grid-template-columns:1fr}
+    }
+
+    @media (max-width: 640px){
+      .wrap{width:min(100% - 16px, 980px)}
+      .hero,.card{border-radius:24px}
+      .card-body,.hero{padding:16px}
+      .card-head{padding:16px 16px 0}
+      .form-grid{grid-template-columns:1fr}
+      .kv{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="icon">💬</div>
+        <div>
+          <h1>WhatsApp Business Connection</h1>
+          <p>Connect your WhatsApp Business Cloud API to View.</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <a class="btn soft" href="connect-account.html">← Back</a>
+        <button class="btn soft" id="refreshBtn" type="button">Refresh</button>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <h2>Connect WhatsApp so View can publish through your business number</h2>
+          <p>
+            Save your WhatsApp Business Cloud API details here. Once connected, your View app can
+            use your saved configuration for message publishing or WhatsApp-related delivery flows.
+          </p>
+
+          <div class="pill-row">
+            <div class="pill">Cloud API Ready</div>
+            <div class="pill">Webhook Ready</div>
+            <div class="pill">Connection Health Check</div>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="stat">
+            <div>
+              <b>Connection State</b>
+              <span id="heroConnectionText">Checking...</span>
+            </div>
+            <div class="dot off" id="heroDot"></div>
+          </div>
+
+          <div class="stat">
+            <div>
+              <b>Webhook URL</b>
+              <span>Copy into Meta webhook setup.</span>
+            </div>
+            <div>🔗</div>
+          </div>
+
+          <div class="stat">
+            <div>
+              <b>Saved in View</b>
+              <span>Your connected account record stays in Supabase.</span>
+            </div>
+            <div>⚡</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h3>Connection Details</h3>
+            <p>Enter the exact WhatsApp Business details from your Meta dashboard.</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div id="banner" class="banner"></div>
+
+          <div id="connectedBox" class="connected-box">
+            <div class="connected-top">
+              <div class="badge success" id="connectedBadge">● Connected</div>
+              <div class="inline">
+                <button class="mini-btn test" id="testSavedBtn" type="button">Test saved</button>
+                <button class="mini-btn reset" id="disconnectBtn" type="button">Disconnect</button>
+              </div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Business name</div>
+              <div class="v" id="viewAccountName">—</div>
+
+              <div class="k">Phone number</div>
+              <div class="v" id="viewPhoneNumber">—</div>
+
+              <div class="k">Phone number ID</div>
+              <div class="v" id="viewPhoneId">—</div>
+
+              <div class="k">Business account ID</div>
+              <div class="v" id="viewBusinessId">—</div>
+
+              <div class="k">Status</div>
+              <div class="v" id="viewStatus">—</div>
+            </div>
+          </div>
+
+          <form id="connectForm">
+            <div class="form-grid">
+              <div class="field">
+                <label class="label" for="businessName">Business display name</label>
+                <input class="input" id="businessName" placeholder="e.g. View Ceetice" />
+              </div>
+
+              <div class="field">
+                <label class="label" for="phoneNumber">WhatsApp phone number</label>
+                <input class="input" id="phoneNumber" placeholder="e.g. +2348012345678" />
+              </div>
+
+              <div class="field">
+                <label class="label" for="businessAccountId">WhatsApp Business Account ID</label>
+                <input class="input" id="businessAccountId" placeholder="Paste WABA ID" />
+              </div>
+
+              <div class="field">
+                <label class="label" for="phoneNumberId">Phone Number ID</label>
+                <input class="input" id="phoneNumberId" placeholder="Paste Phone Number ID" />
+              </div>
+
+              <div class="field full">
+                <label class="label" for="accessToken">Permanent access token</label>
+                <input class="input" id="accessToken" type="password" placeholder="Paste permanent token" />
+                <div class="hint">Use your long-lived or permanent WhatsApp Cloud API token.</div>
+              </div>
+
+              <div class="field">
+                <label class="label" for="verifyToken">Webhook verify token</label>
+                <input class="input" id="verifyToken" placeholder="Create a secure verify token" />
+              </div>
+
+              <div class="field">
+                <label class="label" for="appNote">Meta app note</label>
+                <input class="input" id="appNote" placeholder="Optional reference note" />
+              </div>
+
+              <div class="field full">
+                <label class="label" for="webhookUrl">Webhook callback URL</label>
+                <div class="inline">
+                  <input class="input" id="webhookUrl" readonly />
+                  <button class="mini-btn copy" id="copyWebhookBtn" type="button">Copy</button>
+                </div>
+                <div class="hint">
+                  Put this URL inside your backend webhook setup in Meta for WhatsApp.
+                </div>
+              </div>
+
+              <div class="field full">
+                <label class="label" for="notes">Extra notes</label>
+                <textarea class="textarea" id="notes" placeholder="Optional internal notes"></textarea>
+              </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="inline">
+              <button class="btn soft" id="testEnteredBtn" type="button">Test entered details</button>
+              <button class="btn primary" id="saveBtn" type="submit">Save connection</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h3>Quick Setup Guide</h3>
+            <p>Follow these steps so your WhatsApp connection works properly.</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-no">1</div>
+              <div>
+                <h4>Open Meta Developers</h4>
+                <p>Create or open your app and add the WhatsApp product.</p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-no">2</div>
+              <div>
+                <h4>Get your IDs</h4>
+                <p>Copy the WhatsApp Business Account ID and Phone Number ID.</p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-no">3</div>
+              <div>
+                <h4>Create your verify token</h4>
+                <p>Use the same verify token here and in Meta webhook verification.</p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-no">4</div>
+              <div>
+                <h4>Paste webhook callback URL</h4>
+                <p>Use the generated callback URL on this page inside your Meta webhook settings.</p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-no">5</div>
+              <div>
+                <h4>Save and test</h4>
+                <p>After saving, use the test buttons to confirm your token can access the number details.</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:14px"></div>
+
+          <div class="connected-box show" style="margin:0">
+            <div class="muted">
+              This page is built to work with your existing <b>connected_accounts</b> setup and stores
+              WhatsApp under platform value <b>whatsapp</b>. The page saves only the connection
+              record. Your actual webhook endpoint must still exist on your backend.
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="sticky-actions">
+    <div class="sticky-inner">
+      <button class="btn soft" id="stickyTestBtn" type="button">Test details</button>
+      <button class="btn primary" id="stickySaveBtn" type="button">Save connection</button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const els = {
+      banner: document.getElementById("banner"),
+      refreshBtn: document.getElementById("refreshBtn"),
+      connectedBox: document.getElementById("connectedBox"),
+      connectedBadge: document.getElementById("connectedBadge"),
+      connectForm: document.getElementById("connectForm"),
+      businessName: document.getElementById("businessName"),
+      phoneNumber: document.getElementById("phoneNumber"),
+      businessAccountId: document.getElementById("businessAccountId"),
+      phoneNumberId: document.getElementById("phoneNumberId"),
+      accessToken: document.getElementById("accessToken"),
+      verifyToken: document.getElementById("verifyToken"),
+      appNote: document.getElementById("appNote"),
+      webhookUrl: document.getElementById("webhookUrl"),
+      copyWebhookBtn: document.getElementById("copyWebhookBtn"),
+      notes: document.getElementById("notes"),
+      saveBtn: document.getElementById("saveBtn"),
+      stickySaveBtn: document.getElementById("stickySaveBtn"),
+      testEnteredBtn: document.getElementById("testEnteredBtn"),
+      stickyTestBtn: document.getElementById("stickyTestBtn"),
+      testSavedBtn: document.getElementById("testSavedBtn"),
+      disconnectBtn: document.getElementById("disconnectBtn"),
+      viewAccountName: document.getElementById("viewAccountName"),
+      viewPhoneNumber: document.getElementById("viewPhoneNumber"),
+      viewPhoneId: document.getElementById("viewPhoneId"),
+      viewBusinessId: document.getElementById("viewBusinessId"),
+      viewStatus: document.getElementById("viewStatus"),
+      heroConnectionText: document.getElementById("heroConnectionText"),
+      heroDot: document.getElementById("heroDot")
+    };
+
+    let currentUser = null;
+    let existingRecord = null;
+
+    function getWebhookUrl() {
+      return `${location.origin.replace(/\/$/, "")}/api/whatsapp/webhook`;
+    }
+
+    function setBanner(message, type = "info") {
+      els.banner.className = `banner show ${type}`;
+      els.banner.textContent = message;
+    }
+
+    function clearBanner() {
+      els.banner.className = "banner";
+      els.banner.textContent = "";
+    }
+
+    function setLoading(loading) {
+      [
+        els.refreshBtn,
+        els.saveBtn,
+        els.stickySaveBtn,
+        els.testEnteredBtn,
+        els.stickyTestBtn,
+        els.testSavedBtn,
+        els.disconnectBtn
+      ].forEach(btn => {
+        if (btn) btn.disabled = loading;
+      });
+    }
+
+    function setHeroState(state) {
+      els.heroDot.className = "dot " + state;
+      if (state === "ok") els.heroConnectionText.textContent = "Connected and saved";
+      else if (state === "warn") els.heroConnectionText.textContent = "Saved but needs attention";
+      else els.heroConnectionText.textContent = "No connection saved";
+    }
+
+    function getFormData() {
+      return {
+        business_name: els.businessName.value.trim(),
+        phone_number: els.phoneNumber.value.trim(),
+        business_account_id: els.businessAccountId.value.trim(),
+        phone_number_id: els.phoneNumberId.value.trim(),
+        access_token: els.accessToken.value.trim(),
+        verify_token: els.verifyToken.value.trim(),
+        app_note: els.appNote.value.trim(),
+        webhook_url: els.webhookUrl.value.trim(),
+        notes: els.notes.value.trim()
+      };
+    }
+
+    function fillForm(record) {
+      const meta = record?.meta || record?.metadata || {};
+      els.businessName.value = record?.account_name || meta.business_name || "";
+      els.phoneNumber.value = meta.phone_number || "";
+      els.businessAccountId.value = meta.business_account_id || "";
+      els.phoneNumberId.value = meta.phone_number_id || record?.account_id || "";
+      els.accessToken.value = record?.access_token || "";
+      els.verifyToken.value = meta.verify_token || "";
+      els.appNote.value = meta.app_note || "";
+      els.notes.value = meta.notes || "";
+      els.webhookUrl.value = meta.webhook_url || getWebhookUrl();
+    }
+
+    function renderConnected(record) {
+      if (!record) {
+        els.connectedBox.classList.remove("show");
+        setHeroState("off");
+        return;
+      }
+
+      const meta = record?.meta || record?.metadata || {};
+      const status = record?.status || "active";
+
+      els.connectedBox.classList.add("show");
+      els.connectedBadge.className = `badge ${status === "active" ? "success" : "warn"}`;
+      els.connectedBadge.textContent = status === "active" ? "● Connected" : `● ${status}`;
+
+      els.viewAccountName.textContent = record?.account_name || meta.business_name || "—";
+      els.viewPhoneNumber.textContent = meta.phone_number || "—";
+      els.viewPhoneId.textContent = meta.phone_number_id || record?.account_id || "—";
+      els.viewBusinessId.textContent = meta.business_account_id || "—";
+      els.viewStatus.textContent = status;
+
+      setHeroState(status === "active" ? "ok" : "warn");
+    }
+
+    async function requireAuth() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+
+      currentUser = data?.session?.user || null;
+      if (!currentUser) {
+        location.href = "login.html";
+        return false;
+      }
+      return true;
+    }
+
+    async function loadConnection() {
+      clearBanner();
+
+      const { data, error } = await supabase
+        .from("connected_accounts")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .eq("platform", "whatsapp")
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) {
+        existingRecord = null;
+        renderConnected(null);
+        setBanner(`Could not load WhatsApp connection: ${error.message}`, "warn");
+        return;
+      }
+
+      existingRecord = Array.isArray(data) && data.length ? data[0] : null;
+
+      if (existingRecord) fillForm(existingRecord);
+      else els.webhookUrl.value = getWebhookUrl();
+
+      renderConnected(existingRecord);
+    }
+
+    async function testWhatsAppConnection(phoneNumberId, accessToken) {
+      if (!phoneNumberId) throw new Error("Phone Number ID is required.");
+      if (!accessToken) throw new Error("Access token is required.");
+
+      const res = await fetch(
+        `https://graph.facebook.com/v23.0/${encodeURIComponent(phoneNumberId)}?fields=display_phone_number,verified_name,quality_rating`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(json?.error?.message || "WhatsApp connection test failed.");
+      }
+
+      return json;
+    }
+
+    function buildPayload(form) {
+      return {
+        user_id: currentUser.id,
+        platform: "whatsapp",
+        account_id: form.phone_number_id || form.business_account_id || form.phone_number,
+        account_name: form.business_name || "WhatsApp Business",
+        access_token: form.access_token,
+        refresh_token: null,
+        status: "active",
+        meta: {
+          business_name: form.business_name,
+          phone_number: form.phone_number,
+          business_account_id: form.business_account_id,
+          phone_number_id: form.phone_number_id,
+          verify_token: form.verify_token,
+          webhook_url: form.webhook_url,
+          app_note: form.app_note,
+          notes: form.notes
+        }
+      };
+    }
+
+    async function saveConnection() {
+      clearBanner();
+
+      const form = getFormData();
+
+      if (!form.business_name) return setBanner("Enter your business display name.", "warn");
+      if (!form.phone_number) return setBanner("Enter your WhatsApp phone number.", "warn");
+      if (!form.business_account_id) return setBanner("Enter your WhatsApp Business Account ID.", "warn");
+      if (!form.phone_number_id) return setBanner("Enter your Phone Number ID.", "warn");
+      if (!form.access_token) return setBanner("Enter your permanent access token.", "warn");
+      if (!form.verify_token) return setBanner("Enter your webhook verify token.", "warn");
+
+      setLoading(true);
+
+      try {
+        const payload = buildPayload(form);
+
+        let result = await supabase
+          .from("connected_accounts")
+          .upsert(payload, { onConflict: "user_id,platform" })
+          .select()
+          .single();
+
+        if (result.error) {
+          const fallbackPayload = {
+            user_id: currentUser.id,
+            platform: "whatsapp",
+            account_id: payload.account_id,
+            account_name: payload.account_name,
+            access_token: payload.access_token,
+            status: "active"
+          };
+
+          result = await supabase
+            .from("connected_accounts")
+            .upsert(fallbackPayload, { onConflict: "user_id,platform" })
+            .select()
+            .single();
+        }
+
+        if (result.error) throw result.error;
+
+        existingRecord = result.data;
+        renderConnected(existingRecord);
+        fillForm(existingRecord);
+        setBanner("WhatsApp connection saved successfully.", "success");
+      } catch (error) {
+        setBanner(`Failed to save connection: ${error.message}`, "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function disconnectConnection() {
+      if (!existingRecord?.id) {
+        setBanner("No saved WhatsApp connection found.", "warn");
+        return;
+      }
+
+      setLoading(true);
+      clearBanner();
+
+      try {
+        const { error } = await supabase
+          .from("connected_accounts")
+          .delete()
+          .eq("id", existingRecord.id)
+          .eq("user_id", currentUser.id);
+
+        if (error) throw error;
+
+        existingRecord = null;
+        els.connectForm.reset();
+        els.webhookUrl.value = getWebhookUrl();
+        renderConnected(null);
+        setBanner("WhatsApp connection removed.", "success");
+      } catch (error) {
+        setBanner(`Could not disconnect: ${error.message}`, "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function testEnteredConnection() {
+      clearBanner();
+      const form = getFormData();
+
+      try {
+        setLoading(true);
+        const data = await testWhatsAppConnection(form.phone_number_id, form.access_token);
+
+        const parts = [
+          "Connection test passed.",
+          data.display_phone_number ? `Phone: ${data.display_phone_number}` : "",
+          data.verified_name ? `Verified name: ${data.verified_name}` : "",
+          data.quality_rating ? `Quality: ${data.quality_rating}` : ""
+        ].filter(Boolean);
+
+        setBanner(parts.join(" | "), "success");
+      } catch (error) {
+        setBanner(`Test failed: ${error.message}`, "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function testSavedConnection() {
+      if (!existingRecord) {
+        setBanner("No saved WhatsApp connection found.", "warn");
+        return;
+      }
+
+      const meta = existingRecord?.meta || existingRecord?.metadata || {};
+      const phoneNumberId = meta.phone_number_id || existingRecord.account_id;
+      const accessToken = existingRecord.access_token;
+
+      try {
+        setLoading(true);
+        const data = await testWhatsAppConnection(phoneNumberId, accessToken);
+
+        const parts = [
+          "Saved connection is working.",
+          data.display_phone_number ? `Phone: ${data.display_phone_number}` : "",
+          data.verified_name ? `Verified name: ${data.verified_name}` : "",
+          data.quality_rating ? `Quality: ${data.quality_rating}` : ""
+        ].filter(Boolean);
+
+        setBanner(parts.join(" | "), "success");
+      } catch (error) {
+        setBanner(`Saved connection test failed: ${error.message}`, "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function copyWebhookUrl() {
+      try {
+        await navigator.clipboard.writeText(els.webhookUrl.value);
+        setBanner("Webhook URL copied.", "success");
+      } catch (error) {
+        setBanner("Could not copy automatically. Please copy it manually.", "warn");
+      }
+    }
+
+    async function init() {
+      els.webhookUrl.value = getWebhookUrl();
+
+      try {
+        setLoading(true);
+        const authed = await requireAuth();
+        if (!authed) return;
+        await loadConnection();
+      } catch (error) {
+        setBanner(error.message || "Unable to initialize page.", "error");
+        setHeroState("warn");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    els.connectForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await saveConnection();
+    });
+
+    els.refreshBtn.addEventListener("click", init);
+    els.copyWebhookBtn.addEventListener("click", copyWebhookUrl);
+    els.testEnteredBtn.addEventListener("click", testEnteredConnection);
+    els.stickyTestBtn.addEventListener("click", testEnteredConnection);
+    els.testSavedBtn.addEventListener("click", testSavedConnection);
+    els.disconnectBtn.addEventListener("click", disconnectConnection);
+    els.stickySaveBtn.addEventListener("click", saveConnection);
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
