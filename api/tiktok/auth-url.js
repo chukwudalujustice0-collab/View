@@ -1,4 +1,21 @@
 export default async function handler(req, res) {
+  const allowedOrigins = [
+    "https://view.ceetice.com",
+    "https://view-psi-lac.vercel.app"
+  ];
+
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-view-user-id");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -16,10 +33,7 @@ export default async function handler(req, res) {
     }
 
     const state = "view_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-
-    const scope = [
-      "user.info.basic"
-    ].join(",");
+    const scope = "user.info.basic";
 
     const url =
       "https://www.tiktok.com/v2/auth/authorize/?" +
