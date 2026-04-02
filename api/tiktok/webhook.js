@@ -1,7 +1,11 @@
 export default async function handler(req, res) {
   try {
     console.log("TikTok webhook event:", req.body || null);
-    return res.status(200).json({ ok: true });
+
+    return res.status(200).json({
+      ok: true,
+      message: "Webhook received"
+    });
   } catch (error) {
     return res.status(500).json({
       ok: false,
