@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Connect Instagram | View</title>
   <meta name="theme-color" content="#08111f" />
   <link rel="manifest" href="/manifest.json" />
@@ -30,8 +27,6 @@
       --danger:#ef4444;
       --warning:#f59e0b;
       --shadow:0 20px 60px rgba(0,0,0,.35);
-      --radius:24px;
-      --radius-sm:16px;
       --safe-bottom:env(safe-area-inset-bottom, 0px);
       --safe-top:env(safe-area-inset-top, 0px);
     }
@@ -101,9 +96,7 @@
 
     .back-btn{width:44px;padding:0;font-size:18px}
 
-    .brand{
-      min-width:0;
-    }
+    .brand{min-width:0}
 
     .eyebrow{
       color:var(--muted);
@@ -314,14 +307,10 @@
         linear-gradient(180deg, #2f0d1f, #0a1528);
     }
 
-    .mini-post-body{
-      padding:12px;
-    }
-
+    .mini-post-body{padding:12px}
     .mini-line{
       height:10px;border-radius:999px;background:rgba(255,255,255,.12);margin-bottom:8px;
     }
-
     .mini-line.sm{width:48%}
     .mini-line.md{width:72%}
     .mini-line.lg{width:100%}
@@ -342,7 +331,6 @@
     }
 
     .card.pad{padding:20px}
-
     .span-7{grid-column:span 7}
     .span-5{grid-column:span 5}
     .span-12{grid-column:span 12}
@@ -428,12 +416,14 @@
       word-break:break-word;
     }
 
-    .requirements{
+    .requirements,
+    .steps{
       display:grid;
       gap:12px;
     }
 
-    .req{
+    .req,
+    .step{
       display:flex;
       gap:12px;
       align-items:flex-start;
@@ -451,13 +441,24 @@
       font-size:16px;
     }
 
-    .req h4{
+    .step-num{
+      width:34px;height:34px;border-radius:50%;
+      display:grid;place-items:center;
+      flex:0 0 auto;
+      font-weight:800;
+      background:linear-gradient(135deg, rgba(252,176,69,.24), rgba(124,58,237,.24));
+      border:1px solid rgba(255,255,255,.1);
+    }
+
+    .req h4,
+    .step h4{
       font-size:15px;
       margin-bottom:4px;
       font-weight:800;
     }
 
-    .req p{
+    .req p,
+    .step p{
       color:var(--muted);
       font-size:14px;
       line-height:1.55;
@@ -488,42 +489,6 @@
       background:rgba(37,99,235,.12);
       border-color:rgba(37,99,235,.24);
       color:#dbeafe;
-    }
-
-    .steps{
-      display:grid;
-      gap:12px;
-    }
-
-    .step{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-      padding:14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .step-num{
-      width:34px;height:34px;border-radius:50%;
-      display:grid;place-items:center;
-      flex:0 0 auto;
-      font-weight:800;
-      background:linear-gradient(135deg, rgba(252,176,69,.24), rgba(124,58,237,.24));
-      border:1px solid rgba(255,255,255,.1);
-    }
-
-    .step h4{
-      font-size:15px;
-      margin-bottom:4px;
-      font-weight:800;
-    }
-
-    .step p{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.6;
     }
 
     .footer-actions{
@@ -566,33 +531,22 @@
     }
 
     @media (max-width: 860px){
-      .hero-grid{
-        grid-template-columns:1fr;
-      }
-      .phone-card{
-        width:100%;
-      }
+      .hero-grid{grid-template-columns:1fr}
+      .phone-card{width:100%}
       .span-7,.span-5{grid-column:span 12}
     }
 
     @media (max-width: 560px){
       .shell{padding:14px 12px 28px}
       .hero,.card.pad{padding:16px}
-      .topbar{
-        align-items:flex-start;
-      }
+      .topbar{align-items:flex-start}
       .topbar-right{
         width:100%;
         display:flex;
         justify-content:flex-end;
       }
-      .hero-actions,.footer-actions{
-        flex-direction:column;
-      }
-      .hero-actions .btn,
-      .footer-actions .btn{
-        width:100%;
-      }
+      .hero-actions,.footer-actions{flex-direction:column}
+      .hero-actions .btn,.footer-actions .btn{width:100%}
     }
   </style>
 </head>
@@ -626,12 +580,12 @@
           </p>
 
           <div class="hero-actions">
-            <button id="connectBtn" class="btn btn-primary" onclick="beginInstagramConnect()">
+            <button id="connectBtn" class="btn btn-primary" type="button" onclick="beginInstagramConnect()">
               <span class="loader"></span>
               <span class="btn-label">Connect Instagram</span>
             </button>
 
-            <button id="disconnectBtn" class="btn btn-dark hidden" onclick="disconnectInstagram()">
+            <button id="disconnectBtn" class="btn btn-dark hidden" type="button" onclick="disconnectInstagram()">
               Disconnect Instagram
             </button>
           </div>
@@ -649,22 +603,10 @@
             </div>
 
             <div class="story-row">
-              <div class="story">
-                <div class="story-ring"><span></span></div>
-                <small>view</small>
-              </div>
-              <div class="story">
-                <div class="story-ring"><span></span></div>
-                <small>creator</small>
-              </div>
-              <div class="story">
-                <div class="story-ring"><span></span></div>
-                <small>brand</small>
-              </div>
-              <div class="story">
-                <div class="story-ring"><span></span></div>
-                <small>reels</small>
-              </div>
+              <div class="story"><div class="story-ring"><span></span></div><small>view</small></div>
+              <div class="story"><div class="story-ring"><span></span></div><small>creator</small></div>
+              <div class="story"><div class="story-ring"><span></span></div><small>brand</small></div>
+              <div class="story"><div class="story-ring"><span></span></div><small>reels</small></div>
             </div>
 
             <div class="mini-post">
@@ -733,9 +675,7 @@
             <div class="req-badge">📸</div>
             <div>
               <h4>Use a professional Instagram account</h4>
-              <p>
-                For publishing APIs, Instagram usually expects a Business or Creator account.
-              </p>
+              <p>For publishing APIs, Instagram usually expects a Business or Creator account.</p>
             </div>
           </div>
 
@@ -743,9 +683,7 @@
             <div class="req-badge">📘</div>
             <div>
               <h4>Link Instagram to a Facebook Page</h4>
-              <p>
-                This is commonly required for Meta permissions used in publishing and account access.
-              </p>
+              <p>This is commonly required for Meta permissions used in publishing and account access.</p>
             </div>
           </div>
 
@@ -753,9 +691,7 @@
             <div class="req-badge">🛡️</div>
             <div>
               <h4>Complete app permissions on your backend</h4>
-              <p>
-                Your backend auth route should request the right Meta permissions before redirecting back.
-              </p>
+              <p>Your backend auth route should request the right Meta permissions before redirecting back.</p>
             </div>
           </div>
 
@@ -763,9 +699,7 @@
             <div class="req-badge">🎯</div>
             <div>
               <h4>Set your callback correctly</h4>
-              <p>
-                Your backend should return to this page after authentication with success or error details.
-              </p>
+              <p>Your backend should return to this page after authentication with success or error details.</p>
             </div>
           </div>
         </div>
@@ -781,9 +715,7 @@
             <div class="step-num">1</div>
             <div>
               <h4>Tap Connect Instagram</h4>
-              <p>
-                The page opens your backend auth route for Instagram connection.
-              </p>
+              <p>The page opens your backend auth route for Instagram connection.</p>
             </div>
           </div>
 
@@ -791,9 +723,7 @@
             <div class="step-num">2</div>
             <div>
               <h4>Complete Instagram and Meta login</h4>
-              <p>
-                After approval, your backend sends the user back here with the connection result.
-              </p>
+              <p>After approval, your backend sends the user back here with the connection result.</p>
             </div>
           </div>
 
@@ -801,9 +731,7 @@
             <div class="step-num">3</div>
             <div>
               <h4>View stores the connected account locally</h4>
-              <p>
-                This page saves the Instagram connection on the device so your connected accounts UI can read it.
-              </p>
+              <p>This page saves the Instagram connection on the device so your connected accounts UI can read it.</p>
             </div>
           </div>
 
@@ -811,20 +739,14 @@
             <div class="step-num">4</div>
             <div>
               <h4>Use it in your publish flow later</h4>
-              <p>
-                Your posting pages can read the saved account and send publish requests through your backend.
-              </p>
+              <p>Your posting pages can read the saved account and send publish requests through your backend.</p>
             </div>
           </div>
         </div>
 
         <div class="footer-actions">
-          <button class="btn btn-dark" onclick="openConnectedAccounts()">
-            Open Connected Accounts
-          </button>
-          <button class="btn btn-dark" onclick="refreshConnection()">
-            Refresh Status
-          </button>
+          <button class="btn btn-dark" type="button" onclick="openConnectedAccounts()">Open Connected Accounts</button>
+          <button class="btn btn-dark" type="button" onclick="refreshConnection()">Refresh Status</button>
         </div>
       </section>
 
@@ -834,18 +756,18 @@
         </div>
 
         <p class="muted" style="margin-bottom:14px;">
-          This page expects your server to start Instagram OAuth from a route like:
+          This page is now wired to your Supabase Edge Function:
         </p>
 
         <div class="detail-item" style="margin-bottom:12px;">
-          <div class="detail-label">Suggested auth route</div>
+          <div class="detail-label">Current auth route</div>
           <div class="detail-value">
-            <span class="code">/api/instagram/auth/start</span>
+            <span class="code">https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-auth-start</span>
           </div>
         </div>
 
         <p class="muted" style="margin-bottom:14px;">
-          After success, return to this page with values like:
+          After success, your callback should return values like:
         </p>
 
         <div class="detail-item" style="margin-bottom:12px;">
@@ -865,12 +787,11 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const STORAGE_KEY = "view_connected_accounts";
     const PROVIDER = "instagram";
-    const DEFAULT_AUTH_ROUTE = "/api/instagram/auth/start";
+    const DEFAULT_AUTH_ROUTE = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-auth-start";
 
     let currentUser = null;
 
@@ -945,7 +866,6 @@
 
     function renderConnection(){
       const account = getInstagramAccount();
-
       const statusPill = document.getElementById("statusPill");
       const statusBox = document.getElementById("statusBox");
       const detailName = document.getElementById("detailName");
@@ -968,9 +888,7 @@
           <div class="status-icon">✓</div>
           <div class="status-text">
             <h4>Instagram connected successfully</h4>
-            <p>
-              Your View app is now holding an Instagram connection on this device and can use it for future cross-posting flows.
-            </p>
+            <p>Your View app is now holding an Instagram connection on this device and can use it for future cross-posting flows.</p>
           </div>
         `;
 
@@ -978,10 +896,8 @@
         disconnectBtn.classList.remove("hidden");
 
         heroNotice.className = "notice show success";
-        heroNotice.textContent = account.username
-          ? `Connected as @${account.username}`
-          : "Instagram connected successfully.";
-      }else{
+        heroNotice.textContent = account.username ? `Connected as @${account.username}` : "Instagram connected successfully.";
+      } else {
         statusPill.textContent = "Not connected";
         detailName.textContent = "—";
         detailUsername.textContent = "—";
@@ -993,9 +909,7 @@
           <div class="status-icon">⌛</div>
           <div class="status-text">
             <h4>Instagram not connected</h4>
-            <p>
-              Connect your Instagram account to prepare your View app for creator tools, publishing, and social account sync.
-            </p>
+            <p>Connect your Instagram account to prepare your View app for creator tools, publishing, and social account sync.</p>
           </div>
         `;
 
@@ -1012,10 +926,16 @@
       if(isLoading){
         btn.classList.add("loading");
         btn.disabled = true;
-      }else{
+      } else {
         btn.classList.remove("loading");
         btn.disabled = false;
       }
+    }
+
+    function cryptoRandom(){
+      const arr = new Uint8Array(16);
+      crypto.getRandomValues(arr);
+      return Array.from(arr).map(v => v.toString(16).padStart(2, "0")).join("");
     }
 
     async function beginInstagramConnect(){
@@ -1023,26 +943,23 @@
       setButtonLoading(true);
 
       try{
-        const redirectUri = window.location.origin + window.location.pathname;
+        const finalRedirect = window.location.origin + window.location.pathname;
         const sessionToken = cryptoRandom();
-
         sessionStorage.setItem("view_instagram_oauth_state", sessionToken);
 
-        const authRoute =
-          localStorage.getItem("INSTAGRAM_AUTH_URL") ||
-          DEFAULT_AUTH_ROUTE;
+        const authRoute = localStorage.getItem("INSTAGRAM_AUTH_URL") || DEFAULT_AUTH_ROUTE;
+        const url = new URL(authRoute);
 
-        const url = new URL(authRoute, window.location.origin);
         url.searchParams.set("provider", "instagram");
-        url.searchParams.set("redirect_uri", redirectUri);
         url.searchParams.set("state", sessionToken);
+        url.searchParams.set("final_redirect", finalRedirect);
 
         if(currentUser?.id){
           url.searchParams.set("user_id", currentUser.id);
         }
 
         window.location.href = url.toString();
-      }catch(err){
+      } catch(err){
         setButtonLoading(false);
         setNotice("resultNotice", "error", err.message || "Unable to start Instagram connection.");
       }
@@ -1054,30 +971,17 @@
       setNotice("resultNotice", "success", "Instagram has been disconnected from this device.");
     }
 
-    function cryptoRandom(){
-      const arr = new Uint8Array(16);
-      crypto.getRandomValues(arr);
-      return Array.from(arr).map(v => v.toString(16).padStart(2, "0")).join("");
-    }
-
     function handleCallbackParams(){
       const params = new URLSearchParams(window.location.search);
       const status = params.get("status");
       const provider = params.get("provider");
       const error = params.get("error") || params.get("message");
-      const returnedState = params.get("state");
-      const storedState = sessionStorage.getItem("view_instagram_oauth_state");
 
       if(!status && !error) return;
 
-      if(returnedState && storedState && returnedState !== storedState){
-        setNotice("resultNotice", "error", "State mismatch detected. Please try connecting Instagram again.");
-        clearCallbackQuery();
-        return;
-      }
-
       if(error || status === "error"){
         setNotice("resultNotice", "error", decodeURIComponent(error || "Instagram connection failed."));
+        setButtonLoading(false);
         clearCallbackQuery();
         return;
       }
@@ -1088,7 +992,7 @@
           account_name: params.get("account_name") || params.get("name") || "Instagram account",
           username: params.get("username") || "",
           account_id: params.get("account_id") || params.get("id") || "",
-          access_token: params.get("access_token") || "",
+          access_token: "",
           connected_at: new Date().toISOString(),
           app: "view",
           user_id: currentUser?.id || null
@@ -1096,6 +1000,7 @@
 
         upsertInstagramAccount(account);
         renderConnection();
+        setButtonLoading(false);
         setNotice(
           "resultNotice",
           "success",
@@ -1104,6 +1009,8 @@
             : "Instagram connected successfully."
         );
         clearCallbackQuery();
+      } else {
+        setButtonLoading(false);
       }
     }
 
@@ -1124,6 +1031,7 @@
     async function refreshConnection(){
       await loadCurrentUser();
       renderConnection();
+      setButtonLoading(false);
       setNotice("resultNotice", "info", "Connection status refreshed.");
     }
 
