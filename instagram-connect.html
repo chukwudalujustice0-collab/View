@@ -11,7 +11,6 @@
   <style>
     :root{
       --bg:#08111f;
-      --bg-2:#0d1730;
       --card:rgba(16,27,49,.84);
       --line:rgba(255,255,255,.10);
       --text:#f4f7ff;
@@ -44,11 +43,11 @@
     }
 
     a{text-decoration:none;color:inherit}
-    button,input{font:inherit}
-    .hidden{display:none !important}
+    button{font:inherit}
+    .hidden{display:none!important}
 
     .shell{
-      width:min(100%, 920px);
+      width:min(100%,920px);
       margin:0 auto;
       padding:18px 16px 32px;
     }
@@ -68,8 +67,7 @@
       min-width:0;
     }
 
-    .back-btn,
-    .ghost-btn{
+    .back-btn,.ghost-btn{
       border:1px solid var(--line);
       background:rgba(255,255,255,.04);
       color:var(--text);
@@ -85,14 +83,12 @@
       -webkit-backdrop-filter:blur(12px);
     }
 
-    .back-btn:hover,
-    .ghost-btn:hover{
+    .back-btn:hover,.ghost-btn:hover{
       transform:translateY(-1px);
       background:rgba(255,255,255,.07);
     }
 
     .back-btn{width:44px;padding:0;font-size:18px}
-    .brand{min-width:0}
 
     .eyebrow{
       color:var(--muted);
@@ -133,27 +129,6 @@
       padding:24px;
       box-shadow:var(--shadow);
       margin-bottom:20px;
-    }
-
-    .hero::before,
-    .hero::after{
-      content:"";
-      position:absolute;
-      border-radius:50%;
-      pointer-events:none;
-      filter:blur(12px);
-    }
-
-    .hero::before{
-      width:220px;height:220px;
-      right:-50px;top:-70px;
-      background:rgba(225,48,108,.15);
-    }
-
-    .hero::after{
-      width:160px;height:160px;
-      left:-30px;bottom:-60px;
-      background:rgba(37,99,235,.12);
     }
 
     .hero-grid{
@@ -204,16 +179,14 @@
     .btn:disabled{
       opacity:.6;
       cursor:not-allowed;
-      transform:none !important;
+      transform:none!important;
     }
 
     .btn-primary{
       color:#fff;
-      background:linear-gradient(135deg, var(--yellow), var(--orange), var(--pink), var(--primary-2));
+      background:linear-gradient(135deg,var(--yellow),var(--orange),var(--pink),var(--primary-2));
       box-shadow:0 16px 36px rgba(225,48,108,.25);
     }
-
-    .btn-primary:hover{transform:translateY(-2px)}
 
     .btn-dark{
       color:var(--text);
@@ -221,11 +194,9 @@
       border:1px solid var(--line);
     }
 
-    .btn-dark:hover{transform:translateY(-2px)}
-
     .phone-card{
       margin-left:auto;
-      width:min(100%, 280px);
+      width:min(100%,280px);
       background:rgba(7,13,24,.72);
       border:1px solid rgba(255,255,255,.10);
       border-radius:28px;
@@ -307,7 +278,6 @@
     .mini-line{
       height:10px;border-radius:999px;background:rgba(255,255,255,.12);margin-bottom:8px;
     }
-
     .mini-line.sm{width:48%}
     .mini-line.md{width:72%}
     .mini-line.lg{width:100%}
@@ -385,24 +355,19 @@
       line-height:1.6;
     }
 
-    .detail-list,
-    .requirements,
-    .steps{
+    .detail-list,.requirements,.steps{
       display:grid;
       gap:12px;
     }
 
-    .detail-item,
-    .req,
-    .step{
+    .detail-item,.req,.step{
       padding:14px;
       border-radius:18px;
       background:rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.08);
     }
 
-    .req,
-    .step{
+    .req,.step{
       display:flex;
       gap:12px;
       align-items:flex-start;
@@ -439,15 +404,13 @@
       border:1px solid rgba(255,255,255,.1);
     }
 
-    .req h4,
-    .step h4{
+    .req h4,.step h4{
       font-size:15px;
       margin-bottom:4px;
       font-weight:800;
     }
 
-    .req p,
-    .step p{
+    .req p,.step p{
       color:var(--muted);
       font-size:14px;
       line-height:1.55;
@@ -517,13 +480,13 @@
 
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    @media (max-width: 860px){
+    @media (max-width:860px){
       .hero-grid{grid-template-columns:1fr}
       .phone-card{width:100%}
       .span-7,.span-5{grid-column:span 12}
     }
 
-    @media (max-width: 560px){
+    @media (max-width:560px){
       .shell{padding:14px 12px 28px}
       .hero,.card.pad{padding:16px}
       .topbar{align-items:flex-start}
@@ -577,9 +540,7 @@
             </button>
           </div>
 
-          <div id="heroNotice" class="notice info">
-            Waiting for connection…
-          </div>
+          <div id="heroNotice" class="notice info">Waiting for connection…</div>
         </div>
 
         <div class="phone-card">
@@ -620,10 +581,7 @@
           <div class="status-icon">⌛</div>
           <div class="status-text">
             <h4>Instagram not connected</h4>
-            <p>
-              Connect your Instagram account to prepare your View app for creator tools,
-              publishing, and social account sync.
-            </p>
+            <p>Connect your Instagram account to prepare your View app for creator tools, publishing, and social account sync.</p>
           </div>
         </div>
 
@@ -753,17 +711,6 @@
           </div>
         </div>
 
-        <p class="muted" style="margin-bottom:14px;">
-          After success, your callback should return values like:
-        </p>
-
-        <div class="detail-item" style="margin-bottom:12px;">
-          <div class="detail-label">Example callback query</div>
-          <div class="detail-value small">
-            status=success, provider=instagram, username, account_name, account_id
-          </div>
-        </div>
-
         <p class="small">
           Access tokens should ideally be stored securely on your backend, not permanently in the browser.
         </p>
@@ -772,27 +719,27 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const STORAGE_KEY = "view_connected_accounts";
-    const PROVIDER = "instagram";
-    const DEFAULT_AUTH_ROUTE = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-auth-start";
+    var SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    var STORAGE_KEY = "view_connected_accounts";
+    var PROVIDER = "instagram";
+    var DEFAULT_AUTH_ROUTE = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-auth-start";
 
-    let supabase = null;
-    let currentUser = null;
+    var supabase = null;
+    var currentUser = null;
 
     function initSupabaseSafely() {
       try {
         if (window.supabase && typeof window.supabase.createClient === "function") {
           supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } else {
-          supabase = null;
-          console.warn("Supabase library did not load.");
         }
-      } catch (err) {
+      } catch (e) {
         supabase = null;
-        console.warn("Supabase init failed:", err);
       }
+    }
+
+    function byId(id) {
+      return document.getElementById(id);
     }
 
     function goBack() {
@@ -805,20 +752,20 @@
     }
 
     function escapeHtml(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     function getStoredAccounts() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const parsed = raw ? JSON.parse(raw) : [];
+        var raw = localStorage.getItem(STORAGE_KEY);
+        var parsed = raw ? JSON.parse(raw) : [];
         return Array.isArray(parsed) ? parsed : [];
-      } catch {
+      } catch (e) {
         return [];
       }
     }
@@ -828,43 +775,44 @@
     }
 
     function getInstagramAccount() {
-      return getStoredAccounts().find(item => item.provider === PROVIDER) || null;
+      var accounts = getStoredAccounts();
+      for (var i = 0; i < accounts.length; i++) {
+        if (accounts[i].provider === PROVIDER) return accounts[i];
+      }
+      return null;
     }
 
     function upsertInstagramAccount(account) {
-      const accounts = getStoredAccounts().filter(item => item.provider !== PROVIDER);
+      var accounts = getStoredAccounts().filter(function(item) {
+        return item.provider !== PROVIDER;
+      });
       accounts.unshift(account);
       saveStoredAccounts(accounts);
     }
 
     function removeInstagramAccount() {
-      const accounts = getStoredAccounts().filter(item => item.provider !== PROVIDER);
+      var accounts = getStoredAccounts().filter(function(item) {
+        return item.provider !== PROVIDER;
+      });
       saveStoredAccounts(accounts);
     }
 
     function formatDate(value) {
       if (!value) return "—";
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return value;
+      var date = new Date(value);
+      if (isNaN(date.getTime())) return value;
       return date.toLocaleString();
     }
 
     function setNotice(targetId, type, message) {
-      const el = document.getElementById(targetId);
+      var el = byId(targetId);
       if (!el) return;
-      el.className = `notice show ${type}`;
+      el.className = "notice show " + type;
       el.innerHTML = escapeHtml(message);
     }
 
-    function clearNotice(targetId) {
-      const el = document.getElementById(targetId);
-      if (!el) return;
-      el.className = "notice";
-      el.innerHTML = "";
-    }
-
     function setButtonLoading(isLoading) {
-      const btn = document.getElementById("connectBtn");
+      var btn = byId("connectBtn");
       if (!btn) return;
       if (isLoading) {
         btn.classList.add("loading");
@@ -876,45 +824,38 @@
     }
 
     function renderConnection() {
-      const account = getInstagramAccount();
-      const statusPill = document.getElementById("statusPill");
-      const statusBox = document.getElementById("statusBox");
-      const detailName = document.getElementById("detailName");
-      const detailUsername = document.getElementById("detailUsername");
-      const detailAccountId = document.getElementById("detailAccountId");
-      const detailConnectedAt = document.getElementById("detailConnectedAt");
-      const connectBtn = document.getElementById("connectBtn");
-      const disconnectBtn = document.getElementById("disconnectBtn");
-      const heroNotice = document.getElementById("heroNotice");
+      var account = getInstagramAccount();
+      var statusPill = byId("statusPill");
+      var statusBox = byId("statusBox");
+      var detailName = byId("detailName");
+      var detailUsername = byId("detailUsername");
+      var detailAccountId = byId("detailAccountId");
+      var detailConnectedAt = byId("detailConnectedAt");
+      var connectBtn = byId("connectBtn");
+      var disconnectBtn = byId("disconnectBtn");
+      var heroNotice = byId("heroNotice");
 
-      if (!statusPill || !statusBox || !detailName || !detailUsername || !detailAccountId || !detailConnectedAt || !connectBtn || !disconnectBtn || !heroNotice) {
-        return;
-      }
+      if (!statusPill || !statusBox || !detailName || !detailUsername || !detailAccountId || !detailConnectedAt || !connectBtn || !disconnectBtn || !heroNotice) return;
 
       if (account) {
         statusPill.textContent = "Connected";
         detailName.textContent = account.account_name || "Instagram account";
-        detailUsername.textContent = account.username ? `@${account.username}` : "—";
+        detailUsername.textContent = account.username ? "@" + account.username : "—";
         detailAccountId.textContent = account.account_id || "—";
         detailConnectedAt.textContent = formatDate(account.connected_at);
 
         statusBox.className = "status-banner status-ok";
-        statusBox.innerHTML = `
-          <div class="status-icon">✓</div>
-          <div class="status-text">
-            <h4>Instagram connected successfully</h4>
-            <p>Your View app is now holding an Instagram connection on this device and can use it for future cross-posting flows.</p>
-          </div>
-        `;
+        statusBox.innerHTML =
+          '<div class="status-icon">✓</div>' +
+          '<div class="status-text">' +
+          '<h4>Instagram connected successfully</h4>' +
+          '<p>Your View app is now holding an Instagram connection on this device and can use it for future cross-posting flows.</p>' +
+          '</div>';
 
-        const btnLabel = connectBtn.querySelector(".btn-label");
-        if (btnLabel) btnLabel.textContent = "Reconnect Instagram";
-
+        connectBtn.querySelector(".btn-label").textContent = "Reconnect Instagram";
         disconnectBtn.classList.remove("hidden");
         heroNotice.className = "notice show success";
-        heroNotice.textContent = account.username
-          ? \`Connected as @\${account.username}\`
-          : "Instagram connected successfully.";
+        heroNotice.textContent = account.username ? "Connected as @" + account.username : "Instagram connected successfully.";
       } else {
         statusPill.textContent = "Not connected";
         detailName.textContent = "—";
@@ -923,17 +864,14 @@
         detailConnectedAt.textContent = "—";
 
         statusBox.className = "status-banner status-warn";
-        statusBox.innerHTML = `
-          <div class="status-icon">⌛</div>
-          <div class="status-text">
-            <h4>Instagram not connected</h4>
-            <p>Connect your Instagram account to prepare your View app for creator tools, publishing, and social account sync.</p>
-          </div>
-        `;
+        statusBox.innerHTML =
+          '<div class="status-icon">⌛</div>' +
+          '<div class="status-text">' +
+          '<h4>Instagram not connected</h4>' +
+          '<p>Connect your Instagram account to prepare your View app for creator tools, publishing, and social account sync.</p>' +
+          '</div>';
 
-        const btnLabel = connectBtn.querySelector(".btn-label");
-        if (btnLabel) btnLabel.textContent = "Connect Instagram";
-
+        connectBtn.querySelector(".btn-label").textContent = "Connect Instagram";
         disconnectBtn.classList.add("hidden");
         heroNotice.className = "notice show info";
         heroNotice.textContent = "Waiting for connection…";
@@ -941,36 +879,34 @@
     }
 
     function cryptoRandom() {
-      const arr = new Uint8Array(16);
+      var arr = new Uint8Array(16);
       crypto.getRandomValues(arr);
-      return Array.from(arr).map(v => v.toString(16).padStart(2, "0")).join("");
+      return Array.from(arr).map(function(v) {
+        return v.toString(16).padStart(2, "0");
+      }).join("");
     }
 
-    async function beginInstagramConnect() {
-      clearNotice("resultNotice");
+    function beginInstagramConnect() {
       setButtonLoading(true);
-
       try {
-        const finalRedirect = window.location.origin + window.location.pathname;
-        const sessionToken = cryptoRandom();
+        var finalRedirect = window.location.origin + window.location.pathname;
+        var sessionToken = cryptoRandom();
         sessionStorage.setItem("view_instagram_oauth_state", sessionToken);
 
-        const authRoute = localStorage.getItem("INSTAGRAM_AUTH_URL") || DEFAULT_AUTH_ROUTE;
-        const url = new URL(authRoute);
-
+        var authRoute = localStorage.getItem("INSTAGRAM_AUTH_URL") || DEFAULT_AUTH_ROUTE;
+        var url = new URL(authRoute);
         url.searchParams.set("provider", "instagram");
         url.searchParams.set("state", sessionToken);
         url.searchParams.set("final_redirect", finalRedirect);
 
-        if (currentUser?.id) {
+        if (currentUser && currentUser.id) {
           url.searchParams.set("user_id", currentUser.id);
         }
 
-        window.location.assign(url.toString());
+        window.location.href = url.toString();
       } catch (err) {
-        console.error("Instagram connect failed:", err);
         setButtonLoading(false);
-        setNotice("resultNotice", "error", err?.message || "Unable to start Instagram connection.");
+        setNotice("resultNotice", "error", err && err.message ? err.message : "Unable to start Instagram connection.");
       }
     }
 
@@ -981,15 +917,14 @@
     }
 
     function clearCallbackQuery() {
-      const cleanUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, cleanUrl);
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     function handleCallbackParams() {
-      const params = new URLSearchParams(window.location.search);
-      const status = params.get("status");
-      const provider = params.get("provider");
-      const error = params.get("error") || params.get("message");
+      var params = new URLSearchParams(window.location.search);
+      var status = params.get("status");
+      var provider = params.get("provider");
+      var error = params.get("error") || params.get("message");
 
       if (!status && !error) {
         setButtonLoading(false);
@@ -1004,7 +939,7 @@
       }
 
       if (status === "success" && (!provider || provider === PROVIDER)) {
-        const account = {
+        var account = {
           provider: PROVIDER,
           account_name: params.get("account_name") || params.get("name") || "Instagram account",
           username: params.get("username") || "",
@@ -1012,24 +947,15 @@
           access_token: "",
           connected_at: new Date().toISOString(),
           app: "view",
-          user_id: currentUser?.id || null
+          user_id: currentUser ? currentUser.id : null
         };
 
         upsertInstagramAccount(account);
         renderConnection();
         setButtonLoading(false);
-        setNotice(
-          "resultNotice",
-          "success",
-          account.username
-            ? \`Instagram connected successfully as @\${account.username}.\`
-            : "Instagram connected successfully."
-        );
+        setNotice("resultNotice", "success", account.username ? "Instagram connected successfully as @" + account.username + "." : "Instagram connected successfully.");
         clearCallbackQuery();
-        return;
       }
-
-      setButtonLoading(false);
     }
 
     async function loadCurrentUser() {
@@ -1038,10 +964,9 @@
           currentUser = null;
           return;
         }
-        const { data } = await supabase.auth.getUser();
-        currentUser = data?.user || null;
-      } catch (err) {
-        console.warn("Could not load current user:", err);
+        var result = await supabase.auth.getUser();
+        currentUser = result && result.data ? result.data.user : null;
+      } catch (e) {
         currentUser = null;
       }
     }
@@ -1059,14 +984,14 @@
       renderConnection();
       handleCallbackParams();
 
-      document.getElementById("connectBtn")?.addEventListener("click", beginInstagramConnect);
-      document.getElementById("disconnectBtn")?.addEventListener("click", disconnectInstagram);
-      document.getElementById("refreshBtn")?.addEventListener("click", refreshConnection);
-      document.getElementById("backBtn")?.addEventListener("click", goBack);
-      document.getElementById("openAccountsBtn")?.addEventListener("click", openConnectedAccounts);
+      if (byId("connectBtn")) byId("connectBtn").onclick = beginInstagramConnect;
+      if (byId("disconnectBtn")) byId("disconnectBtn").onclick = disconnectInstagram;
+      if (byId("refreshBtn")) byId("refreshBtn").onclick = refreshConnection;
+      if (byId("backBtn")) byId("backBtn").onclick = goBack;
+      if (byId("openAccountsBtn")) byId("openAccountsBtn").onclick = openConnectedAccounts;
     }
 
-    window.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", init);
   </script>
 </body>
 </html>
