@@ -13,19 +13,16 @@
       --bg:#08111f;
       --bg-2:#0d1730;
       --card:rgba(16,27,49,.84);
-      --card-2:rgba(255,255,255,.06);
       --line:rgba(255,255,255,.10);
       --text:#f4f7ff;
       --muted:#9fb1d7;
       --primary:#2563eb;
       --primary-2:#7c3aed;
       --pink:#e1306c;
-      --pink-2:#fd1d1d;
       --orange:#f77737;
       --yellow:#fcb045;
       --success:#10b981;
       --danger:#ef4444;
-      --warning:#f59e0b;
       --shadow:0 20px 60px rgba(0,0,0,.35);
       --safe-bottom:env(safe-area-inset-bottom, 0px);
       --safe-top:env(safe-area-inset-top, 0px);
@@ -34,7 +31,7 @@
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%}
     body{
-      font-family: Inter, Arial, sans-serif;
+      font-family:Inter,Arial,sans-serif;
       color:var(--text);
       background:
         radial-gradient(circle at top right, rgba(225,48,108,.16), transparent 28%),
@@ -95,7 +92,6 @@
     }
 
     .back-btn{width:44px;padding:0;font-size:18px}
-
     .brand{min-width:0}
 
     .eyebrow{
@@ -311,6 +307,7 @@
     .mini-line{
       height:10px;border-radius:999px;background:rgba(255,255,255,.12);margin-bottom:8px;
     }
+
     .mini-line.sm{width:48%}
     .mini-line.md{width:72%}
     .mini-line.lg{width:100%}
@@ -333,7 +330,6 @@
     .card.pad{padding:20px}
     .span-7{grid-column:span 7}
     .span-5{grid-column:span 5}
-    .span-12{grid-column:span 12}
 
     .section-title{
       display:flex;
@@ -376,7 +372,6 @@
 
     .status-ok .status-icon{background:rgba(16,185,129,.16);color:#74f7c1}
     .status-warn .status-icon{background:rgba(245,158,11,.16);color:#ffd37b}
-    .status-bad .status-icon{background:rgba(239,68,68,.16);color:#ff9f9f}
 
     .status-text h4{
       font-size:15px;
@@ -390,16 +385,27 @@
       line-height:1.6;
     }
 
-    .detail-list{
+    .detail-list,
+    .requirements,
+    .steps{
       display:grid;
       gap:12px;
     }
 
-    .detail-item{
+    .detail-item,
+    .req,
+    .step{
       padding:14px;
       border-radius:18px;
       background:rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.08);
+    }
+
+    .req,
+    .step{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
     }
 
     .detail-label{
@@ -414,23 +420,6 @@
       font-size:15px;
       font-weight:700;
       word-break:break-word;
-    }
-
-    .requirements,
-    .steps{
-      display:grid;
-      gap:12px;
-    }
-
-    .req,
-    .step{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-      padding:14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.08);
     }
 
     .req-badge{
@@ -526,9 +515,7 @@
     .btn.loading .loader{display:inline-block}
     .btn.loading .btn-label{opacity:.85}
 
-    @keyframes spin{
-      to{transform:rotate(360deg)}
-    }
+    @keyframes spin{to{transform:rotate(360deg)}}
 
     @media (max-width: 860px){
       .hero-grid{grid-template-columns:1fr}
@@ -554,7 +541,7 @@
   <div class="shell">
     <div class="topbar">
       <div class="topbar-left">
-        <button class="back-btn" onclick="goBack()" aria-label="Go back">←</button>
+        <button class="back-btn" type="button" id="backBtn" aria-label="Go back">←</button>
         <div class="brand">
           <div class="eyebrow">View • Connected Accounts</div>
           <div class="page-title">
@@ -580,12 +567,12 @@
           </p>
 
           <div class="hero-actions">
-            <button id="connectBtn" class="btn btn-primary" type="button" onclick="beginInstagramConnect()">
+            <button id="connectBtn" class="btn btn-primary" type="button">
               <span class="loader"></span>
               <span class="btn-label">Connect Instagram</span>
             </button>
 
-            <button id="disconnectBtn" class="btn btn-dark hidden" type="button" onclick="disconnectInstagram()">
+            <button id="disconnectBtn" class="btn btn-dark hidden" type="button">
               Disconnect Instagram
             </button>
           </div>
@@ -745,8 +732,8 @@
         </div>
 
         <div class="footer-actions">
-          <button class="btn btn-dark" type="button" onclick="openConnectedAccounts()">Open Connected Accounts</button>
-          <button class="btn btn-dark" type="button" onclick="refreshConnection()">Refresh Status</button>
+          <button class="btn btn-dark" type="button" id="openAccountsBtn">Open Connected Accounts</button>
+          <button class="btn btn-dark" type="button" id="refreshBtn">Refresh Status</button>
         </div>
       </section>
 
@@ -756,7 +743,7 @@
         </div>
 
         <p class="muted" style="margin-bottom:14px;">
-          This page is now wired to your Supabase Edge Function:
+          This page is wired to your Supabase Edge Function:
         </p>
 
         <div class="detail-item" style="margin-bottom:12px;">
@@ -787,24 +774,37 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
     const STORAGE_KEY = "view_connected_accounts";
     const PROVIDER = "instagram";
     const DEFAULT_AUTH_ROUTE = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-auth-start";
 
+    let supabase = null;
     let currentUser = null;
 
-    function goBack(){
+    function initSupabaseSafely() {
+      try {
+        if (window.supabase && typeof window.supabase.createClient === "function") {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
+          supabase = null;
+          console.warn("Supabase library did not load.");
+        }
+      } catch (err) {
+        supabase = null;
+        console.warn("Supabase init failed:", err);
+      }
+    }
+
+    function goBack() {
       if (window.history.length > 1) window.history.back();
       else window.location.href = "connect-account.html";
     }
 
-    function openConnectedAccounts(){
+    function openConnectedAccounts() {
       window.location.href = "connect-account.html";
     }
 
-    function escapeHtml(value){
+    function escapeHtml(value) {
       return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
@@ -813,58 +813,69 @@
         .replaceAll("'", "&#039;");
     }
 
-    function getStoredAccounts(){
-      try{
+    function getStoredAccounts() {
+      try {
         const raw = localStorage.getItem(STORAGE_KEY);
         const parsed = raw ? JSON.parse(raw) : [];
         return Array.isArray(parsed) ? parsed : [];
-      }catch{
+      } catch {
         return [];
       }
     }
 
-    function saveStoredAccounts(accounts){
+    function saveStoredAccounts(accounts) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
     }
 
-    function getInstagramAccount(){
-      const accounts = getStoredAccounts();
-      return accounts.find(item => item.provider === PROVIDER) || null;
+    function getInstagramAccount() {
+      return getStoredAccounts().find(item => item.provider === PROVIDER) || null;
     }
 
-    function upsertInstagramAccount(account){
+    function upsertInstagramAccount(account) {
       const accounts = getStoredAccounts().filter(item => item.provider !== PROVIDER);
       accounts.unshift(account);
       saveStoredAccounts(accounts);
     }
 
-    function removeInstagramAccount(){
+    function removeInstagramAccount() {
       const accounts = getStoredAccounts().filter(item => item.provider !== PROVIDER);
       saveStoredAccounts(accounts);
     }
 
-    function formatDate(value){
-      if(!value) return "—";
+    function formatDate(value) {
+      if (!value) return "—";
       const date = new Date(value);
-      if(Number.isNaN(date.getTime())) return value;
+      if (Number.isNaN(date.getTime())) return value;
       return date.toLocaleString();
     }
 
-    function setNotice(targetId, type, message){
+    function setNotice(targetId, type, message) {
       const el = document.getElementById(targetId);
-      if(!el) return;
+      if (!el) return;
       el.className = `notice show ${type}`;
       el.innerHTML = escapeHtml(message);
     }
 
-    function clearNotice(targetId){
+    function clearNotice(targetId) {
       const el = document.getElementById(targetId);
-      if(!el) return;
+      if (!el) return;
       el.className = "notice";
       el.innerHTML = "";
     }
 
-    function renderConnection(){
+    function setButtonLoading(isLoading) {
+      const btn = document.getElementById("connectBtn");
+      if (!btn) return;
+      if (isLoading) {
+        btn.classList.add("loading");
+        btn.disabled = true;
+      } else {
+        btn.classList.remove("loading");
+        btn.disabled = false;
+      }
+    }
+
+    function renderConnection() {
       const account = getInstagramAccount();
       const statusPill = document.getElementById("statusPill");
       const statusBox = document.getElementById("statusBox");
@@ -876,7 +887,11 @@
       const disconnectBtn = document.getElementById("disconnectBtn");
       const heroNotice = document.getElementById("heroNotice");
 
-      if(account){
+      if (!statusPill || !statusBox || !detailName || !detailUsername || !detailAccountId || !detailConnectedAt || !connectBtn || !disconnectBtn || !heroNotice) {
+        return;
+      }
+
+      if (account) {
         statusPill.textContent = "Connected";
         detailName.textContent = account.account_name || "Instagram account";
         detailUsername.textContent = account.username ? `@${account.username}` : "—";
@@ -892,11 +907,14 @@
           </div>
         `;
 
-        connectBtn.querySelector(".btn-label").textContent = "Reconnect Instagram";
-        disconnectBtn.classList.remove("hidden");
+        const btnLabel = connectBtn.querySelector(".btn-label");
+        if (btnLabel) btnLabel.textContent = "Reconnect Instagram";
 
+        disconnectBtn.classList.remove("hidden");
         heroNotice.className = "notice show success";
-        heroNotice.textContent = account.username ? `Connected as @${account.username}` : "Instagram connected successfully.";
+        heroNotice.textContent = account.username
+          ? \`Connected as @\${account.username}\`
+          : "Instagram connected successfully.";
       } else {
         statusPill.textContent = "Not connected";
         detailName.textContent = "—";
@@ -913,36 +931,26 @@
           </div>
         `;
 
-        connectBtn.querySelector(".btn-label").textContent = "Connect Instagram";
-        disconnectBtn.classList.add("hidden");
+        const btnLabel = connectBtn.querySelector(".btn-label");
+        if (btnLabel) btnLabel.textContent = "Connect Instagram";
 
+        disconnectBtn.classList.add("hidden");
         heroNotice.className = "notice show info";
         heroNotice.textContent = "Waiting for connection…";
       }
     }
 
-    function setButtonLoading(isLoading){
-      const btn = document.getElementById("connectBtn");
-      if(isLoading){
-        btn.classList.add("loading");
-        btn.disabled = true;
-      } else {
-        btn.classList.remove("loading");
-        btn.disabled = false;
-      }
-    }
-
-    function cryptoRandom(){
+    function cryptoRandom() {
       const arr = new Uint8Array(16);
       crypto.getRandomValues(arr);
       return Array.from(arr).map(v => v.toString(16).padStart(2, "0")).join("");
     }
 
-    async function beginInstagramConnect(){
+    async function beginInstagramConnect() {
       clearNotice("resultNotice");
       setButtonLoading(true);
 
-      try{
+      try {
         const finalRedirect = window.location.origin + window.location.pathname;
         const sessionToken = cryptoRandom();
         sessionStorage.setItem("view_instagram_oauth_state", sessionToken);
@@ -954,39 +962,48 @@
         url.searchParams.set("state", sessionToken);
         url.searchParams.set("final_redirect", finalRedirect);
 
-        if(currentUser?.id){
+        if (currentUser?.id) {
           url.searchParams.set("user_id", currentUser.id);
         }
 
-        window.location.href = url.toString();
-      } catch(err){
+        window.location.assign(url.toString());
+      } catch (err) {
+        console.error("Instagram connect failed:", err);
         setButtonLoading(false);
-        setNotice("resultNotice", "error", err.message || "Unable to start Instagram connection.");
+        setNotice("resultNotice", "error", err?.message || "Unable to start Instagram connection.");
       }
     }
 
-    function disconnectInstagram(){
+    function disconnectInstagram() {
       removeInstagramAccount();
       renderConnection();
       setNotice("resultNotice", "success", "Instagram has been disconnected from this device.");
     }
 
-    function handleCallbackParams(){
+    function clearCallbackQuery() {
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+
+    function handleCallbackParams() {
       const params = new URLSearchParams(window.location.search);
       const status = params.get("status");
       const provider = params.get("provider");
       const error = params.get("error") || params.get("message");
 
-      if(!status && !error) return;
+      if (!status && !error) {
+        setButtonLoading(false);
+        return;
+      }
 
-      if(error || status === "error"){
+      if (error || status === "error") {
         setNotice("resultNotice", "error", decodeURIComponent(error || "Instagram connection failed."));
         setButtonLoading(false);
         clearCallbackQuery();
         return;
       }
 
-      if(status === "success" && (!provider || provider === PROVIDER)){
+      if (status === "success" && (!provider || provider === PROVIDER)) {
         const account = {
           provider: PROVIDER,
           account_name: params.get("account_name") || params.get("name") || "Instagram account",
@@ -1005,43 +1022,51 @@
           "resultNotice",
           "success",
           account.username
-            ? `Instagram connected successfully as @${account.username}.`
+            ? \`Instagram connected successfully as @\${account.username}.\`
             : "Instagram connected successfully."
         );
         clearCallbackQuery();
-      } else {
-        setButtonLoading(false);
+        return;
       }
+
+      setButtonLoading(false);
     }
 
-    function clearCallbackQuery(){
-      const cleanUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, cleanUrl);
-    }
-
-    async function loadCurrentUser(){
-      try{
+    async function loadCurrentUser() {
+      try {
+        if (!supabase) {
+          currentUser = null;
+          return;
+        }
         const { data } = await supabase.auth.getUser();
         currentUser = data?.user || null;
-      }catch{
+      } catch (err) {
+        console.warn("Could not load current user:", err);
         currentUser = null;
       }
     }
 
-    async function refreshConnection(){
+    async function refreshConnection() {
       await loadCurrentUser();
       renderConnection();
       setButtonLoading(false);
       setNotice("resultNotice", "info", "Connection status refreshed.");
     }
 
-    async function init(){
+    async function init() {
+      initSupabaseSafely();
       await loadCurrentUser();
       renderConnection();
       handleCallbackParams();
+
+      document.getElementById("connectBtn")?.addEventListener("click", beginInstagramConnect);
+      document.getElementById("disconnectBtn")?.addEventListener("click", disconnectInstagram);
+      document.getElementById("refreshBtn")?.addEventListener("click", refreshConnection);
+      document.getElementById("backBtn")?.addEventListener("click", goBack);
+      document.getElementById("openAccountsBtn")?.addEventListener("click", openConnectedAccounts);
     }
 
-    init();
+    window.addEventListener("DOMContentLoaded", init);
   </script>
 </body>
 </html>
