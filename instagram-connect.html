@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Connect Instagram | View</title>
   <meta name="theme-color" content="#08111f" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -525,8 +528,7 @@
           <h2>Connect Instagram to publish from View with a premium flow.</h2>
           <p>
             Link your Instagram account so your View app can support future cross-posting,
-            media publishing, account sync, and creator workflow. For live posting, Instagram
-            usually requires a professional account connected to a Facebook Page.
+            media publishing, account sync, and creator workflow.
           </p>
 
           <div class="hero-actions">
@@ -581,7 +583,7 @@
           <div class="status-icon">⌛</div>
           <div class="status-text">
             <h4>Instagram not connected</h4>
-            <p>Connect your Instagram account to prepare your View app for creator tools, publishing, and social account sync.</p>
+            <p>Connect your Instagram account to prepare your View app for creator tools and publishing.</p>
           </div>
         </div>
 
@@ -617,34 +619,26 @@
 
         <div class="requirements">
           <div class="req">
-            <div class="req-badge">📸</div>
+            <div class="req-badge">🔐</div>
             <div>
-              <h4>Use a professional Instagram account</h4>
-              <p>For publishing APIs, Instagram usually expects a Business or Creator account.</p>
+              <h4>Be logged in first</h4>
+              <p>Your View user account must be signed in before the Instagram connection can be saved.</p>
             </div>
           </div>
 
           <div class="req">
             <div class="req-badge">📘</div>
             <div>
-              <h4>Link Instagram to a Facebook Page</h4>
-              <p>This is commonly required for Meta permissions used in publishing and account access.</p>
-            </div>
-          </div>
-
-          <div class="req">
-            <div class="req-badge">🛡️</div>
-            <div>
-              <h4>Complete app permissions on your backend</h4>
-              <p>Your backend auth route should request the right Meta permissions before redirecting back.</p>
+              <h4>Basic permission is active</h4>
+              <p>This version uses the working basic permission flow first before upgrading to full Instagram publishing permissions.</p>
             </div>
           </div>
 
           <div class="req">
             <div class="req-badge">🎯</div>
             <div>
-              <h4>Set your callback correctly</h4>
-              <p>Your backend should return to this page after authentication with success or error details.</p>
+              <h4>Connected to backend functions</h4>
+              <p>This page calls <span class="code">instagram-start</span> and expects a return from <span class="code">instagram-callback</span>.</p>
             </div>
           </div>
         </div>
@@ -659,32 +653,32 @@
           <div class="step">
             <div class="step-num">1</div>
             <div>
-              <h4>Tap Connect Instagram</h4>
-              <p>The page opens your backend auth route for Instagram connection.</p>
+              <h4>Check signed-in user</h4>
+              <p>The page loads your current Supabase auth user and requires a valid user ID.</p>
             </div>
           </div>
 
           <div class="step">
             <div class="step-num">2</div>
             <div>
-              <h4>Complete Instagram and Meta login</h4>
-              <p>After approval, your backend sends the user back here with the connection result.</p>
+              <h4>Open instagram-start</h4>
+              <p>The page sends your redirect URL and logged-in user ID to the start function.</p>
             </div>
           </div>
 
           <div class="step">
             <div class="step-num">3</div>
             <div>
-              <h4>View stores the connected account locally</h4>
-              <p>This page saves the Instagram connection on the device so your connected accounts UI can read it.</p>
+              <h4>Return from instagram-callback</h4>
+              <p>After authorization, the callback returns success or error values to this page.</p>
             </div>
           </div>
 
           <div class="step">
             <div class="step-num">4</div>
             <div>
-              <h4>Use it in your publish flow later</h4>
-              <p>Your posting pages can read the saved account and send publish requests through your backend.</p>
+              <h4>Show connected state</h4>
+              <p>The returned connection is saved locally for display in your app UI.</p>
             </div>
           </div>
         </div>
@@ -700,19 +694,22 @@
           <h3>Backend Route Setup</h3>
         </div>
 
-        <p class="muted" style="margin-bottom:14px;">
-          This page is wired to your Supabase Edge Function:
-        </p>
+        <div class="detail-item" style="margin-bottom:12px;">
+          <div class="detail-label">Start route</div>
+          <div class="detail-value">
+            <span class="code">https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-start</span>
+          </div>
+        </div>
 
         <div class="detail-item" style="margin-bottom:12px;">
-          <div class="detail-label">Current auth route</div>
+          <div class="detail-label">Callback route</div>
           <div class="detail-value">
-            <span class="code">https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-auth-start</span>
+            <span class="code">https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-callback</span>
           </div>
         </div>
 
         <p class="small">
-          Access tokens should ideally be stored securely on your backend, not permanently in the browser.
+          Your callback must save a row to <span class="code">connected_accounts</span> using a valid non-null <span class="code">user_id</span>.
         </p>
       </section>
     </div>
@@ -723,7 +720,7 @@
     var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
     var STORAGE_KEY = "view_connected_accounts";
     var PROVIDER = "instagram";
-    var DEFAULT_AUTH_ROUTE = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-auth-start";
+    var DEFAULT_AUTH_ROUTE = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-start";
 
     var supabase = null;
     var currentUser = null;
@@ -868,7 +865,7 @@
           '<div class="status-icon">⌛</div>' +
           '<div class="status-text">' +
           '<h4>Instagram not connected</h4>' +
-          '<p>Connect your Instagram account to prepare your View app for creator tools, publishing, and social account sync.</p>' +
+          '<p>Connect your Instagram account to prepare your View app for creator tools and publishing.</p>' +
           '</div>';
 
         connectBtn.querySelector(".btn-label").textContent = "Connect Instagram";
@@ -878,30 +875,37 @@
       }
     }
 
-    function cryptoRandom() {
-      var arr = new Uint8Array(16);
-      crypto.getRandomValues(arr);
-      return Array.from(arr).map(function(v) {
-        return v.toString(16).padStart(2, "0");
-      }).join("");
+    async function loadCurrentUser() {
+      try {
+        if (!supabase) {
+          currentUser = null;
+          return;
+        }
+        var result = await supabase.auth.getUser();
+        currentUser = result && result.data ? result.data.user : null;
+      } catch (e) {
+        currentUser = null;
+      }
     }
 
-    function beginInstagramConnect() {
+    async function beginInstagramConnect() {
       setButtonLoading(true);
+      await loadCurrentUser();
+
+      if (!currentUser || !currentUser.id) {
+        setButtonLoading(false);
+        setNotice("resultNotice", "error", "You must login before connecting Instagram.");
+        return;
+      }
+
       try {
         var finalRedirect = window.location.origin + window.location.pathname;
-        var sessionToken = cryptoRandom();
-        sessionStorage.setItem("view_instagram_oauth_state", sessionToken);
-
         var authRoute = localStorage.getItem("INSTAGRAM_AUTH_URL") || DEFAULT_AUTH_ROUTE;
         var url = new URL(authRoute);
-        url.searchParams.set("provider", "instagram");
-        url.searchParams.set("state", sessionToken);
-        url.searchParams.set("final_redirect", finalRedirect);
 
-        if (currentUser && currentUser.id) {
-          url.searchParams.set("user_id", currentUser.id);
-        }
+        url.searchParams.set("provider", "instagram");
+        url.searchParams.set("final_redirect", finalRedirect);
+        url.searchParams.set("user_id", currentUser.id);
 
         window.location.href = url.toString();
       } catch (err) {
@@ -958,19 +962,6 @@
       }
     }
 
-    async function loadCurrentUser() {
-      try {
-        if (!supabase) {
-          currentUser = null;
-          return;
-        }
-        var result = await supabase.auth.getUser();
-        currentUser = result && result.data ? result.data.user : null;
-      } catch (e) {
-        currentUser = null;
-      }
-    }
-
     async function refreshConnection() {
       await loadCurrentUser();
       renderConnection();
@@ -996,6 +987,5 @@
 </body>
 </html>
 
-Rewrite this to call Instagram-callback 
-And Instagram-start not auth-callback or auth-start
-Use the working basic permission
+
+Wait for the rest
