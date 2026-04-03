@@ -19,12 +19,10 @@
       --muted:#9fb1d7;
       --primary:#E1306C;
       --primary2:#F77737;
-      --blue:#2563eb;
       --success:#10b981;
       --warn:#f59e0b;
       --danger:#ef4444;
       --shadow:0 18px 60px rgba(0,0,0,.34);
-      --radius:24px;
       --safe-bottom:env(safe-area-inset-bottom, 0px);
     }
 
@@ -529,16 +527,15 @@
     <section class="hero">
       <div class="hero-grid">
         <div>
-          <h2>Connect Instagram with basic profile access</h2>
+          <h2>Connect Instagram through Supabase backend redirect</h2>
           <p>
-            Start the Instagram login flow, return to this page, exchange the code securely on
-            your backend, fetch the account profile, and save the connection into your existing
-            <b>connected_accounts</b> table.
+            This page starts Instagram login, sends the user to Instagram, returns to your
+            Supabase callback function, saves the connection, then brings the user back here.
           </p>
 
           <div class="pill-row">
-            <div class="pill">OAuth Ready</div>
-            <div class="pill">Profile Fetch</div>
+            <div class="pill">Supabase Redirect</div>
+            <div class="pill">Basic Login</div>
             <div class="pill">Saved in Supabase</div>
           </div>
         </div>
@@ -555,7 +552,7 @@
           <div class="stat">
             <div>
               <b>Redirect URI</b>
-              <span>Must match your Meta app settings exactly.</span>
+              <span>Register this exact Supabase URL in Meta.</span>
             </div>
             <div>↩</div>
           </div>
@@ -576,7 +573,7 @@
         <div class="card-head">
           <div>
             <h3>Connection Details</h3>
-            <p>Enter your Instagram app details, then start the login flow.</p>
+            <p>Enter your Instagram app details and start the login flow.</p>
           </div>
         </div>
 
@@ -620,26 +617,31 @@
               <div class="field">
                 <label class="label" for="scope">Requested scope</label>
                 <input class="input" id="scope" value="instagram_basic" />
-                <div class="hint">Keep this as instagram_basic for basic connection.</div>
+                <div class="hint">Use instagram_basic for basic login.</div>
               </div>
 
               <div class="field full">
-                <label class="label" for="redirectUri">Redirect URI</label>
+                <label class="label" for="redirectUri">Supabase redirect URI</label>
                 <div class="inline">
                   <input class="input" id="redirectUri" readonly />
                   <button class="mini-btn copy" id="copyRedirectBtn" type="button">Copy</button>
                 </div>
-                <div class="hint">Add this exact URI in your Instagram app settings.</div>
+                <div class="hint">Add this exact URL in your Instagram app redirect settings.</div>
+              </div>
+
+              <div class="field full">
+                <label class="label" for="returnUrl">Frontend return URL</label>
+                <input class="input" id="returnUrl" readonly />
               </div>
 
               <div class="field">
-                <label class="label" for="stateValue">OAuth state</label>
+                <label class="label" for="stateValue">Generated state</label>
                 <input class="input" id="stateValue" readonly />
               </div>
 
               <div class="field">
                 <label class="label" for="appNote">App note</label>
-                <input class="input" id="appNote" placeholder="Optional reference note" />
+                <input class="input" id="appNote" placeholder="Optional note" />
               </div>
 
               <div class="field full">
@@ -652,12 +654,7 @@
 
             <div class="inline">
               <button class="btn soft" id="startConnectBtn" type="button">Start Instagram Login</button>
-              <button class="btn primary" id="saveBtn" type="submit">Save manually</button>
-            </div>
-
-            <div class="hint" style="margin-top:12px">
-              Manual save only updates notes/app info for an already connected record. Use
-              <b>Start Instagram Login</b> to connect the account properly.
+              <button class="btn primary" id="saveBtn" type="submit">Save notes</button>
             </div>
           </form>
         </div>
@@ -667,7 +664,7 @@
         <div class="card-head">
           <div>
             <h3>Quick Setup Guide</h3>
-            <p>Do these once so Instagram login works on your app.</p>
+            <p>Do these steps so login works correctly.</p>
           </div>
         </div>
 
@@ -676,40 +673,40 @@
             <div class="step">
               <div class="step-no">1</div>
               <div>
-                <h4>Open your Meta app</h4>
-                <p>Use the same app where your Instagram product is configured.</p>
+                <h4>Put your App ID</h4>
+                <p>Use the Meta app ID for your Instagram login setup.</p>
               </div>
             </div>
 
             <div class="step">
               <div class="step-no">2</div>
               <div>
-                <h4>Add the redirect URI</h4>
-                <p>The redirect URI shown on this page must be allowed in your app settings.</p>
+                <h4>Register the redirect URI</h4>
+                <p>Use the exact Supabase callback URL shown on this page in Meta.</p>
               </div>
             </div>
 
             <div class="step">
               <div class="step-no">3</div>
               <div>
-                <h4>Use the basic permission</h4>
-                <p>For this page, the default scope is instagram_basic.</p>
+                <h4>Click Start Instagram Login</h4>
+                <p>The button below now uses the correct working start function.</p>
               </div>
             </div>
 
             <div class="step">
               <div class="step-no">4</div>
               <div>
-                <h4>Return to this page after login</h4>
-                <p>The page will detect the code, call your edge function, and save the account automatically.</p>
+                <h4>Complete Instagram login</h4>
+                <p>Instagram sends the code to Supabase, not directly to this page.</p>
               </div>
             </div>
 
             <div class="step">
               <div class="step-no">5</div>
               <div>
-                <h4>Test saved connection</h4>
-                <p>Use the test button to fetch the saved Instagram profile again.</p>
+                <h4>Return here automatically</h4>
+                <p>After save, your callback returns the user here with success or error.</p>
               </div>
             </div>
           </div>
@@ -719,8 +716,7 @@
           <div class="connected-box show" style="margin:0">
             <div class="muted">
               This page saves Instagram under platform value <b>instagram</b> in your existing
-              <b>connected_accounts</b> table. The actual token exchange happens on your backend
-              edge function so your app secret stays hidden.
+              <b>connected_accounts</b> table. Sensitive exchange remains on Supabase backend.
             </div>
           </div>
         </div>
@@ -738,8 +734,9 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const EXCHANGE_URL = `${SUPABASE_URL}/functions/v1/instagram-exchange`;
+    const INSTAGRAM_CALLBACK_URL = `${SUPABASE_URL}/functions/v1/instagram-callback`;
 
     const els = {
       banner: document.getElementById("banner"),
@@ -750,6 +747,7 @@
       appId: document.getElementById("appId"),
       scope: document.getElementById("scope"),
       redirectUri: document.getElementById("redirectUri"),
+      returnUrl: document.getElementById("returnUrl"),
       stateValue: document.getElementById("stateValue"),
       appNote: document.getElementById("appNote"),
       notes: document.getElementById("notes"),
@@ -773,11 +771,11 @@
     let currentUser = null;
     let existingRecord = null;
 
-    function getRedirectUri() {
+    function getFrontendReturnUrl() {
       return `${location.origin.replace(/\/$/, "")}${location.pathname}`;
     }
 
-    function generateState() {
+    function generateStateToken() {
       return "ig_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
     }
 
@@ -813,23 +811,21 @@
       else els.heroConnectionText.textContent = "No connection saved";
     }
 
-    function getFormData() {
-      return {
-        app_id: els.appId.value.trim(),
-        scope: els.scope.value.trim() || "instagram_basic",
-        redirect_uri: els.redirectUri.value.trim(),
-        state_value: els.stateValue.value.trim(),
-        app_note: els.appNote.value.trim(),
-        notes: els.notes.value.trim()
-      };
+    function fillDefaults() {
+      els.redirectUri.value = INSTAGRAM_CALLBACK_URL;
+      els.returnUrl.value = getFrontendReturnUrl();
+      els.stateValue.value = generateStateToken();
+      if (!els.scope.value.trim()) els.scope.value = "instagram_basic";
+      els.scopePreview.textContent = els.scope.value.trim() || "instagram_basic";
     }
 
     function fillForm(record) {
       const meta = record?.meta || record?.metadata || {};
       els.appId.value = meta.app_id || "";
       els.scope.value = meta.scope || "instagram_basic";
-      els.redirectUri.value = meta.redirect_uri || getRedirectUri();
-      els.stateValue.value = generateState();
+      els.redirectUri.value = meta.redirect_uri || INSTAGRAM_CALLBACK_URL;
+      els.returnUrl.value = meta.return_url || getFrontendReturnUrl();
+      els.stateValue.value = generateStateToken();
       els.appNote.value = meta.app_note || "";
       els.notes.value = meta.notes || "";
       els.scopePreview.textContent = els.scope.value.trim() || "instagram_basic";
@@ -863,10 +859,12 @@
       if (error) throw error;
 
       currentUser = data?.session?.user || null;
+
       if (!currentUser) {
         location.href = "login.html";
         return false;
       }
+
       return true;
     }
 
@@ -891,146 +889,78 @@
       existingRecord = Array.isArray(data) && data.length ? data[0] : null;
 
       if (existingRecord) fillForm(existingRecord);
-      else {
-        els.redirectUri.value = getRedirectUri();
-        els.stateValue.value = generateState();
-        els.scope.value = "instagram_basic";
-        els.scopePreview.textContent = "instagram_basic";
-      }
+      else fillDefaults();
 
       renderConnected(existingRecord);
     }
 
-    function buildAuthorizeUrl() {
-      const form = getFormData();
-
-      if (!form.app_id) {
-        throw new Error("Enter your Instagram App ID first.");
-      }
-
-      if (!form.redirect_uri) {
-        throw new Error("Redirect URI is missing.");
-      }
-
-      if (!form.scope) {
-        throw new Error("Scope is missing.");
-      }
-
-      sessionStorage.setItem("view_instagram_oauth_state", form.state_value);
-      sessionStorage.setItem("view_instagram_oauth_app_id", form.app_id);
-      sessionStorage.setItem("view_instagram_oauth_scope", form.scope);
-      sessionStorage.setItem("view_instagram_oauth_redirect_uri", form.redirect_uri);
-      sessionStorage.setItem("view_instagram_oauth_app_note", form.app_note);
-      sessionStorage.setItem("view_instagram_oauth_notes", form.notes);
-
-      const url = "https://www.instagram.com/oauth/authorize" +
-        `?enable_fb_login=0` +
-        `&force_authentication=1` +
-        `&client_id=${encodeURIComponent(form.app_id)}` +
-        `&redirect_uri=${encodeURIComponent(form.redirect_uri)}` +
-        `&response_type=code` +
-        `&scope=${encodeURIComponent(form.scope)}` +
-        `&state=${encodeURIComponent(form.state_value)}`;
-
-      return url;
-    }
-
-    async function startInstagramLogin() {
-      clearBanner();
-
-      try {
-        const url = buildAuthorizeUrl();
-        location.href = url;
-      } catch (error) {
-        setBanner(error.message || "Unable to start Instagram login.", "warn");
-      }
-    }
-
-    async function exchangeReturnedCode() {
+    function readOAuthResultFromUrl() {
       const params = new URLSearchParams(location.search);
-      const code = params.get("code");
-      const state = params.get("state");
-      const errorReason = params.get("error_reason");
-      const errorDescription = params.get("error_description");
+      const connected = params.get("connected");
+      const error = params.get("error");
+      const message = params.get("message");
 
-      if (errorReason || errorDescription) {
-        setBanner(errorDescription || errorReason || "Instagram authorization failed.", "error");
-        return;
-      }
-
-      if (!code) return;
-
-      const savedState = sessionStorage.getItem("view_instagram_oauth_state") || "";
-      const appId = sessionStorage.getItem("view_instagram_oauth_app_id") || "";
-      const scope = sessionStorage.getItem("view_instagram_oauth_scope") || "instagram_basic";
-      const redirectUri = sessionStorage.getItem("view_instagram_oauth_redirect_uri") || getRedirectUri();
-      const appNote = sessionStorage.getItem("view_instagram_oauth_app_note") || "";
-      const notes = sessionStorage.getItem("view_instagram_oauth_notes") || "";
-
-      if (!state || !savedState || state !== savedState) {
-        setBanner("Instagram state check failed. Please try again.", "error");
-        clearOAuthQuery();
-        return;
-      }
-
-      if (!appId) {
-        setBanner("Missing saved Instagram app ID. Start the connection again.", "error");
-        clearOAuthQuery();
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setBanner("Finishing Instagram connection...", "info");
-
-        const res = await fetch(EXCHANGE_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-            "apikey": SUPABASE_ANON_KEY
-          },
-          body: JSON.stringify({
-            code,
-            redirect_uri: redirectUri,
-            app_id: appId,
-            scope,
-            user_id: currentUser.id,
-            app_note: appNote,
-            notes
-          })
-        });
-
-        const json = await res.json().catch(() => ({}));
-
-        if (!res.ok) {
-          throw new Error(json?.error || "Instagram token exchange failed.");
-        }
-
-        existingRecord = json.record || null;
-        if (existingRecord) {
-          renderConnected(existingRecord);
-          fillForm(existingRecord);
-        }
-
+      if (connected === "1") {
         setBanner("Instagram connected and saved successfully.", "success");
         clearOAuthQuery();
-      } catch (error) {
-        setBanner(error.message || "Instagram connection failed.", "error");
+      } else if (error) {
+        setBanner(decodeURIComponent(message || error), "error");
         clearOAuthQuery();
-      } finally {
-        setLoading(false);
       }
     }
 
     function clearOAuthQuery() {
       const url = new URL(location.href);
-      url.searchParams.delete("code");
-      url.searchParams.delete("state");
+      url.searchParams.delete("connected");
       url.searchParams.delete("error");
-      url.searchParams.delete("error_reason");
-      url.searchParams.delete("error_description");
+      url.searchParams.delete("message");
       history.replaceState({}, document.title, url.pathname);
+    }
+
+    function startInstagramLogin() {
+      try {
+        const appId = els.appId.value.trim();
+        const scope = els.scope.value.trim() || "instagram_basic";
+        const redirectUri = INSTAGRAM_CALLBACK_URL;
+        const returnUrl = getFrontendReturnUrl();
+
+        if (!appId) {
+          setBanner("Enter your Instagram App ID first.", "warn");
+          return;
+        }
+
+        if (!currentUser || !currentUser.id) {
+          setBanner("You must be logged in first.", "warn");
+          return;
+        }
+
+        const statePayload = {
+          csrf: generateStateToken(),
+          user_id: currentUser.id,
+          app_id: appId,
+          scope: scope,
+          return_url: returnUrl,
+          app_note: els.appNote.value.trim() || "",
+          notes: els.notes.value.trim() || ""
+        };
+
+        const encodedState = btoa(JSON.stringify(statePayload));
+        els.stateValue.value = statePayload.csrf;
+
+        const authUrl =
+          "https://www.instagram.com/oauth/authorize" +
+          "?enable_fb_login=0" +
+          "&force_authentication=1" +
+          "&client_id=" + encodeURIComponent(appId) +
+          "&redirect_uri=" + encodeURIComponent(redirectUri) +
+          "&response_type=code" +
+          "&scope=" + encodeURIComponent(scope) +
+          "&state=" + encodeURIComponent(encodedState);
+
+        window.location.href = authUrl;
+      } catch (err) {
+        setBanner(err.message || "Failed to start Instagram login.", "error");
+      }
     }
 
     async function saveManualChanges() {
@@ -1041,24 +971,24 @@
         return;
       }
 
-      const form = getFormData();
       const meta = existingRecord.meta || existingRecord.metadata || {};
 
-      setLoading(true);
+      const payload = {
+        account_name: meta.username || existingRecord.account_name || "Instagram",
+        status: existingRecord.status || "active",
+        meta: {
+          ...meta,
+          app_id: els.appId.value.trim(),
+          scope: els.scope.value.trim() || "instagram_basic",
+          redirect_uri: els.redirectUri.value.trim(),
+          return_url: els.returnUrl.value.trim(),
+          app_note: els.appNote.value.trim(),
+          notes: els.notes.value.trim()
+        }
+      };
 
       try {
-        const payload = {
-          account_name: meta.username || existingRecord.account_name || "Instagram",
-          status: existingRecord.status || "active",
-          meta: {
-            ...meta,
-            app_id: form.app_id,
-            scope: form.scope,
-            redirect_uri: form.redirect_uri,
-            app_note: form.app_note,
-            notes: form.notes
-          }
-        };
+        setLoading(true);
 
         const { data, error } = await supabase
           .from("connected_accounts")
@@ -1125,10 +1055,9 @@
         return;
       }
 
-      setLoading(true);
-      clearBanner();
-
       try {
+        setLoading(true);
+
         const { error } = await supabase
           .from("connected_accounts")
           .delete()
@@ -1139,10 +1068,7 @@
 
         existingRecord = null;
         els.connectForm.reset();
-        els.redirectUri.value = getRedirectUri();
-        els.stateValue.value = generateState();
-        els.scope.value = "instagram_basic";
-        els.scopePreview.textContent = "instagram_basic";
+        fillDefaults();
         renderConnected(null);
         setBanner("Instagram connection removed.", "success");
       } catch (error) {
@@ -1155,24 +1081,21 @@
     async function copyRedirectUri() {
       try {
         await navigator.clipboard.writeText(els.redirectUri.value);
-        setBanner("Redirect URI copied.", "success");
+        setBanner("Supabase redirect URI copied.", "success");
       } catch {
         setBanner("Could not copy automatically. Please copy it manually.", "warn");
       }
     }
 
     async function init() {
-      els.redirectUri.value = getRedirectUri();
-      els.stateValue.value = generateState();
-      els.scope.value = "instagram_basic";
-      els.scopePreview.textContent = "instagram_basic";
+      fillDefaults();
 
       try {
         setLoading(true);
         const authed = await requireAuth();
         if (!authed) return;
         await loadConnection();
-        await exchangeReturnedCode();
+        readOAuthResultFromUrl();
       } catch (error) {
         setBanner(error.message || "Unable to initialize page.", "error");
         setHeroState("warn");
