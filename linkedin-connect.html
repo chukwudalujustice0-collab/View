@@ -9,6 +9,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root{
       --bg:#08111f;
@@ -25,6 +26,7 @@
       --safe-top:env(safe-area-inset-top,0px);
       --safe-bottom:env(safe-area-inset-bottom,0px);
     }
+
     *{box-sizing:border-box}
     html,body{margin:0;padding:0}
     body{
@@ -36,11 +38,13 @@
         radial-gradient(circle at top left, rgba(124,58,237,.14), transparent 22%),
         linear-gradient(180deg,#08111f 0%, #0c162b 100%);
     }
+
     .page{
       max-width:860px;
       margin:0 auto;
       padding:calc(18px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
     }
+
     .topbar{
       display:flex;
       align-items:center;
@@ -48,36 +52,49 @@
       gap:12px;
       margin-bottom:18px;
     }
+
     .back-btn,.link-btn,.btn{
       border:none;
       cursor:pointer;
       font:inherit;
     }
+
     .back-btn{
       width:46px;height:46px;border-radius:14px;
       background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line);
     }
+
     .heading-wrap{flex:1;min-width:0}
     .eyebrow{color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
     h1{margin:0;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
     .link-btn{
       display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 14px;border-radius:14px;
       background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--line);text-decoration:none;
     }
+
     .notice{
-      display:none;margin-bottom:16px;padding:14px 15px;border-radius:16px;border:1px solid var(--line);
-      font-size:14px;line-height:1.5;word-break:break-word;
+      display:none;
+      margin-bottom:16px;
+      padding:14px 15px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      font-size:14px;
+      line-height:1.5;
+      word-break:break-word;
     }
     .notice.show{display:block}
     .notice.success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.24);color:#d1fae5}
     .notice.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.24);color:#fef3c7}
     .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#fee2e2}
     .notice.info{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.24);color:#dbeafe}
+
     .hero,.card{
       background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
       border:1px solid var(--line);
       box-shadow:var(--shadow);
     }
+
     .hero{border-radius:28px;padding:22px 18px;margin-bottom:16px}
     .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
     .brand{display:flex;gap:14px;align-items:center;min-width:0}
@@ -87,28 +104,44 @@
     }
     .brand-text h2{margin:0 0 5px;font-size:20px}
     .brand-text p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
+
     .chip{
       padding:10px 12px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--line);
       background:rgba(255,255,255,.06);color:var(--muted);white-space:nowrap;
     }
     .chip.connected{color:#d1fae5;background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.24)}
     .chip.disconnected{color:#fef3c7;background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.24)}
+
     .hero-copy{color:#dbe7ff;font-size:14px;line-height:1.6;margin:0 0 18px}
     .actions{display:flex;flex-wrap:wrap;gap:12px}
+
     .btn{
       min-height:48px;border-radius:16px;padding:0 16px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:10px;
     }
     .btn[disabled]{opacity:.6;cursor:not-allowed}
     .btn-primary{background:linear-gradient(180deg,#0a66c2,#004182);color:#fff}
     .btn-secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}
+    .btn-danger{background:rgba(239,68,68,.12);color:#fecaca;border:1px solid rgba(239,68,68,.22)}
+
     .grid{display:grid;gap:16px;grid-template-columns:1fr}
     .card{border-radius:24px;padding:18px}
     .card h3{margin:0 0 14px;font-size:17px}
+
     .rows{display:grid;gap:12px}
     .row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line)}
     .row:last-child{border-bottom:none;padding-bottom:0}
     .label{color:var(--muted);font-size:13px;min-width:110px}
     .value{text-align:right;font-size:14px;line-height:1.45;max-width:72%;word-break:break-word}
+
+    .muted{color:var(--muted);font-size:14px;line-height:1.55}
+    .hidden{display:none!important}
+
+    .spinner{
+      width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);
+      border-top-color:#fff;display:none;animation:spin 1s linear infinite;
+    }
+    .spinner.show{display:inline-block}
+
     .logbox{
       background:#09101d;
       border:1px solid var(--line);
@@ -118,18 +151,20 @@
       line-height:1.5;
       white-space:pre-wrap;
       word-break:break-word;
-      min-height:140px;
-      max-height:320px;
+      min-height:160px;
+      max-height:340px;
       overflow:auto;
       color:#dbeafe;
     }
-    @media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(min-width:760px){.grid{grid-template-columns:1.1fr .9fr}}
   </style>
 </head>
 <body>
   <div class="page">
     <div class="topbar">
-      <button class="back-btn" type="button" onclick="goBack()">←</button>
+      <button class="back-btn" id="backBtn" type="button">←</button>
       <div class="heading-wrap">
         <div class="eyebrow">View account center</div>
         <h1>LinkedIn connection</h1>
@@ -145,240 +180,29 @@
           <div class="brand-icon">in</div>
           <div class="brand-text">
             <h2>Connect LinkedIn</h2>
-            <p>This version shows every step so we can see exactly where the flow is failing.</p>
+            <p>Connect LinkedIn and save it to your View connected accounts with a real signed-in session.</p>
           </div>
         </div>
         <div id="statusChip" class="chip disconnected">Not connected</div>
       </div>
 
       <p class="hero-copy">
-        Tap the button once. Then check the debug panel below for the exact step and error.
+        This page checks your current session, loads any saved LinkedIn row, and starts the LinkedIn OAuth flow using your Edge Function.
       </p>
 
       <div class="actions">
-        <button id="connectBtn" class="btn btn-primary" type="button" onclick="connectLinkedInNow()">Connect LinkedIn</button>
-        <button class="btn btn-secondary" type="button" onclick="refreshStatusNow()">Refresh status</button>
+        <button id="connectBtn" class="btn btn-primary" type="button">
+          <span id="connectSpinner" class="spinner"></span>
+          <span id="connectBtnText">Connect LinkedIn</span>
+        </button>
+        <button id="refreshBtn" class="btn btn-secondary" type="button">Refresh status</button>
+        <button id="disconnectBtn" class="btn btn-danger hidden" type="button">Disconnect</button>
       </div>
     </section>
 
     <section class="grid">
       <div class="card">
-        <h3>Status</h3>
+        <h3>Connection details</h3>
         <div class="rows">
-          <div class="row"><div class="label">Session</div><div class="value" id="sessionValue">—</div></div>
-          <div class="row"><div class="label">Current user</div><div class="value" id="userValue">—</div></div>
-          <div class="row"><div class="label">LinkedIn row</div><div class="value" id="rowValue">—</div></div>
-          <div class="row"><div class="label">Start URL</div><div class="value">linkedin-start</div></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Debug log</h3>
-        <div id="logbox" class="logbox"></div>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const FN_BASE = `${SUPABASE_URL}/functions/v1`;
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const noticeEl = document.getElementById("notice");
-    const logEl = document.getElementById("logbox");
-    const sessionValue = document.getElementById("sessionValue");
-    const userValue = document.getElementById("userValue");
-    const rowValue = document.getElementById("rowValue");
-    const statusChip = document.getElementById("statusChip");
-    const connectBtn = document.getElementById("connectBtn");
-
-    let currentUser = null;
-
-    function log(msg, data) {
-      const line = `[${new Date().toLocaleTimeString()}] ${msg}` + (data ? `\n${typeof data === "string" ? data : JSON.stringify(data, null, 2)}` : "");
-      logEl.textContent = line + "\n\n" + logEl.textContent;
-      console.log(msg, data || "");
-    }
-
-    function showNotice(message, type = "warn") {
-      noticeEl.className = `notice show ${type}`;
-      noticeEl.textContent = message;
-    }
-
-    function setConnected(connected) {
-      statusChip.textContent = connected ? "Connected" : "Not connected";
-      statusChip.className = connected ? "chip connected" : "chip disconnected";
-    }
-
-    function goBack() {
-      if (document.referrer) history.back();
-      else window.location.href = "connected-accounts.html";
-    }
-    window.goBack = goBack;
-
-    async function getSessionInfo() {
-      log("Checking Supabase session...");
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) {
-        log("Session error", sessionError);
-        throw sessionError;
-      }
-
-      const session = sessionData?.session || null;
-      sessionValue.textContent = session?.access_token ? "Active" : "No session";
-
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        log("User error", userError);
-        throw userError;
-      }
-
-      currentUser = userData?.user || null;
-      userValue.textContent = currentUser?.id || "—";
-
-      log("Session result", {
-        hasSession: !!session?.access_token,
-        userId: currentUser?.id || null
-      });
-
-      return session;
-    }
-
-    async function loadLinkedInRow() {
-      try {
-        const session = await getSessionInfo();
-        if (!session || !currentUser?.id) {
-          rowValue.textContent = "No session";
-          setConnected(false);
-          return;
-        }
-
-        log("Checking connected_accounts for linkedin...");
-        const { data, error } = await supabase
-          .from("connected_accounts")
-          .select("*")
-          .eq("user_id", currentUser.id)
-          .eq("provider", "linkedin")
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (error) {
-          log("Database read error", error);
-          throw error;
-        }
-
-        if (data && data.length) {
-          rowValue.textContent = "Found";
-          setConnected(true);
-          log("LinkedIn row found", data[0]);
-        } else {
-          rowValue.textContent = "Not found";
-          setConnected(false);
-          log("No LinkedIn row found");
-        }
-      } catch (err) {
-        rowValue.textContent = "Read failed";
-        setConnected(false);
-        showNotice(err.message || "Could not load LinkedIn status.", "error");
-      }
-    }
-
-    async function connectLinkedInNow() {
-      try {
-        connectBtn.disabled = true;
-        showNotice("Starting LinkedIn flow...", "info");
-        log("Connect button clicked");
-
-        const session = await getSessionInfo();
-
-        if (!session?.access_token) {
-          showNotice("No active session. Login first.", "warn");
-          log("Stopped: no active session");
-          return;
-        }
-
-        const finalRedirect = `${window.location.origin}/connected-accounts.html`;
-        const startUrl = `${FN_BASE}/linkedin-start?final_redirect=${encodeURIComponent(finalRedirect)}`;
-
-        log("Calling linkedin-start", startUrl);
-
-        const res = await fetch(startUrl, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${session.access_token}`
-          }
-        });
-
-        let rawText = "";
-        try {
-          rawText = await res.text();
-        } catch (e) {
-          rawText = "";
-        }
-
-        log("linkedin-start response", {
-          status: res.status,
-          ok: res.ok,
-          body: rawText
-        });
-
-        let data = {};
-        try {
-          data = rawText ? JSON.parse(rawText) : {};
-        } catch (e) {
-          data = {};
-        }
-
-        if (!res.ok) {
-          throw new Error(data.error || rawText || `linkedin-start failed (${res.status})`);
-        }
-
-        if (!data.auth_url) {
-          throw new Error("linkedin-start did not return auth_url");
-        }
-
-        log("Redirecting to LinkedIn auth", data.auth_url);
-        window.location.href = data.auth_url;
-      } catch (err) {
-        log("Connect flow failed", err.message || err);
-        showNotice(err.message || "Failed to start LinkedIn login.", "error");
-      } finally {
-        connectBtn.disabled = false;
-      }
-    }
-    window.connectLinkedInNow = connectLinkedInNow;
-
-    async function refreshStatusNow() {
-      showNotice("Refreshing status...", "info");
-      await loadLinkedInRow();
-    }
-    window.refreshStatusNow = refreshStatusNow;
-
-    function readQueryMessage() {
-      const params = new URLSearchParams(window.location.search);
-      const status = params.get("status");
-      const provider = params.get("provider");
-      const message = params.get("message");
-
-      if (provider !== "linkedin") return;
-
-      if (status === "success") {
-        showNotice(message || "LinkedIn connected successfully.", "success");
-        log("Callback success", { status, provider, message });
-      } else if (status === "error") {
-        showNotice(message || "LinkedIn connection failed.", "error");
-        log("Callback error", { status, provider, message });
-      }
-    }
-
-    async function init() {
-      log("Page loaded");
-      readQueryMessage();
-      await loadLinkedInRow();
-    }
-
-    window.addEventListener("load", init);
-  </script>
-</body>
-</html>
+          <div class="row"><div class="label">Status</div><div class="value" id="detailStatus">—</div></div>
+          <div class="row"><div class="
