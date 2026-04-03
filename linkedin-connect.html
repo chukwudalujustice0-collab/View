@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>LinkedIn Connection | View</title>
   <meta name="theme-color" content="#08111f" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root{
       --bg:#08111f;
@@ -18,7 +14,6 @@
       --text:#f4f7ff;
       --muted:#9fb1d7;
       --primary:#0a66c2;
-      --primary2:#004182;
       --success:#10b981;
       --warn:#f59e0b;
       --danger:#ef4444;
@@ -35,7 +30,7 @@
       color:var(--text);
       background:
         radial-gradient(circle at top right, rgba(10,102,194,.18), transparent 28%),
-        radial-gradient(circle at top left, rgba(124,58,237,.14), transparent 22%),
+        radial-gradient(circle at top left, rgba(124,58,237,.16), transparent 22%),
         linear-gradient(180deg,#08111f 0%, #0c162b 100%);
     }
 
@@ -74,14 +69,8 @@
     }
 
     .notice{
-      display:none;
-      margin-bottom:16px;
-      padding:14px 15px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      font-size:14px;
-      line-height:1.5;
-      word-break:break-word;
+      display:none;margin-bottom:16px;padding:14px 15px;border-radius:16px;border:1px solid var(--line);
+      font-size:14px;line-height:1.5;word-break:break-word;
     }
     .notice.show{display:block}
     .notice.success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.24);color:#d1fae5}
@@ -142,21 +131,6 @@
     }
     .spinner.show{display:inline-block}
 
-    .logbox{
-      background:#09101d;
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px;
-      font-size:12px;
-      line-height:1.5;
-      white-space:pre-wrap;
-      word-break:break-word;
-      min-height:160px;
-      max-height:340px;
-      overflow:auto;
-      color:#dbeafe;
-    }
-
     @keyframes spin{to{transform:rotate(360deg)}}
     @media(min-width:760px){.grid{grid-template-columns:1.1fr .9fr}}
   </style>
@@ -169,7 +143,7 @@
         <div class="eyebrow">View account center</div>
         <h1>LinkedIn connection</h1>
       </div>
-      <a class="link-btn" href="connected-accounts.html">All accounts</a>
+      <a class="link-btn" href="connect-account.html">All accounts</a>
     </div>
 
     <div id="notice" class="notice"></div>
@@ -180,14 +154,14 @@
           <div class="brand-icon">in</div>
           <div class="brand-text">
             <h2>Connect LinkedIn</h2>
-            <p>Connect LinkedIn and save it to your View connected accounts with a real signed-in session.</p>
+            <p>Connect LinkedIn and save the account for profile sync and publishing.</p>
           </div>
         </div>
         <div id="statusChip" class="chip disconnected">Not connected</div>
       </div>
 
       <p class="hero-copy">
-        This page checks your current session, loads any saved LinkedIn row, and starts the LinkedIn OAuth flow using your Edge Function.
+        This page loads your saved LinkedIn connection and starts the LinkedIn auth flow securely using your current View session.
       </p>
 
       <div class="actions">
@@ -205,4 +179,266 @@
         <h3>Connection details</h3>
         <div class="rows">
           <div class="row"><div class="label">Status</div><div class="value" id="detailStatus">—</div></div>
-          <div class="row"><div class="
+          <div class="row"><div class="label">Name</div><div class="value" id="detailName">—</div></div>
+          <div class="row"><div class="label">Handle / email</div><div class="value" id="detailHandle">—</div></div>
+          <div class="row"><div class="label">LinkedIn user ID</div><div class="value" id="detailUserId">—</div></div>
+          <div class="row"><div class="label">Provider</div><div class="value" id="detailProvider">linkedin</div></div>
+          <div class="row"><div class="label">Token expiry</div><div class="value" id="detailExpiry">—</div></div>
+          <div class="row"><div class="label">Last synced</div><div class="value" id="detailSynced">—</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Session details</h3>
+        <div class="rows">
+          <div class="row"><div class="label">Session</div><div class="value" id="detailSession">—</div></div>
+          <div class="row"><div class="label">Current user</div><div class="value" id="detailCurrentUser">—</div></div>
+          <div class="row"><div class="label">Start route</div><div class="value">linkedin-start</div></div>
+          <div class="row"><div class="label">Callback route</div><div class="value">linkedin-callback</div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+      const FN_BASE = `${SUPABASE_URL}/functions/v1`;
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      const els = {
+        backBtn: document.getElementById("backBtn"),
+        notice: document.getElementById("notice"),
+        statusChip: document.getElementById("statusChip"),
+        connectBtn: document.getElementById("connectBtn"),
+        connectSpinner: document.getElementById("connectSpinner"),
+        connectBtnText: document.getElementById("connectBtnText"),
+        refreshBtn: document.getElementById("refreshBtn"),
+        disconnectBtn: document.getElementById("disconnectBtn"),
+        detailStatus: document.getElementById("detailStatus"),
+        detailName: document.getElementById("detailName"),
+        detailHandle: document.getElementById("detailHandle"),
+        detailUserId: document.getElementById("detailUserId"),
+        detailProvider: document.getElementById("detailProvider"),
+        detailExpiry: document.getElementById("detailExpiry"),
+        detailSynced: document.getElementById("detailSynced"),
+        detailSession: document.getElementById("detailSession"),
+        detailCurrentUser: document.getElementById("detailCurrentUser")
+      };
+
+      let currentAccount = null;
+      let currentUser = null;
+
+      function showNotice(message, type = "warn") {
+        els.notice.className = `notice show ${type}`;
+        els.notice.textContent = message;
+      }
+
+      function fmtDate(value) {
+        if (!value) return "—";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return String(value);
+        return d.toLocaleString([], {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit"
+        });
+      }
+
+      function setBusy(state) {
+        els.connectBtn.disabled = state;
+        els.refreshBtn.disabled = state;
+        els.disconnectBtn.disabled = state;
+        els.connectSpinner.classList.toggle("show", state);
+        els.connectBtnText.textContent = state ? "Please wait..." : "Connect LinkedIn";
+      }
+
+      function setDisconnectedUI() {
+        currentAccount = null;
+        els.statusChip.textContent = "Not connected";
+        els.statusChip.className = "chip disconnected";
+        els.disconnectBtn.classList.add("hidden");
+        els.detailStatus.textContent = "No saved LinkedIn connection";
+        els.detailName.textContent = "—";
+        els.detailHandle.textContent = "—";
+        els.detailUserId.textContent = "—";
+        els.detailExpiry.textContent = "—";
+        els.detailSynced.textContent = "—";
+      }
+
+      function setConnectedUI(data) {
+        currentAccount = data;
+        els.statusChip.textContent = "Connected";
+        els.statusChip.className = "chip connected";
+        els.disconnectBtn.classList.remove("hidden");
+        els.detailStatus.textContent = data.status || "connected";
+        els.detailName.textContent = data.account_name || "—";
+        els.detailHandle.textContent = data.account_handle || "—";
+        els.detailUserId.textContent = data.external_user_id || "—";
+        els.detailExpiry.textContent = fmtDate(data.token_expires_at);
+        els.detailSynced.textContent = fmtDate(data.updated_at || data.created_at);
+      }
+
+      async function getSessionOrWarn() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        const session = data?.session || null;
+        els.detailSession.textContent = session?.access_token ? "Active session found" : "No active session";
+
+        const { data: userData } = await supabase.auth.getUser();
+        currentUser = userData?.user || null;
+        els.detailCurrentUser.textContent = currentUser?.id || "—";
+
+        if (!session?.access_token) {
+          showNotice("You are not signed in. Please login first.", "warn");
+          return null;
+        }
+
+        return session;
+      }
+
+      async function safeFetch(url, options = {}, timeoutMs = 20000) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          return await fetch(url, { ...options, signal: controller.signal });
+        } finally {
+          clearTimeout(timeout);
+        }
+      }
+
+      async function loadStatus() {
+        setBusy(true);
+        try {
+          const session = await getSessionOrWarn();
+          if (!session || !currentUser?.id) {
+            setDisconnectedUI();
+            return;
+          }
+
+          const { data, error } = await supabase
+            .from("connected_accounts")
+            .select("*")
+            .eq("user_id", currentUser.id)
+            .eq("provider", "linkedin")
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+          if (error) throw error;
+
+          if (data && data.length) {
+            setConnectedUI(data[0]);
+            showNotice("LinkedIn status loaded.", "success");
+          } else {
+            setDisconnectedUI();
+            showNotice("No LinkedIn account is connected yet.", "warn");
+          }
+        } catch (err) {
+          setDisconnectedUI();
+          showNotice(err.message || "Could not load LinkedIn status.", "error");
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      async function connectLinkedIn() {
+        setBusy(true);
+        try {
+          const session = await getSessionOrWarn();
+          if (!session) return;
+
+          const finalRedirect = `${window.location.origin}/connected-accounts.html`;
+
+          const res = await safeFetch(
+            `${FN_BASE}/linkedin-start?final_redirect=${encodeURIComponent(finalRedirect)}`,
+            {
+              method: "GET",
+              headers: {
+                "Authorization": `Bearer ${session.access_token}`
+              }
+            }
+          );
+
+          const data = await res.json().catch(() => ({}));
+
+          if (!res.ok) {
+            throw new Error(data?.error || `LinkedIn start failed (${res.status})`);
+          }
+
+          if (!data?.auth_url) {
+            throw new Error("linkedin-start did not return auth_url");
+          }
+
+          window.location.href = data.auth_url;
+        } catch (err) {
+          showNotice(err.message || "Failed to start LinkedIn login.", "error");
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      async function disconnectLinkedIn() {
+        const ok = confirm("Disconnect saved LinkedIn account?");
+        if (!ok) return;
+
+        setBusy(true);
+        try {
+          if (!currentUser?.id) {
+            const session = await getSessionOrWarn();
+            if (!session || !currentUser?.id) return;
+          }
+
+          const { error } = await supabase
+            .from("connected_accounts")
+            .delete()
+            .eq("user_id", currentUser.id)
+            .eq("provider", "linkedin");
+
+          if (error) throw error;
+
+          setDisconnectedUI();
+          showNotice("LinkedIn disconnected successfully.", "success");
+        } catch (err) {
+          showNotice(err.message || "Disconnect failed.", "error");
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      function readQueryMessage() {
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get("status");
+        const provider = params.get("provider");
+        const message = params.get("message");
+
+        if (provider !== "linkedin") return;
+
+        if (status === "success") {
+          showNotice(message || "LinkedIn connected successfully.", "success");
+        } else if (status === "error") {
+          showNotice(message || "LinkedIn connection failed.", "error");
+        }
+      }
+
+      els.backBtn.addEventListener("click", () => {
+        if (document.referrer) history.back();
+        else window.location.href = "connect-account.html";
+      });
+
+      els.connectBtn.addEventListener("click", connectLinkedIn);
+      els.refreshBtn.addEventListener("click", loadStatus);
+      els.disconnectBtn.addEventListener("click", disconnectLinkedIn);
+
+      readQueryMessage();
+      loadStatus();
+    });
+  </script>
+</body>
+</html>
+
+
+This is the current linkedin connect and it didn't work  analyse and rewrite it completely so it will work.  Use the Facebook pattern since it work well.  Also remember i don't like patches i like complete files
