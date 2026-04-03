@@ -40,9 +40,7 @@
       color:var(--text);
     }
 
-    body{
-      position:relative;
-    }
+    body{ position:relative; }
 
     a{
       color:inherit;
@@ -87,9 +85,7 @@
       background:#000;
     }
 
-    .feed-shell::-webkit-scrollbar{
-      display:none;
-    }
+    .feed-shell::-webkit-scrollbar{ display:none; }
 
     .video-slide{
       position:relative;
@@ -221,6 +217,10 @@
       border:2px solid rgba(255,255,255,.9);
       box-shadow:var(--shadow);
       background:#1d4ed8;
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      font-size:20px;
     }
 
     .creator-mini img{
@@ -246,6 +246,7 @@
       font-weight:900;
       border:2px solid #000;
       box-shadow:var(--shadow);
+      z-index:3;
     }
 
     .rail-action{
@@ -274,6 +275,7 @@
       font-weight:700;
       color:#fff;
       text-shadow:0 2px 10px rgba(0,0,0,.45);
+      text-align:center;
     }
 
     .bottom-caption{
@@ -549,21 +551,10 @@
     }
 
     @media (max-width:560px){
-      .feed-tabs{
-        gap:18px;
-      }
-
-      .feed-tab{
-        font-size:16px;
-      }
-
-      .bottom-caption{
-        padding-right:82px;
-      }
-
-      .author-name{
-        font-size:15px;
-      }
+      .feed-tabs{ gap:18px; }
+      .feed-tab{ font-size:16px; }
+      .bottom-caption{ padding-right:82px; }
+      .author-name{ font-size:15px; }
     }
   </style>
 </head>
@@ -615,9 +606,11 @@
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    const REAL_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, REAL_SUPABASE_ANON_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -676,27 +669,38 @@
       return String(n);
     }
 
-    function isVideoUrl(url) {
-      return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url || "");
+    function getInitial(value) {
+      return String(value || "U").trim().charAt(0).toUpperCase() || "U";
     }
 
-    function toArray(value) {
-      if (Array.isArray(value)) return value.filter(Boolean);
-      if (typeof value === "string" && value.trim()) return [value.trim()];
-      return [];
+    function looksLikeVideoByUrl(value) {
+      const v = String(value || "").toLowerCase();
+      return (
+        v.includes(".mp4") ||
+        v.includes(".webm") ||
+        v.includes(".ogg") ||
+        v.includes(".mov") ||
+        v.includes(".m4v") ||
+        v.includes(".3gp") ||
+        v.includes(".mkv")
+      );
     }
 
-    function extractVideoUrl(post) {
-      const possible = [
-        post.media_url,
-        post.video_url,
-        post.reel_url,
-        ...toArray(post.media_urls),
-        ...toArray(post.media),
-        ...toArray(post.files)
-      ].filter(Boolean);
+    function looksLikeVideoByType(value) {
+      return String(value || "").toLowerCase().startsWith("video/");
+    }
 
-      return possible.find(isVideoUrl) || "";
+    function normalizeMediaUrl(post) {
+      const mediaUrl = String(post.media_url || "").trim();
+      const mediaPath = String(post.media_path || "").trim();
+
+      if (mediaUrl) return mediaUrl;
+
+      if (mediaPath && /^https?:\/\//i.test(mediaPath)) {
+        return mediaPath;
+      }
+
+      return "";
     }
 
     function getDisplayName(post) {
@@ -715,15 +719,30 @@
       return userId ? `public-profile.html?id=${encodeURIComponent(userId)}` : "public-profile.html";
     }
 
+    function isVideoPost(post) {
+      const mediaType = String(post.media_type || "");
+      const mediaUrl = String(post.media_url || "");
+      const mediaPath = String(post.media_path || "");
+      const mediaName = String(post.media_name || "");
+
+      return (
+        looksLikeVideoByType(mediaType) ||
+        looksLikeVideoByUrl(mediaUrl) ||
+        looksLikeVideoByUrl(mediaPath) ||
+        looksLikeVideoByUrl(mediaName)
+      );
+    }
+
     function normalizePosts(rows) {
       return (rows || []).map(post => {
-        const videoUrl = extractVideoUrl(post);
+        const resolvedMediaUrl = normalizeMediaUrl(post);
+
         return {
           ...post,
-          media_url: videoUrl,
-          full_name: post.profiles?.full_name || post.full_name || "",
-          username: post.profiles?.username || post.username || "",
-          avatar_url: post.profiles?.avatar_url || post.avatar_url || "",
+          media_url: resolvedMediaUrl,
+          full_name: post.profiles?.full_name || "",
+          username: post.profiles?.username || "",
+          avatar_url: post.profiles?.avatar_url || "",
           title: post.title || "",
           caption: post.content || "",
           sound_name: post.sound_name || "Original sound",
@@ -732,7 +751,7 @@
           shares_count: Number(post.shares_count || 0),
           saves_count: Number(post.saves_count || 0)
         };
-      }).filter(post => !!post.media_url);
+      }).filter(post => isVideoPost(post) && !!post.media_url);
     }
 
     async function getSessionUser() {
@@ -771,28 +790,27 @@
         .select(`
           id,
           user_id,
-          title,
           content,
           media_url,
-          media_urls,
-          media,
-          files,
-          video_url,
-          reel_url,
           media_type,
+          cover_url,
           hashtags,
-          likes_count,
-          comments_count,
-          shares_count,
-          saves_count,
-          sound_name,
+          status,
+          published_at,
           created_at,
+          updated_at,
+          title,
+          visibility,
+          media_name,
+          media_path,
           profiles:profiles!posts_user_id_fkey (
-            full_name,
             username,
+            full_name,
             avatar_url
           )
         `)
+        .in("status", ["published", "active"])
+        .order("published_at", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -815,6 +833,17 @@
       return state.savedSet.has(postId);
     }
 
+    function renderAvatar(post) {
+      const displayName = getDisplayName(post);
+      const avatarUrl = getAvatar(post);
+
+      if (avatarUrl) {
+        return `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(displayName)}" />`;
+      }
+
+      return `<span>${escapeHtml(getInitial(displayName))}</span>`;
+    }
+
     function renderFeed() {
       const posts = filteredPosts();
 
@@ -822,7 +851,7 @@
         feedShell.innerHTML = `
           <section class="video-slide">
             ${renderTopChrome()}
-            <div class="video-placeholder">No videos found from home feed yet.</div>
+            <div class="video-placeholder">No videos found in the feed yet.</div>
           </section>
         `;
         return;
@@ -830,7 +859,6 @@
 
       feedShell.innerHTML = posts.map((post, index) => {
         const displayName = getDisplayName(post);
-        const avatarUrl = getAvatar(post);
         const liked = activeLiked(post.id);
         const saved = activeSaved(post.id);
         const following = state.followingSet.has(post.user_id);
@@ -843,6 +871,7 @@
             <video
               class="video-media"
               src="${escapeHtml(post.media_url)}"
+              poster="${escapeHtml(post.cover_url || "")}"
               playsinline
               preload="metadata"
               loop
@@ -861,7 +890,7 @@
 
             <div class="right-rail">
               <button class="creator-mini creator-profile-btn" data-user-id="${escapeHtml(post.user_id)}" title="Open profile">
-                ${avatarUrl ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(displayName)}" />` : ""}
+                ${renderAvatar(post)}
                 <span class="follow-mini follow-mini-btn" data-user-id="${escapeHtml(post.user_id)}">${following ? "✓" : "+"}</span>
               </button>
 
@@ -1014,7 +1043,12 @@
         const playBadge = slide.querySelector(".play-badge");
 
         slide.addEventListener("click", async (event) => {
-          if (event.target.closest(".right-rail") || event.target.closest(".bottom-caption") || event.target.closest(".overlay-top")) return;
+          if (
+            event.target.closest(".right-rail") ||
+            event.target.closest(".bottom-caption") ||
+            event.target.closest(".overlay-top")
+          ) return;
+
           if (!video) return;
 
           if (video.paused) {
@@ -1028,6 +1062,9 @@
 
         video.addEventListener("pause", () => playBadge.classList.add("show"));
         video.addEventListener("play", () => playBadge.classList.remove("show"));
+        video.addEventListener("error", () => {
+          showNotice("A video could not be loaded.", "error");
+        });
       });
     }
 
@@ -1252,7 +1289,8 @@
         const targetPostId = params.get("post");
         if (targetPostId) {
           setTimeout(() => {
-            const target = document.querySelector(`[data-post-id="${CSS.escape(targetPostId)}"]`);
+            const safeId = (window.CSS && CSS.escape) ? CSS.escape(targetPostId) : targetPostId.replace(/"/g, '\\"');
+            const target = document.querySelector(`[data-post-id="${safeId}"]`);
             if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
           }, 400);
         }
