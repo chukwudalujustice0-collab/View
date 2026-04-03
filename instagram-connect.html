@@ -25,6 +25,7 @@
       --yellow:#fcb045;
       --success:#10b981;
       --danger:#ef4444;
+      --info:#60a5fa;
       --shadow:0 20px 60px rgba(0,0,0,.35);
       --safe-bottom:env(safe-area-inset-bottom, 0px);
       --safe-top:env(safe-area-inset-top, 0px);
@@ -80,6 +81,14 @@
       justify-content:center;
       padding:0 14px;
       cursor:pointer;
+      transition:.2s ease;
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+    }
+
+    .back-btn:hover,.ghost-btn:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.07);
     }
 
     .back-btn{width:44px;padding:0;font-size:18px}
@@ -135,7 +144,7 @@
       color:#d7e2ff;
       font-size:15px;
       line-height:1.65;
-      max-width:620px;
+      max-width:720px;
     }
 
     .hero-actions{
@@ -155,6 +164,7 @@
       align-items:center;
       justify-content:center;
       gap:10px;
+      transition:.22s ease;
       font-weight:700;
       letter-spacing:.01em;
     }
@@ -162,12 +172,140 @@
     .btn:disabled{
       opacity:.6;
       cursor:not-allowed;
+      transform:none!important;
     }
 
     .btn-primary{
       color:#fff;
       background:linear-gradient(135deg,var(--yellow),var(--orange),var(--pink),var(--primary-2));
       box-shadow:0 16px 36px rgba(225,48,108,.25);
+    }
+
+    .btn-dark{
+      color:var(--text);
+      background:rgba(255,255,255,.08);
+      border:1px solid var(--line);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:18px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+    }
+
+    .card.pad{padding:20px}
+    .span-7{grid-column:span 7}
+    .span-5{grid-column:span 5}
+
+    .section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .section-title h3{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:-.02em;
+    }
+
+    .status-banner{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      margin-bottom:16px;
+    }
+
+    .status-icon{
+      width:42px;height:42px;border-radius:14px;
+      display:grid;place-items:center;
+      font-size:18px;
+      flex:0 0 auto;
+      background:rgba(255,255,255,.08);
+    }
+
+    .status-ok .status-icon{background:rgba(16,185,129,.16);color:#74f7c1}
+    .status-warn .status-icon{background:rgba(245,158,11,.16);color:#ffd37b}
+    .status-info .status-icon{background:rgba(96,165,250,.16);color:#bfdbfe}
+    .status-bad .status-icon{background:rgba(239,68,68,.16);color:#fecaca}
+
+    .status-text h4{
+      font-size:15px;
+      margin-bottom:4px;
+      font-weight:800;
+    }
+
+    .status-text p{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    .detail-list,.requirements{
+      display:grid;
+      gap:12px;
+    }
+
+    .detail-item,.req{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .req{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .detail-label{
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:6px;
+    }
+
+    .detail-value{
+      font-size:15px;
+      font-weight:700;
+      word-break:break-word;
+    }
+
+    .req-badge{
+      width:34px;height:34px;border-radius:12px;
+      flex:0 0 auto;
+      display:grid;place-items:center;
+      background:rgba(255,255,255,.08);
+      font-size:16px;
+    }
+
+    .req h4{
+      font-size:15px;
+      margin-bottom:4px;
+      font-weight:800;
+    }
+
+    .req p{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.55;
     }
 
     .notice{
@@ -178,6 +316,7 @@
       line-height:1.6;
       border:1px solid transparent;
       display:none;
+      word-break:break-word;
     }
 
     .notice.show{display:block}
@@ -197,6 +336,23 @@
       color:#dbeafe;
     }
 
+    .code{
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(255,255,255,.05);
+      color:#fff;
+      font-size:12px;
+      word-break:break-all;
+    }
+
+    .small{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.6;
+    }
+
     .loader{
       width:16px;height:16px;border-radius:50%;
       border:2px solid rgba(255,255,255,.28);
@@ -206,8 +362,21 @@
     }
 
     .btn.loading .loader{display:inline-block}
+    .btn.loading .btn-label{opacity:.85}
 
     @keyframes spin{to{transform:rotate(360deg)}}
+
+    @media (max-width:860px){
+      .span-7,.span-5{grid-column:span 12}
+    }
+
+    @media (max-width:560px){
+      .shell{padding:14px 12px 28px}
+      .hero,.card.pad{padding:16px}
+      .topbar{align-items:flex-start}
+      .hero-actions{flex-direction:column}
+      .hero-actions .btn{width:100%}
+    }
   </style>
 </head>
 <body>
@@ -230,7 +399,8 @@
     <section class="hero">
       <h2>Connect Instagram</h2>
       <p>
-        This page checks your signed-in View user first, then starts the Instagram connection flow.
+        This page checks your real Supabase session in this browser, starts the Instagram flow,
+        and sends you back to <span class="code">connected-accounts.html</span>.
       </p>
 
       <div class="hero-actions">
@@ -238,10 +408,89 @@
           <span class="loader"></span>
           <span class="btn-label">Connect Instagram</span>
         </button>
+        <button class="btn btn-dark" type="button" onclick="refreshSessionInfo()">Refresh Session</button>
       </div>
 
-      <div id="resultNotice" class="notice info">Waiting for connection…</div>
+      <div id="resultNotice" class="notice info">Checking session…</div>
     </section>
+
+    <div class="grid">
+      <section class="card pad span-7">
+        <div class="section-title">
+          <h3>Session Status</h3>
+          <span id="statusPill" class="code">Checking</span>
+        </div>
+
+        <div id="statusBox" class="status-banner status-info">
+          <div class="status-icon">i</div>
+          <div class="status-text">
+            <h4>Checking your browser session</h4>
+            <p>This page must detect a real Supabase auth session before it can save Instagram.</p>
+          </div>
+        </div>
+
+        <div class="detail-list">
+          <div class="detail-item">
+            <div class="detail-label">Current user ID</div>
+            <div id="detailUserId" class="detail-value">—</div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-label">Current email</div>
+            <div id="detailEmail" class="detail-value">—</div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-label">Session source</div>
+            <div id="detailSession" class="detail-value">—</div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-label">Instagram start route</div>
+            <div class="detail-value">
+              <span class="code">https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-start</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card pad span-5">
+        <div class="section-title">
+          <h3>Important</h3>
+        </div>
+
+        <div class="requirements">
+          <div class="req">
+            <div class="req-badge">1</div>
+            <div>
+              <h4>Same browser</h4>
+              <p>You must be signed into View in this same browser, not only in another browser.</p>
+            </div>
+          </div>
+
+          <div class="req">
+            <div class="req-badge">2</div>
+            <div>
+              <h4>Same domain</h4>
+              <p>Your session must exist on the same site origin as this page.</p>
+            </div>
+          </div>
+
+          <div class="req">
+            <div class="req-badge">3</div>
+            <div>
+              <h4>No old cache</h4>
+              <p>If Chrome behaves differently from Firefox, clear site data or open a renamed file.</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="small" style="margin-top:14px;">
+          After you authorize Instagram, the backend should save the row and return to
+          <span class="code">connected-accounts.html</span>.
+        </p>
+      </section>
+    </div>
   </div>
 
   <script>
@@ -251,6 +500,7 @@
 
     var supabase = null;
     var currentUser = null;
+    var currentSession = null;
 
     function byId(id) {
       return document.getElementById(id);
@@ -260,22 +510,11 @@
       try {
         if (window.supabase && typeof window.supabase.createClient === "function") {
           supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
+          supabase = null;
         }
       } catch (e) {
         supabase = null;
-      }
-    }
-
-    async function loadCurrentUser() {
-      try {
-        if (!supabase) {
-          currentUser = null;
-          return;
-        }
-        var result = await supabase.auth.getUser();
-        currentUser = result && result.data ? result.data.user : null;
-      } catch (e) {
-        currentUser = null;
       }
     }
 
@@ -298,6 +537,76 @@
       }
     }
 
+    function renderSessionStatus() {
+      var statusPill = byId("statusPill");
+      var statusBox = byId("statusBox");
+      var detailUserId = byId("detailUserId");
+      var detailEmail = byId("detailEmail");
+      var detailSession = byId("detailSession");
+
+      if (!statusPill || !statusBox || !detailUserId || !detailEmail || !detailSession) return;
+
+      if (currentUser && currentUser.id) {
+        statusPill.textContent = "Logged in";
+        detailUserId.textContent = currentUser.id;
+        detailEmail.textContent = currentUser.email || "—";
+        detailSession.textContent = currentSession && currentSession.access_token ? "Supabase session found" : "User found";
+
+        statusBox.className = "status-banner status-ok";
+        statusBox.innerHTML =
+          '<div class="status-icon">✓</div>' +
+          '<div class="status-text">' +
+          '<h4>Supabase session detected</h4>' +
+          '<p>This browser can start the Instagram flow and send your real user ID to the backend.</p>' +
+          '</div>';
+
+        setNotice("success", "Logged in as: " + (currentUser.email || currentUser.id));
+      } else {
+        statusPill.textContent = "Not logged in";
+        detailUserId.textContent = "—";
+        detailEmail.textContent = "—";
+        detailSession.textContent = "No active Supabase session";
+
+        statusBox.className = "status-banner status-bad";
+        statusBox.innerHTML =
+          '<div class="status-icon">!</div>' +
+          '<div class="status-text">' +
+          '<h4>No Supabase session found</h4>' +
+          '<p>This browser cannot save Instagram until you sign in to View here first.</p>' +
+          '</div>';
+
+        setNotice("error", "No Supabase session found in this browser. Sign in to View first, then return here.");
+      }
+    }
+
+    async function loadCurrentUser() {
+      try {
+        if (!supabase) {
+          currentSession = null;
+          currentUser = null;
+          renderSessionStatus();
+          return;
+        }
+
+        var sessionResult = await supabase.auth.getSession();
+        var userResult = await supabase.auth.getUser();
+
+        currentSession = sessionResult && sessionResult.data ? sessionResult.data.session : null;
+        currentUser = userResult && userResult.data ? userResult.data.user : null;
+
+        console.log("Supabase session:", sessionResult);
+        console.log("Supabase user:", userResult);
+
+        renderSessionStatus();
+      } catch (e) {
+        console.error("Auth read error:", e);
+        currentSession = null;
+        currentUser = null;
+        renderSessionStatus();
+        setNotice("error", "Could not read auth session: " + (e && e.message ? e.message : "Unknown error"));
+      }
+    }
+
     async function beginInstagramConnect() {
       setButtonLoading(true);
       await loadCurrentUser();
@@ -314,13 +623,23 @@
         url.searchParams.set("final_redirect", "https://view.ceetice.com/connected-accounts.html");
         url.searchParams.set("user_id", currentUser.id);
 
+        console.log("Instagram start URL:", url.toString());
+        setNotice("info", "Starting Instagram connection...");
         window.location.href = url.toString();
       } catch (err) {
+        console.error("beginInstagramConnect error:", err);
         setButtonLoading(false);
         setNotice("error", err && err.message ? err.message : "Unable to start Instagram connection.");
       }
     }
     window.beginInstagramConnect = beginInstagramConnect;
+
+    async function refreshSessionInfo() {
+      setNotice("info", "Refreshing session...");
+      await loadCurrentUser();
+      setButtonLoading(false);
+    }
+    window.refreshSessionInfo = refreshSessionInfo;
 
     function goBack() {
       window.location.href = "connected-accounts.html";
