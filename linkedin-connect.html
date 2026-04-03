@@ -2,834 +2,106 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
-  <title>Connect LinkedIn | View</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>LinkedIn Connection | View</title>
   <meta name="theme-color" content="#08111f" />
-  <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
-    :root{
-      --bg:#08111f;
-      --bg-2:#0d1730;
-      --card:rgba(16,27,49,.86);
-      --card-2:rgba(255,255,255,.06);
-      --line:rgba(255,255,255,.10);
-      --text:#f4f7ff;
-      --muted:#9fb1d7;
-      --primary:#0a66c2;
-      --primary-2:#2d8cff;
-      --success:#10b981;
-      --danger:#ef4444;
-      --warn:#f59e0b;
-      --shadow:0 18px 48px rgba(0,0,0,.32);
-      --radius:22px;
-      --safe-top:env(safe-area-inset-top);
-      --safe-bottom:env(safe-area-inset-bottom);
-    }
-
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:linear-gradient(180deg,var(--bg),#091221 42%,#0a1530 100%);color:var(--text);font-family:Inter,Arial,sans-serif}
-    body{min-height:100vh}
-
-    .page{
-      width:min(100%,760px);
-      margin:0 auto;
-      padding:calc(18px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
-    }
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      margin-bottom:18px;
-    }
-
-    .back-btn{
-      width:44px;height:44px;border-radius:14px;border:1px solid var(--line);
-      background:rgba(255,255,255,.05);color:#fff;font-size:20px;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;
-      backdrop-filter:blur(10px);
-    }
-
-    .title-wrap h1{
-      margin:0;
-      font-size:1.2rem;
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-
-    .title-wrap p{
-      margin:4px 0 0;
-      color:var(--muted);
-      font-size:.92rem;
-    }
-
-    .hero{
-      position:relative;
-      overflow:hidden;
-      background:
-        radial-gradient(circle at top right, rgba(45,140,255,.22), transparent 32%),
-        radial-gradient(circle at bottom left, rgba(10,102,194,.20), transparent 28%),
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line);
-      border-radius:28px;
-      padding:22px 18px 18px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(14px);
-    }
-
-    .linkedin-badge{
-      width:62px;height:62px;border-radius:20px;
-      background:linear-gradient(135deg,#0a66c2,#004182);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:900;font-size:28px;color:#fff;
-      box-shadow:0 16px 30px rgba(10,102,194,.28);
-      margin-bottom:14px;
-    }
-
-    .hero h2{
-      margin:0 0 8px;
-      font-size:1.45rem;
-      line-height:1.2;
-    }
-
-    .hero p{
-      margin:0;
-      color:var(--muted);
-      line-height:1.55;
-      font-size:.96rem;
-    }
-
-    .chip-row{
-      margin-top:16px;
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-
-    .chip{
-      padding:10px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:.86rem;
-      font-weight:700;
-    }
-
-    .notice{
-      display:none;
-      margin-top:16px;
-      padding:14px 15px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      font-size:.94rem;
-      line-height:1.5;
-    }
-
+    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#08111f;color:#f4f7ff}
+    .page{max-width:860px;margin:0 auto;padding:24px 16px}
+    .hero,.card{background:#101b31;border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.28)}
+    .hero{margin-bottom:16px}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+    .btn{min-height:48px;padding:0 16px;border:none;border-radius:16px;cursor:pointer;font-weight:800}
+    .btn-primary{background:linear-gradient(180deg,#0a66c2,#004182);color:#fff}
+    .btn-secondary{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.08)}
+    .notice{display:none;margin-bottom:16px;padding:14px;border-radius:16px}
     .notice.show{display:block}
-    .notice.info{background:rgba(45,140,255,.10);border-color:rgba(45,140,255,.28);color:#d9e9ff}
-    .notice.success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.28);color:#dbfff1}
-    .notice.error{background:rgba(239,68,68,.11);border-color:rgba(239,68,68,.24);color:#ffe2e2}
-    .notice.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.26);color:#fff1d6}
-
-    .card{
-      margin-top:18px;
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:18px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(10px);
-    }
-
-    .section-title{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:14px;
-    }
-
-    .section-title h3{
-      margin:0;
-      font-size:1rem;
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-
-    .status-pill{
-      padding:8px 12px;
-      border-radius:999px;
-      font-size:.82rem;
-      font-weight:800;
-      border:1px solid transparent;
-      white-space:nowrap;
-    }
-
-    .status-connected{
-      background:rgba(16,185,129,.13);
-      color:#b8ffe5;
-      border-color:rgba(16,185,129,.22);
-    }
-
-    .status-disconnected{
-      background:rgba(239,68,68,.12);
-      color:#ffd7d7;
-      border-color:rgba(239,68,68,.2);
-    }
-
-    .account-box{
-      display:flex;
-      align-items:flex-start;
-      gap:14px;
-      padding:15px;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:18px;
-    }
-
-    .avatar{
-      width:54px;height:54px;border-radius:16px;
-      background:linear-gradient(135deg,#0a66c2,#2d8cff);
-      display:flex;align-items:center;justify-content:center;
-      font-size:20px;font-weight:900;color:#fff;flex:none;
-    }
-
-    .account-meta{
-      min-width:0;
-      flex:1;
-    }
-
-    .account-name{
-      margin:0 0 4px;
-      font-weight:800;
-      font-size:1rem;
-      word-break:break-word;
-    }
-
-    .account-sub{
-      margin:0;
-      color:var(--muted);
-      font-size:.92rem;
-      line-height:1.5;
-      word-break:break-word;
-    }
-
-    .actions{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-top:16px;
-    }
-
-    button{
-      border:none;
-      cursor:pointer;
-      font:inherit;
-    }
-
-    .btn{
-      min-height:50px;
-      padding:0 18px;
-      border-radius:16px;
-      font-weight:800;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      transition:.18s ease;
-      text-decoration:none;
-    }
-
-    .btn:active{transform:scale(.985)}
-
-    .btn-primary{
-      color:#fff;
-      background:linear-gradient(135deg,var(--primary),var(--primary-2));
-      box-shadow:0 14px 28px rgba(10,102,194,.28);
-    }
-
-    .btn-secondary{
-      color:#fff;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
-    }
-
-    .btn-danger{
-      color:#fff;
-      background:linear-gradient(135deg,#ef4444,#dc2626);
-      box-shadow:0 14px 28px rgba(239,68,68,.24);
-    }
-
-    .btn[disabled]{
-      opacity:.65;
-      cursor:not-allowed;
-      transform:none !important;
-    }
-
-    .muted-list{
-      margin:0;
-      padding-left:18px;
-      color:var(--muted);
-      line-height:1.7;
-      font-size:.95rem;
-    }
-
-    .footer-space{height:20px}
-
-    .loader{
-      width:18px;height:18px;border-radius:50%;
-      border:2px solid rgba(255,255,255,.28);
-      border-top-color:#fff;
-      display:inline-block;
-      animation:spin .8s linear infinite;
-    }
-
-    @keyframes spin{to{transform:rotate(360deg)}}
-
-    .mono{
-      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-      font-size:.9em;
-    }
-
-    @media (max-width:560px){
-      .hero h2{font-size:1.28rem}
-      .card{padding:16px}
-      .account-box{align-items:center}
-    }
+    .notice.success{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.24)}
+    .notice.error{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.24)}
+    .notice.warn{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.24)}
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="topbar">
-      <button class="back-btn" id="backBtn" aria-label="Go back">←</button>
-      <div class="title-wrap">
-        <h1>Connect LinkedIn</h1>
-        <p>Link your LinkedIn account to publish from View.</p>
-      </div>
-    </div>
+    <div id="notice" class="notice"></div>
 
     <section class="hero">
-      <div class="linkedin-badge">in</div>
-      <h2>Publish professional updates directly from View</h2>
-      <p>
-        Connect your LinkedIn account securely. After connection, your View publishing flow
-        can use your LinkedIn access token through your backend.
-      </p>
-
-      <div class="chip-row">
-        <div class="chip">OAuth connection</div>
-        <div class="chip">Profile sync</div>
-        <div class="chip">Ready for publishing</div>
-      </div>
-
-      <div id="globalNotice" class="notice info"></div>
-    </section>
-
-    <section class="card">
-      <div class="section-title">
-        <h3>Connection status</h3>
-        <div id="statusPill" class="status-pill status-disconnected">Not connected</div>
-      </div>
-
-      <div id="accountBox" class="account-box">
-        <div class="avatar" id="avatarBox">in</div>
-        <div class="account-meta">
-          <p class="account-name" id="accountName">LinkedIn account not connected</p>
-          <p class="account-sub" id="accountSub">
-            Tap the connect button below to start LinkedIn authorization.
-          </p>
-        </div>
-      </div>
-
+      <h1>Connect LinkedIn</h1>
+      <p>Connect LinkedIn to save the account in View and prepare for LinkedIn posting.</p>
       <div class="actions">
-        <button class="btn btn-primary" id="connectBtn">
-          <span id="connectBtnText">Connect LinkedIn</span>
-        </button>
-        <button class="btn btn-secondary" id="refreshBtn">Refresh status</button>
-        <button class="btn btn-danger" id="disconnectBtn" style="display:none;">Disconnect</button>
+        <button id="connectBtn" class="btn btn-primary" type="button">Connect LinkedIn</button>
+        <a class="btn btn-secondary" href="connected-accounts.html" style="text-decoration:none;display:inline-flex;align-items:center;">All accounts</a>
       </div>
     </section>
-
-    <section class="card">
-      <div class="section-title">
-        <h3>Before you connect</h3>
-      </div>
-      <ul class="muted-list">
-        <li>Your LinkedIn client secret must stay on your server, not in this HTML file.</li>
-        <li>Your backend should exchange the authorization <span class="mono">code</span> for tokens.</li>
-        <li>Your callback endpoint should save the connected account in your database.</li>
-        <li>Your publish worker should use the saved LinkedIn account token server-side.</li>
-      </ul>
-    </section>
-
-    <div class="footer-space"></div>
   </div>
 
   <script>
-    /******************************************************************
-     * CONFIG
-     * Set these from your existing app config or localStorage.
-     ******************************************************************/
-    const VIEW_CONFIG = window.VIEW_CONFIG || {};
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const FN_BASE = `${SUPABASE_URL}/functions/v1`;
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const SUPABASE_URL =
-      VIEW_CONFIG.supabaseUrl ||
-      localStorage.getItem("view_supabase_url") ||
-      localStorage.getItem("supabase_url") ||
-      "";
+    const notice = document.getElementById("notice");
+    const connectBtn = document.getElementById("connectBtn");
 
-    const SUPABASE_ANON_KEY =
-      VIEW_CONFIG.supabaseAnonKey ||
-      localStorage.getItem("view_supabase_anon_key") ||
-      localStorage.getItem("supabase_anon_key") ||
-      "";
-
-    // Your backend/edge function base. Examples:
-    // - Supabase functions: https://YOURPROJECT.supabase.co/functions/v1
-    // - Vercel API: https://yourdomain.com/api
-    const API_BASE =
-      VIEW_CONFIG.apiBase ||
-      localStorage.getItem("view_api_base") ||
-      localStorage.getItem("api_base") ||
-      "";
-
-    // Start and callback endpoints handled by your backend
-    const LINKEDIN_START_ENDPOINT =
-      VIEW_CONFIG.linkedinStartEndpoint ||
-      localStorage.getItem("linkedin_start_endpoint") ||
-      `${API_BASE}/linkedin-auth-start`;
-
-    const LINKEDIN_CALLBACK_ENDPOINT =
-      VIEW_CONFIG.linkedinCallbackEndpoint ||
-      localStorage.getItem("linkedin_callback_endpoint") ||
-      `${API_BASE}/linkedin-auth-callback`;
-
-    const LINKEDIN_DISCONNECT_ENDPOINT =
-      VIEW_CONFIG.linkedinDisconnectEndpoint ||
-      localStorage.getItem("linkedin_disconnect_endpoint") ||
-      `${API_BASE}/linkedin-disconnect`;
-
-    const CONNECTED_ACCOUNTS_TABLE =
-      VIEW_CONFIG.connectedAccountsTable ||
-      localStorage.getItem("connected_accounts_table") ||
-      "connected_accounts";
-
-    let supabase = null;
-    let currentUser = null;
-    let connectedAccount = null;
-
-    const els = {
-      backBtn: document.getElementById("backBtn"),
-      globalNotice: document.getElementById("globalNotice"),
-      statusPill: document.getElementById("statusPill"),
-      accountName: document.getElementById("accountName"),
-      accountSub: document.getElementById("accountSub"),
-      avatarBox: document.getElementById("avatarBox"),
-      connectBtn: document.getElementById("connectBtn"),
-      connectBtnText: document.getElementById("connectBtnText"),
-      refreshBtn: document.getElementById("refreshBtn"),
-      disconnectBtn: document.getElementById("disconnectBtn")
-    };
-
-    function showNotice(message, type = "info") {
-      els.globalNotice.className = `notice show ${type}`;
-      els.globalNotice.textContent = message;
+    function showNotice(message, type = "warn") {
+      notice.className = `notice show ${type}`;
+      notice.textContent = message;
     }
 
-    function clearNotice() {
-      els.globalNotice.className = "notice info";
-      els.globalNotice.textContent = "";
-    }
-
-    function setLoading(button, text = "Please wait...") {
-      if (!button) return;
-      button.disabled = true;
-      if (button === els.connectBtn) {
-        els.connectBtnText.innerHTML = `<span class="loader"></span> ${text}`;
-      } else {
-        button.dataset.originalText = button.textContent;
-        button.innerHTML = `<span class="loader"></span> ${text}`;
-      }
-    }
-
-    function clearLoading(button, fallbackText = null) {
-      if (!button) return;
-      button.disabled = false;
-      if (button === els.connectBtn) {
-        els.connectBtnText.textContent = fallbackText || "Connect LinkedIn";
-      } else if (button.dataset.originalText) {
-        button.textContent = button.dataset.originalText;
-      } else if (fallbackText) {
-        button.textContent = fallbackText;
-      }
-    }
-
-    function getInitials(text) {
-      if (!text) return "in";
-      return text
-        .trim()
-        .split(/\s+/)
-        .slice(0, 2)
-        .map(v => v[0]?.toUpperCase() || "")
-        .join("") || "in";
-    }
-
-    function updateUI(account) {
-      connectedAccount = account || null;
-
-      if (account) {
-        const displayName =
-          account.account_name ||
-          account.profile_name ||
-          account.name ||
-          account.display_name ||
-          "LinkedIn connected";
-
-        const displayEmail =
-          account.account_email ||
-          account.email ||
-          account.profile_email ||
-          account.username ||
-          "";
-
-        const subtitleParts = [];
-        if (displayEmail) subtitleParts.push(displayEmail);
-        if (account.linkedin_member_urn) subtitleParts.push(`URN: ${account.linkedin_member_urn}`);
-        if (account.updated_at) subtitleParts.push(`Updated: ${new Date(account.updated_at).toLocaleString()}`);
-
-        els.statusPill.className = "status-pill status-connected";
-        els.statusPill.textContent = "Connected";
-        els.accountName.textContent = displayName;
-        els.accountSub.textContent = subtitleParts.join(" • ") || "Your LinkedIn account is connected.";
-        els.avatarBox.textContent = getInitials(displayName);
-        els.disconnectBtn.style.display = "inline-flex";
-        els.connectBtnText.textContent = "Reconnect LinkedIn";
-      } else {
-        els.statusPill.className = "status-pill status-disconnected";
-        els.statusPill.textContent = "Not connected";
-        els.accountName.textContent = "LinkedIn account not connected";
-        els.accountSub.textContent = "Tap the connect button below to start LinkedIn authorization.";
-        els.avatarBox.textContent = "in";
-        els.disconnectBtn.style.display = "none";
-        els.connectBtnText.textContent = "Connect LinkedIn";
-      }
-    }
-
-    function getRedirectUrl() {
-      return `${window.location.origin}${window.location.pathname}`;
-    }
-
-    async function initSupabase() {
-      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-        throw new Error(
-          "Missing Supabase config. Save view_supabase_url and view_supabase_anon_key in localStorage or set window.VIEW_CONFIG."
-        );
-      }
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const { data, error } = await supabase.auth.getUser();
+    async function getSessionOrWarn() {
+      const { data, error } = await supabase.auth.getSession();
       if (error) throw error;
-      if (!data?.user) {
-        throw new Error("You must be logged in before connecting LinkedIn.");
+      const session = data?.session || null;
+      if (!session?.access_token) {
+        showNotice("You are not signed in. Please login first.", "warn");
+        return null;
       }
-      currentUser = data.user;
+      return session;
     }
 
-    async function fetchLinkedInAccount() {
-      if (!supabase || !currentUser) return null;
-
-      const tried = [];
-
-      // Try common structures without crashing the page if your table differs.
-      const attempts = [
-        async () => {
-          tried.push("platform,user_id");
-          return await supabase
-            .from(CONNECTED_ACCOUNTS_TABLE)
-            .select("*")
-            .eq("platform", "linkedin")
-            .eq("user_id", currentUser.id)
-            .order("updated_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-        },
-        async () => {
-          tried.push("provider,user_id");
-          return await supabase
-            .from(CONNECTED_ACCOUNTS_TABLE)
-            .select("*")
-            .eq("provider", "linkedin")
-            .eq("user_id", currentUser.id)
-            .order("updated_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-        },
-        async () => {
-          tried.push("platform only");
-          return await supabase
-            .from(CONNECTED_ACCOUNTS_TABLE)
-            .select("*")
-            .eq("platform", "linkedin")
-            .order("updated_at", { ascending: false })
-            .limit(50);
-        }
-      ];
-
-      for (const run of attempts) {
-        try {
-          const res = await run();
-          if (res.error) continue;
-
-          if (Array.isArray(res.data)) {
-            const match = res.data.find(
-              row =>
-                row.user_id === currentUser.id ||
-                row.owner_id === currentUser.id ||
-                row.auth_user_id === currentUser.id
-            );
-            if (match) return match;
-          } else if (res.data) {
-            return res.data;
-          }
-        } catch (_) {}
-      }
-
-      return null;
-    }
-
-    async function refreshStatus(showMessage = false) {
+    async function connectLinkedIn() {
       try {
-        clearNotice();
-        const account = await fetchLinkedInAccount();
-        updateUI(account);
+        connectBtn.disabled = true;
+        const session = await getSessionOrWarn();
+        if (!session) return;
 
-        if (showMessage) {
-          if (account) {
-            showNotice("LinkedIn account found and loaded successfully.", "success");
-          } else {
-            showNotice("No LinkedIn account is connected yet.", "warn");
-          }
-        }
-      } catch (error) {
-        console.error(error);
-        showNotice(error.message || "Failed to refresh LinkedIn status.", "error");
-      }
-    }
-
-    function generateState() {
-      const raw = `linkedin_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      localStorage.setItem("linkedin_oauth_state", raw);
-      return raw;
-    }
-
-    async function startLinkedInConnect() {
-      try {
-        clearNotice();
-
-        if (!API_BASE && !LINKEDIN_START_ENDPOINT) {
-          throw new Error("Missing API base or LinkedIn start endpoint.");
-        }
-
-        if (!currentUser) {
-          throw new Error("You must be logged in before connecting LinkedIn.");
-        }
-
-        setLoading(els.connectBtn, "Opening LinkedIn...");
-
-        const state = generateState();
-        const redirectUri = getRedirectUrl();
-        const session = await supabase.auth.getSession();
-        const accessToken = session?.data?.session?.access_token || "";
-
-        const url = new URL(LINKEDIN_START_ENDPOINT, window.location.origin);
-        url.searchParams.set("redirect_uri", redirectUri);
-        url.searchParams.set("state", state);
-        url.searchParams.set("user_id", currentUser.id);
-
-        // If your backend uses bearer auth, it can read the token from header.
-        const res = await fetch(url.toString(), {
-          method: "GET",
-          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
-        });
-
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(data.error || data.message || "Failed to start LinkedIn connection.");
-        }
-
-        const authUrl = data.auth_url || data.url || data.authorization_url;
-        if (!authUrl) {
-          throw new Error("Backend did not return LinkedIn authorization URL.");
-        }
-
-        window.location.href = authUrl;
-      } catch (error) {
-        console.error(error);
-        clearLoading(els.connectBtn, connectedAccount ? "Reconnect LinkedIn" : "Connect LinkedIn");
-        showNotice(error.message || "Unable to start LinkedIn connection.", "error");
-      }
-    }
-
-    async function handleOAuthCallbackFromUrl() {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      const state = params.get("state");
-      const error = params.get("error");
-      const errorDescription = params.get("error_description");
-
-      if (error) {
-        showNotice(
-          decodeURIComponent(errorDescription || error || "LinkedIn authorization failed."),
-          "error"
-        );
-        return cleanupUrl();
-      }
-
-      if (!code) return;
-
-      try {
-        showNotice("Finishing LinkedIn connection...", "info");
-
-        const savedState = localStorage.getItem("linkedin_oauth_state");
-        if (savedState && state && savedState !== state) {
-          throw new Error("OAuth state mismatch. Please try again.");
-        }
-
-        if (!LINKEDIN_CALLBACK_ENDPOINT) {
-          throw new Error("Missing LinkedIn callback endpoint.");
-        }
-
-        const session = await supabase.auth.getSession();
-        const accessToken = session?.data?.session?.access_token || "";
-
-        const res = await fetch(LINKEDIN_CALLBACK_ENDPOINT, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
-          },
-          body: JSON.stringify({
-            code,
-            state,
-            redirect_uri: getRedirectUrl(),
-            user_id: currentUser?.id || null
-          })
-        });
-
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(data.error || data.message || "LinkedIn callback failed.");
-        }
-
-        cleanupUrl();
-        localStorage.removeItem("linkedin_oauth_state");
-        showNotice("LinkedIn connected successfully.", "success");
-        await refreshStatus(false);
-      } catch (err) {
-        console.error(err);
-        showNotice(err.message || "Failed to complete LinkedIn connection.", "error");
-        cleanupUrl();
-      }
-    }
-
-    function cleanupUrl() {
-      const cleanUrl = `${window.location.origin}${window.location.pathname}`;
-      window.history.replaceState({}, document.title, cleanUrl);
-    }
-
-    async function disconnectLinkedIn() {
-      try {
-        if (!connectedAccount) return;
-
-        setLoading(els.disconnectBtn, "Disconnecting...");
-
-        const session = await supabase.auth.getSession();
-        const accessToken = session?.data?.session?.access_token || "";
-
-        const payload = {
-          user_id: currentUser?.id || null,
-          platform: "linkedin",
-          account_id:
-            connectedAccount.id ||
-            connectedAccount.account_id ||
-            connectedAccount.linkedin_id ||
-            null
-        };
-
-        let success = false;
-
-        if (LINKEDIN_DISCONNECT_ENDPOINT && LINKEDIN_DISCONNECT_ENDPOINT !== "/linkedin-disconnect") {
-          const res = await fetch(LINKEDIN_DISCONNECT_ENDPOINT, {
-            method: "POST",
+        const res = await fetch(
+          `${FN_BASE}/linkedin-start?final_redirect=${encodeURIComponent(`${window.location.origin}/connected-accounts.html`)}`,
+          {
+            method: "GET",
             headers: {
-              "Content-Type": "application/json",
-              ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
-            },
-            body: JSON.stringify(payload)
-          });
-
-          if (res.ok) {
-            success = true;
-          } else {
-            const data = await res.json().catch(() => ({}));
-            throw new Error(data.error || data.message || "Disconnect request failed.");
+              Authorization: `Bearer ${session.access_token}`
+            }
           }
-        } else {
-          // Fallback: delete from DB directly if policy allows
-          const rowId = connectedAccount.id;
-          if (!rowId) {
-            throw new Error("No account id found for disconnect.");
-          }
-          const { error } = await supabase
-            .from(CONNECTED_ACCOUNTS_TABLE)
-            .delete()
-            .eq("id", rowId);
+        );
 
-          if (error) throw error;
-          success = true;
-        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.error || `LinkedIn start failed (${res.status})`);
+        if (!data?.auth_url) throw new Error("linkedin-start did not return auth_url");
 
-        if (success) {
-          updateUI(null);
-          showNotice("LinkedIn account disconnected successfully.", "success");
-        }
-      } catch (error) {
-        console.error(error);
-        showNotice(error.message || "Failed to disconnect LinkedIn.", "error");
+        window.location.href = data.auth_url;
+      } catch (err) {
+        showNotice(err.message || "Failed to start LinkedIn login.", "error");
       } finally {
-        clearLoading(els.disconnectBtn, "Disconnect");
+        connectBtn.disabled = false;
       }
     }
 
-    async function boot() {
-      try {
-        els.backBtn.addEventListener("click", () => {
-          if (history.length > 1) history.back();
-          else window.location.href = "connect-account.html";
-        });
+    function readQueryMessage() {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get("status");
+      const provider = params.get("provider");
+      const message = params.get("message");
 
-        els.connectBtn.addEventListener("click", startLinkedInConnect);
-        els.refreshBtn.addEventListener("click", () => refreshStatus(true));
-        els.disconnectBtn.addEventListener("click", disconnectLinkedIn);
-
-        await initSupabase();
-        await handleOAuthCallbackFromUrl();
-        await refreshStatus(false);
-      } catch (error) {
-        console.error(error);
-        updateUI(null);
-        showNotice(error.message || "Page failed to initialize.", "error");
-      } finally {
-        clearLoading(els.connectBtn, connectedAccount ? "Reconnect LinkedIn" : "Connect LinkedIn");
-      }
+      if (provider !== "linkedin") return;
+      if (status === "success") showNotice(message || "LinkedIn connected successfully.", "success");
+      if (status === "error") showNotice(message || "LinkedIn connection failed.", "error");
     }
 
-    boot();
+    connectBtn.addEventListener("click", connectLinkedIn);
+    readQueryMessage();
   </script>
 </body>
 </html>
