@@ -532,12 +532,12 @@
           </p>
 
           <div class="hero-actions">
-            <button id="connectBtn" class="btn btn-primary" type="button">
+            <button id="connectBtn" class="btn btn-primary" type="button" onclick="beginInstagramConnect()">
               <span class="loader"></span>
               <span class="btn-label">Connect Instagram</span>
             </button>
 
-            <button id="disconnectBtn" class="btn btn-dark hidden" type="button">
+            <button id="disconnectBtn" class="btn btn-dark hidden" type="button" onclick="disconnectInstagram()">
               Disconnect Instagram
             </button>
           </div>
@@ -684,8 +684,8 @@
         </div>
 
         <div class="footer-actions">
-          <button class="btn btn-dark" type="button" id="openAccountsBtn">Open Connected Accounts</button>
-          <button class="btn btn-dark" type="button" id="refreshBtn">Refresh Status</button>
+          <button class="btn btn-dark" type="button" id="openAccountsBtn" onclick="openConnectedAccounts()">Open Connected Accounts</button>
+          <button class="btn btn-dark" type="button" id="refreshBtn" onclick="refreshConnection()">Refresh Status</button>
         </div>
       </section>
 
@@ -743,10 +743,12 @@
       if (window.history.length > 1) window.history.back();
       else window.location.href = "connect-account.html";
     }
+    window.goBack = goBack;
 
     function openConnectedAccounts() {
       window.location.href = "connect-account.html";
     }
+    window.openConnectedAccounts = openConnectedAccounts;
 
     function escapeHtml(value) {
       return String(value || "")
@@ -849,7 +851,10 @@
           '<p>Your View app is now holding an Instagram connection on this device and can use it for future cross-posting flows.</p>' +
           '</div>';
 
-        connectBtn.querySelector(".btn-label").textContent = "Reconnect Instagram";
+        if (connectBtn.querySelector(".btn-label")) {
+          connectBtn.querySelector(".btn-label").textContent = "Reconnect Instagram";
+        }
+
         disconnectBtn.classList.remove("hidden");
         heroNotice.className = "notice show success";
         heroNotice.textContent = account.username ? "Connected as @" + account.username : "Instagram connected successfully.";
@@ -868,7 +873,10 @@
           '<p>Connect your Instagram account to prepare your View app for creator tools and publishing.</p>' +
           '</div>';
 
-        connectBtn.querySelector(".btn-label").textContent = "Connect Instagram";
+        if (connectBtn.querySelector(".btn-label")) {
+          connectBtn.querySelector(".btn-label").textContent = "Connect Instagram";
+        }
+
         disconnectBtn.classList.add("hidden");
         heroNotice.className = "notice show info";
         heroNotice.textContent = "Waiting for connection…";
@@ -907,18 +915,21 @@
         url.searchParams.set("final_redirect", finalRedirect);
         url.searchParams.set("user_id", currentUser.id);
 
+        console.log("Instagram start URL:", url.toString());
         window.location.href = url.toString();
       } catch (err) {
         setButtonLoading(false);
         setNotice("resultNotice", "error", err && err.message ? err.message : "Unable to start Instagram connection.");
       }
     }
+    window.beginInstagramConnect = beginInstagramConnect;
 
     function disconnectInstagram() {
       removeInstagramAccount();
       renderConnection();
       setNotice("resultNotice", "success", "Instagram has been disconnected from this device.");
     }
+    window.disconnectInstagram = disconnectInstagram;
 
     function clearCallbackQuery() {
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -968,24 +979,16 @@
       setButtonLoading(false);
       setNotice("resultNotice", "info", "Connection status refreshed.");
     }
+    window.refreshConnection = refreshConnection;
 
     async function init() {
       initSupabaseSafely();
       await loadCurrentUser();
       renderConnection();
       handleCallbackParams();
-
-      if (byId("connectBtn")) byId("connectBtn").onclick = beginInstagramConnect;
-      if (byId("disconnectBtn")) byId("disconnectBtn").onclick = disconnectInstagram;
-      if (byId("refreshBtn")) byId("refreshBtn").onclick = refreshConnection;
-      if (byId("backBtn")) byId("backBtn").onclick = goBack;
-      if (byId("openAccountsBtn")) byId("openAccountsBtn").onclick = openConnectedAccounts;
     }
 
     document.addEventListener("DOMContentLoaded", init);
   </script>
 </body>
 </html>
-
-
-Wait for the rest
