@@ -267,6 +267,7 @@ async function sendToInstagram(post, account) {
   const igUserId = resolveConnectedAccountField(account, [
     "instagram_user_id",
     "ig_user_id",
+    "external_user_id",
     "platform_user_id",
     "external_id",
     "account_id",
@@ -276,7 +277,6 @@ async function sendToInstagram(post, account) {
   if (!post.media_url) throw new Error("Instagram publishing requires media_url");
 
   const caption = getPostText(post) || "";
-  let createUrl = `https://graph.facebook.com/v23.0/${igUserId}/media`;
   let createBody;
 
   if (isImage(post.media_type)) {
@@ -296,7 +296,7 @@ async function sendToInstagram(post, account) {
     throw new Error(`Instagram unsupported media type: ${post.media_type || "unknown"}`);
   }
 
-  const createRes = await fetch(createUrl, {
+  const createRes = await fetch(`https://graph.facebook.com/v23.0/${igUserId}/media`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: createBody,
@@ -328,24 +328,40 @@ async function sendToInstagram(post, account) {
   return String(publishData?.id || createData.id || makePlatformPostId("instagram", post.id));
 }
 
-async function registerLinkedInImage(mediaUrl, accessToken) {
-  const initRes = await fetch("https://api.linkedin.com/v2/assets?action=registerUpload", {
+function resolveLinkedInAuthorUrn(account) {
+  const explicitUrn = resolveConnectedAccountField(account, [
+    "linkedin_person_urn",
+    "author_urn",
+  ]);
+  if (explicitUrn) return explicitUrn;
+
+  const externalUserId = resolveConnectedAccountField(account, [
+    "external_user_id",
+    "linkedin_user_id",
+    "platform_user_id",
+    "external_id",
+    "account_id",
+  ]);
+
+  if (!externalUserId) {
+    throw new Error("Missing LinkedIn external user id");
+  }
+
+  return `urn:li:person:${externalUserId}`;
+}
+
+async function registerLinkedInImage(mediaUrl, accessToken, ownerUrn) {
+  const initRes = await fetch("https://api.linkedin.com/rest/images?action=initializeUpload", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
+      "LinkedIn-Version": "202602",
       "X-Restli-Protocol-Version": "2.0.0",
     },
     body: JSON.stringify({
-      registerUploadRequest: {
-        recipes: ["urn:li:digitalmediaRecipe:feedshare-image"],
-        owner: "urn:li:person:me",
-        serviceRelationships: [
-          {
-            relationshipType: "OWNER",
-            identifier: "urn:li:userGeneratedContent",
-          },
-        ],
+      initializeUploadRequest: {
+        owner: ownerUrn,
       },
     }),
   });
@@ -353,23 +369,21 @@ async function registerLinkedInImage(mediaUrl, accessToken) {
   const initText = await initRes.text();
   const initData = safeJsonParse(initText, {});
 
-  const uploadUrl =
-    initData?.value?.uploadMechanism?.["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"]
-      ?.uploadUrl;
-  const asset = initData?.value?.asset;
+  const uploadUrl = initData?.value?.uploadUrl;
+  const imageUrn = initData?.value?.image;
 
-  if (!initRes.ok || !uploadUrl || !asset) {
-    throw new Error(initData?.message || initText || "LinkedIn image register failed");
+  if (!initRes.ok || !uploadUrl || !imageUrn) {
+    throw new Error(initData?.message || initText || "LinkedIn image initialize failed");
   }
 
   const fileRes = await fetch(mediaUrl);
   if (!fileRes.ok) throw new Error("Could not fetch LinkedIn image source");
+
   const buffer = Buffer.from(await fileRes.arrayBuffer());
 
   const uploadRes = await fetch(uploadUrl, {
-    method: "POST",
+    method: "PUT",
     headers: {
-      Authorization: `Bearer ${accessToken}`,
       "Content-Type": fileRes.headers.get("content-type") || "application/octet-stream",
     },
     body: buffer,
@@ -380,31 +394,19 @@ async function registerLinkedInImage(mediaUrl, accessToken) {
     throw new Error(uploadText || "LinkedIn image upload failed");
   }
 
-  return asset;
+  return imageUrn;
 }
 
 async function sendToLinkedIn(post, account) {
   const accessToken = resolveAccessToken(account);
   if (!accessToken) throw new Error("Missing LinkedIn access token");
 
-  const author =
-    resolveConnectedAccountField(account, ["linkedin_person_urn", "author_urn"]) || "urn:li:person:me";
-
-  let content = null;
-
-  if (post.media_url && isImage(post.media_type)) {
-    const asset = await registerLinkedInImage(post.media_url, accessToken);
-    content = {
-      media: {
-        id: asset,
-        title: getPostText(post) || "View post",
-      },
-    };
-  }
+  const author = resolveLinkedInAuthorUrn(account);
+  const commentary = getPostText(post) || "";
 
   const body = {
     author,
-    commentary: getPostText(post) || "",
+    commentary,
     visibility: "PUBLIC",
     distribution: {
       feedDistribution: "MAIN_FEED",
@@ -415,7 +417,17 @@ async function sendToLinkedIn(post, account) {
     isReshareDisabledByAuthor: false,
   };
 
-  if (content) body.content = content;
+  if (post.media_url && isImage(post.media_type)) {
+    const imageUrn = await registerLinkedInImage(post.media_url, accessToken, author);
+    body.content = {
+      media: {
+        id: imageUrn,
+        title: commentary || "View post",
+      },
+    };
+  } else if (post.media_url && isVideo(post.media_type)) {
+    throw new Error("LinkedIn video publishing is not wired yet in this worker");
+  }
 
   const res = await fetch("https://api.linkedin.com/rest/posts", {
     method: "POST",
