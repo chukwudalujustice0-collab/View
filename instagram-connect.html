@@ -4,85 +4,336 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Instagram Connect | View</title>
+  <meta name="theme-color" content="#08111f" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
+    :root{
+      --bg:#08111f;
+      --card:rgba(16,27,49,.84);
+      --line:rgba(255,255,255,.10);
+      --text:#f4f7ff;
+      --muted:#9fb1d7;
+      --primary:#2563eb;
+      --primary-2:#7c3aed;
+      --pink:#e1306c;
+      --orange:#f77737;
+      --yellow:#fcb045;
+      --success:#10b981;
+      --danger:#ef4444;
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+      --safe-bottom:env(safe-area-inset-bottom, 0px);
+      --safe-top:env(safe-area-inset-top, 0px);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
     body{
-      margin:0;
-      font-family:Arial,sans-serif;
-      background:#08111f;
-      color:#fff;
+      font-family:Inter,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(225,48,108,.16), transparent 28%),
+        radial-gradient(circle at top left, rgba(124,58,237,.16), transparent 24%),
+        radial-gradient(circle at bottom center, rgba(37,99,235,.14), transparent 30%),
+        linear-gradient(180deg, #07101d 0%, #08111f 40%, #0a1427 100%);
       min-height:100vh;
+      padding-top:var(--safe-top);
+      padding-bottom:calc(24px + var(--safe-bottom));
+    }
+
+    a{text-decoration:none;color:inherit}
+    button{font:inherit}
+
+    .shell{
+      width:min(100%,920px);
+      margin:0 auto;
+      padding:18px 16px 32px;
+    }
+
+    .topbar{
       display:flex;
       align-items:center;
-      justify-content:center;
-      padding:20px;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:20px;
     }
-    .card{
-      width:min(100%,420px);
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:20px;
-      padding:24px;
+
+    .topbar-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
     }
-    h1{
-      margin:0 0 10px;
-      font-size:26px;
-    }
-    p{
-      margin:0 0 18px;
-      color:#c7d2fe;
-      line-height:1.6;
-    }
-    .btn{
-      width:100%;
-      border:none;
+
+    .back-btn,.ghost-btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      height:44px;
       border-radius:14px;
-      padding:14px 16px;
-      font-size:16px;
-      font-weight:700;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 14px;
       cursor:pointer;
+    }
+
+    .back-btn{width:44px;padding:0;font-size:18px}
+
+    .eyebrow{
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      margin-bottom:4px;
+    }
+
+    .page-title{
+      font-size:clamp(24px,4vw,34px);
+      font-weight:800;
+      line-height:1.08;
+      letter-spacing:-.02em;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .ig-dot{
+      width:14px;
+      height:14px;
+      border-radius:50%;
+      background:linear-gradient(135deg,var(--yellow),var(--orange),var(--pink),var(--primary-2));
+      box-shadow:0 0 18px rgba(225,48,108,.45);
+      flex:0 0 auto;
+    }
+
+    .hero{
+      overflow:hidden;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.03)),
+        linear-gradient(135deg, rgba(252,176,69,.12), rgba(225,48,108,.12) 45%, rgba(124,58,237,.12) 100%);
+      border:1px solid var(--line);
+      border-radius:30px;
+      padding:24px;
+      box-shadow:var(--shadow);
+      margin-bottom:20px;
+    }
+
+    .hero h2{
+      font-size:clamp(24px,4.6vw,38px);
+      line-height:1.04;
+      letter-spacing:-.03em;
+      margin-bottom:10px;
+    }
+
+    .hero p{
+      color:#d7e2ff;
+      font-size:15px;
+      line-height:1.65;
+      max-width:620px;
+    }
+
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .btn{
+      border:none;
+      border-radius:16px;
+      min-height:50px;
+      padding:0 18px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      font-weight:700;
+      letter-spacing:.01em;
+    }
+
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .btn-primary{
       color:#fff;
-      background:linear-gradient(135deg,#fcb045,#f77737,#e1306c,#7c3aed);
+      background:linear-gradient(135deg,var(--yellow),var(--orange),var(--pink),var(--primary-2));
+      box-shadow:0 16px 36px rgba(225,48,108,.25);
     }
-    .note{
+
+    .notice{
       margin-top:14px;
+      padding:14px;
+      border-radius:16px;
       font-size:14px;
-      color:#c7d2fe;
-      white-space:pre-wrap;
+      line-height:1.6;
+      border:1px solid transparent;
+      display:none;
     }
+
+    .notice.show{display:block}
+    .notice.success{
+      background:rgba(16,185,129,.12);
+      border-color:rgba(16,185,129,.24);
+      color:#bbf7d0;
+    }
+    .notice.error{
+      background:rgba(239,68,68,.12);
+      border-color:rgba(239,68,68,.24);
+      color:#fecaca;
+    }
+    .notice.info{
+      background:rgba(37,99,235,.12);
+      border-color:rgba(37,99,235,.24);
+      color:#dbeafe;
+    }
+
+    .loader{
+      width:16px;height:16px;border-radius:50%;
+      border:2px solid rgba(255,255,255,.28);
+      border-top-color:#fff;
+      animation:spin .8s linear infinite;
+      display:none;
+    }
+
+    .btn.loading .loader{display:inline-block}
+
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Instagram Connect</h1>
-    <p>Tap the button below to test the connection route.</p>
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="back-btn" type="button" onclick="goBack()">←</button>
+        <div>
+          <div class="eyebrow">View • Connected Accounts</div>
+          <div class="page-title">
+            <span class="ig-dot"></span>
+            Instagram Connect
+          </div>
+        </div>
+      </div>
 
-    <button class="btn" onclick="startInstagramConnect()">Connect Instagram</button>
+      <a class="ghost-btn" href="connected-accounts.html">All Accounts</a>
+    </div>
 
-    <div id="note" class="note">Ready.</div>
+    <section class="hero">
+      <h2>Connect Instagram</h2>
+      <p>
+        This page checks your signed-in View user first, then starts the Instagram connection flow.
+      </p>
+
+      <div class="hero-actions">
+        <button id="connectBtn" class="btn btn-primary" type="button" onclick="beginInstagramConnect()">
+          <span class="loader"></span>
+          <span class="btn-label">Connect Instagram</span>
+        </button>
+      </div>
+
+      <div id="resultNotice" class="notice info">Waiting for connection…</div>
+    </section>
   </div>
 
   <script>
-    function startInstagramConnect() {
-      var note = document.getElementById("note");
-      note.textContent = "Button clicked.";
+    var SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    var DEFAULT_AUTH_ROUTE = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-start";
 
-      var finalRedirect = window.location.origin + window.location.pathname;
-      var url = new URL("https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/instagram-start");
+    var supabase = null;
+    var currentUser = null;
 
-      url.searchParams.set("final_redirect", finalRedirect);
-      url.searchParams.set("user_id", "test-user");
-
-      note.textContent = "Redirecting to: " + url.toString();
-
-      setTimeout(function () {
-        window.location.href = url.toString();
-      }, 300);
+    function byId(id) {
+      return document.getElementById(id);
     }
 
-    window.startInstagramConnect = startInstagramConnect;
+    function initSupabaseSafely() {
+      try {
+        if (window.supabase && typeof window.supabase.createClient === "function") {
+          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+      } catch (e) {
+        supabase = null;
+      }
+    }
+
+    async function loadCurrentUser() {
+      try {
+        if (!supabase) {
+          currentUser = null;
+          return;
+        }
+        var result = await supabase.auth.getUser();
+        currentUser = result && result.data ? result.data.user : null;
+      } catch (e) {
+        currentUser = null;
+      }
+    }
+
+    function setNotice(type, message) {
+      var el = byId("resultNotice");
+      if (!el) return;
+      el.className = "notice show " + type;
+      el.textContent = message;
+    }
+
+    function setButtonLoading(isLoading) {
+      var btn = byId("connectBtn");
+      if (!btn) return;
+      if (isLoading) {
+        btn.classList.add("loading");
+        btn.disabled = true;
+      } else {
+        btn.classList.remove("loading");
+        btn.disabled = false;
+      }
+    }
+
+    async function beginInstagramConnect() {
+      setButtonLoading(true);
+      await loadCurrentUser();
+
+      if (!currentUser || !currentUser.id) {
+        setButtonLoading(false);
+        setNotice("error", "You must login before connecting Instagram.");
+        return;
+      }
+
+      try {
+        var url = new URL(DEFAULT_AUTH_ROUTE);
+        url.searchParams.set("provider", "instagram");
+        url.searchParams.set("final_redirect", "https://view.ceetice.com/connected-accounts.html");
+        url.searchParams.set("user_id", currentUser.id);
+
+        window.location.href = url.toString();
+      } catch (err) {
+        setButtonLoading(false);
+        setNotice("error", err && err.message ? err.message : "Unable to start Instagram connection.");
+      }
+    }
+    window.beginInstagramConnect = beginInstagramConnect;
+
+    function goBack() {
+      window.location.href = "connected-accounts.html";
+    }
+    window.goBack = goBack;
+
+    async function init() {
+      initSupabaseSafely();
+      await loadCurrentUser();
+      setButtonLoading(false);
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
   </script>
 </body>
 </html>
