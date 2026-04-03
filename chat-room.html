@@ -28,6 +28,10 @@
       --green:#22c55e;
       --danger:#ef4444;
       --shadow:0 20px 50px rgba(0,0,0,.28);
+
+      --chat-font-size:14.5px;
+      --chat-line-height:1.55;
+      --bubble-radius:22px;
     }
 
     *{
@@ -323,14 +327,14 @@
       flex:1;
       min-height:0;
       overflow:auto;
-      padding-bottom:12px;
+      padding-bottom:8px;
       scroll-behavior:smooth;
     }
 
     .day-divider{
       display:flex;
       justify-content:center;
-      margin:14px 0;
+      margin:10px 0;
     }
 
     .day-divider span{
@@ -346,7 +350,7 @@
 
     .message-row{
       display:flex;
-      margin-bottom:12px;
+      margin-bottom:6px;
     }
 
     .message-row.me{ justify-content:flex-end; }
@@ -356,7 +360,7 @@
       max-width:min(80%, 520px);
       display:flex;
       flex-direction:column;
-      gap:5px;
+      gap:3px;
     }
 
     .sender-label{
@@ -367,10 +371,10 @@
 
     .bubble{
       position:relative;
-      border-radius:22px;
-      padding:11px 13px 10px;
+      border-radius:var(--bubble-radius);
+      padding:10px 12px 9px;
       backdrop-filter:blur(14px);
-      box-shadow:0 14px 30px rgba(0,0,0,.14);
+      box-shadow:0 10px 22px rgba(0,0,0,.12);
       border:1px solid rgba(255,255,255,.08);
       overflow:hidden;
       word-wrap:break-word;
@@ -387,6 +391,30 @@
       background:rgba(255,255,255,.08);
       color:#fff;
       border-bottom-left-radius:8px;
+    }
+
+    .bubble.compact{
+      border-radius:18px;
+    }
+
+    .bubble.square{
+      border-radius:12px;
+    }
+
+    .reply-preview-bubble{
+      margin-bottom:8px;
+      padding:8px 10px;
+      border-radius:14px;
+      background:rgba(255,255,255,.10);
+      border-left:4px solid rgba(255,255,255,.45);
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .reply-preview-bubble strong{
+      display:block;
+      font-size:12px;
+      margin-bottom:3px;
     }
 
     .bubble-media{
@@ -432,8 +460,8 @@
     }
 
     .bubble-text{
-      font-size:14.5px;
-      line-height:1.55;
+      font-size:var(--chat-font-size);
+      line-height:var(--chat-line-height);
       white-space:pre-wrap;
     }
 
@@ -442,7 +470,7 @@
       justify-content:flex-end;
       align-items:center;
       gap:7px;
-      margin-top:7px;
+      margin-top:6px;
       font-size:11px;
       opacity:.92;
     }
@@ -479,6 +507,55 @@
       padding:8px 12px calc(12px + env(safe-area-inset-bottom));
       background:linear-gradient(180deg, rgba(5,13,28,.10), rgba(5,13,28,.92) 30%);
       backdrop-filter:blur(18px);
+    }
+
+    .reply-strip{
+      display:none;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:0 6px 8px;
+      padding:10px 12px;
+      border-radius:18px;
+      background:rgba(59,130,246,.12);
+      border:1px solid rgba(59,130,246,.22);
+      color:#dcebff;
+    }
+
+    .reply-strip.show{
+      display:flex;
+    }
+
+    .reply-strip-main{
+      min-width:0;
+    }
+
+    .reply-strip-title{
+      font-size:12px;
+      font-weight:900;
+      margin-bottom:4px;
+    }
+
+    .reply-strip-text{
+      font-size:12px;
+      color:#cfe0ff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:100%;
+    }
+
+    .reply-strip-close{
+      width:34px;
+      height:34px;
+      min-width:34px;
+      border-radius:12px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
     }
 
     .composer{
@@ -612,7 +689,7 @@
     .sheet-backdrop.show{ display:flex; }
 
     .sheet{
-      width:min(100%, 700px);
+      width:min(100%, 720px);
       background:linear-gradient(180deg, #0a1835, #08142e);
       border-radius:28px 28px 18px 18px;
       border:1px solid rgba(255,255,255,.08);
@@ -696,6 +773,42 @@
       border-color:rgba(239,68,68,.18);
     }
 
+    .sheet-action.stack{
+      align-items:flex-start;
+      flex-direction:column;
+      justify-content:center;
+      padding:14px 16px;
+    }
+
+    .sheet-action.stack strong{
+      font-size:14px;
+    }
+
+    .sheet-action.stack small{
+      color:#bcd0ef;
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .picker-grid{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:10px;
+      margin-top:8px;
+    }
+
+    .picker-emoji{
+      min-height:48px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.06);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      cursor:pointer;
+    }
+
     .upload-pill{
       font-size:12px;
       color:#cfe0ff;
@@ -734,6 +847,9 @@
         min-width:46px;
       }
       .bubble-wrap{ max-width:88%; }
+      .picker-grid{
+        grid-template-columns:repeat(5,1fr);
+      }
     }
   </style>
 </head>
@@ -803,11 +919,22 @@
     </div>
 
     <div class="composer-shell">
+      <div id="replyStrip" class="reply-strip">
+        <div class="reply-strip-main">
+          <div id="replyStripTitle" class="reply-strip-title">Replying to status</div>
+          <div id="replyStripText" class="reply-strip-text"></div>
+        </div>
+        <button id="replyStripClose" class="reply-strip-close" type="button">✕</button>
+      </div>
+
       <form id="composerForm" class="composer">
         <div class="composer-side">
           <button id="emojiBtn" class="circle-btn" type="button" title="Emoji">😊</button>
           <button id="attachBtn" class="circle-btn" type="button" title="Attach file">📎</button>
-          <input id="fileInput" class="hidden" type="file" />
+
+          <input id="fileInputImage" class="hidden" type="file" accept="image/*" />
+          <input id="fileInputVideo" class="hidden" type="file" accept="video/*" />
+          <input id="fileInputDoc" class="hidden" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,application/*,text/*" />
         </div>
 
         <div class="input-wrap">
@@ -845,6 +972,48 @@
     </div>
   </div>
 
+  <div id="attachSheetBackdrop" class="sheet-backdrop" onclick="closeAttachSheet(event)">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <div class="sheet-avatar">📎</div>
+        <div>
+          <div class="sheet-title">Choose attachment</div>
+          <div class="sheet-sub">Pick the type of file you want to send.</div>
+        </div>
+      </div>
+
+      <div class="sheet-actions">
+        <button id="pickImageBtn" class="sheet-action" type="button">
+          <span>Picture</span>
+          <span>🖼️</span>
+        </button>
+        <button id="pickVideoBtn" class="sheet-action" type="button">
+          <span>Video</span>
+          <span>🎬</span>
+        </button>
+        <button id="pickDocBtn" class="sheet-action" type="button">
+          <span>Document</span>
+          <span>📄</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="emojiSheetBackdrop" class="sheet-backdrop" onclick="closeEmojiSheet(event)">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <div class="sheet-avatar">😊</div>
+        <div>
+          <div class="sheet-title">Choose emoji</div>
+          <div class="sheet-sub">Tap any emoji to insert it into your message.</div>
+        </div>
+      </div>
+      <div id="emojiGrid" class="picker-grid"></div>
+    </div>
+  </div>
+
   <div id="optionsSheetBackdrop" class="sheet-backdrop" onclick="closeOptionsSheet(event)">
     <div class="sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle"></div>
@@ -862,6 +1031,16 @@
           <span>View User Profile</span>
           <span>↗</span>
         </a>
+
+        <button id="sheetTextSizeAction" class="sheet-action stack" type="button">
+          <strong>Text Size</strong>
+          <small id="textSizeLabel">Current: Medium</small>
+        </button>
+
+        <button id="sheetBubbleStyleAction" class="sheet-action stack" type="button">
+          <strong>Bubble Style</strong>
+          <small id="bubbleStyleLabel">Current: Rounded</small>
+        </button>
 
         <button id="sheetMuteAction" class="sheet-action" type="button">
           <span>Mute Chat</span>
@@ -906,8 +1085,14 @@
     const MUTE_KEY = "view_muted_chat_map_v1";
     const BLOCK_KEY = "view_blocked_user_map_v1";
     const CLEAR_KEY = "view_cleared_chat_map_v1";
+    const CHAT_SETTINGS_KEY = "view_chat_style_settings_v1";
 
-    const EMOJIS = ["😀","😁","😂","🤣","😊","😍","🥳","😎","🔥","❤️","💯","🎉","✨","🙏","👍","💙","💚","🫶","📸","🎥","🚀"];
+    const EMOJIS = [
+      "😀","😁","😂","🤣","😊","😍","🥰","😘","😎","🤩","🥳","🤗","😇","🙂","😉",
+      "🔥","❤️","💙","💚","💯","✨","🎉","🙏","👍","👌","🙌","💪","👏","🤝","🫶",
+      "📸","🎥","🎶","🎵","🚀","🌟","💫","🌈","🥺","😢","😭","😡","😴","🤔","🤯",
+      "😋","😅","😬","🤤","🤑","😜","😏","🥹","💬","📞","🎯","🏆","💎","🌹","🍀"
+    ];
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -932,9 +1117,16 @@
     const composerForm = document.getElementById("composerForm");
     const emojiBtn = document.getElementById("emojiBtn");
     const attachBtn = document.getElementById("attachBtn");
-    const fileInput = document.getElementById("fileInput");
+    const fileInputImage = document.getElementById("fileInputImage");
+    const fileInputVideo = document.getElementById("fileInputVideo");
+    const fileInputDoc = document.getElementById("fileInputDoc");
     const messageInput = document.getElementById("messageInput");
     const sendBtn = document.getElementById("sendBtn");
+
+    const replyStrip = document.getElementById("replyStrip");
+    const replyStripTitle = document.getElementById("replyStripTitle");
+    const replyStripText = document.getElementById("replyStripText");
+    const replyStripClose = document.getElementById("replyStripClose");
 
     const callSheetBackdrop = document.getElementById("callSheetBackdrop");
     const callSheetAvatar = document.getElementById("callSheetAvatar");
@@ -943,11 +1135,23 @@
     const voiceCallAction = document.getElementById("voiceCallAction");
     const videoCallAction = document.getElementById("videoCallAction");
 
+    const attachSheetBackdrop = document.getElementById("attachSheetBackdrop");
+    const pickImageBtn = document.getElementById("pickImageBtn");
+    const pickVideoBtn = document.getElementById("pickVideoBtn");
+    const pickDocBtn = document.getElementById("pickDocBtn");
+
+    const emojiSheetBackdrop = document.getElementById("emojiSheetBackdrop");
+    const emojiGrid = document.getElementById("emojiGrid");
+
     const optionsSheetBackdrop = document.getElementById("optionsSheetBackdrop");
     const sheetAvatar = document.getElementById("sheetAvatar");
     const sheetTitle = document.getElementById("sheetTitle");
     const sheetSub = document.getElementById("sheetSub");
     const sheetProfileAction = document.getElementById("sheetProfileAction");
+    const sheetTextSizeAction = document.getElementById("sheetTextSizeAction");
+    const textSizeLabel = document.getElementById("textSizeLabel");
+    const sheetBubbleStyleAction = document.getElementById("sheetBubbleStyleAction");
+    const bubbleStyleLabel = document.getElementById("bubbleStyleLabel");
     const sheetMuteAction = document.getElementById("sheetMuteAction");
     const sheetBlockAction = document.getElementById("sheetBlockAction");
     const sheetClearAction = document.getElementById("sheetClearAction");
@@ -956,6 +1160,10 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const conversationId = urlParams.get("id") || urlParams.get("conversation_id") || "";
+    const replyStatusId = urlParams.get("reply_status") || "";
+    const replyType = urlParams.get("reply_type") || "";
+    const replyName = urlParams.get("reply_name") || "";
+    const replyTextParam = urlParams.get("reply_text") || "";
 
     let currentUser = null;
     let currentUserId = "";
@@ -972,6 +1180,10 @@
     let otherTypingTimeout = null;
     let localTypingCooldown = null;
     let knownMessageIds = new Set();
+
+    let pendingAttachmentFile = null;
+    let pendingAttachmentType = "";
+    let replyContext = null;
 
     function showNotice(message, type = "error") {
       noticeBox.className = `notice show ${type}`;
@@ -990,6 +1202,66 @@
 
     function setLocalMap(key, value) {
       localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function getChatSettings() {
+      try {
+        return JSON.parse(localStorage.getItem(CHAT_SETTINGS_KEY) || '{"textSize":"medium","bubbleStyle":"rounded"}');
+      } catch {
+        return { textSize: "medium", bubbleStyle: "rounded" };
+      }
+    }
+
+    function saveChatSettings(settings) {
+      localStorage.setItem(CHAT_SETTINGS_KEY, JSON.stringify(settings));
+    }
+
+    function applyChatSettings() {
+      const settings = getChatSettings();
+
+      if (settings.textSize === "small") {
+        document.documentElement.style.setProperty("--chat-font-size", "13px");
+        textSizeLabel.textContent = "Current: Small";
+      } else if (settings.textSize === "large") {
+        document.documentElement.style.setProperty("--chat-font-size", "16px");
+        textSizeLabel.textContent = "Current: Large";
+      } else {
+        document.documentElement.style.setProperty("--chat-font-size", "14.5px");
+        textSizeLabel.textContent = "Current: Medium";
+      }
+
+      if (settings.bubbleStyle === "compact") {
+        document.documentElement.style.setProperty("--bubble-radius", "18px");
+        bubbleStyleLabel.textContent = "Current: Compact";
+      } else if (settings.bubbleStyle === "square") {
+        document.documentElement.style.setProperty("--bubble-radius", "12px");
+        bubbleStyleLabel.textContent = "Current: Square";
+      } else {
+        document.documentElement.style.setProperty("--bubble-radius", "22px");
+        bubbleStyleLabel.textContent = "Current: Rounded";
+      }
+    }
+
+    function cycleTextSize() {
+      const settings = getChatSettings();
+      const order = ["small", "medium", "large"];
+      const next = order[(order.indexOf(settings.textSize || "medium") + 1) % order.length];
+      settings.textSize = next;
+      saveChatSettings(settings);
+      applyChatSettings();
+      renderMessages();
+      showNotice(`Text size changed to ${next}.`, "success");
+    }
+
+    function cycleBubbleStyle() {
+      const settings = getChatSettings();
+      const order = ["rounded", "compact", "square"];
+      const next = order[(order.indexOf(settings.bubbleStyle || "rounded") + 1) % order.length];
+      settings.bubbleStyle = next;
+      saveChatSettings(settings);
+      applyChatSettings();
+      renderMessages();
+      showNotice(`Bubble style changed to ${next}.`, "success");
     }
 
     function isMutedChat(id) {
@@ -1172,6 +1444,28 @@
       });
     }
 
+    function getReplyBubbleHtml(message) {
+      const meta = message.reply_meta || null;
+      if (!meta || typeof meta !== "object") return "";
+
+      const title = meta.title || "Reply";
+      const text = meta.text || "";
+
+      return `
+        <div class="reply-preview-bubble">
+          <strong>${escapeHtml(title)}</strong>
+          <span>${escapeHtml(text)}</span>
+        </div>
+      `;
+    }
+
+    function getBubbleStyleClass() {
+      const style = getChatSettings().bubbleStyle || "rounded";
+      if (style === "compact") return "compact";
+      if (style === "square") return "square";
+      return "";
+    }
+
     function renderMessages() {
       const visibleMessages = filterMessagesByClearState(currentMessages);
 
@@ -1189,6 +1483,7 @@
 
       let lastDay = "";
       let html = "";
+      const bubbleStyleClass = getBubbleStyleClass();
 
       visibleMessages.forEach(message => {
         const senderId = message.sender_id || "";
@@ -1237,7 +1532,8 @@
           <div class="message-row ${isMe ? "me" : "them"}">
             <div class="bubble-wrap">
               ${conversationIsGroup && !isMe ? `<div class="sender-label">${escapeHtml(message.sender_name || "User")}</div>` : ""}
-              <div class="bubble ${isMe ? "me" : "them"}">
+              <div class="bubble ${isMe ? "me" : "them"} ${bubbleStyleClass}">
+                ${getReplyBubbleHtml(message)}
                 ${mediaHtml}
                 ${text ? `<div class="bubble-text">${escapeHtml(text)}</div>` : ""}
                 <div class="bubble-meta">
@@ -1453,7 +1749,7 @@
       if (!file) return "file";
       if (file.type.startsWith("image/")) return "image";
       if (file.type.startsWith("video/")) return "video";
-      return "file";
+      return "document";
     }
 
     async function uploadAttachment(file) {
@@ -1495,6 +1791,20 @@
       };
     }
 
+    function openReplyStrip(meta) {
+      replyContext = meta;
+      replyStripTitle.textContent = meta.title || "Reply";
+      replyStripText.textContent = meta.text || "";
+      replyStrip.classList.add("show");
+    }
+
+    function clearReplyStrip() {
+      replyContext = null;
+      replyStrip.classList.remove("show");
+      replyStripTitle.textContent = "Reply";
+      replyStripText.textContent = "";
+    }
+
     async function sendMessage({ text = "", attachment = null }) {
       const cleanText = String(text || "").trim();
       if (!cleanText && !attachment) return;
@@ -1520,6 +1830,7 @@
           file_name: attachment ? attachment.name : null,
           file_size: attachment ? attachment.size : null,
           mime_type: attachment ? attachment.mime : null,
+          reply_meta: replyContext || null,
           created_at: new Date().toISOString(),
           sender_name: "You"
         };
@@ -1535,7 +1846,8 @@
           media_url: attachment ? attachment.url : null,
           file_name: attachment ? attachment.name : null,
           file_size: attachment ? attachment.size : null,
-          mime_type: attachment ? attachment.mime : null
+          mime_type: attachment ? attachment.mime : null,
+          reply_meta: replyContext || null
         };
 
         const { data, error } = await supabaseClient
@@ -1553,7 +1865,12 @@
         });
 
         messageInput.value = "";
-        fileInput.value = "";
+        pendingAttachmentFile = null;
+        pendingAttachmentType = "";
+        fileInputImage.value = "";
+        fileInputVideo.value = "";
+        fileInputDoc.value = "";
+        clearReplyStrip();
         autoGrowTextarea();
       } catch (error) {
         currentMessages = currentMessages.filter(msg => msg.id !== tempId);
@@ -1759,7 +2076,7 @@
 
     function goToCallRoom(type) {
       if (conversationIsGroup) {
-        window.location.href = `${ROUTES.callRoom}?conversation=${encodeURIComponent(conversationId)}&type=${encodeURIComponent(type)}&mode=group`;
+        window.location.href = `${ROUTES.callRoom}?conversation=${encodeURIComponent(conversationId)}&user=${encodeURIComponent(otherUser?.id || "")}&type=${encodeURIComponent(type)}`;
         return;
       }
 
@@ -1769,6 +2086,24 @@
       }
 
       window.location.href = `${ROUTES.callRoom}?conversation=${encodeURIComponent(conversationId)}&user=${encodeURIComponent(otherUser.id)}&type=${encodeURIComponent(type)}`;
+    }
+
+    function openAttachSheet() {
+      attachSheetBackdrop.classList.add("show");
+    }
+
+    function closeAttachSheet(event) {
+      if (event && event.target && event.target !== attachSheetBackdrop) return;
+      attachSheetBackdrop.classList.remove("show");
+    }
+
+    function openEmojiSheet() {
+      emojiSheetBackdrop.classList.add("show");
+    }
+
+    function closeEmojiSheet(event) {
+      if (event && event.target && event.target !== emojiSheetBackdrop) return;
+      emojiSheetBackdrop.classList.remove("show");
     }
 
     function openOptionsSheet() {
@@ -1798,6 +2133,7 @@
 
       sheetMuteAction.querySelector("span").textContent = isMutedChat(conversationId) ? "Unmute Chat" : "Mute Chat";
       sheetBlockAction.querySelector("span").textContent = !conversationIsGroup && isBlockedUser(otherUser?.id || "") ? "Unblock User" : "Block User";
+      applyChatSettings();
 
       optionsSheetBackdrop.classList.add("show");
     }
@@ -1866,6 +2202,33 @@
       closeOptionsSheet({ target: optionsSheetBackdrop });
     }
 
+    function buildEmojiGrid() {
+      emojiGrid.innerHTML = EMOJIS.map(emoji => `
+        <button class="picker-emoji" type="button" data-emoji="${emoji}">${emoji}</button>
+      `).join("");
+
+      emojiGrid.querySelectorAll("[data-emoji]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          messageInput.value += btn.dataset.emoji;
+          autoGrowTextarea();
+          messageInput.focus();
+          closeEmojiSheet({ target: emojiSheetBackdrop });
+          broadcastTyping();
+        });
+      });
+    }
+
+    function initReplyFromParams() {
+      if (!replyStatusId) return;
+      replyContext = {
+        type: replyType || "status",
+        id: replyStatusId,
+        title: replyName ? `Replying to ${replyName}'s status` : "Replying to status",
+        text: replyTextParam || "Status reply"
+      };
+      openReplyStrip(replyContext);
+    }
+
     backBtn.addEventListener("click", () => {
       window.location.href = ROUTES.chats;
     });
@@ -1888,8 +2251,51 @@
       goToCallRoom("video");
     });
 
+    attachBtn.addEventListener("click", openAttachSheet);
+    pickImageBtn.addEventListener("click", () => {
+      closeAttachSheet({ target: attachSheetBackdrop });
+      fileInputImage.click();
+    });
+    pickVideoBtn.addEventListener("click", () => {
+      closeAttachSheet({ target: attachSheetBackdrop });
+      fileInputVideo.click();
+    });
+    pickDocBtn.addEventListener("click", () => {
+      closeAttachSheet({ target: attachSheetBackdrop });
+      fileInputDoc.click();
+    });
+
+    emojiBtn.addEventListener("click", openEmojiSheet);
     menuBtn.addEventListener("click", openOptionsSheet);
 
+    fileInputImage.addEventListener("change", () => {
+      const file = fileInputImage.files?.[0];
+      if (!file) return;
+      pendingAttachmentFile = file;
+      pendingAttachmentType = "image";
+      showNotice(`${file.name} selected. Tap send to upload.`, "info");
+    });
+
+    fileInputVideo.addEventListener("change", () => {
+      const file = fileInputVideo.files?.[0];
+      if (!file) return;
+      pendingAttachmentFile = file;
+      pendingAttachmentType = "video";
+      showNotice(`${file.name} selected. Tap send to upload.`, "info");
+    });
+
+    fileInputDoc.addEventListener("change", () => {
+      const file = fileInputDoc.files?.[0];
+      if (!file) return;
+      pendingAttachmentFile = file;
+      pendingAttachmentType = "document";
+      showNotice(`${file.name} selected. Tap send to upload.`, "info");
+    });
+
+    replyStripClose.addEventListener("click", clearReplyStrip);
+
+    sheetTextSizeAction.addEventListener("click", cycleTextSize);
+    sheetBubbleStyleAction.addEventListener("click", cycleBubbleStyle);
     sheetMuteAction.addEventListener("click", toggleMuteChat);
     sheetBlockAction.addEventListener("click", toggleBlockUser);
     sheetClearAction.addEventListener("click", clearChatForMe);
@@ -1906,9 +2312,9 @@
       event.preventDefault();
 
       let attachment = null;
-      if (fileInput.files && fileInput.files[0]) {
+      if (pendingAttachmentFile) {
         try {
-          attachment = await uploadAttachment(fileInput.files[0]);
+          attachment = await uploadAttachment(pendingAttachmentFile);
         } catch (error) {
           showNotice(error.message || "Could not upload attachment.");
           return;
@@ -1919,24 +2325,6 @@
         text: messageInput.value,
         attachment
       });
-    });
-
-    attachBtn.addEventListener("click", () => {
-      fileInput.click();
-    });
-
-    fileInput.addEventListener("change", () => {
-      const file = fileInput.files?.[0];
-      if (!file) return;
-      showNotice(`${file.name} selected. Tap send to upload.`, "info");
-    });
-
-    emojiBtn.addEventListener("click", () => {
-      const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-      messageInput.value += emoji;
-      autoGrowTextarea();
-      messageInput.focus();
-      broadcastTyping();
     });
 
     messageInput.addEventListener("keydown", (event) => {
@@ -1950,6 +2338,8 @@
       if (event.key === "Escape") {
         closeOptionsSheet({ target: optionsSheetBackdrop });
         closeCallSheet({ target: callSheetBackdrop });
+        closeAttachSheet({ target: attachSheetBackdrop });
+        closeEmojiSheet({ target: emojiSheetBackdrop });
       }
     });
 
@@ -1981,6 +2371,9 @@
           return;
         }
 
+        applyChatSettings();
+        buildEmojiGrid();
+        initReplyFromParams();
         autoGrowTextarea();
         await refreshAll();
         setupRealtimeMessages();
@@ -2002,6 +2395,8 @@
 
     window.closeOptionsSheet = closeOptionsSheet;
     window.closeCallSheet = closeCallSheet;
+    window.closeAttachSheet = closeAttachSheet;
+    window.closeEmojiSheet = closeEmojiSheet;
 
     init();
   </script>
