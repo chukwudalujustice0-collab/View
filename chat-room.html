@@ -7,22 +7,24 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
   <title>Chat Room | View</title>
-  <meta name="theme-color" content="#07122b" />
+  <meta name="theme-color" content="#0a0f24" />
   <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/push-helper.js"></script>
 
   <style>
     :root{
-      --bg:#061126;
-      --bg2:#0a1835;
-      --panel:rgba(255,255,255,.08);
+      --bg:#070b1a;
+      --bg-deep:#050814;
+      --panel:rgba(10,16,38,.88);
       --panel2:rgba(255,255,255,.05);
       --stroke:rgba(255,255,255,.08);
       --text:#f8fbff;
       --muted:#9eb2cf;
-      --primary:#2d6bff;
-      --primary2:#5c8cff;
+      --primary:#3b82f6;
+      --primary2:#8b5cf6;
+      --pink:#ec4899;
+      --red:#ff3b5c;
       --green:#22c55e;
       --danger:#ef4444;
       --shadow:0 20px 50px rgba(0,0,0,.28);
@@ -39,15 +41,43 @@
     html,body{
       min-height:100%;
       background:
-        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
-        radial-gradient(circle at top left, rgba(0,255,200,.08), transparent 18%),
-        linear-gradient(180deg,#08142e 0%,#061126 52%,#050d1c 100%);
+        radial-gradient(circle at top left, rgba(59,130,246,.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(139,92,246,.18), transparent 28%),
+        radial-gradient(circle at bottom center, rgba(236,72,153,.12), transparent 24%),
+        linear-gradient(180deg, #0a0f24 0%, #070b1a 52%, #050814 100%);
       color:var(--text);
     }
 
-    body{ padding-bottom:98px; }
+    body{ padding-bottom:98px; overflow-x:hidden; }
+
+    body::before,
+    body::after{
+      content:"";
+      position:fixed;
+      pointer-events:none;
+      z-index:0;
+      filter:blur(8px);
+    }
+
+    body::before{
+      width:240px;
+      height:240px;
+      top:90px;
+      left:-80px;
+      background:radial-gradient(circle, rgba(59,130,246,.18), transparent 68%);
+    }
+
+    body::after{
+      width:260px;
+      height:260px;
+      bottom:90px;
+      right:-80px;
+      background:radial-gradient(circle, rgba(236,72,153,.13), transparent 68%);
+    }
 
     .wrap{
+      position:relative;
+      z-index:1;
       width:min(100%,860px);
       margin:0 auto;
       min-height:100vh;
@@ -77,9 +107,9 @@
       color:#ddffe7;
     }
     .notice.info{
-      background:rgba(45,107,255,.14);
-      border-color:rgba(45,107,255,.26);
-      color:#dbe8ff;
+      background:rgba(59,130,246,.14);
+      border-color:rgba(59,130,246,.26);
+      color:#dbeafe;
     }
 
     .topbar{
@@ -88,8 +118,91 @@
       z-index:30;
       padding:12px 16px 10px;
       backdrop-filter:blur(18px);
-      background:linear-gradient(180deg, rgba(5,13,28,.92), rgba(5,13,28,.72));
+      background:linear-gradient(180deg, rgba(5,13,28,.92), rgba(5,13,28,.78));
       border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .brand-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .brand-wrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-mark{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg, rgba(59,130,246,.2), rgba(139,92,246,.16));
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 10px 25px rgba(59,130,246,.15);
+      text-decoration:none;
+    }
+
+    .brand-mark img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .brand-mark .fallback-v{
+      font-size:28px;
+      font-weight:1000;
+      line-height:1;
+      letter-spacing:-.08em;
+      color:#4f8dff;
+      text-shadow:0 0 20px rgba(59,130,246,.3);
+    }
+
+    .brand-text{ min-width:0; }
+
+    .brand-main{
+      display:flex;
+      align-items:flex-end;
+      gap:8px;
+      flex-wrap:wrap;
+      line-height:1;
+    }
+
+    .brand-main .view-text{
+      font-size:18px;
+      font-weight:1000;
+      letter-spacing:.08em;
+      color:#4f8dff;
+      text-transform:uppercase;
+    }
+
+    .brand-main .by-ceetify{
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.08em;
+      color:var(--red);
+      text-transform:uppercase;
+      margin-bottom:2px;
+    }
+
+    .brand-sub{
+      margin-top:5px;
+      font-size:12px;
+      color:#b8c3df;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .topbar-row{
@@ -146,7 +259,7 @@
       align-items:center;
       justify-content:center;
       cursor:pointer;
-      box-shadow:0 12px 25px rgba(45,107,255,.25);
+      box-shadow:0 12px 25px rgba(59,130,246,.25);
     }
 
     .avatar-btn img{
@@ -588,8 +701,8 @@
       color:#cfe0ff;
       padding:7px 10px;
       border-radius:999px;
-      background:rgba(45,107,255,.12);
-      border:1px solid rgba(45,107,255,.16);
+      background:rgba(59,130,246,.12);
+      border:1px solid rgba(59,130,246,.16);
       display:none;
       margin:0 6px 8px;
     }
@@ -621,7 +734,6 @@
         min-width:46px;
       }
       .bubble-wrap{ max-width:88%; }
-      .head-actions .icon-btn:nth-child(2){ display:none; }
     }
   </style>
 </head>
@@ -630,6 +742,26 @@
     <div id="notice" class="notice"></div>
 
     <header class="topbar">
+      <div class="brand-row">
+        <div class="brand-wrap">
+          <a class="brand-mark" href="home.html" aria-label="View Home">
+            <img
+              src="view-logo.png"
+              alt="View logo"
+              onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;fallback-v&quot;>V</span>';"
+            />
+          </a>
+
+          <div class="brand-text">
+            <div class="brand-main">
+              <span class="view-text">VIEW</span>
+              <span class="by-ceetify">by Ceetify</span>
+            </div>
+            <div class="brand-sub">Premium private messaging</div>
+          </div>
+        </div>
+      </div>
+
       <div class="topbar-row">
         <button id="backBtn" class="icon-btn" type="button" aria-label="Back">←</button>
 
@@ -646,8 +778,7 @@
         </div>
 
         <div class="head-actions">
-          <button id="callBtn" class="icon-btn" type="button" title="Call">📞</button>
-          <button id="videoBtn" class="icon-btn" type="button" title="Video">🎥</button>
+          <button id="callMenuBtn" class="icon-btn" type="button" title="Call options">📞</button>
           <button id="menuBtn" class="icon-btn" type="button" title="More">⋮</button>
         </div>
       </div>
@@ -685,6 +816,32 @@
 
         <button id="sendBtn" class="send-btn" type="submit" aria-label="Send">➤</button>
       </form>
+    </div>
+  </div>
+
+  <div id="callSheetBackdrop" class="sheet-backdrop" onclick="closeCallSheet(event)">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+
+      <div class="sheet-head">
+        <div id="callSheetAvatar" class="sheet-avatar">U</div>
+        <div>
+          <div id="callSheetTitle" class="sheet-title">Call options</div>
+          <div id="callSheetSub" class="sheet-sub">Choose how you want to connect.</div>
+        </div>
+      </div>
+
+      <div class="sheet-actions">
+        <button id="voiceCallAction" class="sheet-action" type="button">
+          <span>Voice Call</span>
+          <span>📞</span>
+        </button>
+
+        <button id="videoCallAction" class="sheet-action" type="button">
+          <span>Video Call</span>
+          <span>🎥</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -742,7 +899,7 @@
       chats: "chats.html",
       publicProfile: "public-profile.html",
       groups: "groups.html",
-      call: "call.html"
+      callRoom: "call-room.html"
     };
 
     const MEDIA_BUCKET = "chat-media";
@@ -766,8 +923,7 @@
     const onlineDot = document.getElementById("onlineDot");
     const chatTitle = document.getElementById("chatTitle");
     const chatSubtitle = document.getElementById("chatSubtitle");
-    const callBtn = document.getElementById("callBtn");
-    const videoBtn = document.getElementById("videoBtn");
+    const callMenuBtn = document.getElementById("callMenuBtn");
     const menuBtn = document.getElementById("menuBtn");
     const messagesScroll = document.getElementById("messagesScroll");
     const typingBar = document.getElementById("typingBar");
@@ -779,6 +935,13 @@
     const fileInput = document.getElementById("fileInput");
     const messageInput = document.getElementById("messageInput");
     const sendBtn = document.getElementById("sendBtn");
+
+    const callSheetBackdrop = document.getElementById("callSheetBackdrop");
+    const callSheetAvatar = document.getElementById("callSheetAvatar");
+    const callSheetTitle = document.getElementById("callSheetTitle");
+    const callSheetSub = document.getElementById("callSheetSub");
+    const voiceCallAction = document.getElementById("voiceCallAction");
+    const videoCallAction = document.getElementById("videoCallAction");
 
     const optionsSheetBackdrop = document.getElementById("optionsSheetBackdrop");
     const sheetAvatar = document.getElementById("sheetAvatar");
@@ -951,6 +1114,14 @@
       return onlineUserIds.has(otherUser.id);
     }
 
+    function setAvatarContent(el, avatar, name) {
+      if (avatar) {
+        el.innerHTML = `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">`;
+      } else {
+        el.textContent = getInitial(name);
+      }
+    }
+
     function updateHeader() {
       if (!currentConversation) {
         chatTitle.textContent = "Chat";
@@ -966,21 +1137,29 @@
         chatSubtitle.textContent = `${currentMembers.length} member${currentMembers.length === 1 ? "" : "s"}`;
 
         const avatar = currentConversation.avatar_url || "";
-        profileBtn.innerHTML = avatar
-          ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(groupName)}">`
-          : escapeHtml(getInitial(groupName));
-
+        setAvatarContent(profileBtn, avatar, groupName);
         onlineDot.classList.remove("show");
       } else {
         const name = otherUser?.name || "User";
         chatTitle.textContent = name;
         chatSubtitle.textContent = isBlockedUser(otherUser?.id) ? "Blocked locally" : (isOtherUserOnline() ? "Online" : "Offline");
-        profileBtn.innerHTML = otherUser?.avatar
-          ? `<img src="${escapeHtml(otherUser.avatar)}" alt="${escapeHtml(name)}">`
-          : escapeHtml(getInitial(name));
-
+        setAvatarContent(profileBtn, otherUser?.avatar || "", name);
         onlineDot.classList.toggle("show", isOtherUserOnline());
       }
+    }
+
+    function updateCallSheet() {
+      const name = conversationIsGroup
+        ? (currentConversation?.name || currentConversation?.title || "Group")
+        : (otherUser?.name || "User");
+
+      const avatar = conversationIsGroup
+        ? (currentConversation?.avatar_url || "")
+        : (otherUser?.avatar || "");
+
+      setAvatarContent(callSheetAvatar, avatar, name);
+      callSheetTitle.textContent = name;
+      callSheetSub.textContent = "Choose how you want to connect.";
     }
 
     function filterMessagesByClearState(messages) {
@@ -1203,9 +1382,7 @@
           });
           renderMessages();
         }
-      } catch {
-        // keep silent to avoid breaking on schemas that do not fully support these columns
-      }
+      } catch {}
     }
 
     async function refreshAll() {
@@ -1267,6 +1444,7 @@
       }
 
       updateHeader();
+      updateCallSheet();
       renderMessages();
       await tryMarkRead();
     }
@@ -1568,6 +1746,31 @@
         });
     }
 
+    function openCallSheet() {
+      if (!currentConversation) return;
+      updateCallSheet();
+      callSheetBackdrop.classList.add("show");
+    }
+
+    function closeCallSheet(event) {
+      if (event && event.target && event.target !== callSheetBackdrop) return;
+      callSheetBackdrop.classList.remove("show");
+    }
+
+    function goToCallRoom(type) {
+      if (conversationIsGroup) {
+        window.location.href = `${ROUTES.callRoom}?conversation=${encodeURIComponent(conversationId)}&type=${encodeURIComponent(type)}&mode=group`;
+        return;
+      }
+
+      if (!otherUser?.id) {
+        showNotice("User is not available for calling.", "info");
+        return;
+      }
+
+      window.location.href = `${ROUTES.callRoom}?conversation=${encodeURIComponent(conversationId)}&user=${encodeURIComponent(otherUser.id)}&type=${encodeURIComponent(type)}`;
+    }
+
     function openOptionsSheet() {
       if (!currentConversation) return;
 
@@ -1579,10 +1782,7 @@
         ? (currentConversation.avatar_url || "")
         : (otherUser?.avatar || "");
 
-      sheetAvatar.innerHTML = avatar
-        ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">`
-        : escapeHtml(getInitial(name));
-
+      setAvatarContent(sheetAvatar, avatar, name);
       sheetTitle.textContent = name;
       sheetSub.textContent = conversationIsGroup
         ? "Group conversation"
@@ -1678,28 +1878,14 @@
       }
     });
 
-    callBtn.addEventListener("click", () => {
-      if (conversationIsGroup) {
-        showNotice("Group call page is not linked yet.", "info");
-        return;
-      }
-      if (!otherUser?.id) {
-        showNotice("User is not available for calling.", "info");
-        return;
-      }
-      window.location.href = `${ROUTES.call}?user=${encodeURIComponent(otherUser.id)}&conversation=${encodeURIComponent(conversationId)}&type=voice`;
+    callMenuBtn.addEventListener("click", openCallSheet);
+    voiceCallAction.addEventListener("click", () => {
+      closeCallSheet({ target: callSheetBackdrop });
+      goToCallRoom("voice");
     });
-
-    videoBtn.addEventListener("click", () => {
-      if (conversationIsGroup) {
-        showNotice("Group video page is not linked yet.", "info");
-        return;
-      }
-      if (!otherUser?.id) {
-        showNotice("User is not available for video.", "info");
-        return;
-      }
-      window.location.href = `${ROUTES.call}?user=${encodeURIComponent(otherUser.id)}&conversation=${encodeURIComponent(conversationId)}&type=video`;
+    videoCallAction.addEventListener("click", () => {
+      closeCallSheet({ target: callSheetBackdrop });
+      goToCallRoom("video");
     });
 
     menuBtn.addEventListener("click", openOptionsSheet);
@@ -1763,6 +1949,7 @@
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         closeOptionsSheet({ target: optionsSheetBackdrop });
+        closeCallSheet({ target: callSheetBackdrop });
       }
     });
 
@@ -1814,6 +2001,7 @@
     }
 
     window.closeOptionsSheet = closeOptionsSheet;
+    window.closeCallSheet = closeCallSheet;
 
     init();
   </script>
