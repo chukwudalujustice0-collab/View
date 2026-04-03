@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Call Room | View</title>
+  <meta name="theme-color" content="#09152f" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg:#07122a;
+      --bg2:#0c1c44;
+      --card:rgba(255,255,255,.08);
+      --stroke:rgba(255,255,255,.10);
+      --text:#f7faff;
+      --muted:#9fb1d8;
+      --primary:#2f6bff;
+      --primary2:#5c8cff;
+      --danger:#ef4444;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --dark:#08111f;
+      --glass:rgba(255,255,255,.08);
+      --shadow:0 20px 70px rgba(0,0,0,.35);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
+      --radius:24px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      background:
+        radial-gradient(circle at top left, rgba(47,107,255,.20), transparent 30%),
+        radial-gradient(circle at top right, rgba(92,140,255,.14), transparent 30%),
+        linear-gradient(180deg, #061126 0%, #081530 50%, #061126 100%);
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      min-height:100%;
+    }
+
+    .page{
+      min-height:100vh;
+      padding:
+        calc(14px + var(--safe-top))
+        14px
+        calc(16px + var(--safe-bottom));
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .left-group,.right-group{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .icon-btn{
+      width:48px;
+      height:48px;
+      border:none;
+      border-radius:16px;
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      font-size:20px;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+    }
+
+    .title-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .avatar{
+      width:54px;
+      height:54px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#2f6bff,#1f4fd1);
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      font-size:24px;
+      flex:0 0 auto;
+      box-shadow:0 10px 25px rgba(47,107,255,.35);
+    }
+
+    .name-wrap{
+      min-width:0;
+    }
+
+    .name{
+      font-size:18px;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:14px;
+      margin-top:2px;
+    }
+
+    .hero{
+      position:relative;
+      flex:1;
+      min-height:420px;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.28)),
+        radial-gradient(circle at center, rgba(47,107,255,.28), transparent 40%),
+        linear-gradient(180deg, #07122a 0%, #091833 100%);
+      border-radius:30px;
+      overflow:hidden;
+      border:1px solid var(--stroke);
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+
+    .status-pill{
+      position:absolute;
+      top:16px;
+      left:16px;
+      z-index:5;
+      background:rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:999px;
+      padding:10px 16px;
+      font-weight:700;
+      font-size:14px;
+      backdrop-filter:blur(10px);
+    }
+
+    .video-stage{
+      position:absolute;
+      inset:0;
+      overflow:hidden;
+      border-radius:30px;
+      background:#000;
+    }
+
+    video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      background:#000;
+    }
+
+    .video-remote{
+      position:absolute;
+      inset:0;
+      z-index:1;
+    }
+
+    .video-local{
+      position:absolute;
+      right:16px;
+      bottom:120px;
+      width:34%;
+      min-width:120px;
+      max-width:210px;
+      aspect-ratio:3/4;
+      border-radius:24px;
+      overflow:hidden;
+      z-index:3;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 18px 40px rgba(0,0,0,.35);
+      background:#08111f;
+      transform:scaleX(-1);
+    }
+
+    .video-local.audio-only,
+    .video-remote.audio-only{
+      display:none;
+    }
+
+    .center-overlay{
+      position:absolute;
+      inset:0;
+      z-index:2;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+      padding:26px;
+    }
+
+    .caller-card{
+      width:min(100%,520px);
+      min-height:300px;
+      border-radius:30px;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        linear-gradient(180deg, rgba(7,17,42,.85), rgba(6,12,28,.88)),
+        radial-gradient(circle at center, rgba(47,107,255,.30), transparent 55%);
+      box-shadow:0 22px 60px rgba(0,0,0,.35);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:28px 20px;
+    }
+
+    .caller-avatar-wrap{
+      position:relative;
+      width:148px;
+      height:148px;
+      margin-bottom:18px;
+    }
+
+    .caller-avatar{
+      width:148px;
+      height:148px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#2f6bff,#254fda);
+      display:grid;
+      place-items:center;
+      font-size:58px;
+      font-weight:900;
+      box-shadow:0 24px 40px rgba(47,107,255,.35);
+    }
+
+    .mini-me{
+      position:absolute;
+      right:-8px;
+      bottom:-8px;
+      width:84px;
+      height:84px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#2f6bff,#254fda);
+      display:grid;
+      place-items:center;
+      font-size:34px;
+      font-weight:900;
+      border:4px solid rgba(7,17,42,.95);
+    }
+
+    .caller-name{
+      font-size:24px;
+      font-weight:900;
+      margin:8px 0 10px;
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .caller-note{
+      color:#dbe7ff;
+      font-size:16px;
+      opacity:.92;
+    }
+
+    .bottom-panel{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .incoming-actions{
+      display:none;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .incoming-actions.show{
+      display:grid;
+    }
+
+    .action-big{
+      border:none;
+      border-radius:20px;
+      padding:16px 18px;
+      font-size:16px;
+      font-weight:800;
+      cursor:pointer;
+      color:#fff;
+      box-shadow:var(--shadow);
+    }
+
+    .accept{ background:linear-gradient(135deg,#10b981,#059669); }
+    .decline{ background:linear-gradient(135deg,#ef4444,#dc2626); }
+
+    .controls{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:12px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      padding:14px;
+      border-radius:28px;
+      backdrop-filter:blur(12px);
+      box-shadow:var(--shadow);
+    }
+
+    .ctrl{
+      height:68px;
+      border:none;
+      border-radius:20px;
+      cursor:pointer;
+      color:#fff;
+      font-size:24px;
+      font-weight:700;
+      background:rgba(255,255,255,.08);
+    }
+
+    .ctrl.primary{ background:linear-gradient(135deg,#2f6bff,#1f56ef); }
+    .ctrl.warn{ background:linear-gradient(135deg,#ef4444,#dc2626); }
+    .ctrl.active{ outline:2px solid rgba(255,255,255,.18); }
+    .ctrl.off{ background:rgba(255,255,255,.14); }
+
+    .mini-text{
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .hidden{display:none !important;}
+
+    @media (max-width: 760px){
+      .controls{
+        grid-template-columns:repeat(3,1fr);
+      }
+      .video-local{
+        width:40%;
+        bottom:138px;
+      }
+      .caller-name{
+        font-size:20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="left-group">
+        <button class="icon-btn" id="backBtn">←</button>
+        <div class="title-wrap">
+          <div class="avatar" id="topAvatar">U</div>
+          <div class="name-wrap">
+            <div class="name" id="peerName">User</div>
+            <div class="sub" id="topStatus">Preparing call...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-group">
+        <button class="icon-btn" id="chatBtn">💬</button>
+        <button class="icon-btn" id="fullscreenBtn">⛶</button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="status-pill" id="statusPill">Connecting...</div>
+
+      <div class="video-stage">
+        <video id="remoteVideo" class="video-remote" autoplay playsinline></video>
+        <video id="localVideo" class="video-local" autoplay playsinline muted></video>
+      </div>
+
+      <div class="center-overlay" id="centerOverlay">
+        <div class="caller-card">
+          <div class="caller-avatar-wrap">
+            <div class="caller-avatar" id="bigAvatar">U</div>
+            <div class="mini-me" id="selfAvatar">Y</div>
+          </div>
+          <div class="caller-name" id="centerName">User</div>
+          <div class="caller-note" id="centerNote">Preparing secure connection...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-panel">
+      <div class="incoming-actions" id="incomingActions">
+        <button class="action-big accept" id="answerBtn">Answer</button>
+        <button class="action-big decline" id="declineBtn">Decline</button>
+      </div>
+
+      <div class="controls">
+        <button class="ctrl primary" id="micBtn" title="Microphone">🎤</button>
+        <button class="ctrl" id="cameraBtn" title="Camera">📷</button>
+        <button class="ctrl primary" id="audioModeBtn" title="Audio or video">📡</button>
+        <button class="ctrl" id="switchCamBtn" title="Switch camera">🔄</button>
+        <button class="ctrl" id="speakerBtn" title="Speaker">🔊</button>
+        <button class="ctrl warn" id="hangupBtn" title="End call">📞</button>
+      </div>
+
+      <div class="mini-text" id="debugText">
+        Waiting for call state...
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const qs = new URLSearchParams(location.search);
+    const ROOM_ID = qs.get("room") || ("room_" + Date.now());
+    const PEER_ID = qs.get("peer") || null;
+    let CALL_TYPE = (qs.get("type") || "video").toLowerCase() === "audio" ? "audio" : "video";
+
+    const els = {
+      backBtn: document.getElementById("backBtn"),
+      chatBtn: document.getElementById("chatBtn"),
+      fullscreenBtn: document.getElementById("fullscreenBtn"),
+      peerName: document.getElementById("peerName"),
+      topStatus: document.getElementById("topStatus"),
+      statusPill: document.getElementById("statusPill"),
+      topAvatar: document.getElementById("topAvatar"),
+      bigAvatar: document.getElementById("bigAvatar"),
+      selfAvatar: document.getElementById("selfAvatar"),
+      centerName: document.getElementById("centerName"),
+      centerNote: document.getElementById("centerNote"),
+      centerOverlay: document.getElementById("centerOverlay"),
+      incomingActions: document.getElementById("incomingActions"),
+      answerBtn: document.getElementById("answerBtn"),
+      declineBtn: document.getElementById("declineBtn"),
+      micBtn: document.getElementById("micBtn"),
+      cameraBtn: document.getElementById("cameraBtn"),
+      audioModeBtn: document.getElementById("audioModeBtn"),
+      switchCamBtn: document.getElementById("switchCamBtn"),
+      speakerBtn: document.getElementById("speakerBtn"),
+      hangupBtn: document.getElementById("hangupBtn"),
+      localVideo: document.getElementById("localVideo"),
+      remoteVideo: document.getElementById("remoteVideo"),
+      debugText: document.getElementById("debugText"),
+    };
+
+    let currentUser = null;
+    let peerUser = null;
+    let callRow = null;
+    let localStream = null;
+    let remoteStream = null;
+    let pc = null;
+    let isCaller = false;
+    let localRole = null;
+    let callChannel = null;
+    let candidateChannel = null;
+    let micEnabled = true;
+    let camEnabled = CALL_TYPE === "video";
+    let usingFrontCamera = true;
+    let remoteDescriptionSet = false;
+    let addedCandidateIds = new Set();
+    let callTimer = null;
+    let callSeconds = 0;
+    let speakerOn = true;
+
+    const rtcConfig = {
+      iceServers: [
+        { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }
+      ]
+    };
+
+    function getInitial(name) {
+      return String(name || "U").trim().charAt(0).toUpperCase() || "U";
+    }
+
+    function setStatus(text, detail = "") {
+      els.statusPill.textContent = text;
+      els.topStatus.textContent = detail || text;
+      els.debugText.textContent = detail || text;
+    }
+
+    function setCenter(name, note) {
+      els.centerName.textContent = name || "User";
+      els.centerNote.textContent = note || "";
+    }
+
+    function showIncoming(show) {
+      els.incomingActions.classList.toggle("show", !!show);
+    }
+
+    function updateMediaUI() {
+      els.micBtn.classList.toggle("off", !micEnabled);
+      els.cameraBtn.classList.toggle("off", !camEnabled);
+      els.speakerBtn.classList.toggle("active", !!speakerOn);
+
+      if (CALL_TYPE === "audio") {
+        els.cameraBtn.classList.add("hidden");
+        els.switchCamBtn.classList.add("hidden");
+        els.localVideo.classList.add("audio-only");
+        els.remoteVideo.classList.add("audio-only");
+      } else {
+        els.cameraBtn.classList.remove("hidden");
+        els.switchCamBtn.classList.remove("hidden");
+        els.localVideo.classList.remove("audio-only");
+        els.remoteVideo.classList.remove("audio-only");
+      }
+    }
+
+    function formatDuration(total) {
+      const m = Math.floor(total / 60).toString().padStart(2, "0");
+      const s = (total % 60).toString().padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function startTimer() {
+      clearInterval(callTimer);
+      callSeconds = 0;
+      callTimer = setInterval(() => {
+        callSeconds++;
+        setStatus("In call", `Connected • ${formatDuration(callSeconds)}`);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(callTimer);
+      callTimer = null;
+    }
+
+    async function requireAuth() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) {
+        alert("You must be logged in first.");
+        location.href = "login.html";
+        throw new Error("Not authenticated");
+      }
+      currentUser = data.user;
+      els.selfAvatar.textContent = getInitial(
+        currentUser.user_metadata?.full_name ||
+        currentUser.user_metadata?.name ||
+        currentUser.email
+      );
+    }
+
+    async function loadPeerName() {
+      let fallback = "User";
+      if (PEER_ID) fallback = `User ${PEER_ID.slice(0, 6)}`;
+
+      els.peerName.textContent = fallback;
+      els.centerName.textContent = fallback;
+      els.topAvatar.textContent = getInitial(fallback);
+      els.bigAvatar.textContent = getInitial(fallback);
+
+      if (!PEER_ID) return;
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name, username, avatar_url")
+        .eq("id", PEER_ID)
+        .maybeSingle();
+
+      if (data) {
+        peerUser = data;
+        const display =
+          data.full_name ||
+          data.username ||
+          fallback;
+        els.peerName.textContent = display;
+        els.centerName.textContent = display;
+        els.topAvatar.textContent = getInitial(display);
+        els.bigAvatar.textContent = getInitial(display);
+      }
+    }
+
+    async function ensureCallRow() {
+      const { data: existing, error: existingErr } = await supabase
+        .from("calls")
+        .select("*")
+        .eq("room_id", ROOM_ID)
+        .maybeSingle();
+
+      if (existingErr) throw existingErr;
+
+      if (existing) {
+        callRow = existing;
+        isCaller = existing.caller_id === currentUser.id;
+        localRole = isCaller ? "caller" : "callee";
+        CALL_TYPE = existing.call_type || CALL_TYPE;
+        return existing;
+      }
+
+      if (!PEER_ID) {
+        throw new Error("Missing peer user id for new call.");
+      }
+
+      const insertPayload = {
+        room_id: ROOM_ID,
+        caller_id: currentUser.id,
+        callee_id: PEER_ID,
+        call_type: CALL_TYPE,
+        status: "ringing",
+        started_at: new Date().toISOString()
+      };
+
+      const { data: inserted, error: insertErr } = await supabase
+        .from("calls")
+        .insert(insertPayload)
+        .select("*")
+        .single();
+
+      if (insertErr) throw insertErr;
+
+      callRow = inserted;
+      isCaller = true;
+      localRole = "caller";
+      return inserted;
+    }
+
+    async function createPeerConnection() {
+      if (pc) return pc;
+
+      pc = new RTCPeerConnection(rtcConfig);
+      remoteStream = new MediaStream();
+      els.remoteVideo.srcObject = remoteStream;
+
+      pc.ontrack = (event) => {
+        event.streams[0].getTracks().forEach(track => {
+          remoteStream.addTrack(track);
+        });
+        els.centerOverlay.classList.add("hidden");
+        if (callRow?.status === "answered") {
+          startTimer();
+        }
+      };
+
+      pc.onicecandidate = async (event) => {
+        if (!event.candidate || !callRow?.id) return;
+        try {
+          await supabase.from("call_candidates").insert({
+            call_id: callRow.id,
+            sender_id: currentUser.id,
+            role: localRole,
+            candidate: event.candidate.toJSON()
+          });
+        } catch (err) {
+          console.error("ICE insert error", err);
+        }
+      };
+
+      pc.onconnectionstatechange = () => {
+        const state = pc.connectionState;
+        if (state === "connected") {
+          setStatus("In call", "Connection established");
+          els.centerOverlay.classList.add("hidden");
+          startTimer();
+        } else if (state === "connecting") {
+          setStatus("Connecting", "Establishing peer connection...");
+        } else if (state === "disconnected") {
+          setStatus("Disconnected", "Peer connection lost");
+        } else if (state === "failed") {
+          setStatus("Failed", "Connection failed");
+        } else if (state === "closed") {
+          setStatus("Ended", "Call closed");
+        }
+      };
+
+      return pc;
+    }
+
+    async function startLocalMedia(forceType = CALL_TYPE) {
+      CALL_TYPE = forceType;
+      updateMediaUI();
+
+      if (localStream) {
+        localStream.getTracks().forEach(t => t.stop());
+        localStream = null;
+      }
+
+      const constraints = {
+        audio: true,
+        video: CALL_TYPE === "video"
+          ? { facingMode: usingFrontCamera ? "user" : "environment" }
+          : false
+      };
+
+      localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      els.localVideo.srcObject = localStream;
+
+      await createPeerConnection();
+
+      const senders = pc.getSenders();
+      const oldTrackKinds = senders.map(s => s.track?.kind).filter(Boolean);
+
+      localStream.getTracks().forEach(track => {
+        if (!oldTrackKinds.includes(track.kind)) {
+          pc.addTrack(track, localStream);
+        }
+      });
+
+      // Replace existing tracks if toggled/switched
+      for (const sender of pc.getSenders()) {
+        if (!sender.track) continue;
+        const newTrack = localStream.getTracks().find(t => t.kind === sender.track.kind);
+        if (newTrack && sender.track.id !== newTrack.id) {
+          await sender.replaceTrack(newTrack);
+        }
+      }
+
+      applyTrackStates();
+    }
+
+    function applyTrackStates() {
+      if (!localStream) return;
+      const audioTracks = localStream.getAudioTracks();
+      const videoTracks = localStream.getVideoTracks();
+
+      audioTracks.forEach(t => t.enabled = micEnabled);
+      videoTracks.forEach(t => t.enabled = camEnabled);
+    }
+
+    async function createOffer() {
+      await createPeerConnection();
+      if (!localStream) await startLocalMedia(CALL_TYPE);
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      const { data, error } = await supabase
+        .from("calls")
+        .update({
+          offer: offer,
+          status: "ringing",
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", callRow.id)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      callRow = data;
+      setStatus("Calling...", "Waiting for the other user to answer your call...");
+      setCenter(els.centerName.textContent, "Waiting for the other user to answer your call...");
+    }
+
+    async function answerCall() {
+      if (!callRow?.offer) {
+        alert("No incoming offer found yet.");
+        return;
+      }
+
+      showIncoming(false);
+      setStatus("Connecting", "Answering call...");
+      setCenter(els.centerName.textContent, "Connecting call...");
+
+      await startLocalMedia(callRow.call_type || CALL_TYPE);
+      await createPeerConnection();
+
+      if (!pc.currentRemoteDescription) {
+        await pc.setRemoteDescription(new RTCSessionDescription(callRow.offer));
+        remoteDescriptionSet = true;
+      }
+
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      const { data, error } = await supabase
+        .from("calls")
+        .update({
+          answer: answer,
+          status: "answered",
+          answered_at: new Date().toISOString()
+        })
+        .eq("id", callRow.id)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      callRow = data;
+
+      setStatus("Connecting", "Joining call...");
+      els.centerOverlay.classList.add("hidden");
+    }
+
+    async function acceptRemoteAnswerIfNeeded(newRow) {
+      if (!isCaller) return;
+      if (!newRow?.answer) return;
+      if (!pc) return;
+      if (pc.currentRemoteDescription) return;
+
+      await pc.setRemoteDescription(new RTCSessionDescription(newRow.answer));
+      remoteDescriptionSet = true;
+      setStatus("Connected", "Remote answer received");
+      els.centerOverlay.classList.add("hidden");
+      startTimer();
+    }
+
+    async function acceptRemoteOfferIfNeeded(newRow) {
+      if (isCaller) return;
+      if (!newRow?.offer) return;
+      if (!pc) await createPeerConnection();
+      if (pc.currentRemoteDescription) return;
+
+      await pc.setRemoteDescription(new RTCSessionDescription(newRow.offer));
+      remoteDescriptionSet = true;
+    }
+
+    async function loadExistingCandidates() {
+      if (!callRow?.id) return;
+
+      const { data, error } = await supabase
+        .from("call_candidates")
+        .select("*")
+        .eq("call_id", callRow.id)
+        .order("id", { ascending: true });
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      for (const row of data || []) {
+        await handleCandidateRow(row);
+      }
+    }
+
+    async function handleCandidateRow(row) {
+      if (!row || addedCandidateIds.has(row.id)) return;
+      if (!pc) return;
+      if (row.sender_id === currentUser.id) return;
+
+      try {
+        if (!pc.remoteDescription) return;
+        await pc.addIceCandidate(new RTCIceCandidate(row.candidate));
+        addedCandidateIds.add(row.id);
+      } catch (err) {
+        console.error("Failed adding candidate", err, row);
+      }
+    }
+
+    async function updateCallStatus(status, extra = {}) {
+      if (!callRow?.id) return;
+      const payload = { status, ...extra };
+      const { data, error } = await supabase
+        .from("calls")
+        .update(payload)
+        .eq("id", callRow.id)
+        .select("*")
+        .single();
+
+      if (!error && data) callRow = data;
+    }
+
+    async function hangUp(finalStatus = "ended") {
+      try {
+        stopTimer();
+
+        if (pc) {
+          pc.getSenders().forEach(sender => {
+            try { sender.track && sender.track.stop(); } catch {}
+          });
+          try { pc.close(); } catch {}
+          pc = null;
+        }
+
+        if (localStream) {
+          localStream.getTracks().forEach(t => t.stop());
+          localStream = null;
+        }
+
+        if (remoteStream) {
+          remoteStream.getTracks().forEach(t => t.stop());
+          remoteStream = null;
+        }
+
+        await updateCallStatus(finalStatus, {
+          ended_at: new Date().toISOString()
+        });
+
+        setStatus("Call ended", "The call has ended");
+        setCenter(els.centerName.textContent, "Call ended");
+        showIncoming(false);
+        els.centerOverlay.classList.remove("hidden");
+
+        if (callChannel) supabase.removeChannel(callChannel);
+        if (candidateChannel) supabase.removeChannel(candidateChannel);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function subscribeToCall() {
+      callChannel = supabase
+        .channel("call-row-" + ROOM_ID)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "calls",
+            filter: `room_id=eq.${ROOM_ID}`
+          },
+          async (payload) => {
+            const row = payload.new || payload.old;
+            if (!row) return;
+            callRow = { ...callRow, ...row };
+
+            if (row.call_type) {
+              CALL_TYPE = row.call_type;
+              updateMediaUI();
+            }
+
+            if (row.status === "ringing") {
+              if (!isCaller) {
+                setStatus("Incoming call", "Someone is calling you...");
+                setCenter(els.centerName.textContent, "Incoming call...");
+                showIncoming(true);
+              }
+            }
+
+            if (row.status === "answered") {
+              setStatus("Answered", "Call answered");
+              showIncoming(false);
+              els.centerOverlay.classList.add("hidden");
+
+              if (isCaller) {
+                await acceptRemoteAnswerIfNeeded(row);
+              }
+            }
+
+            if (row.offer && !isCaller) {
+              await acceptRemoteOfferIfNeeded(row);
+            }
+
+            if (["ended", "declined", "missed", "failed"].includes(row.status)) {
+              stopTimer();
+              els.centerOverlay.classList.remove("hidden");
+              setStatus(
+                row.status.charAt(0).toUpperCase() + row.status.slice(1),
+                `Call ${row.status}`
+              );
+              setCenter(els.centerName.textContent, `Call ${row.status}`);
+              showIncoming(false);
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    async function subscribeToCandidates() {
+      candidateChannel = supabase
+        .channel("call-candidates-" + ROOM_ID)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "call_candidates",
+            filter: `call_id=eq.${callRow.id}`
+          },
+          async (payload) => {
+            await handleCandidateRow(payload.new);
+          }
+        )
+        .subscribe();
+    }
+
+    function bindUI() {
+      els.backBtn.onclick = () => history.back();
+      els.chatBtn.onclick = () => alert("Wire this button to your chat room page.");
+      els.fullscreenBtn.onclick = async () => {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          await document.exitFullscreen().catch(() => {});
+        }
+      };
+
+      els.answerBtn.onclick = async () => {
+        try {
+          await answerCall();
+          await loadExistingCandidates();
+        } catch (err) {
+          console.error(err);
+          alert(err.message || "Failed to answer call.");
+        }
+      };
+
+      els.declineBtn.onclick = async () => {
+        await hangUp("declined");
+      };
+
+      els.hangupBtn.onclick = async () => {
+        await hangUp("ended");
+      };
+
+      els.micBtn.onclick = () => {
+        micEnabled = !micEnabled;
+        applyTrackStates();
+        updateMediaUI();
+      };
+
+      els.cameraBtn.onclick = async () => {
+        if (CALL_TYPE === "audio") return;
+        camEnabled = !camEnabled;
+        applyTrackStates();
+        updateMediaUI();
+      };
+
+      els.audioModeBtn.onclick = async () => {
+        const newType = CALL_TYPE === "video" ? "audio" : "video";
+        CALL_TYPE = newType;
+        camEnabled = newType === "video";
+
+        try {
+          await startLocalMedia(newType);
+          await updateCallStatus(callRow?.status || "connecting", { call_type: newType });
+          updateMediaUI();
+        } catch (err) {
+          console.error(err);
+          alert("Could not switch media mode.");
+        }
+      };
+
+      els.switchCamBtn.onclick = async () => {
+        if (CALL_TYPE !== "video") return;
+        usingFrontCamera = !usingFrontCamera;
+        try {
+          await startLocalMedia("video");
+        } catch (err) {
+          console.error(err);
+          alert("Unable to switch camera.");
+        }
+      };
+
+      els.speakerBtn.onclick = () => {
+        speakerOn = !speakerOn;
+        els.remoteVideo.muted = !speakerOn;
+        updateMediaUI();
+      };
+    }
+
+    async function boot() {
+      try {
+        bindUI();
+        updateMediaUI();
+
+        await requireAuth();
+        await loadPeerName();
+
+        setStatus("Preparing", "Checking call room...");
+        setCenter(els.centerName.textContent, "Preparing secure call room...");
+
+        await ensureCallRow();
+        await subscribeToCall();
+        await subscribeToCandidates();
+
+        if (callRow.caller_id === currentUser.id) {
+          isCaller = true;
+          localRole = "caller";
+
+          setStatus("Preparing", "Starting local media...");
+          await startLocalMedia(CALL_TYPE);
+          await createOffer();
+          await loadExistingCandidates();
+        } else {
+          isCaller = false;
+          localRole = "callee";
+
+          setStatus("Incoming call", "Waiting for you to answer...");
+          setCenter(els.centerName.textContent, "Tap answer to join the call");
+          showIncoming(true);
+        }
+
+        if (callRow.status === "answered" && isCaller && callRow.answer) {
+          await createPeerConnection();
+          if (!localStream) await startLocalMedia(CALL_TYPE);
+          await acceptRemoteAnswerIfNeeded(callRow);
+          await loadExistingCandidates();
+        }
+      } catch (err) {
+        console.error(err);
+        setStatus("Error", err.message || "Call room failed to load");
+        setCenter("Call Error", err.message || "Something went wrong");
+        alert(err.message || "Failed to initialize call room.");
+      }
+    }
+
+    window.addEventListener("beforeunload", () => {
+      if (pc) try { pc.close(); } catch {}
+      if (localStream) localStream.getTracks().forEach(t => t.stop());
+      if (remoteStream) remoteStream.getTracks().forEach(t => t.stop());
+    });
+
+    boot();
+  </script>
+</body>
+</html>
