@@ -480,10 +480,12 @@ async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
 
   const initText = await initRes.text();
   const initData = safeJsonParse(initText, {});
-  const videoUrn = initData?.value?.video;
-  const uploadInstructions = initData?.value?.uploadInstructions || [];
+  const value = initData?.value || {};
+  const videoUrn = value.video;
+  const uploadInstructions = Array.isArray(value.uploadInstructions) ? value.uploadInstructions : [];
+  const uploadToken = value.uploadToken;
 
-  if (!initRes.ok || !videoUrn || !uploadInstructions.length) {
+  if (!initRes.ok || !videoUrn || !uploadInstructions.length || !uploadToken) {
     throw new Error(
       initData?.message ||
       initData?.errorDetails ||
@@ -491,6 +493,8 @@ async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
       "LinkedIn video initialize failed"
     );
   }
+
+  const uploadedPartIds = [];
 
   for (const part of uploadInstructions) {
     const start = Number(part.firstByte || 0);
@@ -500,16 +504,25 @@ async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
     const uploadRes = await fetch(part.uploadUrl, {
       method: "PUT",
       headers: {
-        "Content-Type": media.contentType,
+        "Content-Type": media.contentType || "application/octet-stream",
         "Content-Length": String(chunk.length),
       },
       body: chunk,
     });
 
+    const uploadText = await uploadRes.text();
+
     if (!uploadRes.ok) {
-      const uploadText = await uploadRes.text();
       throw new Error(uploadText || "LinkedIn video upload failed");
     }
+
+    const etagRaw = uploadRes.headers.get("etag") || uploadRes.headers.get("ETag");
+    if (!etagRaw) {
+      throw new Error("LinkedIn video upload missing ETag header");
+    }
+
+    const cleanEtag = etagRaw.replace(/^W\//, "").replace(/^"|"$/g, "");
+    uploadedPartIds.push(cleanEtag);
   }
 
   const finalizeRes = await fetch("https://api.linkedin.com/rest/videos?action=finalizeUpload", {
@@ -518,6 +531,8 @@ async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
     body: JSON.stringify({
       finalizeUploadRequest: {
         video: videoUrn,
+        uploadToken,
+        uploadedPartIds,
       },
     }),
   });
