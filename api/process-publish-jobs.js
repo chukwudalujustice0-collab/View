@@ -1,4 +1,5 @@
 const { createClient } = require("@supabase/supabase-js");
+const crypto = require("crypto");
 
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -31,16 +32,41 @@ function safeJsonParse(text, fallback = {}) {
   }
 }
 
-function isVideo(mediaType = "") {
-  return String(mediaType).toLowerCase().startsWith("video/");
+function isVideo(mediaType = "", mediaUrl = "") {
+  const mt = String(mediaType || "").toLowerCase();
+  const url = String(mediaUrl || "").toLowerCase();
+  return (
+    mt.startsWith("video/") ||
+    [".mp4", ".mov", ".m4v", ".webm", ".ogg"].some((ext) => url.includes(ext))
+  );
 }
 
-function isImage(mediaType = "") {
-  return String(mediaType).toLowerCase().startsWith("image/");
+function isImage(mediaType = "", mediaUrl = "") {
+  const mt = String(mediaType || "").toLowerCase();
+  const url = String(mediaUrl || "").toLowerCase();
+  return (
+    mt.startsWith("image/") ||
+    [".jpg", ".jpeg", ".png", ".gif", ".webp"].some((ext) => url.includes(ext))
+  );
+}
+
+function hasText(value) {
+  return String(value || "").trim().length > 0;
 }
 
 function getPostText(post) {
-  return String(post?.content || "").trim();
+  const title = String(post?.title || "").trim();
+  const content = String(post?.content || "").trim();
+  if (title && content) return `${title}\n\n${content}`.trim();
+  return title || content || "";
+}
+
+function getMediaUrl(post) {
+  return String(post?.media_url || post?.media_path || "").trim();
+}
+
+function getMediaType(post) {
+  return String(post?.media_type || "").trim();
 }
 
 function getSupabase() {
@@ -74,6 +100,19 @@ async function fetchBinaryBuffer(url) {
   return Buffer.from(await res.arrayBuffer());
 }
 
+async function fetchBinaryWithMeta(url) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch media: ${res.status}`);
+  }
+  const buffer = Buffer.from(await res.arrayBuffer());
+  return {
+    buffer,
+    contentType: res.headers.get("content-type") || "application/octet-stream",
+    contentLength: buffer.length,
+  };
+}
+
 function resolveConnectedAccountField(account, names) {
   for (const name of names) {
     if (account && account[name] != null && account[name] !== "") {
@@ -104,16 +143,27 @@ function resolveAccessToken(account) {
   );
 }
 
+function trimCaption(text, max = 3000) {
+  return String(text || "").slice(0, max);
+}
+
 async function uploadToYouTube(post, account) {
-  if (!post.media_url) throw new Error("YouTube requires media_url");
-  if (!isVideo(post.media_type)) {
-    throw new Error(`YouTube requires video media, got ${post.media_type || "unknown"}`);
+  const mediaUrl = getMediaUrl(post);
+  const mediaType = getMediaType(post);
+
+  if (!mediaUrl) throw new Error("YouTube requires media_url/media_path");
+  if (!isVideo(mediaType, mediaUrl)) {
+    throw new Error(`YouTube requires video media, got ${mediaType || "unknown"}`);
   }
 
   const accessToken = resolveAccessToken(account);
   if (!accessToken) throw new Error("Missing YouTube access token");
 
-  const buffer = await fetchBinaryBuffer(post.media_url);
+  const text = getPostText(post);
+  const title = hasText(text) ? text.slice(0, 100) : "View Upload";
+  const description = hasText(text) ? text : "";
+
+  const media = await fetchBinaryWithMeta(mediaUrl);
 
   const initRes = await fetch(
     "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
@@ -122,13 +172,13 @@ async function uploadToYouTube(post, account) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json; charset=UTF-8",
-        "X-Upload-Content-Type": post.media_type || "video/mp4",
-        "X-Upload-Content-Length": String(buffer.length),
+        "X-Upload-Content-Type": mediaType || media.contentType || "video/mp4",
+        "X-Upload-Content-Length": String(media.contentLength),
       },
       body: JSON.stringify({
         snippet: {
-          title: getPostText(post) || "View Upload",
-          description: getPostText(post) || "",
+          title,
+          description,
         },
         status: {
           privacyStatus: "public",
@@ -147,10 +197,10 @@ async function uploadToYouTube(post, account) {
   const uploadRes = await fetch(uploadUrl, {
     method: "PUT",
     headers: {
-      "Content-Type": post.media_type || "video/mp4",
-      "Content-Length": String(buffer.length),
+      "Content-Type": mediaType || media.contentType || "video/mp4",
+      "Content-Length": String(media.contentLength),
     },
-    body: buffer,
+    body: media.buffer,
   });
 
   const uploadText = await uploadRes.text();
@@ -180,16 +230,25 @@ async function sendToTelegram(post, account) {
 
   if (!chatId) throw new Error("Missing Telegram chat_id on connected account");
 
-  const caption = getPostText(post) || "View post";
-  let endpoint = "sendMessage";
-  let body = { chat_id: chatId, text: caption };
+  const text = getPostText(post);
+  const mediaUrl = getMediaUrl(post);
+  const mediaType = getMediaType(post);
 
-  if (post.media_url && isImage(post.media_type)) {
+  let endpoint = "sendMessage";
+  let body = { chat_id: chatId, text: hasText(text) ? text : " " };
+
+  if (mediaUrl && isImage(mediaType, mediaUrl)) {
     endpoint = "sendPhoto";
-    body = { chat_id: chatId, photo: post.media_url, caption };
-  } else if (post.media_url && isVideo(post.media_type)) {
+    body = { chat_id: chatId, photo: mediaUrl };
+    if (hasText(text)) body.caption = trimCaption(text, 1024);
+  } else if (mediaUrl && isVideo(mediaType, mediaUrl)) {
     endpoint = "sendVideo";
-    body = { chat_id: chatId, video: post.media_url, caption };
+    body = { chat_id: chatId, video: mediaUrl };
+    if (hasText(text)) body.caption = trimCaption(text, 1024);
+  } else if (mediaUrl) {
+    endpoint = "sendDocument";
+    body = { chat_id: chatId, document: mediaUrl };
+    if (hasText(text)) body.caption = trimCaption(text, 1024);
   }
 
   const res = await fetch(`https://api.telegram.org/bot${botToken}/${endpoint}`, {
@@ -198,11 +257,11 @@ async function sendToTelegram(post, account) {
     body: JSON.stringify(body),
   });
 
-  const text = await res.text();
-  const data = safeJsonParse(text, {});
+  const textRes = await res.text();
+  const data = safeJsonParse(textRes, {});
 
   if (!res.ok || data?.ok === false) {
-    throw new Error(data?.description || text || "Telegram publish failed");
+    throw new Error(data?.description || textRes || "Telegram publish failed");
   }
 
   return String(data?.result?.message_id || makePlatformPostId("telegram", post.id));
@@ -220,26 +279,34 @@ async function sendToFacebook(post, account) {
   ]);
   if (!pageId) throw new Error("Missing Facebook page_id");
 
+  const mediaUrl = getMediaUrl(post);
+  const mediaType = getMediaType(post);
+  const text = getPostText(post);
+
   let url = `https://graph.facebook.com/v23.0/${pageId}/feed`;
   let body;
 
-  if (post.media_url && isImage(post.media_type)) {
+  if (mediaUrl && isImage(mediaType, mediaUrl)) {
     url = `https://graph.facebook.com/v23.0/${pageId}/photos`;
     body = new URLSearchParams({
-      url: post.media_url,
-      caption: getPostText(post) || "",
+      url: mediaUrl,
       access_token: accessToken,
     });
-  } else if (post.media_url && isVideo(post.media_type)) {
+    if (hasText(text)) body.set("caption", text);
+  } else if (mediaUrl && isVideo(mediaType, mediaUrl)) {
     url = `https://graph.facebook.com/v23.0/${pageId}/videos`;
     body = new URLSearchParams({
-      file_url: post.media_url,
-      description: getPostText(post) || "",
+      file_url: mediaUrl,
       access_token: accessToken,
     });
+    if (hasText(text)) body.set("description", text);
+    if (hasText(text)) body.set("title", text.slice(0, 100));
   } else {
+    if (!hasText(text)) {
+      throw new Error("Facebook text-only post requires content");
+    }
     body = new URLSearchParams({
-      message: getPostText(post) || "",
+      message: text,
       access_token: accessToken,
     });
   }
@@ -250,11 +317,11 @@ async function sendToFacebook(post, account) {
     body,
   });
 
-  const text = await res.text();
-  const data = safeJsonParse(text, {});
+  const textRes = await res.text();
+  const data = safeJsonParse(textRes, {});
 
   if (!res.ok || data?.error) {
-    throw new Error(data?.error?.message || text || "Facebook publish failed");
+    throw new Error(data?.error?.message || textRes || "Facebook publish failed");
   }
 
   return String(data?.post_id || data?.id || makePlatformPostId("facebook", post.id));
@@ -274,26 +341,31 @@ async function sendToInstagram(post, account) {
   ]);
   if (!igUserId) throw new Error("Missing Instagram user id");
 
-  if (!post.media_url) throw new Error("Instagram publishing requires media_url");
+  const mediaUrl = getMediaUrl(post);
+  const mediaType = getMediaType(post);
+  const caption = getPostText(post);
 
-  const caption = getPostText(post) || "";
+  if (!mediaUrl) {
+    throw new Error("Instagram publishing requires media_url/media_path");
+  }
+
   let createBody;
 
-  if (isImage(post.media_type)) {
+  if (isImage(mediaType, mediaUrl)) {
     createBody = new URLSearchParams({
-      image_url: post.media_url,
-      caption,
+      image_url: mediaUrl,
       access_token: accessToken,
     });
-  } else if (isVideo(post.media_type)) {
+    if (hasText(caption)) createBody.set("caption", caption);
+  } else if (isVideo(mediaType, mediaUrl)) {
     createBody = new URLSearchParams({
       media_type: "REELS",
-      video_url: post.media_url,
-      caption,
+      video_url: mediaUrl,
       access_token: accessToken,
     });
+    if (hasText(caption)) createBody.set("caption", caption);
   } else {
-    throw new Error(`Instagram unsupported media type: ${post.media_type || "unknown"}`);
+    throw new Error(`Instagram unsupported media type: ${mediaType || "unknown"}`);
   }
 
   const createRes = await fetch(`https://graph.facebook.com/v23.0/${igUserId}/media`, {
@@ -350,15 +422,19 @@ function resolveLinkedInAuthorUrn(account) {
   return `urn:li:person:${externalUserId}`;
 }
 
+function getLinkedInHeaders(accessToken) {
+  return {
+    Authorization: `Bearer ${accessToken}`,
+    "Content-Type": "application/json",
+    "LinkedIn-Version": "202602",
+    "X-Restli-Protocol-Version": "2.0.0",
+  };
+}
+
 async function registerLinkedInImage(mediaUrl, accessToken, ownerUrn) {
   const initRes = await fetch("https://api.linkedin.com/rest/images?action=initializeUpload", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "LinkedIn-Version": "202602",
-      "X-Restli-Protocol-Version": "2.0.0",
-    },
+    headers: getLinkedInHeaders(accessToken),
     body: JSON.stringify({
       initializeUploadRequest: {
         owner: ownerUrn,
@@ -368,7 +444,6 @@ async function registerLinkedInImage(mediaUrl, accessToken, ownerUrn) {
 
   const initText = await initRes.text();
   const initData = safeJsonParse(initText, {});
-
   const uploadUrl = initData?.value?.uploadUrl;
   const imageUrn = initData?.value?.image;
 
@@ -376,17 +451,15 @@ async function registerLinkedInImage(mediaUrl, accessToken, ownerUrn) {
     throw new Error(initData?.message || initText || "LinkedIn image initialize failed");
   }
 
-  const fileRes = await fetch(mediaUrl);
-  if (!fileRes.ok) throw new Error("Could not fetch LinkedIn image source");
-
-  const buffer = Buffer.from(await fileRes.arrayBuffer());
+  const media = await fetchBinaryWithMeta(mediaUrl);
 
   const uploadRes = await fetch(uploadUrl, {
     method: "PUT",
     headers: {
-      "Content-Type": fileRes.headers.get("content-type") || "application/octet-stream",
+      "Content-Type": media.contentType,
+      "Content-Length": String(media.contentLength),
     },
-    body: buffer,
+    body: media.buffer,
   });
 
   if (!uploadRes.ok) {
@@ -397,16 +470,73 @@ async function registerLinkedInImage(mediaUrl, accessToken, ownerUrn) {
   return imageUrn;
 }
 
+async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
+  const initRes = await fetch("https://api.linkedin.com/rest/videos?action=initializeUpload", {
+    method: "POST",
+    headers: getLinkedInHeaders(accessToken),
+    body: JSON.stringify({
+      initializeUploadRequest: {
+        owner: ownerUrn,
+      },
+    }),
+  });
+
+  const initText = await initRes.text();
+  const initData = safeJsonParse(initText, {});
+  const videoUrn = initData?.value?.video;
+
+  if (!initRes.ok || !videoUrn) {
+    throw new Error(initData?.message || initText || "LinkedIn video initialize failed");
+  }
+
+  const media = await fetchBinaryWithMeta(mediaUrl);
+
+  const uploadInstructions =
+    initData?.value?.uploadInstructions ||
+    (initData?.value?.uploadUrl
+      ? [{ uploadUrl: initData.value.uploadUrl, firstByte: 0, lastByte: media.contentLength - 1 }]
+      : []);
+
+  if (!uploadInstructions.length) {
+    throw new Error("LinkedIn video upload URL not returned");
+  }
+
+  for (const part of uploadInstructions) {
+    const start = Number(part.firstByte || 0);
+    const end = Number(
+      part.lastByte != null ? part.lastByte : media.contentLength - 1
+    );
+    const chunk = media.buffer.subarray(start, end + 1);
+
+    const uploadRes = await fetch(part.uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": media.contentType,
+        "Content-Length": String(chunk.length),
+      },
+      body: chunk,
+    });
+
+    if (!uploadRes.ok) {
+      const uploadText = await uploadRes.text();
+      throw new Error(uploadText || "LinkedIn video upload failed");
+    }
+  }
+
+  return videoUrn;
+}
+
 async function sendToLinkedIn(post, account) {
   const accessToken = resolveAccessToken(account);
   if (!accessToken) throw new Error("Missing LinkedIn access token");
 
   const author = resolveLinkedInAuthorUrn(account);
-  const commentary = getPostText(post) || "";
+  const commentary = getPostText(post);
+  const mediaUrl = getMediaUrl(post);
+  const mediaType = getMediaType(post);
 
   const body = {
     author,
-    commentary,
     visibility: "PUBLIC",
     distribution: {
       feedDistribution: "MAIN_FEED",
@@ -417,35 +547,42 @@ async function sendToLinkedIn(post, account) {
     isReshareDisabledByAuthor: false,
   };
 
-  if (post.media_url && isImage(post.media_type)) {
-    const imageUrn = await registerLinkedInImage(post.media_url, accessToken, author);
+  if (hasText(commentary)) {
+    body.commentary = commentary;
+  }
+
+  if (mediaUrl && isImage(mediaType, mediaUrl)) {
+    const imageUrn = await registerLinkedInImage(mediaUrl, accessToken, author);
     body.content = {
       media: {
         id: imageUrn,
-        title: commentary || "View post",
+        title: hasText(commentary) ? commentary.slice(0, 200) : "View image post",
       },
     };
-  } else if (post.media_url && isVideo(post.media_type)) {
-    throw new Error("LinkedIn video publishing is not wired yet in this worker");
+  } else if (mediaUrl && isVideo(mediaType, mediaUrl)) {
+    const videoUrn = await registerLinkedInVideo(mediaUrl, accessToken, author);
+    body.content = {
+      media: {
+        id: videoUrn,
+        title: hasText(commentary) ? commentary.slice(0, 200) : "View video post",
+      },
+    };
+  } else if (!hasText(commentary)) {
+    throw new Error("LinkedIn text-only post requires content when there is no media");
   }
 
   const res = await fetch("https://api.linkedin.com/rest/posts", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "LinkedIn-Version": "202602",
-      "X-Restli-Protocol-Version": "2.0.0",
-    },
+    headers: getLinkedInHeaders(accessToken),
     body: JSON.stringify(body),
   });
 
-  const text = await res.text();
+  const textRes = await res.text();
   const idHeader = res.headers.get("x-restli-id");
-  const data = safeJsonParse(text, {});
+  const data = safeJsonParse(textRes, {});
 
   if (!res.ok) {
-    throw new Error(data?.message || text || "LinkedIn publish failed");
+    throw new Error(data?.message || textRes || "LinkedIn publish failed");
   }
 
   return String(idHeader || data?.id || makePlatformPostId("linkedin", post.id));
@@ -457,7 +594,7 @@ async function sendToX(post, account) {
   if (!accessToken) throw new Error("Missing X access token/bearer token");
 
   const text = getPostText(post);
-  if (!text) throw new Error("X posting currently requires text content");
+  if (!hasText(text)) throw new Error("X posting currently requires text content");
 
   const res = await fetch("https://api.x.com/2/posts", {
     method: "POST",
@@ -481,23 +618,27 @@ async function sendToX(post, account) {
 async function sendToTikTok(post, account) {
   const accessToken = resolveAccessToken(account);
   if (!accessToken) throw new Error("Missing TikTok access token");
-  if (!post.media_url) throw new Error("TikTok requires media_url");
 
-  const text = getPostText(post) || "View post";
+  const mediaUrl = getMediaUrl(post);
+  const mediaType = getMediaType(post);
+  const text = getPostText(post);
+
+  if (!mediaUrl) throw new Error("TikTok requires media_url/media_path");
+
   let sourceInfo;
 
-  if (isVideo(post.media_type)) {
+  if (isVideo(mediaType, mediaUrl)) {
     sourceInfo = {
       source: "PULL_FROM_URL",
-      video_url: post.media_url,
+      video_url: mediaUrl,
     };
-  } else if (isImage(post.media_type)) {
+  } else if (isImage(mediaType, mediaUrl)) {
     sourceInfo = {
       source: "PULL_FROM_URL",
-      photo_images: [post.media_url],
+      photo_images: [mediaUrl],
     };
   } else {
-    throw new Error(`TikTok unsupported media type: ${post.media_type || "unknown"}`);
+    throw new Error(`TikTok unsupported media type: ${mediaType || "unknown"}`);
   }
 
   const privacyLevel = resolveConnectedAccountField(account, ["privacy_level"]) || "PUBLIC_TO_EVERYONE";
@@ -505,7 +646,7 @@ async function sendToTikTok(post, account) {
 
   const body = {
     post_info: {
-      title: text.slice(0, 90),
+      title: hasText(text) ? text.slice(0, 90) : "View post",
       privacy_level: privacyLevel,
       disable_comment: false,
       disable_duet: false,
@@ -606,6 +747,8 @@ async function updatePostAggregateStatus(supabase, postId) {
     publishStatus = "published";
   } else if (statuses.some((s) => s === "success") && statuses.some((s) => s === "failed")) {
     publishStatus = "partial";
+  } else if (statuses.some((s) => s === "success") && statuses.some((s) => s === "retrying")) {
+    publishStatus = "partial";
   } else if (statuses.some((s) => s === "processing")) {
     publishStatus = "processing";
   } else if (statuses.some((s) => s === "retrying" || s === "queued")) {
@@ -661,7 +804,7 @@ async function processJob(supabase, job) {
 async function failJob(supabase, job, message) {
   const attempts = (job.attempts || 0) + 1;
   const retryable = attempts < 3;
-  const nextRetryAt = retryable ? new Date(Date.now() + attempts * 5 * 60 * 1000).toISOString() : null;
+  const nextRetryAt = retryable ? new Date(Date.now() + attempts * 2 * 60 * 1000).toISOString() : null;
   const status = retryable ? "retrying" : "failed";
 
   await markJob(supabase, job.id, {
@@ -692,6 +835,23 @@ async function failJob(supabase, job, message) {
   };
 }
 
+async function runWithConcurrency(items, limit, worker) {
+  const results = [];
+  let index = 0;
+
+  async function runner() {
+    while (index < items.length) {
+      const current = items[index++];
+      const result = await worker(current);
+      results.push(result);
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, () => runner());
+  await Promise.all(workers);
+  return results;
+}
+
 module.exports = async function handler(req, res) {
   setCors(res);
 
@@ -705,18 +865,17 @@ module.exports = async function handler(req, res) {
 
   try {
     const supabase = getSupabase();
-
     const statuses = ["queued", "retrying"];
     const now = new Date().toISOString();
+    const batchSize = Number(req.query?.limit || req.body?.limit || 20);
+    const concurrency = Number(req.query?.concurrency || req.body?.concurrency || 4);
 
-    let query = supabase
+    const { data: jobs, error: jobsError } = await supabase
       .from("post_publish_jobs")
       .select("*")
       .in("status", statuses)
       .order("created_at", { ascending: true })
-      .limit(10);
-
-    const { data: jobs, error: jobsError } = await query;
+      .limit(batchSize);
 
     if (jobsError) {
       throw new Error(jobsError.message || "Failed to load publish jobs");
@@ -737,17 +896,13 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const results = [];
-
-    for (const job of runnableJobs) {
+    const results = await runWithConcurrency(runnableJobs, concurrency, async (job) => {
       try {
-        const result = await processJob(supabase, job);
-        results.push(result);
+        return await processJob(supabase, job);
       } catch (err) {
-        const failure = await failJob(supabase, job, err?.message || "Unknown publish error");
-        results.push(failure);
+        return await failJob(supabase, job, err?.message || "Unknown publish error");
       }
-    }
+    });
 
     return res.status(200).json({
       success: true,
@@ -755,7 +910,7 @@ module.exports = async function handler(req, res) {
       success_count: results.filter((r) => r.ok).length,
       failed_count: results.filter((r) => !r.ok).length,
       results,
-      message: `Processed ${results.length} job(s)`,
+      message: `Processed ${results.length} job(s) with concurrency ${Math.min(concurrency, runnableJobs.length)}`,
     });
   } catch (err) {
     console.error("process-publish-jobs fatal:", err);
