@@ -1,1342 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Dashboard | View</title>
-  <meta name="theme-color" content="#07122a" />
-  <link rel="manifest" href="/manifest.json" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/push-helper.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Dashboard | View</title>
 
-  <style>
-    :root{
-      --bg:#061126;
-      --bg2:#0a1835;
-      --card:rgba(255,255,255,.08);
-      --card2:rgba(255,255,255,.05);
-      --stroke:rgba(255,255,255,.08);
-      --text:#f8fbff;
-      --muted:#9db0cf;
-      --soft:#7f91af;
-      --primary:#2d6bff;
-      --primary2:#5c8cff;
-      --green:#22c55e;
-      --danger:#ef4444;
-      --warning:#f59e0b;
-      --shadow:0 18px 50px rgba(0,0,0,.28);
-    }
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#0a1028"/>
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Inter,Arial,sans-serif;
-      -webkit-tap-highlight-color:transparent;
-    }
+<link rel="stylesheet" href="css/dashboard.css"/>
 
-    html,body{
-      min-height:100%;
-      background:
-        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
-        radial-gradient(circle at top left, rgba(0,255,200,.06), transparent 18%),
-        linear-gradient(180deg,#08142e 0%,#061126 55%,#050d1c 100%);
-      color:var(--text);
-    }
-
-    body{
-      padding-bottom:118px;
-    }
-
-    .wrap{
-      width:min(100%,1100px);
-      margin:0 auto;
-      padding:18px 16px 0;
-    }
-
-    .notice{
-      display:none;
-      margin-bottom:16px;
-      padding:14px 16px;
-      border-radius:18px;
-      font-size:14px;
-      line-height:1.6;
-      border:1px solid transparent;
-      backdrop-filter:blur(10px);
-    }
-    .notice.show{display:block}
-    .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#ffd9d9}
-    .notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffe8}
-    .notice.info{background:rgba(45,107,255,.14);border-color:rgba(45,107,255,.26);color:#dce8ff}
-
-    .hero{
-      position:relative;
-      overflow:hidden;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
-        linear-gradient(135deg, rgba(45,107,255,.16), rgba(92,140,255,.06));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:30px;
-      padding:18px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(18px);
-      margin-bottom:18px;
-    }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      top:-70px;
-      right:-70px;
-      width:180px;
-      height:180px;
-      border-radius:50%;
-      background:radial-gradient(circle, rgba(92,140,255,.30), transparent 66%);
-      pointer-events:none;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
-      position:relative;
-      z-index:1;
-      flex-wrap:wrap;
-    }
-
-    .brand-wrap{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
-    .brand-logo{
-      width:54px;
-      height:54px;
-      min-width:54px;
-      border-radius:20px;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#fff;
-      font-size:24px;
-      font-weight:900;
-      box-shadow:0 12px 28px rgba(45,107,255,.30);
-    }
-
-    .brand-text h1{
-      font-size:30px;
-      font-weight:900;
-      line-height:1;
-      letter-spacing:-.03em;
-      margin-bottom:5px;
-    }
-
-    .brand-text p{
-      font-size:13px;
-      color:var(--muted);
-    }
-
-    .top-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .icon-btn,.primary-btn,.ghost-btn,.soft-btn{
-      min-height:46px;
-      border:none;
-      border-radius:18px;
-      padding:0 16px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      cursor:pointer;
-      text-decoration:none;
-      color:#fff;
-      font-size:13px;
-      font-weight:800;
-    }
-
-    .icon-btn{
-      width:46px;
-      padding:0;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
-      position:relative;
-    }
-
-    .primary-btn{
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:0 12px 28px rgba(45,107,255,.28);
-    }
-
-    .ghost-btn,.soft-btn{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .notif-dot{
-      position:absolute;
-      right:10px;
-      top:10px;
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      background:#ff4d67;
-      display:none;
-      box-shadow:0 0 0 4px rgba(255,77,103,.18);
-    }
-    .notif-dot.show{display:block}
-
-    .hero-grid{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:18px;
-      position:relative;
-      z-index:1;
-    }
-
-    .welcome-card{
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-    }
-
-    .eyebrow{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      width:max-content;
-      min-height:36px;
-      padding:0 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:12px;
-      font-weight:800;
-      margin-bottom:16px;
-    }
-
-    .live-dot{
-      width:9px;
-      height:9px;
-      border-radius:50%;
-      background:var(--green);
-      box-shadow:0 0 0 6px rgba(34,197,94,.12);
-    }
-
-    .welcome-card h2{
-      font-size:40px;
-      line-height:1.04;
-      font-weight:900;
-      letter-spacing:-.05em;
-      margin-bottom:12px;
-      max-width:640px;
-    }
-
-    .welcome-card p{
-      font-size:15px;
-      line-height:1.85;
-      color:#bfd0ea;
-      margin-bottom:18px;
-      max-width:680px;
-    }
-
-    .search-wrap{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-height:56px;
-      padding:0 16px;
-      border-radius:20px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      margin-bottom:14px;
-    }
-
-    .search-wrap input{
-      flex:1;
-      background:transparent;
-      border:none;
-      outline:none;
-      color:#fff;
-      font-size:15px;
-    }
-
-    .search-wrap input::placeholder{color:#9db1d1}
-
-    .quick-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .hero-side{
-      display:grid;
-      gap:12px;
-    }
-
-    .hero-mini-card{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:24px;
-      padding:16px;
-    }
-
-    .hero-mini-card h3{
-      font-size:18px;
-      font-weight:900;
-      margin-bottom:8px;
-    }
-
-    .hero-mini-card p{
-      font-size:13px;
-      color:#bfd0ea;
-      line-height:1.7;
-      margin-bottom:12px;
-    }
-
-    .hero-chips{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .chip{
-      min-height:36px;
-      padding:0 12px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:12px;
-      font-weight:800;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(12,1fr);
-      gap:18px;
-      margin-bottom:18px;
-    }
-
-    .col-12{grid-column:span 12}
-    .col-8{grid-column:span 8}
-    .col-6{grid-column:span 6}
-    .col-4{grid-column:span 4}
-    .col-3{grid-column:span 3}
-
-    .card{
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:28px;
-      padding:18px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(16px);
-    }
-
-    .card-head{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
-      flex-wrap:wrap;
-    }
-
-    .card-head h3{
-      font-size:23px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      margin-bottom:5px;
-    }
-
-    .card-head p{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
-    }
-
-    .stats-grid{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-    }
-
-    .stat-card{
-      border-radius:24px;
-      padding:16px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 12px 30px rgba(2,8,23,.16);
-    }
-
-    .stat-label{
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:8px;
-    }
-
-    .stat-value{
-      font-size:23px;
-      font-weight:900;
-      margin-bottom:6px;
-    }
-
-    .stat-sub{
-      font-size:12px;
-      color:#bfd0ea;
-      line-height:1.6;
-    }
-
-    .module-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:12px;
-    }
-
-    .module-card{
-      border-radius:24px;
-      padding:16px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      text-decoration:none;
-      color:#fff;
-      transition:.18s ease;
-    }
-
-    .module-card:hover{
-      transform:translateY(-1px);
-    }
-
-    .module-icon{
-      width:44px;
-      height:44px;
-      border-radius:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(45,107,255,.14);
-      border:1px solid rgba(45,107,255,.18);
-      margin-bottom:12px;
-      font-size:22px;
-    }
-
-    .module-card h4{
-      font-size:16px;
-      font-weight:900;
-      margin-bottom:6px;
-    }
-
-    .module-card p{
-      font-size:13px;
-      color:#bfd0ea;
-      line-height:1.7;
-    }
-
-    .summary-list{
-      display:grid;
-      gap:12px;
-    }
-
-    .summary-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:14px;
-      border-radius:20px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      flex-wrap:wrap;
-    }
-
-    .summary-copy h4{
-      font-size:15px;
-      font-weight:900;
-      margin-bottom:4px;
-    }
-
-    .summary-copy p{
-      font-size:12px;
-      color:#bfd0ea;
-      line-height:1.6;
-    }
-
-    .summary-badge{
-      min-height:34px;
-      padding:0 12px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:12px;
-      font-weight:900;
-    }
-
-    .summary-badge.green{
-      background:rgba(34,197,94,.14);
-      border-color:rgba(34,197,94,.18);
-      color:#ddffe8;
-    }
-
-    .summary-badge.pending{
-      background:rgba(245,158,11,.12);
-      border-color:rgba(245,158,11,.18);
-      color:#ffe6b8;
-    }
-
-    .checklist{
-      display:grid;
-      gap:12px;
-    }
-
-    .check-item{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      padding:14px;
-      border-radius:22px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .check-icon{
-      width:34px;
-      height:34px;
-      min-width:34px;
-      border-radius:50%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(45,107,255,.16);
-      border:1px solid rgba(45,107,255,.18);
-      font-size:14px;
-    }
-
-    .check-copy h4{
-      font-size:15px;
-      font-weight:900;
-      margin-bottom:4px;
-    }
-
-    .check-copy p{
-      font-size:12px;
-      color:#bfd0ea;
-      line-height:1.7;
-    }
-
-    .bottom-nav{
-      position:fixed;
-      left:50%;
-      bottom:14px;
-      transform:translateX(-50%);
-      width:min(100%,820px);
-      max-width:calc(100% - 18px);
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:8px;
-      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
-      border-radius:28px;
-      background:rgba(7,18,43,.94);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 22px 56px rgba(0,0,0,.34);
-      backdrop-filter:blur(18px);
-      z-index:55;
-    }
-
-    .nav-btn{
-      min-height:62px;
-      border-radius:18px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:5px;
-      color:#90a5c7;
-      text-decoration:none;
-      font-size:12px;
-      font-weight:800;
-      text-align:center;
-    }
-
-    .nav-btn.active{
-      color:#fff;
-      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
-      border:1px solid rgba(45,107,255,.20);
-    }
-
-    .nav-icon{font-size:21px;line-height:1}
-
-    .fab-ai{
-      position:fixed;
-      right:16px;
-      bottom:104px;
-      width:60px;
-      height:60px;
-      border:none;
-      border-radius:20px;
-      background:linear-gradient(135deg,#05d5ff,#2d6bff 55%,#8b5cf6);
-      color:#fff;
-      text-decoration:none;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:26px;
-      box-shadow:0 18px 40px rgba(45,107,255,.36);
-      z-index:60;
-    }
-
-    @media (max-width:1040px){
-      .col-8,.col-6,.col-4,.col-3{grid-column:span 12}
-      .hero-grid{grid-template-columns:1fr}
-      .module-grid{grid-template-columns:repeat(2,1fr)}
-    }
-
-    @media (max-width:700px){
-      .stats-grid{grid-template-columns:repeat(2,1fr)}
-      .module-grid{grid-template-columns:1fr}
-    }
-
-    @media (max-width:640px){
-      .wrap{padding:14px 12px 0}
-      .brand-text h1{font-size:26px}
-      .welcome-card h2{font-size:32px}
-      .topbar{align-items:flex-start}
-      .top-actions{width:100%}
-      .top-actions .icon-btn,.top-actions .primary-btn,.top-actions .ghost-btn{flex:1}
-    }
-  </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
-  <div class="wrap">
-    <div id="notice" class="notice"></div>
 
-    <section class="hero">
-      <div class="topbar">
-        <div class="brand-wrap">
-          <div class="brand-logo">D</div>
-          <div class="brand-text">
-            <h1>Dashboard</h1>
-            <p>Creator, business, publishing, wallet, analytics, and connected account control center</p>
-          </div>
-        </div>
+<div class="dashboard-page">
 
-        <div class="top-actions">
-          <a class="icon-btn" href="notifications.html" aria-label="Notifications" title="Notifications">
-            🔔
-            <span id="notifDot" class="notif-dot"></span>
-          </a>
-          <a class="icon-btn" href="settings.html" aria-label="Settings" title="Settings">⚙️</a>
-          <a class="primary-btn" href="create-post.html">New Post</a>
-        </div>
-      </div>
-
-      <div class="hero-grid">
-        <div class="welcome-card">
-          <div class="eyebrow">
-            <span class="live-dot"></span>
-            <span id="welcomeEyebrow">Dashboard is ready</span>
-          </div>
-
-          <h2 id="welcomeTitle">Welcome back</h2>
-          <p id="welcomeSub">
-            Track your account growth, wallet status, publishing workflow, marketplace readiness,
-            payment setup, and connected account health from one premium command center.
-          </p>
-
-          <div class="search-wrap">
-            <span>🔎</span>
-            <input id="searchInput" type="text" placeholder="Search modules or dashboard links..." />
-          </div>
-
-          <div class="quick-actions">
-            <a class="primary-btn" href="scheduled-post.html">Schedule Post</a>
-            <a class="ghost-btn" href="wallet.html">Open Wallet</a>
-            <a class="ghost-btn" href="connected-accounts.html">Connect Account</a>
-            <button id="installBtn" class="soft-btn" type="button">Install App</button>
-          </div>
-        </div>
-
-        <div class="hero-side">
-          <div class="hero-mini-card">
-            <h3>Account Snapshot</h3>
-            <p>Quick status of your dashboard environment and setup readiness.</p>
-            <div class="hero-chips">
-              <span id="sessionChip" class="chip">Session: checking...</span>
-              <span id="pushChip" class="chip">Push: checking...</span>
-              <span id="planChip" class="chip">Plan: checking...</span>
-            </div>
-          </div>
-
-          <div class="hero-mini-card">
-            <h3>Fast Controls</h3>
-            <p>Launch the most important management areas quickly.</p>
-            <div class="quick-actions">
-              <a class="ghost-btn" href="analytics.html">Analytics</a>
-              <a class="ghost-btn" href="publish-history.html">Publish History</a>
-              <a class="ghost-btn" href="profile.html">Profile</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="grid">
-      <div class="card col-12">
-        <div class="card-head">
-          <div>
-            <h3>Live Summary</h3>
-            <p>Real dashboard counters pulled where possible from your current View data.</p>
-          </div>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Unread Notifications</div>
-            <div id="statNotifications" class="stat-value">0</div>
-            <div class="stat-sub">Unread alerts in your account</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-label">Unread Chats</div>
-            <div id="statChats" class="stat-value">0</div>
-            <div class="stat-sub">Current direct/group message count</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-label">Missed Calls</div>
-            <div id="statCalls" class="stat-value">0</div>
-            <div class="stat-sub">Calls requiring callback</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-label">Scheduled Posts</div>
-            <div id="statScheduledPosts" class="stat-value">0</div>
-            <div class="stat-sub">Items waiting to publish</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card col-8">
-        <div class="card-head">
-          <div>
-            <h3>Main Modules</h3>
-            <p>Every major dashboard destination arranged for quick access.</p>
-          </div>
-        </div>
-
-        <div id="moduleGrid" class="module-grid">
-          <a class="module-card" href="analytics.html">
-            <div class="module-icon">📊</div>
-            <h4>Analytics</h4>
-            <p>Growth, engagement, activity insights, and account performance.</p>
-          </a>
-
-          <a class="module-card" href="wallet.html">
-            <div class="module-icon">💼</div>
-            <h4>Wallet</h4>
-            <p>Wallet access, balance summary, and payment shortcuts.</p>
-          </a>
-
-          <a class="module-card" href="scheduled-post.html">
-            <div class="module-icon">🗓️</div>
-            <h4>Scheduled Posts</h4>
-            <p>Manage upcoming posts and planned publishing windows.</p>
-          </a>
-
-          <a class="module-card" href="publish-history.html">
-            <div class="module-icon">📤</div>
-            <h4>Publish History</h4>
-            <p>Review previously published and distributed posts.</p>
-          </a>
-
-          <a class="module-card" href="profile.html">
-            <div class="module-icon">👤</div>
-            <h4>Profile</h4>
-            <p>Identity, bio, picture, audience impression, and account setup.</p>
-          </a>
-
-          <a class="module-card" href="connected-accounts.html">
-            <div class="module-icon">🔗</div>
-            <h4>Connected Accounts</h4>
-            <p>External publishing connections and reconnect flow.</p>
-          </a>
-
-          <a class="module-card" href="marketplace.html">
-            <div class="module-icon">🛍️</div>
-            <h4>Marketplace</h4>
-            <p>Seller tools, listings, visibility, and buyer activity.</p>
-          </a>
-
-          <a class="module-card" href="payments.html">
-            <div class="module-icon">💳</div>
-            <h4>Payments</h4>
-            <p>Billing, payouts, methods, and monetization controls.</p>
-          </a>
-
-          <a class="module-card" href="subscription.html">
-            <div class="module-icon">⭐</div>
-            <h4>Subscription</h4>
-            <p>Plan management, upgrades, renewals, and benefits.</p>
-          </a>
-        </div>
-      </div>
-
-      <div class="card col-4">
-        <div class="card-head">
-          <div>
-            <h3>Wallet & Payments</h3>
-            <p>Quick financial readiness and shortcuts.</p>
-          </div>
-        </div>
-
-        <div class="summary-list">
-          <div class="summary-row">
-            <div class="summary-copy">
-              <h4>Wallet Balance</h4>
-              <p id="walletBalanceText">₦0.00</p>
-            </div>
-            <span class="summary-badge green">Wallet</span>
-          </div>
-
-          <div class="summary-row">
-            <div class="summary-copy">
-              <h4>Payment Setup</h4>
-              <p id="paymentSetupText">Pending configuration</p>
-            </div>
-            <span id="paymentBadge" class="summary-badge pending">Pending</span>
-          </div>
-
-          <div class="summary-row">
-            <div class="summary-copy">
-              <h4>Subscription Plan</h4>
-              <p id="subscriptionText">Free Plan</p>
-            </div>
-            <span id="subscriptionBadge" class="summary-badge">Free</span>
-          </div>
-
-          <div class="quick-actions">
-            <a class="primary-btn" href="wallet.html">Wallet</a>
-            <a class="ghost-btn" href="payments.html">Payments</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Cross-Posting & Connected Accounts</h3>
-            <p>Track provider connection readiness and publishing sync state.</p>
-          </div>
-        </div>
-
-        <div class="summary-list">
-          <div class="summary-row">
-            <div class="summary-copy">
-              <h4>Connected Platforms</h4>
-              <p id="connectedAccountsText">0 connected platform(s)</p>
-            </div>
-            <span id="connectedAccountsBadge" class="summary-badge pending">Setup</span>
-          </div>
-
-          <div class="summary-row">
-            <div class="summary-copy">
-              <h4>Auto Cross-Post</h4>
-              <p id="autoCrossPostText">Disabled</p>
-            </div>
-            <span id="autoCrossPostBadge" class="summary-badge">Off</span>
-          </div>
-
-          <div class="quick-actions">
-            <a class="primary-btn" href="connected-accounts.html">Connected Accounts</a>
-            <a class="ghost-btn" href="settings.html">Cross-Post Settings</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Marketplace & Selling</h3>
-            <p>Seller mode, shop visibility, and business readiness at a glance.</p>
-          </div>
-        </div>
-
-        <div class="summary-list">
-          <div class="summary-row">
-            <div class="summary-copy">
-              <h4>Seller Mode</h4>
-              <p id="sellerModeText">Disabled</p>
-            </div>
-            <span id="sellerModeBadge" class="summary-badge">Off</span>
-          </div>
-
-          <div class="summary-row">
-            <div class="summary-copy">
-              <h4>Shop Visibility</h4>
-              <p id="shopVisibilityText">Private or not configured</p>
-            </div>
-            <span id="shopVisibilityBadge" class="summary-badge pending">Setup</span>
-          </div>
-
-          <div class="quick-actions">
-            <a class="primary-btn" href="marketplace.html">Marketplace</a>
-            <a class="ghost-btn" href="settings.html">Seller Settings</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Publishing Controls</h3>
-            <p>Create, schedule, publish, and monitor output from your dashboard.</p>
-          </div>
-        </div>
-
-        <div class="module-grid" style="grid-template-columns:repeat(2,1fr);">
-          <a class="module-card" href="create-post.html">
-            <div class="module-icon">✍️</div>
-            <h4>Create Post</h4>
-            <p>Start a new text, media, or publishing workflow.</p>
-          </a>
-
-          <a class="module-card" href="scheduled-post.html">
-            <div class="module-icon">⏰</div>
-            <h4>Schedule</h4>
-            <p>Queue content for future publishing windows.</p>
-          </a>
-
-          <a class="module-card" href="publish-history.html">
-            <div class="module-icon">🧾</div>
-            <h4>History</h4>
-            <p>See what was published and when.</p>
-          </a>
-
-          <a class="module-card" href="connected-accounts.html">
-            <div class="module-icon">🌐</div>
-            <h4>Distribution</h4>
-            <p>Manage where content gets pushed externally.</p>
-          </a>
-        </div>
-      </div>
-
-      <div class="card col-6">
-        <div class="card-head">
-          <div>
-            <h3>Readiness Checklist</h3>
-            <p>See what parts of your dashboard ecosystem are ready or still pending.</p>
-          </div>
-        </div>
-
-        <div class="checklist">
-          <div class="check-item">
-            <div class="check-icon">1</div>
-            <div class="check-copy">
-              <h4>Profile setup</h4>
-              <p id="checkProfileText">Checking profile completeness...</p>
-            </div>
-          </div>
-
-          <div class="check-item">
-            <div class="check-icon">2</div>
-            <div class="check-copy">
-              <h4>Push notifications</h4>
-              <p id="checkPushText">Checking device notification status...</p>
-            </div>
-          </div>
-
-          <div class="check-item">
-            <div class="check-icon">3</div>
-            <div class="check-copy">
-              <h4>Connected accounts</h4>
-              <p id="checkConnectedText">Checking external account readiness...</p>
-            </div>
-          </div>
-
-          <div class="check-item">
-            <div class="check-icon">4</div>
-            <div class="check-copy">
-              <h4>Wallet and payments</h4>
-              <p id="checkPaymentsText">Checking monetization configuration...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+<!-- ================= HEADER ================= -->
+<header class="topbar">
+  <div class="topbar-left">
+    <img id="userAvatar" src="icons/view-logo.png" class="avatar"/>
   </div>
 
-  <a class="fab-ai" href="ai-assistant.html" title="AI Assistant" aria-label="AI Assistant">✦</a>
+  <div class="topbar-center">
+    <div class="welcome-text">Welcome back,</div>
+    <div class="user-name" id="userName">User</div>
+  </div>
 
-  <nav class="bottom-nav">
-    <a href="home.html" class="nav-btn">
-      <span class="nav-icon">⌂</span>
-      <span>Home</span>
+  <div class="topbar-right">
+    <a href="notifications.html" class="icon-btn">
+      🔔 <span id="notifCount" class="badge">0</span>
     </a>
-    <a href="explore.html" class="nav-btn">
-      <span class="nav-icon">🔎</span>
-      <span>Explore</span>
-    </a>
-    <a href="dashboard.html" class="nav-btn active">
-      <span class="nav-icon">📊</span>
-      <span>Dashboard</span>
-    </a>
-    <a href="chats.html" class="nav-btn">
-      <span class="nav-icon">💬</span>
-      <span>Chat</span>
-    </a>
-    <a href="settings.html" class="nav-btn">
-      <span class="nav-icon">⚙️</span>
-      <span>Settings</span>
-    </a>
-  </nav>
+    <a href="search.html" class="icon-btn">⌕</a>
+  </div>
+</header>
 
-  <script>
-    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const DASHBOARD_LOCAL_KEY = "view_dashboard_local_v1";
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    });
+<!-- ================= SUMMARY CARDS ================= -->
+<section class="summary-grid">
 
-    const noticeBox = document.getElementById("notice");
-    const notifDot = document.getElementById("notifDot");
-    const welcomeTitle = document.getElementById("welcomeTitle");
-    const welcomeSub = document.getElementById("welcomeSub");
-    const welcomeEyebrow = document.getElementById("welcomeEyebrow");
-    const sessionChip = document.getElementById("sessionChip");
-    const pushChip = document.getElementById("pushChip");
-    const planChip = document.getElementById("planChip");
-    const searchInput = document.getElementById("searchInput");
-    const installBtn = document.getElementById("installBtn");
+  <a href="create-post.html" class="summary-card">
+    <div class="card-title">Publish</div>
+    <div class="card-value" id="totalPosts">0</div>
+    <div class="card-sub">Total Posts</div>
+  </a>
 
-    const statNotifications = document.getElementById("statNotifications");
-    const statChats = document.getElementById("statChats");
-    const statCalls = document.getElementById("statCalls");
-    const statScheduledPosts = document.getElementById("statScheduledPosts");
+  <a href="wallet.html" class="summary-card">
+    <div class="card-title">Wallet</div>
+    <div class="card-value" id="walletBalance">₦0</div>
+    <div class="card-sub">Balance</div>
+  </a>
 
-    const walletBalanceText = document.getElementById("walletBalanceText");
-    const paymentSetupText = document.getElementById("paymentSetupText");
-    const paymentBadge = document.getElementById("paymentBadge");
-    const subscriptionText = document.getElementById("subscriptionText");
-    const subscriptionBadge = document.getElementById("subscriptionBadge");
+  <a href="subscription.html" class="summary-card">
+    <div class="card-title">Subscription</div>
+    <div class="card-value" id="planName">Free</div>
+    <div class="card-sub">Active Plan</div>
+  </a>
 
-    const connectedAccountsText = document.getElementById("connectedAccountsText");
-    const connectedAccountsBadge = document.getElementById("connectedAccountsBadge");
-    const autoCrossPostText = document.getElementById("autoCrossPostText");
-    const autoCrossPostBadge = document.getElementById("autoCrossPostBadge");
+  <a href="analytics.html" class="summary-card">
+    <div class="card-title">Analytics</div>
+    <div class="card-value" id="totalViews">0</div>
+    <div class="card-sub">Views</div>
+  </a>
 
-    const sellerModeText = document.getElementById("sellerModeText");
-    const sellerModeBadge = document.getElementById("sellerModeBadge");
-    const shopVisibilityText = document.getElementById("shopVisibilityText");
-    const shopVisibilityBadge = document.getElementById("shopVisibilityBadge");
+</section>
 
-    const checkProfileText = document.getElementById("checkProfileText");
-    const checkPushText = document.getElementById("checkPushText");
-    const checkConnectedText = document.getElementById("checkConnectedText");
-    const checkPaymentsText = document.getElementById("checkPaymentsText");
 
-    let currentUser = null;
-    let profileRow = null;
-    let deferredInstallPrompt = null;
-    let localDashboard = {
-      walletBalance: 0,
-      paymentSetupReady: false,
-      connectedAccountsCount: 0,
-      scheduledPostsCount: 0,
-      autoCrossPost: false
-    };
+<!-- ================= PUBLISH DASHBOARD ================= -->
+<section class="section">
 
-    function showNotice(message, type = "error") {
-      noticeBox.className = `notice show ${type}`;
-      noticeBox.textContent = message || "";
-    }
+<div class="section-head">
+  <h3>Publish Dashboard</h3>
+  <a href="publish-dashboard.html">View All ›</a>
+</div>
 
-    function clearNotice() {
-      noticeBox.className = "notice";
-      noticeBox.textContent = "";
-    }
+<div class="publish-stats">
 
-    function formatCurrency(value) {
-      const number = Number(value || 0);
-      return `₦${number.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
+<div class="stat-box">
+<span id="scheduledCount">0</span>
+<p>Scheduled</p>
+</div>
 
-    function getDisplayName(profile = {}, fallback = "Creator") {
-      const list = [
-        profile.full_name,
-        profile.display_name,
-        profile.username,
-        profile.name,
-        [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim()
-      ].filter(Boolean);
-      return list[0] || fallback;
-    }
+<div class="stat-box">
+<span id="pendingCount">0</span>
+<p>Pending</p>
+</div>
 
-    function loadLocalDashboard() {
-      try {
-        const raw = localStorage.getItem(DASHBOARD_LOCAL_KEY);
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        localDashboard = { ...localDashboard, ...parsed };
-      } catch {}
-    }
+<div class="stat-box">
+<span id="deliveredCount">0</span>
+<p>Delivered</p>
+</div>
 
-    function saveLocalDashboard() {
-      localStorage.setItem(DASHBOARD_LOCAL_KEY, JSON.stringify(localDashboard));
-    }
+<div class="stat-box">
+<span id="failedCount">0</span>
+<p>Failed</p>
+</div>
 
-    async function getSessionWithRetry(maxWaitMs = 3000) {
-      const start = Date.now();
-      while (Date.now() - start < maxWaitMs) {
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (error) throw error;
-        if (data.session?.user) return data.session;
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-      return null;
-    }
+</div>
 
-    async function requireSession() {
-      const session = await getSessionWithRetry();
-      if (!session?.user) {
-        window.location.href = "login.html?next=dashboard.html";
-        return null;
-      }
-      return session;
-    }
+<div class="action-row">
+<a href="create-post.html" class="btn blue">+ Create Post</a>
+<a href="publish-dashboard.html" class="btn red">Run Delivery</a>
+</div>
 
-    async function loadProfile() {
-      const { data, error } = await supabaseClient
-        .from("profiles")
-        .select("*")
-        .eq("id", currentUser.id)
-        .maybeSingle();
+</section>
 
-      if (error) throw error;
-      profileRow = data || {};
 
-      const name = getDisplayName(profileRow, "Creator");
-      welcomeTitle.textContent = `Welcome, ${name}`;
-      welcomeSub.textContent = "Use this dashboard to manage your publishing, monetization, connections, wallet, and business tools.";
-      welcomeEyebrow.textContent = "Creator dashboard active";
-      sessionChip.textContent = "Session: active";
+<!-- ================= HISTORY ================= -->
+<section class="section">
 
-      const plan = profileRow.subscription_plan || profileRow.plan_name || "Free";
-      subscriptionText.textContent = `${plan} Plan`;
-      subscriptionBadge.textContent = plan;
-      planChip.textContent = `Plan: ${plan}`;
+<div class="section-head">
+  <h3>Publish History</h3>
+  <a href="publish-history.html">View All ›</a>
+</div>
 
-      const settingsSource = profileRow.settings || profileRow.preferences || {};
-      localDashboard.autoCrossPost = !!settingsSource.crosspost_autoCrossPost;
-      saveLocalDashboard();
+<div id="historyList" class="history-list">
+<!-- dynamic -->
+</div>
 
-      const hasUsername = !!(profileRow.username || profileRow.full_name || profileRow.display_name || profileRow.name);
-      const hasBio = !!(profileRow.bio || profileRow.about);
-      const hasAvatar = !!(profileRow.avatar_url || profileRow.profile_picture || profileRow.photo_url || profileRow.image_url);
-      checkProfileText.textContent = hasUsername && hasBio && hasAvatar
-        ? "Profile looks complete and ready."
-        : "Complete profile photo, bio, and username for stronger account presence.";
+</section>
 
-      const sellerMode = !!settingsSource.marketplace_sellerMode;
-      const shopVisible = !!settingsSource.marketplace_shopVisible;
-      sellerModeText.textContent = sellerMode ? "Enabled" : "Disabled";
-      sellerModeBadge.textContent = sellerMode ? "On" : "Off";
-      sellerModeBadge.className = `summary-badge ${sellerMode ? "green" : ""}`;
 
-      shopVisibilityText.textContent = shopVisible ? "Visible to marketplace users" : "Private or not configured";
-      shopVisibilityBadge.textContent = shopVisible ? "Visible" : "Setup";
-      shopVisibilityBadge.className = `summary-badge ${shopVisible ? "green" : "pending"}`;
+<!-- ================= WALLET ================= -->
+<section class="section">
 
-      autoCrossPostText.textContent = localDashboard.autoCrossPost ? "Enabled" : "Disabled";
-      autoCrossPostBadge.textContent = localDashboard.autoCrossPost ? "On" : "Off";
-      autoCrossPostBadge.className = `summary-badge ${localDashboard.autoCrossPost ? "green" : ""}`;
-    }
+<div class="section-head">
+  <h3>Wallet</h3>
+  <a href="wallet.html">View All ›</a>
+</div>
 
-    async function loadNotificationCount() {
-      try {
-        const { count, error } = await supabaseClient
-          .from("notifications")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", currentUser.id)
-          .eq("is_read", false);
+<div class="wallet-box">
+<div class="wallet-balance" id="walletMain">₦0</div>
 
-        if (!error) {
-          const total = Number(count || 0);
-          statNotifications.textContent = total;
-          notifDot.classList.toggle("show", total > 0);
-        }
-      } catch {}
-    }
+<div class="wallet-actions">
+<a href="wallet.html?action=fund" class="btn blue">Fund</a>
+<a href="wallet.html?action=withdraw" class="btn">Withdraw</a>
+<a href="wallet.html?action=transfer" class="btn">Transfer</a>
+</div>
+</div>
 
-    async function loadMissedCalls() {
-      try {
-        const { count, error } = await supabaseClient
-          .from("calls")
-          .select("*", { count: "exact", head: true })
-          .eq("receiver_id", currentUser.id)
-          .eq("status", "missed");
+</section>
 
-        if (!error) {
-          statCalls.textContent = Number(count || 0);
-        }
-      } catch {}
-    }
 
-    async function loadChatCount() {
-      try {
-        const { data: memberships, error } = await supabaseClient
-          .from("conversation_members")
-          .select("conversation_id")
-          .eq("user_id", currentUser.id);
+<!-- ================= SUBSCRIPTION ================= -->
+<section class="section">
 
-        if (error) throw error;
-        statChats.textContent = (memberships || []).length;
-      } catch {
-        statChats.textContent = "0";
-      }
-    }
+<div class="section-head">
+  <h3>Subscription</h3>
+  <a href="subscription.html">View All ›</a>
+</div>
 
-    async function loadScheduledPostsCount() {
-      try {
-        const { count, error } = await supabaseClient
-          .from("scheduled_posts")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", currentUser.id);
+<div class="subscription-box">
+<div class="plan-name" id="subPlan">Free Plan</div>
 
-        if (!error) {
-          localDashboard.scheduledPostsCount = Number(count || 0);
-          saveLocalDashboard();
-        }
-      } catch {}
+<div class="subscription-actions">
+<a href="subscription.html" class="btn red">Upgrade</a>
+<a href="subscription.html" class="btn">Manage</a>
+</div>
+</div>
 
-      statScheduledPosts.textContent = localDashboard.scheduledPostsCount;
-    }
+</section>
 
-    async function updatePushStatus() {
-      try {
-        const status = await window.ViewPushHelper.checkPushStatus();
 
-        if (!status.supported) {
-          pushChip.textContent = "Push: unsupported";
-          checkPushText.textContent = "Push notifications are not supported on this device.";
-          return;
-        }
+<!-- ================= ANALYTICS ================= -->
+<section class="section">
 
-        if (status.permission === "granted" && status.subscribed) {
-          pushChip.textContent = "Push: enabled";
-          checkPushText.textContent = "Push notifications are active and ready.";
-        } else if (status.permission === "denied") {
-          pushChip.textContent = "Push: blocked";
-          checkPushText.textContent = "Push is blocked. Open settings to allow notifications.";
-        } else {
-          pushChip.textContent = "Push: ready";
-          checkPushText.textContent = "Push can be enabled from settings.";
-        }
-      } catch {
-        pushChip.textContent = "Push: unavailable";
-        checkPushText.textContent = "Push status could not be checked.";
-      }
-    }
+<div class="section-head">
+  <h3>Analytics</h3>
+  <a href="analytics.html">View All ›</a>
+</div>
 
-    function applyPaymentSummary() {
-      walletBalanceText.textContent = formatCurrency(localDashboard.walletBalance);
-      paymentSetupText.textContent = localDashboard.paymentSetupReady
-        ? "Payment profile configured"
-        : "Pending configuration";
-      paymentBadge.textContent = localDashboard.paymentSetupReady ? "Ready" : "Pending";
-      paymentBadge.className = `summary-badge ${localDashboard.paymentSetupReady ? "green" : "pending"}`;
-      checkPaymentsText.textContent = localDashboard.paymentSetupReady
-        ? "Wallet and payment profile look ready."
-        : "Set up payment methods, payout destination, and billing preferences.";
-    }
+<div class="analytics-grid">
 
-    function applyConnectedSummary() {
-      connectedAccountsText.textContent = `${localDashboard.connectedAccountsCount} connected platform(s)`;
-      connectedAccountsBadge.textContent = localDashboard.connectedAccountsCount > 0 ? "Connected" : "Setup";
-      connectedAccountsBadge.className = `summary-badge ${localDashboard.connectedAccountsCount > 0 ? "green" : "pending"}`;
-      checkConnectedText.textContent = localDashboard.connectedAccountsCount > 0
-        ? "At least one external platform is connected."
-        : "Connect external platforms to unlock cross-posting.";
-    }
+<div class="analytics-box">
+<span id="viewsCount">0</span>
+<p>Views</p>
+</div>
 
-    async function installApp() {
-      if (deferredInstallPrompt) {
-        deferredInstallPrompt.prompt();
-        const result = await deferredInstallPrompt.userChoice;
-        if (result.outcome === "accepted") {
-          showNotice("View is being installed.", "success");
-        } else {
-          showNotice("Install prompt dismissed.", "info");
-        }
-        deferredInstallPrompt = null;
-        return;
-      }
-      showNotice("Install prompt is not available yet on this device.", "info");
-    }
+<div class="analytics-box">
+<span id="likesCount">0</span>
+<p>Likes</p>
+</div>
 
-    function filterModules() {
-      const term = searchInput.value.trim().toLowerCase();
-      const cards = [...document.querySelectorAll("#moduleGrid .module-card")];
+<div class="analytics-box">
+<span id="commentsCount">0</span>
+<p>Comments</p>
+</div>
 
-      cards.forEach(card => {
-        const text = card.innerText.toLowerCase();
-        card.style.display = !term || text.includes(term) ? "" : "none";
-      });
-    }
+<div class="analytics-box">
+<span id="sharesCount">0</span>
+<p>Shares</p>
+</div>
 
-    installBtn.addEventListener("click", installApp);
-    searchInput.addEventListener("input", filterModules);
+</div>
 
-    window.addEventListener("beforeinstallprompt", (event) => {
-      event.preventDefault();
-      deferredInstallPrompt = event;
-    });
+</section>
 
-    async function init() {
-      try {
-        loadLocalDashboard();
 
-        const session = await requireSession();
-        if (!session?.user) return;
-        currentUser = session.user;
+</div>
 
-        await loadProfile();
-        applyPaymentSummary();
-        applyConnectedSummary();
-        await loadNotificationCount();
-        await loadMissedCalls();
-        await loadChatCount();
-        await loadScheduledPostsCount();
-        await updatePushStatus();
-      } catch (error) {
-        showNotice(error.message || "Could not initialize dashboard.");
-      }
-    }
 
-    init();
-  </script>
+<!-- ================= BOTTOM NAV ================= -->
+<nav class="bottom-nav">
+
+<a href="home.html" class="nav-link">⌂</a>
+<a href="explore.html" class="nav-link">⌕</a>
+<a href="create-post.html" class="nav-link create">＋</a>
+<a href="messages.html" class="nav-link">✉</a>
+<a href="dashboard.html" class="nav-link active">▣</a>
+
+</nav>
+
+<script src="js/dashboard.js"></script>
+
 </body>
 </html>
