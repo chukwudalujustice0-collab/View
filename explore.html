@@ -2,1109 +2,556 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
   <title>Explore | View</title>
+  <meta name="theme-color" content="#0a1028" />
+  <meta
+    name="description"
+    content="Explore trending content, status, people, groups, pages, market, news, AI, settings, and saved posts on View by Ceetify."
+  />
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#07122a" />
+  <link rel="stylesheet" href="css/explore.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root{
-      --bg:#061126;
-      --bg2:#0a1835;
-      --card:rgba(255,255,255,.08);
-      --card2:rgba(255,255,255,.05);
-      --stroke:rgba(255,255,255,.08);
-      --text:#f8fbff;
-      --muted:#9db0cf;
-      --soft:#7f91af;
-      --primary:#2d6bff;
-      --primary2:#5c8cff;
-      --green:#22c55e;
-      --danger:#ef4444;
-      --warning:#f59e0b;
-      --shadow:0 18px 50px rgba(0,0,0,.28);
-    }
-
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Inter,Arial,sans-serif;
-      -webkit-tap-highlight-color:transparent;
-    }
-
-    html,body{
-      min-height:100%;
-      background:
-        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
-        radial-gradient(circle at top left, rgba(0,255,200,.06), transparent 18%),
-        linear-gradient(180deg,#08142e 0%,#061126 55%,#050d1c 100%);
-      color:var(--text);
-    }
-
-    body{
-      padding-bottom:120px;
-    }
-
-    .wrap{
-      width:min(100%,860px);
-      margin:0 auto;
-      padding:18px 16px 0;
-    }
-
-    .notice{
-      display:none;
-      margin-bottom:16px;
-      padding:14px 16px;
-      border-radius:18px;
-      font-size:14px;
-      line-height:1.6;
-      border:1px solid transparent;
-      backdrop-filter:blur(10px);
-    }
-    .notice.show{display:block}
-    .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#ffd9d9}
-    .notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffe8}
-    .notice.info{background:rgba(45,107,255,.14);border-color:rgba(45,107,255,.26);color:#dce8ff}
-
-    .hero{
-      position:relative;
-      overflow:hidden;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
-        linear-gradient(135deg, rgba(45,107,255,.16), rgba(92,140,255,.06));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:30px;
-      padding:18px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(18px);
-      margin-bottom:18px;
-    }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      top:-70px;
-      right:-70px;
-      width:180px;
-      height:180px;
-      border-radius:50%;
-      background:radial-gradient(circle, rgba(92,140,255,.30), transparent 66%);
-      pointer-events:none;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-      position:relative;
-      z-index:1;
-      flex-wrap:wrap;
-    }
-
-    .top-left,.top-right{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .dashboard-btn,.icon-btn{
-      min-height:46px;
-      border:none;
-      border-radius:18px;
-      padding:0 16px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      text-decoration:none;
-      color:#fff;
-      font-size:13px;
-      font-weight:800;
-      cursor:pointer;
-    }
-
-    .dashboard-btn{
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:0 12px 28px rgba(45,107,255,.28);
-    }
-
-    .icon-btn{
-      width:46px;
-      min-width:46px;
-      padding:0;
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 10px 24px rgba(0,0,0,.18);
-      position:relative;
-      overflow:hidden;
-    }
-
-    .brand h1{
-      font-size:32px;
-      font-weight:900;
-      line-height:1;
-      letter-spacing:-.03em;
-      margin-bottom:4px;
-    }
-
-    .brand p{
-      color:#bfd0ea;
-      font-size:13px;
-    }
-
-    .notif-dot{
-      position:absolute;
-      right:10px;
-      top:10px;
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      background:#ff4d67;
-      display:none;
-      box-shadow:0 0 0 4px rgba(255,77,103,.18);
-    }
-    .notif-dot.show{display:block}
-
-    .profile-btn-img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-      border-radius:18px;
-    }
-
-    .profile-btn-fallback{
-      width:100%;
-      height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:linear-gradient(135deg,var(--primary),#7da2ff);
-      color:#fff;
-      font-size:18px;
-      font-weight:900;
-      border-radius:18px;
-    }
-
-    .hero-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      position:relative;
-      z-index:1;
-      margin-top:8px;
-    }
-
-    .hero-chip{
-      min-height:36px;
-      padding:0 12px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:12px;
-      font-weight:800;
-    }
-
-    .card{
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:28px;
-      padding:18px 16px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(16px);
-      margin-bottom:18px;
-    }
-
-    .search-wrap{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-height:56px;
-      padding:0 16px;
-      border-radius:18px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .search-wrap span{
-      font-size:18px;
-      color:#bfd0ea;
-    }
-
-    .search-wrap input{
-      flex:1;
-      border:none;
-      outline:none;
-      background:transparent;
-      font-size:15px;
-      color:#fff;
-    }
-
-    .search-wrap input::placeholder{
-      color:#9db1d1;
-    }
-
-    .stats{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:12px;
-    }
-
-    .stat{
-      border-radius:22px;
-      padding:16px 14px;
-      text-align:center;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 12px 30px rgba(2,8,23,.16);
-    }
-
-    .stat h3{
-      font-size:24px;
-      font-weight:900;
-      margin-bottom:6px;
-      color:#fff;
-    }
-
-    .stat p{
-      font-size:12px;
-      color:#bfd0ea;
-      font-weight:800;
-    }
-
-    .section-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-      flex-wrap:wrap;
-    }
-
-    .section-head h2{
-      font-size:20px;
-      font-weight:900;
-      letter-spacing:-.02em;
-    }
-
-    .action-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .refresh-btn{
-      border:none;
-      border-radius:999px;
-      padding:10px 14px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:13px;
-      font-weight:800;
-      cursor:pointer;
-    }
-
-    .filter-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-
-    .filter-btn{
-      border:none;
-      border-radius:999px;
-      padding:10px 14px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-      font-size:13px;
-      font-weight:800;
-      cursor:pointer;
-    }
-
-    .filter-btn.active{
-      background:rgba(45,107,255,.18);
-      color:#fff;
-      border-color:rgba(45,107,255,.20);
-    }
-
-    .users-grid{
-      display:grid;
-      gap:14px;
-    }
-
-    .user-card{
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-      border-radius:24px;
-      padding:16px;
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 12px 30px rgba(2,8,23,.18);
-      display:flex;
-      justify-content:space-between;
-      gap:14px;
-      align-items:center;
-      transition:.18s ease;
-    }
-
-    .user-card:hover{
-      transform:translateY(-1px);
-    }
-
-    .user-main{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-      flex:1;
-      cursor:pointer;
-    }
-
-    .avatar{
-      width:58px;
-      height:58px;
-      min-width:58px;
-      border-radius:50%;
-      background:linear-gradient(135deg,var(--primary),#7da2ff);
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:20px;
-      font-weight:900;
-      overflow:hidden;
-      box-shadow:0 10px 24px rgba(45,107,255,.22);
-    }
-
-    .avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .user-meta{
-      min-width:0;
-      flex:1;
-    }
-
-    .user-topline{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-bottom:2px;
-    }
-
-    .user-name{
-      font-size:16px;
-      font-weight:900;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .tag{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:24px;
-      padding:0 10px;
-      border-radius:999px;
-      background:rgba(45,107,255,.18);
-      color:#dce8ff;
-      font-size:10px;
-      font-weight:900;
-      border:1px solid rgba(45,107,255,.20);
-      text-transform:uppercase;
-    }
-
-    .user-username{
-      font-size:13px;
-      color:#9db1d1;
-      margin-top:2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .user-bio{
-      font-size:13px;
-      color:#dce8ff;
-      margin-top:8px;
-      line-height:1.7;
-    }
-
-    .user-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-
-    .btn{
-      border:none;
-      border-radius:14px;
-      padding:10px 14px;
-      font-size:13px;
-      font-weight:800;
-      cursor:pointer;
-      color:#fff;
-    }
-
-    .btn-follow{
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:0 10px 22px rgba(45,107,255,.22);
-    }
-
-    .btn-chat{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-    }
-
-    .btn-following{
-      background:rgba(34,197,94,.14);
-      border:1px solid rgba(34,197,94,.18);
-      color:#ddffe8;
-    }
-
-    .btn-profile{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-    }
-
-    .btn-call{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#dce8ff;
-    }
-
-    .empty-state{
-      text-align:center;
-      padding:30px 16px;
-      color:#bfd0ea;
-      font-size:14px;
-      line-height:1.8;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:24px;
-      box-shadow:var(--shadow);
-    }
-
-    .loading{
-      text-align:center;
-      padding:24px 16px;
-      color:#bfd0ea;
-      font-size:14px;
-    }
-
-    .bottom-nav{
-      position:fixed;
-      left:50%;
-      bottom:14px;
-      transform:translateX(-50%);
-      width:min(760px, calc(100% - 20px));
-      background:rgba(7,18,43,.94);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:24px;
-      box-shadow:0 20px 50px rgba(15,23,42,.24);
-      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:6px;
-      z-index:50;
-      backdrop-filter:blur(18px);
-    }
-
-    .nav-btn{
-      text-decoration:none;
-      color:#90a5c7;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      min-height:58px;
-      border-radius:16px;
-      font-size:12px;
-      font-weight:800;
-      text-align:center;
-    }
-
-    .nav-btn.active{
-      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
-      color:#fff;
-      border:1px solid rgba(45,107,255,.20);
-    }
-
-    .nav-icon{
-      font-size:20px;
-      line-height:1;
-    }
-
-    @media(max-width:640px){
-      .wrap{padding:14px 12px 0}
-      .brand h1{font-size:28px}
-      .user-card{flex-direction:column;align-items:flex-start}
-      .user-actions{justify-content:flex-start}
-      .stats{grid-template-columns:1fr}
-      .topbar{flex-direction:column;align-items:flex-start}
-      .top-left,.top-right{width:100%}
-      .top-right .icon-btn,.top-left .dashboard-btn{flex:1}
-    }
-  </style>
 </head>
 <body>
-  <div class="wrap">
-    <div id="notice" class="notice"></div>
+  <div class="explore-page" id="explorePage">
+    <div id="pageNotice" class="page-notice" role="status" aria-live="polite"></div>
 
-    <section class="hero">
-      <div class="topbar">
-        <div class="top-left">
-          <a class="dashboard-btn" href="dashboard.html">Dashboard</a>
-        </div>
-
-        <div class="brand">
-          <h1>Explore</h1>
-          <p>Suggested friends, discovery, and public profiles</p>
-        </div>
-
-        <div class="top-right">
-          <a class="icon-btn" href="notifications.html" title="Notifications" aria-label="Notifications">
-            🔔
-            <span id="notifDot" class="notif-dot"></span>
-          </a>
-
-          <a id="topProfileBtn" class="icon-btn" href="profile.html" title="Profile" aria-label="Profile">
-            <div class="profile-btn-fallback">U</div>
-          </a>
-        </div>
+    <header class="topbar">
+      <div class="topbar-left">
+        <a href="home.html" class="icon-btn nav-back" aria-label="Back to home">
+          <span>←</span>
+        </a>
       </div>
 
-      <div class="hero-row">
-        <span class="hero-chip" id="statusChip">People discovery active</span>
-        <span class="hero-chip" id="followingChip">Following: 0</span>
-        <span class="hero-chip" id="suggestedChip">Suggested: 0</span>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="search-wrap">
-        <span>🔎</span>
-        <input type="text" id="searchInput" placeholder="Search username, full name, bio..." />
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="stats">
-        <div class="stat">
-          <h3 id="allCount">0</h3>
-          <p>All Users</p>
-        </div>
-        <div class="stat">
-          <h3 id="suggestedCount">0</h3>
-          <p>Suggested Friends</p>
-        </div>
-        <div class="stat">
-          <h3 id="followingCount">0</h3>
-          <p>Following</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="section-head">
-        <h2>People</h2>
-        <div class="action-row">
-          <button id="refreshBtn" class="refresh-btn" type="button">Refresh</button>
-        </div>
-      </div>
-
-      <div class="filter-row">
-        <button class="filter-btn active" data-filter="all" type="button">All Users</button>
-        <button class="filter-btn" data-filter="suggested" type="button">Suggested</button>
-        <button class="filter-btn" data-filter="following" type="button">Following</button>
-      </div>
-
-      <div id="usersGrid" class="users-grid">
-        <div class="loading">Loading users...</div>
-      </div>
-    </section>
-  </div>
-
-  <nav class="bottom-nav">
-    <a class="nav-btn" href="home.html">
-      <span class="nav-icon">⌂</span>
-      <span>Home</span>
-    </a>
-    <a class="nav-btn active" href="explore.html">
-      <span class="nav-icon">📰</span>
-      <span>News</span>
-    </a>
-    <a class="nav-btn" href="video-feed.html">
-      <span class="nav-icon">🎥</span>
-      <span>Video</span>
-    </a>
-    <a class="nav-btn" href="marketplace.html">
-      <span class="nav-icon">🛒</span>
-      <span>Market</span>
-    </a>
-    <a class="nav-btn" href="more.html">
-      <span class="nav-icon">☰</span>
-      <span>More</span>
-    </a>
-  </nav>
-
-  <script>
-    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: "pkce"
-      }
-    });
-
-    const noticeBox = document.getElementById("notice");
-    const usersGrid = document.getElementById("usersGrid");
-    const searchInput = document.getElementById("searchInput");
-    const refreshBtn = document.getElementById("refreshBtn");
-    const filterButtons = document.querySelectorAll(".filter-btn");
-    const allCount = document.getElementById("allCount");
-    const suggestedCount = document.getElementById("suggestedCount");
-    const followingCount = document.getElementById("followingCount");
-    const notifDot = document.getElementById("notifDot");
-    const topProfileBtn = document.getElementById("topProfileBtn");
-    const followingChip = document.getElementById("followingChip");
-    const suggestedChip = document.getElementById("suggestedChip");
-
-    let currentUserId = "";
-    let currentUserProfile = null;
-    let allUsers = [];
-    let followingIds = new Set();
-    let currentFilter = "all";
-    let followersChannel = null;
-    let profilesChannel = null;
-    let notificationsChannel = null;
-
-    function showNotice(message, type = "error") {
-      noticeBox.className = `notice show ${type}`;
-      noticeBox.textContent = message;
-    }
-
-    function clearNotice() {
-      noticeBox.className = "notice";
-      noticeBox.textContent = "";
-    }
-
-    function escapeHtml(value) {
-      return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function getDisplayName(user) {
-      return user.full_name || user.username || "User";
-    }
-
-    function updateStats() {
-      const suggested = allUsers.filter(u => !followingIds.has(u.id));
-      allCount.textContent = allUsers.length;
-      suggestedCount.textContent = suggested.length;
-      followingCount.textContent = allUsers.filter(u => followingIds.has(u.id)).length;
-      followingChip.textContent = `Following: ${followingCount.textContent}`;
-      suggestedChip.textContent = `Suggested: ${suggestedCount.textContent}`;
-    }
-
-    async function getLoggedInUser() {
-      const { data, error } = await supabaseClient.auth.getUser();
-      if (error) throw error;
-      return data.user || null;
-    }
-
-    async function requireUser() {
-      const user = await getLoggedInUser();
-      if (!user) {
-        showNotice("Please log in first.");
-        setTimeout(() => {
-          window.location.href = "login.html?next=explore.html";
-        }, 1000);
-        return null;
-      }
-      return user;
-    }
-
-    function setTopProfileImage(profile, authUser) {
-      const avatarUrl =
-        profile?.avatar_url ||
-        authUser?.user_metadata?.avatar_url ||
-        authUser?.user_metadata?.picture ||
-        "";
-      const fullName =
-        profile?.full_name ||
-        authUser?.user_metadata?.full_name ||
-        authUser?.user_metadata?.name ||
-        authUser?.email?.split("@")[0] ||
-        "User";
-
-      const initial = fullName.charAt(0).toUpperCase();
-
-      if (avatarUrl) {
-        topProfileBtn.innerHTML = `<img src="${escapeHtml(avatarUrl)}" alt="Profile" class="profile-btn-img">`;
-      } else {
-        topProfileBtn.innerHTML = `<div class="profile-btn-fallback">${escapeHtml(initial)}</div>`;
-      }
-    }
-
-    async function loadProfileForTop(authUser) {
-      const { data } = await supabaseClient
-        .from("profiles")
-        .select("id,full_name,username,avatar_url")
-        .eq("id", currentUserId)
-        .maybeSingle();
-
-      currentUserProfile = data || null;
-      setTopProfileImage(currentUserProfile, authUser);
-    }
-
-    async function loadNotificationsBadge() {
-      try {
-        const { count, error } = await supabaseClient
-          .from("notifications")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", currentUserId)
-          .eq("is_read", false);
-
-        if (!error) {
-          notifDot.classList.toggle("show", Number(count || 0) > 0);
-        }
-      } catch {}
-    }
-
-    async function loadFollowing() {
-      const { data, error } = await supabaseClient
-        .from("followers")
-        .select("following_id")
-        .eq("follower_id", currentUserId);
-
-      if (error) throw error;
-
-      followingIds = new Set((data || []).map(row => row.following_id));
-      updateStats();
-    }
-
-    async function loadUsers() {
-      clearNotice();
-
-      const { data, error } = await supabaseClient
-        .from("profiles")
-        .select("id, username, full_name, avatar_url, bio")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        showNotice(error.message || "Could not load users.");
-        usersGrid.innerHTML = `<div class="empty-state">Could not load users.</div>`;
-        return;
-      }
-
-      allUsers = (data || []).filter(user => user.id !== currentUserId);
-      updateStats();
-      renderUsers();
-    }
-
-    function getFilteredUsers() {
-      const term = searchInput.value.trim().toLowerCase();
-      let source = [...allUsers];
-
-      if (currentFilter === "suggested") {
-        source = source.filter(user => !followingIds.has(user.id));
-      } else if (currentFilter === "following") {
-        source = source.filter(user => followingIds.has(user.id));
-      }
-
-      return source.filter(user => {
-        const username = String(user.username || "").toLowerCase();
-        const fullName = String(user.full_name || "").toLowerCase();
-        const bio = String(user.bio || "").toLowerCase();
-        return username.includes(term) || fullName.includes(term) || bio.includes(term);
-      });
-    }
-
-    function renderUsers() {
-      const filtered = getFilteredUsers();
-
-      if (!filtered.length) {
-        usersGrid.innerHTML = `
-          <div class="empty-state">
-            No users found.<br>
-            Try another search or refresh your suggested friends list.
+      <div class="topbar-brand">
+        <a href="home.html" class="brand-wrap" aria-label="View home">
+          <div class="brand-logo">
+            <img
+              src="icons/view-logo.png"
+              alt="View logo"
+              onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;brand-fallback&quot;>V</span>';"
+            />
           </div>
-        `;
-        return;
-      }
 
-      usersGrid.innerHTML = filtered.map(user => {
-        const displayName = getDisplayName(user);
-        const avatar = user.avatar_url
-          ? `<img src="${escapeHtml(user.avatar_url)}" alt="${escapeHtml(displayName)}">`
-          : escapeHtml(displayName.charAt(0).toUpperCase());
+          <div class="brand-copy">
+            <div class="brand-title-row">
+              <span class="brand-title-main">VIEW</span>
+              <span class="brand-title-sep">|</span>
+              <span class="brand-title-sub">by Ceetify</span>
+            </div>
+            <div class="brand-tagline">Explore the ecosystem</div>
+          </div>
+        </a>
+      </div>
 
-        const isFollowing = followingIds.has(user.id);
+      <div class="topbar-right">
+        <a
+          href="notifications.html"
+          class="icon-btn"
+          aria-label="Notifications"
+          id="notificationsBtn"
+        >
+          <span>🔔</span>
+          <span id="notificationBadge" class="icon-badge hidden">0</span>
+        </a>
 
-        return `
-          <div class="user-card">
-            <div class="user-main" onclick="openProfile('${escapeHtml(user.id)}')">
-              <div class="avatar">${avatar}</div>
+        <button
+          id="drawerToggleBtn"
+          class="icon-btn"
+          type="button"
+          aria-label="Open menu"
+          aria-controls="exploreDrawer"
+          aria-expanded="false"
+        >
+          <span>☰</span>
+        </button>
+      </div>
+    </header>
 
-              <div class="user-meta">
-                <div class="user-topline">
-                  <div class="user-name">${escapeHtml(displayName)}</div>
-                  ${!isFollowing ? `<span class="tag">Suggested</span>` : `<span class="tag">Following</span>`}
-                </div>
-                <div class="user-username">@${escapeHtml(user.username || "user")}</div>
-                ${user.bio ? `<div class="user-bio">${escapeHtml(user.bio)}</div>` : ``}
+    <section class="search-panel">
+      <div class="search-box">
+        <div class="search-icon" aria-hidden="true">⌕</div>
+        <input
+          id="globalSearchInput"
+          class="search-input"
+          type="text"
+          placeholder="Search View..."
+          autocomplete="off"
+        />
+        <button
+          id="voiceSearchBtn"
+          class="search-voice-btn"
+          type="button"
+          aria-label="Voice search"
+        >
+          🎤
+        </button>
+      </div>
+    </section>
+
+    <section class="main-tabs-wrap">
+      <div class="main-tabs" id="mainTabs">
+        <button class="main-tab active" type="button" data-target="trendingSection">Trending</button>
+        <button class="main-tab" type="button" data-target="statusSection">Status</button>
+        <button class="main-tab" type="button" data-target="peopleSection">People</button>
+        <button class="main-tab" type="button" data-target="groupsSection">Groups</button>
+        <button class="main-tab" type="button" data-target="pagesSection">Pages</button>
+        <button class="main-tab" type="button" data-target="marketSection">Market</button>
+        <button class="main-tab" type="button" data-target="newsSection">News</button>
+        <button class="main-tab" type="button" data-target="aiSection">AI</button>
+        <button class="main-tab" type="button" data-target="savedSection">Saved</button>
+      </div>
+    </section>
+
+    <main class="page-content">
+      <section class="explore-hero">
+        <div class="explore-hero-card">
+          <div class="explore-hero-copy">
+            <h1>Discover what matters now</h1>
+            <p>
+              Explore trending moments, status updates, people, groups, pages,
+              market offers, news, AI tools, settings links, and saved content
+              across the View ecosystem.
+            </p>
+          </div>
+
+          <div class="explore-hero-stats">
+            <div class="hero-stat-pill" id="heroProfilesCount">Profiles: 0</div>
+            <div class="hero-stat-pill" id="heroOnlineCount">Online: 0</div>
+            <div class="hero-stat-pill" id="heroSuggestedCount">Suggested: 0</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="trendingSection" class="content-section">
+        <div class="section-head">
+          <div>
+            <h2>Trending</h2>
+            <p>Hot content and highlighted moments on View.</p>
+          </div>
+          <a href="trending.html" class="section-link">See more ›</a>
+        </div>
+
+        <div class="trending-layout">
+          <a href="trending.html" class="trend-card trend-card-featured">
+            <div class="trend-card-overlay"></div>
+            <div class="trend-card-content">
+              <span class="trend-chip">Trending</span>
+              <h3>Fashion Week Highlights 🔥</h3>
+              <p>Discover the most talked-about creator moments right now.</p>
+              <div class="trend-meta">
+                <span>❤ 982k</span>
+                <span>● 25k</span>
               </div>
             </div>
+          </a>
 
-            <div class="user-actions">
-              <button class="btn btn-profile" onclick="openProfileFromBtn(event, '${escapeHtml(user.id)}')">Profile</button>
+          <a href="trending.html" class="trend-card trend-card-small trend-card-blue">
+            <div class="trend-card-overlay"></div>
+            <div class="trend-card-content">
+              <span class="trend-chip">People</span>
+              <h3>Creator Spotlight</h3>
+              <p>Fast-rising creators and live conversations.</p>
+              <div class="trend-meta">
+                <span>#explore</span>
+              </div>
+            </div>
+          </a>
 
-              <button
-                class="btn ${isFollowing ? "btn-following" : "btn-follow"}"
-                onclick="toggleFollow(event, '${escapeHtml(user.id)}')"
-              >
-                ${isFollowing ? "Following" : "Follow"}
-              </button>
+          <a href="trending.html" class="trend-card trend-card-small trend-card-red">
+            <div class="trend-card-overlay"></div>
+            <div class="trend-card-content">
+              <span class="trend-chip">Lifestyle</span>
+              <h3>Adventure Picks</h3>
+              <p>Fresh travel, style, and premium discovery.</p>
+              <div class="trend-meta">
+                <span>#ootd</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
 
-              <button class="btn btn-chat" onclick="startChat(event, '${escapeHtml(user.id)}')">Message</button>
-              <button class="btn btn-call" onclick="startCall(event, '${escapeHtml(user.id)}')">Call</button>
+      <section id="statusSection" class="content-section">
+        <div class="section-head">
+          <div>
+            <h2>Status</h2>
+            <p>Quick moments and fresh stories from people on View.</p>
+          </div>
+          <div class="section-head-actions">
+            <a href="status.html" class="section-link">See all ›</a>
+            <a href="status.html?action=create" class="section-mini-link">Add status</a>
+          </div>
+        </div>
+
+        <div id="statusStrip" class="status-strip">
+          <a href="status.html?action=create" class="status-item add-status-card">
+            <div class="status-ring">
+              <div class="status-avatar add-status-avatar">
+                <span>+</span>
+                <span class="status-plus">+</span>
+              </div>
+            </div>
+            <div class="status-name">Add</div>
+            <div class="status-sub">Your status</div>
+          </a>
+
+          <div id="statusLoadingCards" class="status-loading">
+            <div class="status-skeleton"></div>
+            <div class="status-skeleton"></div>
+            <div class="status-skeleton"></div>
+            <div class="status-skeleton"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="peopleSection" class="content-section">
+        <div class="section-head">
+          <div>
+            <h2>People</h2>
+            <p>Discover suggested profiles, friends, followers, and following.</p>
+          </div>
+          <div class="section-head-actions">
+            <a href="friends.html" class="section-link">See all ›</a>
+            <div class="section-icon-actions">
+              <a href="friends.html" class="section-icon-btn" aria-label="Open people search">⌕</a>
+              <button class="section-icon-btn" type="button" aria-label="People filter tools">◐</button>
+              <button class="section-icon-btn" type="button" aria-label="More people options">☰</button>
             </div>
           </div>
-        `;
-      }).join("");
-    }
+        </div>
 
-    async function toggleFollow(event, userId) {
-      event.stopPropagation();
+        <div class="sub-tabs-wrap">
+          <div class="sub-tabs" id="peopleTabs">
+            <button class="sub-tab active" type="button" data-filter="suggested">Suggested</button>
+            <button class="sub-tab" type="button" data-filter="friends">Friends</button>
+            <button class="sub-tab" type="button" data-filter="followers">Followers</button>
+            <button class="sub-tab" type="button" data-filter="following">Following</button>
+          </div>
+        </div>
 
-      try {
-        clearNotice();
+        <div id="peopleGrid" class="people-grid">
+          <div class="empty-state-card">
+            <strong>Loading people</strong>
+            <span>Please wait while Explore loads profiles.</span>
+          </div>
+        </div>
+      </section>
 
-        const user = await requireUser();
-        if (!user) return;
+      <section id="groupsSection" class="content-section">
+        <div class="section-head">
+          <div>
+            <h2>Groups</h2>
+            <p>Join communities for creators, brands, trends, and interests.</p>
+          </div>
+          <a href="groups.html" class="section-link">See all ›</a>
+        </div>
 
-        currentUserId = user.id;
+        <div class="groups-grid">
+          <a href="groups.html" class="group-card">
+            <div class="group-cover group-cover-blue"></div>
+            <div class="group-body">
+              <h3>Fitness Zone</h3>
+              <p>16k members</p>
+            </div>
+          </a>
 
-        if (followingIds.has(userId)) {
-          const { error } = await supabaseClient
-            .from("followers")
-            .delete()
-            .eq("follower_id", currentUserId)
-            .eq("following_id", userId);
+          <a href="groups.html" class="group-card">
+            <div class="group-cover group-cover-red"></div>
+            <div class="group-body">
+              <h3>Coding Enthusiasts</h3>
+              <p>21k members</p>
+            </div>
+          </a>
 
-          if (error) throw error;
+          <a href="groups.html" class="group-card">
+            <div class="group-cover group-cover-mix"></div>
+            <div class="group-body">
+              <h3>Manga Lovers</h3>
+              <p>71k members</p>
+            </div>
+          </a>
 
-          followingIds.delete(userId);
-          showNotice("Unfollowed successfully.", "success");
-        } else {
-          const { error } = await supabaseClient
-            .from("followers")
-            .insert({
-              follower_id: currentUserId,
-              following_id: userId
-            });
+          <a href="groups.html" class="group-card">
+            <div class="group-cover group-cover-dark"></div>
+            <div class="group-body">
+              <h3>Explore Italy</h3>
+              <p>331k members</p>
+            </div>
+          </a>
+        </div>
+      </section>
 
-          if (error) throw error;
+      <section id="pagesSection" class="content-section">
+        <div class="section-head">
+          <div>
+            <h2>Pages</h2>
+            <p>Discover brands, creators, businesses, and public communities.</p>
+          </div>
+          <a href="pages.html" class="section-link">See all ›</a>
+        </div>
 
-          followingIds.add(userId);
-          showNotice("Followed successfully.", "success");
-        }
+        <div class="page-cards-grid">
+          <a href="pages.html" class="page-card">
+            <div class="page-card-icon">📄</div>
+            <div class="page-card-body">
+              <h3>Business Pages</h3>
+              <p>Find verified public pages and communities.</p>
+            </div>
+          </a>
 
-        updateStats();
-        renderUsers();
-      } catch (error) {
-        showNotice(error.message || "Could not update follow.");
-      }
-    }
+          <a href="pages.html" class="page-card">
+            <div class="page-card-icon">⭐</div>
+            <div class="page-card-body">
+              <h3>Featured Pages</h3>
+              <p>Premium pages highlighted across the ecosystem.</p>
+            </div>
+          </a>
 
-    async function startChat(event, userId) {
-      event.stopPropagation();
+          <a href="pages.html" class="page-card">
+            <div class="page-card-icon">📣</div>
+            <div class="page-card-body">
+              <h3>Creator Pages</h3>
+              <p>Follow public pages from your favorite creators.</p>
+            </div>
+          </a>
+        </div>
+      </section>
 
-      try {
-        clearNotice();
+      <section id="marketSection" class="content-section">
+        <div class="section-head">
+          <div>
+            <h2>Market</h2>
+            <p>Explore products, promos, offers, and ecosystem listings.</p>
+          </div>
+          <a href="market.html" class="section-link">Open market ›</a>
+        </div>
 
-        const user = await getLoggedInUser();
-        if (!user) {
-          showNotice("User not authenticated");
-          setTimeout(() => {
-            window.location.href = "login.html?next=explore.html";
-          }, 1000);
-          return;
-        }
+        <div class="feature-panel">
+          <div class="feature-panel-icon">🛍️</div>
+          <div class="feature-panel-copy">
+            <h3>Marketplace and offers</h3>
+            <p>Open Market to discover vendors, products, and trending deals.</p>
+          </div>
+          <a href="market.html" class="feature-panel-btn">Open</a>
+        </div>
+      </section>
 
-        const meUserId = user.id;
+      <section id="newsSection" class="content-section">
+        <div class="section-head">
+          <div>
+            <h2>News</h2>
+            <p>Important updates, announcements, and ecosystem highlights.</p>
+          </div>
+          <a href="news.html" class="section-link">See all ›</a>
+        </div>
 
-        if (!meUserId) {
-          showNotice("Current user ID is missing");
-          return;
-        }
+        <div class="news-list">
+          <a href="news.html" class="news-card">
+            <div class="news-card-thumb news-thumb-blue"></div>
+            <div class="news-card-body">
+              <h3>View expands creator discovery tools</h3>
+              <p>Explore smarter suggestions, cleaner discovery, and premium reach.</p>
+            </div>
+          </a>
 
-        if (!userId) {
-          showNotice("Target user ID is missing");
-          return;
-        }
+          <a href="news.html" class="news-card">
+            <div class="news-card-thumb news-thumb-red"></div>
+            <div class="news-card-body">
+              <h3>Communities and live spaces are growing</h3>
+              <p>More users are joining topic groups and public conversations daily.</p>
+            </div>
+          </a>
+        </div>
+      </section>
 
-        if (meUserId === userId) {
-          showNotice("You cannot chat with yourself");
-          return;
-        }
+      <section id="aiSection" class="content-section">
+        <div class="section-head">
+          <div>
+            <h2>AI</h2>
+            <p>Use premium AI tools for creativity, posts, captions, and ideas.</p>
+          </div>
+          <a href="ask-ai.html" class="section-link">Open AI ›</a>
+        </div>
 
-        const { data, error } = await supabaseClient.rpc("get_or_create_conversation", {
-          me_user_id: meUserId,
-          other_user_id: userId
-        });
+        <div class="feature-panel">
+          <div class="feature-panel-icon">✨</div>
+          <div class="feature-panel-copy">
+            <h3>Ask AI</h3>
+            <p>Use AI for captions, drafts, smart ideas, design help, and more.</p>
+          </div>
+          <a href="ask-ai.html" class="feature-panel-btn">Launch</a>
+        </div>
+      </section>
 
-        if (error) throw error;
-        if (!data) {
-          showNotice("Conversation not created");
-          return;
-        }
+      <section id="savedSection" class="content-section">
+        <div class="section-head">
+          <div>
+            <h2>Saved Posts</h2>
+            <p>Open the content you bookmarked for later.</p>
+          </div>
+          <a href="saved-posts.html" class="section-link">Open saved ›</a>
+        </div>
 
-        window.location.href = `chat-room.html?id=${encodeURIComponent(data)}`;
-      } catch (err) {
-        showNotice(err.message || "Could not start chat.");
-      }
-    }
+        <div class="feature-panel">
+          <div class="feature-panel-icon">🔖</div>
+          <div class="feature-panel-copy">
+            <h3>Saved content</h3>
+            <p>Find your bookmarked posts, ideas, and premium creator moments.</p>
+          </div>
+          <a href="saved-posts.html" class="feature-panel-btn">Open</a>
+        </div>
+      </section>
 
-    function startCall(event, userId) {
-      event.stopPropagation();
-      window.location.href = `call.html?user=${encodeURIComponent(userId)}&type=voice`;
-    }
+      <section id="settingsSection" class="content-section">
+        <div class="section-head">
+          <div>
+            <h2>Settings</h2>
+            <p>Manage your account, preferences, and ecosystem controls.</p>
+          </div>
+          <a href="settings.html" class="section-link">Open settings ›</a>
+        </div>
 
-    function openProfile(userId) {
-      window.location.href = `public-profile.html?id=${encodeURIComponent(userId)}`;
-    }
+        <div class="feature-panel">
+          <div class="feature-panel-icon">⚙️</div>
+          <div class="feature-panel-copy">
+            <h3>Account and app settings</h3>
+            <p>Open settings to manage profile, privacy, notifications, and more.</p>
+          </div>
+          <a href="settings.html" class="feature-panel-btn">Open</a>
+        </div>
+      </section>
+    </main>
+  </div>
 
-    function openProfileFromBtn(event, userId) {
-      event.stopPropagation();
-      openProfile(userId);
-    }
+  <div id="drawerBackdrop" class="drawer-backdrop"></div>
 
-    function subscribeRealtime() {
-      if (!followersChannel) {
-        followersChannel = supabaseClient
-          .channel("explore-followers-live")
-          .on("postgres_changes", {
-            event: "*",
-            schema: "public",
-            table: "followers"
-          }, async () => {
-            if (!currentUserId) return;
-            await loadFollowing();
-            renderUsers();
-          })
-          .subscribe();
-      }
+  <aside id="exploreDrawer" class="app-drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div class="drawer-brand">
+        <div class="drawer-brand-logo">
+          <img
+            src="icons/view-logo.png"
+            alt="View logo"
+            onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;brand-fallback&quot;>V</span>';"
+          />
+        </div>
+        <div>
+          <div class="drawer-brand-title">View Menu</div>
+          <div class="drawer-brand-sub">Ceetify ecosystem</div>
+        </div>
+      </div>
 
-      if (!profilesChannel) {
-        profilesChannel = supabaseClient
-          .channel("explore-profiles-live")
-          .on("postgres_changes", {
-            event: "*",
-            schema: "public",
-            table: "profiles"
-          }, async () => {
-            if (!currentUserId) return;
-            await loadUsers();
-          })
-          .subscribe();
-      }
+      <button
+        id="drawerCloseBtn"
+        class="icon-btn drawer-close"
+        type="button"
+        aria-label="Close menu"
+      >
+        ✕
+      </button>
+    </div>
 
-      if (!notificationsChannel) {
-        notificationsChannel = supabaseClient
-          .channel("explore-notifications-live")
-          .on("postgres_changes", {
-            event: "*",
-            schema: "public",
-            table: "notifications",
-            filter: `user_id=eq.${currentUserId}`
-          }, async () => {
-            await loadNotificationsBadge();
-          })
-          .subscribe();
-      }
-    }
+    <nav class="drawer-nav">
+      <a href="groups.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">👥</span><span>Groups</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
 
-    async function init() {
-      try {
-        clearNotice();
+      <a href="pages.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">📄</span><span>Pages</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
 
-        const user = await requireUser();
-        if (!user) return;
+      <a href="trending.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">🔥</span><span>Trending</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
 
-        currentUserId = user.id;
+      <a href="status.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">⭕</span><span>Status</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
 
-        await Promise.all([
-          loadProfileForTop(user),
-          loadFollowing(),
-          loadUsers(),
-          loadNotificationsBadge()
-        ]);
+      <a href="friends.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">🤝</span><span>Friends</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
 
-        subscribeRealtime();
-      } catch (error) {
-        showNotice(error.message || "Could not load explore.");
-      }
-    }
+      <a href="followers.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">👣</span><span>Followers</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
 
-    searchInput.addEventListener("input", renderUsers);
-    refreshBtn.addEventListener("click", init);
+      <a href="following.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">➕</span><span>Following</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
 
-    filterButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        filterButtons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentFilter = btn.dataset.filter;
-        renderUsers();
-      });
-    });
+      <a href="suggested.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">🧠</span><span>Suggested</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
 
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (!session?.user) {
-        showNotice("You have been logged out.");
-        setTimeout(() => {
-          window.location.href = "login.html?next=explore.html";
-        }, 1000);
-      }
-    });
+      <a href="market.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">🛍️</span><span>Market</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
 
-    window.toggleFollow = toggleFollow;
-    window.startChat = startChat;
-    window.startCall = startCall;
-    window.openProfile = openProfile;
-    window.openProfileFromBtn = openProfileFromBtn;
+      <a href="news.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">📰</span><span>News</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
 
-    init();
-  </script>
+      <a href="settings.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">⚙️</span><span>Settings</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
+
+      <a href="ask-ai.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">✨</span><span>AI</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
+
+      <a href="saved-posts.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">🔖</span><span>Saved Posts</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
+    </nav>
+  </aside>
+
+  <nav class="bottom-nav">
+    <a href="dashboard.html" class="bottom-nav-link">
+      <span class="nav-icon">⌂</span>
+      <span class="nav-label">Dashboard</span>
+    </a>
+
+    <a href="explore.html" class="bottom-nav-link active">
+      <span class="nav-icon">⌕</span>
+      <span class="nav-label">Explore</span>
+    </a>
+
+    <a href="live.html" class="bottom-nav-link">
+      <span class="nav-icon">◉</span>
+      <span class="nav-label">Live</span>
+    </a>
+
+    <a href="status.html" class="bottom-nav-link">
+      <span class="nav-icon">◎</span>
+      <span class="nav-label">Status</span>
+    </a>
+
+    <a href="calls.html" class="bottom-nav-link">
+      <span class="nav-icon">◜◞</span>
+      <span class="nav-label">Call</span>
+    </a>
+
+ 
+
+  <script src="js/explore.js"></script>
 </body>
 </html>
