@@ -4,21 +4,35 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Publish Dashboard | View</title>
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#081227" />
+  <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{
-      --bg:#f6f8fc;
-      --text:#111827;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --card:#ffffff;
-      --primary:#2563eb;
-      --success:#10b981;
-      --warning:#f59e0b;
-      --danger:#ef4444;
-      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --bg:#050b16;
+      --bg2:#091427;
+      --panel:rgba(8,15,31,.88);
+      --panel2:rgba(255,255,255,.05);
+      --card:rgba(10,18,38,.92);
+      --card2:rgba(255,255,255,.04);
+      --stroke:rgba(255,255,255,.08);
+      --stroke2:rgba(255,255,255,.12);
+      --text:#f8fbff;
+      --muted:#8ea4c7;
+      --muted2:#bfd0eb;
+      --blue:#3b82f6;
+      --blue2:#60a5fa;
+      --red:#ef4444;
+      --red2:#fb7185;
+      --green:#10b981;
+      --amber:#f59e0b;
+      --violet:#8b5cf6;
+      --cyan:#22d3ee;
+      --shadow:0 20px 60px rgba(0,0,0,.34);
+      --radius:24px;
+      --radius-sm:18px;
+      --safe-top:env(safe-area-inset-top);
       --safe-bottom:env(safe-area-inset-bottom);
     }
 
@@ -26,29 +40,30 @@
       box-sizing:border-box;
       margin:0;
       padding:0;
-      font-family:Arial,sans-serif;
       -webkit-tap-highlight-color:transparent;
+      font-family:Inter, Arial, sans-serif;
     }
 
     html,body{
       min-height:100%;
       background:
-        radial-gradient(circle at top left, rgba(37,99,235,.05), transparent 22%),
-        radial-gradient(circle at bottom right, rgba(79,70,229,.06), transparent 20%),
-        linear-gradient(180deg,#fbfcff 0%, #f5f7fb 100%);
+        radial-gradient(circle at top left, rgba(59,130,246,.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(239,68,68,.14), transparent 24%),
+        radial-gradient(circle at bottom left, rgba(139,92,246,.12), transparent 20%),
+        linear-gradient(180deg, #071121 0%, #08182f 42%, #06101f 100%);
       color:var(--text);
     }
 
     body{
-      padding:16px 14px 110px;
+      padding:calc(16px + var(--safe-top)) 12px calc(98px + var(--safe-bottom));
     }
 
-    button{
+    button,input,select{
       border:none;
+      outline:none;
       background:none;
-      cursor:pointer;
-      font:inherit;
       color:inherit;
+      font:inherit;
     }
 
     a{
@@ -56,184 +71,506 @@
       text-decoration:none;
     }
 
-    .wrap{
+    .app{
       width:min(100%, 980px);
       margin:0 auto;
     }
 
-    .notice{
+    .toast{
       display:none;
-      margin-bottom:14px;
+      margin-bottom:12px;
+      border-radius:18px;
       padding:12px 14px;
-      border-radius:14px;
-      font-size:14px;
-      line-height:1.55;
+      font-size:12px;
+      line-height:1.5;
+      border:1px solid transparent;
       box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
     }
-    .notice.show{display:block}
-    .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
-    .notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
-    .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+    .toast.show{display:block}
+    .toast.info{
+      background:rgba(59,130,246,.14);
+      border-color:rgba(96,165,250,.30);
+      color:#dbeafe;
+    }
+    .toast.success{
+      background:rgba(16,185,129,.14);
+      border-color:rgba(16,185,129,.30);
+      color:#d1fae5;
+    }
+    .toast.error{
+      background:rgba(239,68,68,.14);
+      border-color:rgba(251,113,133,.30);
+      color:#ffe4e6;
+    }
 
-    .topbar{
+    .hero{
+      position:relative;
+      overflow:hidden;
+      background:
+        linear-gradient(140deg, rgba(59,130,246,.22), rgba(239,68,68,.15)),
+        rgba(8,14,30,.9);
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      padding:14px;
+      margin-bottom:12px;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      left:-34px;
+      top:-46px;
+      width:160px;
+      height:160px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(59,130,246,.18), transparent 68%);
+      pointer-events:none;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-30px;
+      bottom:-50px;
+      width:170px;
+      height:170px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(239,68,68,.16), transparent 68%);
+      pointer-events:none;
+    }
+
+    .hero-head{
+      position:relative;
+      z-index:1;
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
+      gap:10px;
+      margin-bottom:12px;
     }
 
-    .top-left{
+    .hero-main{
       display:flex;
-      align-items:center;
-      gap:12px;
+      align-items:flex-start;
+      gap:10px;
       min-width:0;
       flex:1;
     }
 
     .icon-btn{
-      width:46px;
-      height:46px;
-      min-width:46px;
-      border-radius:14px;
+      width:44px;
+      height:44px;
+      min-width:44px;
+      border-radius:16px;
       display:flex;
       align-items:center;
       justify-content:center;
-      background:#fff;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow);
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.09);
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
       font-size:18px;
-      color:#111827;
+      transition:.18s ease;
+      cursor:pointer;
     }
 
-    .title-box{
+    .icon-btn:active,
+    .action-btn:active,
+    .mini-btn:active,
+    .nav-link:active{
+      transform:scale(.98);
+    }
+
+    .title-wrap{
       min-width:0;
       flex:1;
+      padding-top:1px;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:800;
+      color:#dbeafe;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      margin-bottom:8px;
+      letter-spacing:.02em;
+      text-transform:uppercase;
     }
 
     .title{
-      font-size:22px;
+      font-size:24px;
       font-weight:800;
-      margin-bottom:3px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      line-height:1.05;
+      letter-spacing:-.03em;
+      margin-bottom:5px;
     }
 
-    .sub{
-      color:var(--muted);
-      font-size:13px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .subtitle{
+      font-size:12px;
+      line-height:1.5;
+      color:var(--muted2);
+      max-width:560px;
     }
 
-    .toolbar{
-      display:flex;
+    .hero-grid{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns:1fr 1fr;
       gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
     }
 
-    .tool-btn{
-      min-height:42px;
+    .action-btn{
+      min-height:46px;
+      border-radius:16px;
       padding:0 14px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#fff;
-      box-shadow:var(--shadow);
-      color:#111827;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
       font-size:13px;
-      font-weight:700;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 12px 24px rgba(0,0,0,.16);
+      transition:.18s ease;
+    }
+
+    .action-primary{
+      color:#fff;
+      border:1px solid transparent;
+      background:linear-gradient(135deg, var(--blue), #2563eb 55%, rgba(239,68,68,.9));
+    }
+
+    .action-secondary{
+      color:#fff;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.08);
     }
 
     .section{
-      background:rgba(255,255,255,.92);
-      backdrop-filter:blur(10px);
-      border:1px solid rgba(255,255,255,.7);
-      border-radius:22px;
+      background:linear-gradient(180deg, rgba(11,19,39,.94), rgba(8,15,30,.94));
+      border:1px solid var(--stroke);
+      border-radius:24px;
       box-shadow:var(--shadow);
+      margin-bottom:12px;
       overflow:hidden;
-      margin-bottom:14px;
+      backdrop-filter:blur(12px);
+    }
+
+    .section-head{
+      padding:14px 14px 0;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .section-title{
+      font-size:15px;
+      font-weight:800;
+      letter-spacing:-.02em;
+    }
+
+    .section-sub{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
     }
 
     .section-body{
       padding:14px;
       display:grid;
-      gap:14px;
+      gap:12px;
     }
 
-    .summary-grid{
+    .stats{
       display:grid;
       grid-template-columns:repeat(4,1fr);
       gap:10px;
     }
 
-    .summary-card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px;
+    .stat{
+      position:relative;
+      overflow:hidden;
+      border-radius:18px;
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      padding:13px;
+      min-height:96px;
     }
 
-    .summary-label{
-      font-size:12px;
+    .stat::before{
+      content:"";
+      position:absolute;
+      right:-16px;
+      top:-18px;
+      width:72px;
+      height:72px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(255,255,255,.08), transparent 68%);
+    }
+
+    .stat-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .stat-label{
+      font-size:11px;
+      font-weight:800;
       color:var(--muted);
-      margin-bottom:8px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
     }
 
-    .summary-value{
+    .stat-icon{
+      width:28px;
+      height:28px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      font-size:13px;
+    }
+
+    .stat-value{
       font-size:24px;
       font-weight:800;
+      line-height:1;
+      letter-spacing:-.04em;
+      margin-bottom:7px;
     }
 
-    .posts{
+    .stat-meta{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+    .toolbar{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:10px;
+    }
+
+    .field{
+      min-height:46px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:0 12px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--stroke);
+    }
+
+    .field span{
+      font-size:13px;
+      color:var(--muted);
+      min-width:14px;
+    }
+
+    .field input,
+    .field select{
+      width:100%;
+      font-size:13px;
+      color:var(--text);
+      background:transparent;
+    }
+
+    .field input::placeholder{
+      color:var(--muted);
+    }
+
+    .jobs{
       display:grid;
       gap:12px;
     }
 
     .post-card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:18px;
+      border-radius:22px;
+      border:1px solid var(--stroke);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.025));
       padding:14px;
       display:grid;
       gap:12px;
     }
 
-    .post-top{
+    .post-head{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap:12px;
     }
 
-    .post-main{
+    .post-left{
       min-width:0;
       flex:1;
     }
 
-    .post-title{
-      font-size:14px;
+    .post-label-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+
+    .post-label{
+      font-size:12px;
       font-weight:800;
-      margin-bottom:6px;
+      letter-spacing:.03em;
+      text-transform:uppercase;
+      color:var(--muted);
     }
 
     .post-text{
-      font-size:14px;
-      line-height:1.55;
-      color:#111827;
-      white-space:pre-wrap;
+      font-size:13px;
+      line-height:1.58;
+      color:#edf4ff;
       word-break:break-word;
+      white-space:pre-wrap;
+      display:-webkit-box;
+      -webkit-line-clamp:4;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
     }
 
     .post-meta{
-      color:var(--muted);
-      font-size:12px;
-      margin-top:8px;
       display:flex;
-      gap:10px;
       flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+      font-size:11px;
+      color:var(--muted);
+    }
+
+    .media-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      width:max-content;
+      margin-top:10px;
+      padding:7px 10px;
+      border-radius:12px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--stroke);
+      font-size:11px;
+      font-weight:800;
+      color:#dbeafe;
+    }
+
+    .platform-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+
+    .platform{
+      border-radius:18px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.03);
+      padding:12px;
+      display:grid;
+      gap:8px;
+      min-width:0;
+    }
+
+    .platform-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+
+    .platform-name{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.01em;
+      text-transform:capitalize;
+    }
+
+    .platform-dot{
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:linear-gradient(135deg, var(--blue), var(--red));
+      box-shadow:0 0 14px rgba(59,130,246,.4);
+      flex:0 0 auto;
+    }
+
+    .platform-body{
+      display:grid;
+      gap:6px;
+    }
+
+    .platform-line{
+      font-size:11px;
+      line-height:1.48;
+      color:var(--muted);
+      word-break:break-word;
+    }
+
+    .error-box{
+      border-radius:12px;
+      background:rgba(239,68,68,.10);
+      border:1px solid rgba(239,68,68,.18);
+      color:#fecaca;
+      padding:8px 10px;
+      font-size:11px;
+      line-height:1.48;
+      word-break:break-word;
+    }
+
+    .platform-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:2px;
+    }
+
+    .mini-btn{
+      min-height:34px;
+      padding:0 11px;
+      border-radius:11px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:800;
+      border:1px solid var(--stroke2);
+      color:#fff;
+      background:rgba(255,255,255,.06);
+      cursor:pointer;
+    }
+
+    .mini-btn.primary{
+      background:linear-gradient(135deg, rgba(59,130,246,.94), rgba(239,68,68,.84));
+      border-color:transparent;
+    }
+
+    .mini-btn.warn{
+      background:rgba(245,158,11,.12);
+      border-color:rgba(245,158,11,.28);
+      color:#fde68a;
     }
 
     .pill{
@@ -243,86 +580,32 @@
       display:inline-flex;
       align-items:center;
       justify-content:center;
+      white-space:nowrap;
       font-size:11px;
       font-weight:800;
+      letter-spacing:.01em;
       border:1px solid transparent;
-      white-space:nowrap;
-    }
-
-    .queued{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
-    .processing{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
-    .success{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
-    .failed{background:#fef2f2;color:#991b1b;border-color:#fecaca}
-    .retrying{background:#fffbeb;color:#92400e;border-color:#fde68a}
-    .partial{background:#f5f3ff;color:#6d28d9;border-color:#ddd6fe}
-    .defaultpill{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
-
-    .platform-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:10px;
-    }
-
-    .platform-card{
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:#fafbff;
-      padding:12px;
-      display:grid;
-      gap:8px;
-    }
-
-    .platform-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .platform-name{
-      font-size:13px;
-      font-weight:800;
       text-transform:capitalize;
     }
 
-    .platform-small{
-      font-size:11px;
-      color:var(--muted);
-      line-height:1.45;
-      word-break:break-word;
-    }
-
-    .platform-error{
-      font-size:12px;
-      color:#b91c1c;
-      line-height:1.45;
-      word-break:break-word;
-    }
-
-    .platform-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .mini-btn{
-      min-height:34px;
-      padding:0 10px;
-      border-radius:10px;
-      border:1px solid var(--line);
-      background:#fff;
-      font-size:12px;
-      font-weight:700;
-    }
+    .pill.queued{background:rgba(245,158,11,.13);color:#fde68a;border-color:rgba(245,158,11,.28)}
+    .pill.processing{background:rgba(59,130,246,.14);color:#bfdbfe;border-color:rgba(59,130,246,.28)}
+    .pill.completed{background:rgba(16,185,129,.14);color:#a7f3d0;border-color:rgba(16,185,129,.28)}
+    .pill.failed{background:rgba(239,68,68,.14);color:#fecdd3;border-color:rgba(239,68,68,.28)}
+    .pill.retrying{background:rgba(139,92,246,.16);color:#ddd6fe;border-color:rgba(139,92,246,.32)}
+    .pill.partial{background:rgba(236,72,153,.12);color:#fbcfe8;border-color:rgba(236,72,153,.28)}
+    .pill.default{background:rgba(255,255,255,.06);color:#dbe5f3;border-color:rgba(255,255,255,.10)}
 
     .empty{
-      background:#fff;
-      border:1px dashed var(--line);
+      width:100%;
+      padding:26px 14px;
       border-radius:18px;
-      padding:28px 16px;
       text-align:center;
+      border:1px dashed rgba(255,255,255,.12);
+      background:rgba(255,255,255,.02);
       color:var(--muted);
-      font-size:14px;
+      font-size:13px;
+      line-height:1.55;
     }
 
     .bottom-nav{
@@ -330,99 +613,197 @@
       left:50%;
       transform:translateX(-50%);
       bottom:12px;
-      width:min(760px, calc(100% - 20px));
-      background:rgba(255,255,255,.92);
-      border:1px solid rgba(229,231,235,.9);
-      border-radius:20px;
+      width:min(780px, calc(100% - 18px));
+      background:rgba(8,16,31,.92);
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:24px;
       padding:8px 6px calc(8px + var(--safe-bottom));
       display:grid;
       grid-template-columns:repeat(5,1fr);
       gap:6px;
-      box-shadow:var(--shadow);
-      z-index:40;
+      box-shadow:0 20px 50px rgba(0,0,0,.4);
+      backdrop-filter:blur(18px);
+      z-index:50;
     }
 
-    .nav-btn{
-      min-height:56px;
-      border-radius:14px;
+    .nav-link{
+      min-height:58px;
+      border-radius:18px;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
       gap:4px;
-      font-size:11px;
-      font-weight:700;
-      color:var(--muted);
-      text-decoration:none;
+      color:#9fb0cc;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.01em;
     }
 
-    .nav-btn.active{
-      background:#eef4ff;
-      color:#1d4ed8;
+    .nav-link .nav-icon{
+      font-size:18px;
+      line-height:1;
     }
 
-    @media (max-width:820px){
-      .summary-grid{grid-template-columns:repeat(2,1fr)}
+    .nav-link.active{
+      color:#fff;
+      background:
+        linear-gradient(135deg, rgba(59,130,246,.18), rgba(239,68,68,.14)),
+        rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .hidden{
+      display:none!important;
+    }
+
+    @media (max-width:900px){
+      .stats{grid-template-columns:repeat(2,1fr)}
       .platform-grid{grid-template-columns:1fr}
+    }
+
+    @media (max-width:640px){
+      body{padding-left:10px;padding-right:10px}
+      .hero{padding:13px;border-radius:24px}
+      .title{font-size:21px}
+      .subtitle{font-size:11.5px}
+      .hero-grid{grid-template-columns:1fr}
+      .toolbar{grid-template-columns:1fr}
+      .stat{min-height:90px}
+      .stat-value{font-size:22px}
+      .post-card,.platform{padding:12px}
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div id="notice" class="notice"></div>
+  <div class="app">
+    <div id="toast" class="toast"></div>
 
-    <header class="topbar">
-      <div class="top-left">
-        <button class="icon-btn" onclick="history.back()">←</button>
-        <div class="title-box">
-          <div class="title">Publish Dashboard</div>
-          <div class="sub">Live delivery tracking</div>
+    <section class="hero">
+      <div class="hero-head">
+        <div class="hero-main">
+          <button class="icon-btn" id="backBtn" aria-label="Back">←</button>
+
+          <div class="title-wrap">
+            <div class="eyebrow">📡 View Delivery Center</div>
+            <div class="title">Publish Dashboard</div>
+            <div class="subtitle">Monitor delivery, retries, failures, and completed cross-posts across all connected platforms in one premium control screen.</div>
+          </div>
         </div>
-      </div>
-      <button class="icon-btn" id="refreshBtn">↻</button>
-    </header>
 
-    <div class="toolbar">
-      <button class="tool-btn" id="runWorkerBtn">Run Delivery</button>
-      <button class="tool-btn" id="toggleAutoBtn">Auto Refresh: On</button>
-    </div>
+        <button class="icon-btn" id="refreshBtn" aria-label="Refresh">↻</button>
+      </div>
+
+      <div class="hero-grid">
+        <button class="action-btn action-primary" id="runWorkerBtn">⚡ Run Delivery</button>
+        <button class="action-btn action-secondary" id="toggleAutoBtn">🛰️ Auto Refresh: On</button>
+      </div>
+    </section>
 
     <section class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Overview</div>
+          <div class="section-sub">Quick totals for your latest publish activities.</div>
+        </div>
+      </div>
+
       <div class="section-body">
-        <div class="summary-grid">
-          <div class="summary-card">
-            <div class="summary-label">Posts</div>
-            <div class="summary-value" id="postsCount">0</div>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-label">Posts</div>
+              <div class="stat-icon">📝</div>
+            </div>
+            <div class="stat-value" id="postsCount">0</div>
+            <div class="stat-meta">Recent user posts in this dashboard</div>
           </div>
-          <div class="summary-card">
-            <div class="summary-label">Queued</div>
-            <div class="summary-value" id="queuedCount">0</div>
+
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-label">Queued</div>
+              <div class="stat-icon">⏳</div>
+            </div>
+            <div class="stat-value" id="queuedCount">0</div>
+            <div class="stat-meta">Queued, retrying, or processing jobs</div>
           </div>
-          <div class="summary-card">
-            <div class="summary-label">Success</div>
-            <div class="summary-value" id="successCount">0</div>
+
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-label">Completed</div>
+              <div class="stat-icon">✅</div>
+            </div>
+            <div class="stat-value" id="completedCount">0</div>
+            <div class="stat-meta">Delivered successfully to platform</div>
           </div>
-          <div class="summary-card">
-            <div class="summary-label">Failed</div>
-            <div class="summary-value" id="failedCount">0</div>
+
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-label">Failed</div>
+              <div class="stat-icon">❌</div>
+            </div>
+            <div class="stat-value" id="failedCount">0</div>
+            <div class="stat-meta">Needs retry or account review</div>
           </div>
         </div>
       </div>
     </section>
 
     <section class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Publish Jobs</div>
+          <div class="section-sub">Search posts, filter statuses, retry failed jobs, and copy platform IDs.</div>
+        </div>
+      </div>
+
       <div class="section-body">
-        <div id="postsWrap" class="posts"></div>
+        <div class="toolbar">
+          <label class="field">
+            <span>🔎</span>
+            <input type="text" id="searchInput" placeholder="Search post text or platform..." />
+          </label>
+
+          <label class="field">
+            <span>🧩</span>
+            <select id="statusFilter">
+              <option value="all">All Status</option>
+              <option value="queued">Queued</option>
+              <option value="processing">Processing</option>
+              <option value="retrying">Retrying</option>
+              <option value="completed">Completed</option>
+              <option value="failed">Failed</option>
+              <option value="partial">Partial</option>
+            </select>
+          </label>
+        </div>
+
+        <div id="postsWrap" class="jobs"></div>
       </div>
     </section>
   </div>
 
   <nav class="bottom-nav">
-    <a class="nav-btn" href="home.html"><span>🏠</span><span>Home</span></a>
-    <a class="nav-btn" href="explore.html"><span>🔎</span><span>Explore</span></a>
-    <a class="nav-btn" href="create-post.html"><span>➕</span><span>Create</span></a>
-    <a class="nav-btn active" href="publish-dashboard.html"><span>📊</span><span>Publish</span></a>
-    <a class="nav-btn" href="settings.html"><span>⚙️</span><span>Settings</span></a>
+    <a class="nav-link" href="home.html">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a class="nav-link" href="explore.html">
+      <span class="nav-icon">🔎</span>
+      <span>Explore</span>
+    </a>
+    <a class="nav-link" href="create-post.html">
+      <span class="nav-icon">➕</span>
+      <span>Create</span>
+    </a>
+    <a class="nav-link active" href="publish-dashboard.html">
+      <span class="nav-icon">📊</span>
+      <span>Publish</span>
+    </a>
+    <a class="nav-link" href="settings.html">
+      <span class="nav-icon">⚙️</span>
+      <span>Settings</span>
+    </a>
   </nav>
 
   <script>
@@ -439,28 +820,38 @@
       }
     });
 
-    const noticeBox = document.getElementById("notice");
-    const refreshBtn = document.getElementById("refreshBtn");
-    const runWorkerBtn = document.getElementById("runWorkerBtn");
-    const toggleAutoBtn = document.getElementById("toggleAutoBtn");
-    const postsWrap = document.getElementById("postsWrap");
-    const postsCount = document.getElementById("postsCount");
-    const queuedCount = document.getElementById("queuedCount");
-    const successCount = document.getElementById("successCount");
-    const failedCount = document.getElementById("failedCount");
+    const els = {
+      toast: document.getElementById("toast"),
+      backBtn: document.getElementById("backBtn"),
+      refreshBtn: document.getElementById("refreshBtn"),
+      runWorkerBtn: document.getElementById("runWorkerBtn"),
+      toggleAutoBtn: document.getElementById("toggleAutoBtn"),
+      postsWrap: document.getElementById("postsWrap"),
+      postsCount: document.getElementById("postsCount"),
+      queuedCount: document.getElementById("queuedCount"),
+      completedCount: document.getElementById("completedCount"),
+      failedCount: document.getElementById("failedCount"),
+      searchInput: document.getElementById("searchInput"),
+      statusFilter: document.getElementById("statusFilter")
+    };
 
     let currentUser = null;
     let autoRefreshOn = true;
     let autoRefreshTimer = null;
+    let dashboardCache = {
+      posts: [],
+      jobs: [],
+      logs: []
+    };
 
-    function showNotice(message, type = "info") {
-      noticeBox.className = `notice show ${type}`;
-      noticeBox.textContent = message || "";
-      clearTimeout(showNotice._timer);
-      showNotice._timer = setTimeout(() => {
-        noticeBox.className = "notice";
-        noticeBox.textContent = "";
-      }, 2800);
+    function showToast(message, type = "info") {
+      clearTimeout(showToast._timer);
+      els.toast.className = `toast show ${type}`;
+      els.toast.textContent = String(message || "");
+      showToast._timer = setTimeout(() => {
+        els.toast.className = "toast";
+        els.toast.textContent = "";
+      }, 3200);
     }
 
     function escapeHtml(value) {
@@ -477,29 +868,65 @@
       try {
         return new Date(value).toLocaleString();
       } catch {
-        return value;
+        return String(value);
       }
     }
 
-    function getPillClass(status) {
-      switch ((status || "").toLowerCase()) {
-        case "queued": return "queued";
-        case "processing": return "processing";
-        case "success": return "success";
-        case "failed": return "failed";
-        case "retrying": return "retrying";
-        case "partial": return "partial";
-        default: return "defaultpill";
+    function normalizeStatus(status) {
+      const s = String(status || "").trim().toLowerCase();
+      if (s === "success") return "completed";
+      return s;
+    }
+
+    function pillClass(status) {
+      const s = normalizeStatus(status);
+      return ["queued","processing","completed","failed","retrying","partial"].includes(s) ? s : "default";
+    }
+
+    function safePlatforms(value) {
+      if (Array.isArray(value)) {
+        return value.filter(Boolean).map(v => String(v).toLowerCase());
       }
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.filter(Boolean).map(v => String(v).toLowerCase()) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function compactError(text) {
+      const clean = String(text || "").replace(/\s+/g, " ").trim();
+      if (!clean) return "";
+      if (
+        clean.includes('"uploadUrl"') ||
+        clean.includes('"uploadInstructions"') ||
+        clean.includes('"uploadedVideo"') ||
+        clean.includes('"value":')
+      ) {
+        return "Provider returned upload session data instead of a final publish result.";
+      }
+      return clean.slice(0, 320);
+    }
+
+    function renderPostText(value) {
+      const clean = String(value || "").trim();
+      return clean ? escapeHtml(clean) : "No text content";
+    }
+
+    function uniquePlatformsFromJobs(jobs) {
+      return [...new Set((jobs || []).map(j => String(j.platform || "").toLowerCase()).filter(Boolean))];
     }
 
     async function requireUser() {
       const { data, error } = await supabaseClient.auth.getUser();
       if (error) throw error;
+
       if (!data?.user) {
         window.location.href = "login.html?next=publish-dashboard.html";
         return null;
       }
+
       currentUser = data.user;
       return currentUser;
     }
@@ -510,7 +937,7 @@
 
       const { data: posts, error: postsError } = await supabaseClient
         .from("posts")
-        .select("id, content, media_url, media_type, selected_platforms, publish_status, created_at")
+        .select("id, title, content, media_url, media_type, selected_platforms, publish_status, created_at, updated_at, user_id")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(50);
@@ -542,17 +969,26 @@
         logs = logsData || [];
       }
 
-      renderDashboard(posts || [], jobs, logs);
+      dashboardCache = { posts: posts || [], jobs, logs };
+      renderDashboard();
     }
 
-    function renderDashboard(posts, jobs, logs) {
-      postsCount.textContent = String(posts.length);
-      queuedCount.textContent = String(jobs.filter(j => ["queued", "retrying", "processing"].includes(j.status)).length);
-      successCount.textContent = String(jobs.filter(j => j.status === "success").length);
-      failedCount.textContent = String(jobs.filter(j => j.status === "failed").length);
+    function renderDashboard() {
+      const posts = dashboardCache.posts || [];
+      const jobs = dashboardCache.jobs || [];
+      const logs = dashboardCache.logs || [];
+
+      const searchTerm = String(els.searchInput.value || "").toLowerCase().trim();
+      const filterStatus = normalizeStatus(els.statusFilter.value || "all");
+
+      const queuedLike = ["queued","retrying","processing"];
+      els.postsCount.textContent = String(posts.length);
+      els.queuedCount.textContent = String(jobs.filter(j => queuedLike.includes(normalizeStatus(j.status))).length);
+      els.completedCount.textContent = String(jobs.filter(j => normalizeStatus(j.status) === "completed").length);
+      els.failedCount.textContent = String(jobs.filter(j => normalizeStatus(j.status) === "failed").length);
 
       if (!posts.length) {
-        postsWrap.innerHTML = `<div class="empty">No posts yet.</div>`;
+        els.postsWrap.innerHTML = `<div class="empty">No posts yet. Create a post first to start tracking delivery here.</div>`;
         return;
       }
 
@@ -569,71 +1005,127 @@
         logsByJob[log.job_id].push(log);
       });
 
-      postsWrap.innerHTML = posts.map(post => {
+      const filteredPosts = posts.filter(post => {
         const postJobs = jobsByPost[post.id] || [];
-        const selectedPlatforms = Array.isArray(post.selected_platforms) ? post.selected_platforms : [];
+        const selectedPlatforms = safePlatforms(post.selected_platforms);
+        const haystack = [
+          String(post.title || ""),
+          String(post.content || ""),
+          selectedPlatforms.join(" "),
+          postJobs.map(j => `${j.platform} ${normalizeStatus(j.status)}`).join(" ")
+        ].join(" ").toLowerCase();
 
-        const platformCards = selectedPlatforms.map(platform => {
-          const job = postJobs.find(j => j.platform === platform);
-          const latestLog = job ? (logsByJob[job.id] || [])[0] : null;
-          const status = job?.status || (platform === "view" ? "success" : "queued");
+        const matchesSearch = !searchTerm || haystack.includes(searchTerm);
+        if (filterStatus === "all") return matchesSearch;
+
+        const postStatus = normalizeStatus(post.publish_status);
+        const jobMatches = postJobs.some(j => normalizeStatus(j.status) === filterStatus);
+        const postMatches = postStatus === filterStatus;
+
+        return matchesSearch && (jobMatches || postMatches);
+      });
+
+      if (!filteredPosts.length) {
+        els.postsWrap.innerHTML = `<div class="empty">No result matches your current search or status filter.</div>`;
+        return;
+      }
+
+      els.postsWrap.innerHTML = filteredPosts.map(post => {
+        const postJobs = jobsByPost[post.id] || [];
+        const selectedPlatforms = safePlatforms(post.selected_platforms);
+        const renderPlatforms = selectedPlatforms.length ? selectedPlatforms : uniquePlatformsFromJobs(postJobs);
+        const postStatus = normalizeStatus(post.publish_status || "queued");
+        const postTitle = String(post.title || "").trim();
+
+        const platformCards = (renderPlatforms.length ? renderPlatforms : ["view"]).map(platform => {
+          const match = postJobs.find(j => String(j.platform || "").toLowerCase() === String(platform).toLowerCase());
+          const latestLog = match ? (logsByJob[match.id] || [])[0] : null;
+          const status = normalizeStatus(match?.status || (String(platform).toLowerCase() === "view" ? "completed" : "queued"));
+          const errorText = compactError(match?.last_error || latestLog?.error_message || "");
+          const attempts = Number(match?.attempts ?? latestLog?.attempts ?? 0);
 
           return `
-            <div class="platform-card">
+            <div class="platform">
               <div class="platform-head">
-                <div class="platform-name">${platform}</div>
-                <span class="pill ${getPillClass(status)}">${status}</span>
+                <div class="platform-name">
+                  <span class="platform-dot"></span>
+                  <span>${escapeHtml(platform)}</span>
+                </div>
+                <span class="pill ${pillClass(status)}">${escapeHtml(status)}</span>
               </div>
 
-              <div class="platform-small">Attempts: ${job?.attempts ?? latestLog?.attempts ?? 0}</div>
-              ${job?.platform_post_id ? `<div class="platform-small">Platform ID: ${escapeHtml(job.platform_post_id)}</div>` : ``}
-              ${job?.delivered_at ? `<div class="platform-small">Delivered: ${formatDate(job.delivered_at)}</div>` : ``}
-              ${job?.next_retry_at ? `<div class="platform-small">Next retry: ${formatDate(job.next_retry_at)}</div>` : ``}
-              ${job?.last_error ? `<div class="platform-error">${escapeHtml(job.last_error)}</div>` : ``}
-              ${latestLog?.error_message ? `<div class="platform-error">${escapeHtml(latestLog.error_message)}</div>` : ``}
+              <div class="platform-body">
+                <div class="platform-line">Attempts: ${attempts}</div>
+                ${match?.platform_post_id ? `<div class="platform-line">Platform ID: ${escapeHtml(match.platform_post_id)}</div>` : ``}
+                ${match?.delivered_at ? `<div class="platform-line">Delivered: ${escapeHtml(formatDate(match.delivered_at))}</div>` : ``}
+                ${match?.next_retry_at ? `<div class="platform-line">Next retry: ${escapeHtml(formatDate(match.next_retry_at))}</div>` : ``}
+                ${match?.updated_at ? `<div class="platform-line">Updated: ${escapeHtml(formatDate(match.updated_at))}</div>` : ``}
+                ${errorText ? `<div class="error-box">${escapeHtml(errorText)}</div>` : ``}
+              </div>
 
               <div class="platform-actions">
-                ${job?.status === "failed" ? `<button class="mini-btn" onclick="retryJob('${job.id}')">Retry</button>` : ``}
-                ${job?.status === "retrying" ? `<button class="mini-btn" onclick="retryJob('${job.id}')">Run Now</button>` : ``}
+                ${match && (status === "failed" || status === "retrying") ? `<button class="mini-btn primary" data-action="retry" data-job-id="${escapeHtml(match.id)}">${status === "failed" ? "Retry" : "Run Now"}</button>` : ``}
+                ${match?.platform_post_id ? `<button class="mini-btn" data-action="copy-id" data-copy="${escapeHtml(match.platform_post_id)}">Copy ID</button>` : ``}
+                ${status === "processing" ? `<button class="mini-btn warn" disabled>Processing...</button>` : ``}
               </div>
             </div>
           `;
         }).join("");
 
         return `
-          <div class="post-card">
-            <div class="post-top">
-              <div class="post-main">
-                <div class="post-title">Post</div>
-                <div class="post-text">${escapeHtml(post.content || "") || "—"}</div>
+          <article class="post-card">
+            <div class="post-head">
+              <div class="post-left">
+                <div class="post-label-row">
+                  <div class="post-label">Post</div>
+                  <span class="pill ${pillClass(postStatus)}">${escapeHtml(postStatus)}</span>
+                </div>
+
+                ${postTitle ? `<div class="post-text" style="font-weight:800;margin-bottom:8px">${escapeHtml(postTitle)}</div>` : ``}
+                <div class="post-text">${renderPostText(post.content)}</div>
+
+                ${post.media_url ? `
+                  <div class="media-pill">
+                    <span>🎞️</span>
+                    <span>${escapeHtml(post.media_type || "media attached")}</span>
+                  </div>
+                ` : ``}
+
                 <div class="post-meta">
-                  <span>${formatDate(post.created_at)}</span>
-                  <span class="pill ${getPillClass(post.publish_status)}">${post.publish_status || "queued"}</span>
-                  ${post.media_url ? `<span class="pill defaultpill">${escapeHtml(post.media_type || "media")}</span>` : ``}
+                  <span>${escapeHtml(formatDate(post.created_at))}</span>
+                  <span>${renderPlatforms.length} platform${renderPlatforms.length === 1 ? "" : "s"}</span>
                 </div>
               </div>
             </div>
 
             <div class="platform-grid">
-              ${platformCards || `<div class="empty">No delivery jobs.</div>`}
+              ${platformCards || `<div class="empty">No delivery jobs found for this post yet.</div>`}
             </div>
-          </div>
+          </article>
         `;
       }).join("");
     }
 
     async function runWorker() {
-      runWorkerBtn.disabled = true;
+      const original = els.runWorkerBtn.innerHTML;
+      els.runWorkerBtn.disabled = true;
+      els.runWorkerBtn.innerHTML = "⏳ Running...";
+
       try {
         const response = await fetch(WORKER_URL, { method: "GET" });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data?.error || "Worker failed.");
-        showNotice(`Processed ${data?.processed ?? 0} job(s).`, "success");
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data?.error || data?.message || "Worker failed.");
+        }
+
+        showToast(`Processed ${data?.processed ?? 0} job(s).`, "success");
         await loadDashboard();
       } catch (error) {
-        showNotice(error.message || "Could not run delivery.", "error");
+        showToast(error?.message || "Could not run delivery.", "error");
       } finally {
-        runWorkerBtn.disabled = false;
+        els.runWorkerBtn.disabled = false;
+        els.runWorkerBtn.innerHTML = original;
       }
     }
 
@@ -652,23 +1144,32 @@
 
         if (error) throw error;
 
-        showNotice("Job re-queued.", "success");
+        showToast("Job re-queued successfully.", "success");
         await loadDashboard();
       } catch (error) {
-        showNotice(error.message || "Could not retry job.", "error");
+        showToast(error?.message || "Could not retry job.", "error");
       }
     }
 
-    function setAutoRefresh(on) {
-      autoRefreshOn = on;
-      toggleAutoBtn.textContent = `Auto Refresh: ${on ? "On" : "Off"}`;
+    async function copyValue(value) {
+      try {
+        await navigator.clipboard.writeText(String(value || ""));
+        showToast("Copied successfully.", "success");
+      } catch {
+        showToast("Copy failed.", "error");
+      }
+    }
+
+    function setAutoRefresh(state) {
+      autoRefreshOn = !!state;
+      els.toggleAutoBtn.textContent = `🛰️ Auto Refresh: ${autoRefreshOn ? "On" : "Off"}`;
 
       if (autoRefreshTimer) {
         clearInterval(autoRefreshTimer);
         autoRefreshTimer = null;
       }
 
-      if (on) {
+      if (autoRefreshOn) {
         autoRefreshTimer = setInterval(() => {
           loadDashboard().catch(() => {});
         }, 15000);
@@ -676,36 +1177,85 @@
     }
 
     function bindActions() {
-      refreshBtn.addEventListener("click", async () => {
+      els.backBtn.addEventListener("click", () => history.back());
+
+      els.refreshBtn.addEventListener("click", async () => {
         try {
           await loadDashboard();
-          showNotice("Dashboard updated.", "success");
+          showToast("Dashboard updated.", "success");
         } catch (error) {
-          showNotice(error.message || "Could not refresh.", "error");
+          showToast(error?.message || "Could not refresh.", "error");
         }
       });
 
-      runWorkerBtn.addEventListener("click", runWorker);
+      els.runWorkerBtn.addEventListener("click", runWorker);
 
-      toggleAutoBtn.addEventListener("click", () => {
+      els.toggleAutoBtn.addEventListener("click", () => {
         setAutoRefresh(!autoRefreshOn);
       });
+
+      els.searchInput.addEventListener("input", renderDashboard);
+      els.statusFilter.addEventListener("change", renderDashboard);
+
+      els.postsWrap.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+
+        const action = button.dataset.action;
+        if (action === "retry") {
+          const jobId = button.dataset.jobId;
+          if (jobId) await retryJob(jobId);
+        }
+
+        if (action === "copy-id") {
+          await copyValue(button.dataset.copy || "");
+        }
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && currentUser) {
+          loadDashboard().catch(() => {});
+        }
+      });
+    }
+
+    async function initRealtime() {
+      try {
+        await requireUser();
+        if (!currentUser?.id) return;
+
+        supabaseClient
+          .channel("publish-dashboard-live")
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "post_publish_jobs"
+            },
+            () => {
+              loadDashboard().catch(() => {});
+            }
+          )
+          .subscribe();
+      } catch {}
     }
 
     async function init() {
       try {
         const user = await requireUser();
         if (!user) return;
+
         bindActions();
         setAutoRefresh(true);
         await loadDashboard();
+        initRealtime().catch(() => {});
       } catch (error) {
-        showNotice(error.message || "Could not load dashboard.", "error");
+        showToast(error?.message || "Could not load dashboard.", "error");
       }
     }
 
-    window.retryJob = retryJob;
     init();
   </script>
 </body>
-  </html>
+</html>
