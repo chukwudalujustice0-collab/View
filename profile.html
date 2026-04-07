@@ -4,26 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Profile | View</title>
-  <meta name="theme-color" content="#07122a" />
+  <meta name="theme-color" content="#081a8f" />
   <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{
-      --bg:#061126;
-      --bg2:#0a1835;
+      --bg:#05093c;
+      --bg2:#07115f;
+      --bg3:#081a8f;
       --card:rgba(255,255,255,.08);
       --card2:rgba(255,255,255,.05);
       --stroke:rgba(255,255,255,.08);
       --text:#f8fbff;
-      --muted:#9db0cf;
-      --soft:#7f91af;
-      --primary:#2d6bff;
-      --primary2:#5c8cff;
+      --muted:#c7d5f1;
+      --soft:#97aad2;
+      --primary:#2f7bff;
+      --primary2:#5ba0ff;
+      --red:#ff2f57;
+      --red2:#ff5a74;
       --green:#22c55e;
-      --danger:#ef4444;
       --warning:#f59e0b;
       --shadow:0 18px 50px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top,0px);
+      --safe-bottom:env(safe-area-inset-bottom,0px);
     }
 
     *{
@@ -37,68 +41,69 @@
     html,body{
       min-height:100%;
       background:
-        radial-gradient(circle at top right, rgba(45,107,255,.18), transparent 24%),
-        radial-gradient(circle at top left, rgba(0,255,200,.06), transparent 18%),
-        linear-gradient(180deg,#08142e 0%,#061126 55%,#050d1c 100%);
+        radial-gradient(circle at top right, rgba(47,123,255,.18), transparent 24%),
+        radial-gradient(circle at top left, rgba(255,47,87,.08), transparent 18%),
+        linear-gradient(180deg,#081a8f 0%,#07115f 42%,#05093c 100%);
       color:var(--text);
     }
 
     body{
-      padding-bottom:130px;
+      padding-bottom:114px;
+      overflow-x:hidden;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      background:none;
+      color:inherit;
+      font:inherit;
+      cursor:pointer;
+    }
+
+    img{
+      display:block;
+      max-width:100%;
     }
 
     .wrap{
-      width:min(100%,1000px);
+      width:min(100%,980px);
       margin:0 auto;
-      padding:18px 16px 0;
+      padding:calc(10px + var(--safe-top)) 12px 0;
     }
 
     .notice{
       display:none;
-      margin-bottom:16px;
-      padding:14px 16px;
-      border-radius:18px;
-      font-size:14px;
-      line-height:1.6;
+      margin-bottom:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      font-size:12px;
+      line-height:1.5;
       border:1px solid transparent;
-      backdrop-filter:blur(10px);
+      backdrop-filter:blur(12px);
     }
     .notice.show{display:block}
-    .notice.error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#ffd9d9}
+    .notice.error{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.26);color:#ffd9d9}
     .notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffe8}
-    .notice.info{background:rgba(45,107,255,.14);border-color:rgba(45,107,255,.26);color:#dce8ff}
+    .notice.info{background:rgba(47,123,255,.14);border-color:rgba(47,123,255,.24);color:#dce8ff}
 
-    .hero{
-      position:relative;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:32px;
-      box-shadow:var(--shadow);
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.05)),
-        linear-gradient(135deg, rgba(45,107,255,.18), rgba(92,140,255,.08));
-      margin-bottom:18px;
-    }
-
-    .cover{
-      min-height:200px;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,.16), transparent 20%),
-        radial-gradient(circle at 80% 0%, rgba(92,140,255,.34), transparent 25%),
-        linear-gradient(135deg, #17356f, #0c1e46 45%, #08142e 100%);
-      position:relative;
-    }
-
-    .top-overlay{
-      position:absolute;
-      top:14px;
-      left:14px;
-      right:14px;
+    .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:12px;
-      z-index:2;
+      gap:10px;
+      margin-bottom:14px;
+      background:rgba(7,17,95,.35);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px;
+      padding:12px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
     }
 
     .top-left,
@@ -109,71 +114,147 @@
     }
 
     .icon-btn{
-      width:48px;
-      height:48px;
-      min-width:48px;
-      border:none;
+      width:46px;
+      height:46px;
+      min-width:46px;
       border-radius:18px;
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.08);
-      color:#fff;
       display:flex;
       align-items:center;
       justify-content:center;
-      text-decoration:none;
-      font-size:20px;
-      cursor:pointer;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      font-size:19px;
       box-shadow:0 10px 24px rgba(0,0,0,.18);
-      backdrop-filter:blur(10px);
       position:relative;
     }
 
-    .notif-dot{
-      position:absolute;
-      right:10px;
-      top:10px;
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      background:#ff4d67;
-      display:none;
-      box-shadow:0 0 0 4px rgba(255,77,103,.18);
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
     }
-    .notif-dot.show{display:block}
+
+    .brand-logo{
+      width:52px;
+      height:52px;
+      min-width:52px;
+      border-radius:18px;
+      overflow:hidden;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      display:grid;
+      place-items:center;
+      box-shadow:0 10px 24px rgba(0,0,0,.18);
+    }
+
+    .brand-copy{
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-title{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      font-weight:900;
+      line-height:1;
+    }
+
+    .brand-title .view{
+      font-size:20px;
+      letter-spacing:-.02em;
+      text-transform:uppercase;
+      color:#fff;
+    }
+
+    .brand-title .by{
+      font-size:11px;
+      color:#ff5a74;
+      font-weight:900;
+    }
+
+    .brand-tagline{
+      margin-top:5px;
+      color:var(--muted);
+      font-size:11px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.04)),
+        linear-gradient(135deg, rgba(47,123,255,.18), rgba(255,47,87,.10));
+      margin-bottom:14px;
+    }
+
+    .cover{
+      min-height:166px;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,.16), transparent 20%),
+        radial-gradient(circle at 84% 0%, rgba(91,160,255,.34), transparent 25%),
+        linear-gradient(135deg, #17356f, #0c1e46 45%, #08142e 100%);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .cover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      position:absolute;
+      inset:0;
+    }
+
+    .cover-overlay{
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,.28));
+    }
 
     .profile-main{
-      padding:0 18px 18px;
-      margin-top:-52px;
+      padding:0 14px 14px;
+      margin-top:-42px;
       position:relative;
       z-index:2;
     }
 
     .profile-head{
       display:grid;
-      grid-template-columns:auto 1fr auto;
-      gap:16px;
+      grid-template-columns:auto 1fr;
+      gap:14px;
       align-items:end;
-      margin-bottom:16px;
+      margin-bottom:14px;
     }
 
     .avatar-wrap{
-      width:112px;
-      height:112px;
+      width:94px;
+      height:94px;
       position:relative;
     }
 
     .avatar{
-      width:112px;
-      height:112px;
+      width:94px;
+      height:94px;
       border-radius:50%;
       overflow:hidden;
-      background:linear-gradient(135deg,var(--primary),#7da2ff);
+      background:linear-gradient(135deg,var(--primary),var(--red));
       border:4px solid rgba(8,20,46,.95);
       display:flex;
       align-items:center;
       justify-content:center;
       color:#fff;
-      font-size:36px;
+      font-size:30px;
       font-weight:900;
       box-shadow:0 18px 40px rgba(0,0,0,.24);
     }
@@ -182,22 +263,21 @@
       width:100%;
       height:100%;
       object-fit:cover;
-      display:block;
     }
 
     .verified-badge{
       position:absolute;
-      right:4px;
-      bottom:6px;
-      width:32px;
-      height:32px;
+      right:3px;
+      bottom:4px;
+      width:28px;
+      height:28px;
       border-radius:50%;
       background:linear-gradient(135deg,var(--primary),var(--primary2));
       display:flex;
       align-items:center;
       justify-content:center;
       color:#fff;
-      font-size:14px;
+      font-size:12px;
       font-weight:900;
       border:3px solid rgba(8,20,46,.95);
     }
@@ -207,11 +287,11 @@
     }
 
     .full-name{
-      font-size:30px;
+      font-size:23px;
       line-height:1.05;
       font-weight:900;
-      letter-spacing:-.04em;
-      margin-bottom:6px;
+      letter-spacing:-.03em;
+      margin-bottom:4px;
       display:flex;
       align-items:center;
       gap:8px;
@@ -220,27 +300,28 @@
 
     .username{
       color:#bfd0ea;
-      font-size:15px;
-      margin-bottom:10px;
+      font-size:12px;
+      margin-bottom:8px;
     }
 
     .bio{
-      color:#dce8ff;
-      font-size:14px;
-      line-height:1.8;
-      margin-bottom:12px;
+      color:#e5efff;
+      font-size:12px;
+      line-height:1.65;
+      margin-bottom:10px;
       max-width:720px;
     }
 
-    .identity-chips{
+    .meta-row{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
+      margin-bottom:12px;
     }
 
-    .chip{
-      min-height:36px;
-      padding:0 12px;
+    .meta-chip{
+      min-height:30px;
+      padding:0 11px;
       border-radius:999px;
       display:inline-flex;
       align-items:center;
@@ -248,120 +329,107 @@
       background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.08);
       color:#dce8ff;
-      font-size:12px;
+      font-size:11px;
       font-weight:800;
+      max-width:100%;
     }
 
-    .profile-actions{
-      display:flex;
-      flex-direction:column;
+    .action-row{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
       gap:10px;
-      min-width:170px;
+      margin-bottom:14px;
     }
 
-    .primary-btn,.ghost-btn,.soft-btn{
-      min-height:44px;
+    .action-btn{
+      min-height:42px;
       border:none;
-      border-radius:18px;
-      padding:0 16px;
-      display:inline-flex;
+      border-radius:16px;
+      padding:0 12px;
+      display:flex;
       align-items:center;
       justify-content:center;
       gap:8px;
-      cursor:pointer;
-      text-decoration:none;
-      font-size:13px;
+      font-size:12px;
       font-weight:800;
       color:#fff;
+      text-align:center;
       white-space:nowrap;
     }
 
-    .primary-btn{
+    .action-btn.primary{
       background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:0 12px 28px rgba(45,107,255,.28);
+      box-shadow:0 10px 24px rgba(47,123,255,.28);
     }
 
-    .ghost-btn,.soft-btn{
+    .action-btn.red{
+      background:linear-gradient(135deg,var(--red),var(--red2));
+      box-shadow:0 10px 24px rgba(255,47,87,.28);
+    }
+
+    .action-btn.soft{
       background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.08);
-    }
-
-    .quick-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:18px;
-    }
-
-    .quick-action{
-      flex:1 1 140px;
-      min-height:52px;
-      border:none;
-      border-radius:18px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      font-size:14px;
-      font-weight:800;
-      text-decoration:none;
-      cursor:pointer;
     }
 
     .stats{
       display:grid;
       grid-template-columns:repeat(4,1fr);
-      gap:12px;
-      margin-bottom:18px;
+      gap:10px;
+      margin-bottom:14px;
     }
 
     .stat-card{
-      border-radius:24px;
-      padding:16px;
+      border-radius:20px;
+      padding:14px 10px;
       background:rgba(255,255,255,.06);
       border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 12px 30px rgba(2,8,23,.16);
       text-align:center;
+      box-shadow:0 12px 26px rgba(2,8,23,.14);
     }
 
     .stat-value{
-      font-size:22px;
+      font-size:18px;
       font-weight:900;
-      margin-bottom:6px;
+      margin-bottom:4px;
+      line-height:1.1;
     }
 
     .stat-label{
       color:var(--muted);
-      font-size:12px;
-      line-height:1.6;
+      font-size:10px;
+      line-height:1.4;
+      font-weight:700;
     }
 
     .tabs{
       display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:18px;
+      gap:8px;
+      overflow:auto hidden;
+      scrollbar-width:none;
+      margin-bottom:14px;
     }
 
+    .tabs::-webkit-scrollbar{display:none}
+
     .tab-btn{
-      min-height:42px;
-      padding:0 14px;
+      min-height:38px;
+      padding:0 13px;
       border:none;
       border-radius:999px;
       background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.08);
       color:#fff;
       cursor:pointer;
-      font-size:13px;
+      font-size:12px;
       font-weight:800;
+      white-space:nowrap;
+      flex:0 0 auto;
     }
 
     .tab-btn.active{
-      background:rgba(45,107,255,.18);
-      border-color:rgba(45,107,255,.22);
+      background:linear-gradient(135deg, rgba(47,123,255,.22), rgba(255,47,87,.14));
+      border-color:rgba(47,123,255,.20);
     }
 
     .tab-panel{
@@ -372,92 +440,125 @@
       display:block;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(12,1fr);
-      gap:18px;
-      margin-bottom:18px;
-    }
-
-    .col-12{grid-column:span 12}
-    .col-8{grid-column:span 8}
-    .col-6{grid-column:span 6}
-    .col-4{grid-column:span 4}
-
-    .card{
+    .section-card{
       background:
         linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
       border:1px solid rgba(255,255,255,.08);
-      border-radius:28px;
-      padding:18px;
+      border-radius:24px;
+      padding:14px;
       box-shadow:var(--shadow);
       backdrop-filter:blur(16px);
+      margin-bottom:14px;
     }
 
-    .card-head{
+    .section-head{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:16px;
+      margin-bottom:12px;
       flex-wrap:wrap;
     }
 
-    .card-head h3{
-      font-size:22px;
+    .section-head h3{
+      font-size:16px;
       font-weight:900;
       letter-spacing:-.02em;
+      margin-bottom:4px;
+    }
+
+    .section-head p{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.6;
+      max-width:580px;
+    }
+
+    .mini-link{
+      min-height:34px;
+      padding:0 12px;
+      border-radius:12px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:800;
+      color:#fff;
+    }
+
+    .detail-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .detail-card{
+      padding:12px;
+      border-radius:18px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .detail-label{
+      font-size:10px;
+      color:var(--soft);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.04em;
       margin-bottom:5px;
     }
 
-    .card-head p{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
+    .detail-value{
+      font-size:12px;
+      line-height:1.6;
+      color:#eef5ff;
+      word-break:break-word;
     }
 
-    .info-list{
+    .status-grid{
       display:grid;
-      gap:12px;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
     }
 
-    .info-row{
+    .status-item{
+      padding:12px;
+      border-radius:18px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:14px;
-      padding:14px;
-      border-radius:20px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      flex-wrap:wrap;
+      gap:12px;
     }
 
-    .info-copy h4{
-      font-size:15px;
+    .status-copy h4{
+      font-size:12px;
       font-weight:900;
       margin-bottom:4px;
     }
 
-    .info-copy p{
-      font-size:13px;
-      color:#bfd0ea;
-      line-height:1.7;
-      word-break:break-word;
+    .status-copy p{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.6;
     }
 
     .status-badge{
-      min-height:32px;
-      padding:0 12px;
+      min-height:28px;
+      padding:0 10px;
       border-radius:999px;
+      font-size:10px;
+      font-weight:800;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.08);
       color:#dce8ff;
-      font-size:12px;
-      font-weight:900;
+      white-space:nowrap;
     }
 
     .status-badge.green{
@@ -467,112 +568,44 @@
     }
 
     .status-badge.pending{
-      background:rgba(245,158,11,.12);
+      background:rgba(245,158,11,.14);
       border-color:rgba(245,158,11,.18);
       color:#ffe6b8;
     }
 
-    .activity-list{
-      display:grid;
-      gap:12px;
-    }
-
-    .activity-item{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      padding:14px;
-      border-radius:20px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .activity-icon{
-      width:38px;
-      height:38px;
-      min-width:38px;
-      border-radius:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(45,107,255,.14);
-      border:1px solid rgba(45,107,255,.18);
-      font-size:18px;
-    }
-
-    .activity-copy h4{
-      font-size:15px;
-      font-weight:900;
-      margin-bottom:4px;
-    }
-
-    .activity-copy p{
-      font-size:13px;
-      color:#bfd0ea;
-      line-height:1.7;
-    }
-
-    .link-list{
-      display:grid;
-      gap:12px;
-    }
-
-    .link-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:15px;
-      border-radius:20px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      text-decoration:none;
-      color:#fff;
-    }
-
-    .link-row span:last-child{
-      color:#9db1d1;
-      font-size:18px;
-    }
-
     .footer-nav{
       position:fixed;
-      left:50%;
-      bottom:14px;
-      transform:translateX(-50%);
-      width:min(100%,820px);
-      max-width:calc(100% - 18px);
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:8px;
-      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
-      border-radius:28px;
-      background:rgba(7,18,43,.94);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 22px 56px rgba(0,0,0,.34);
-      backdrop-filter:blur(18px);
+      left:0;
+      right:0;
+      bottom:0;
       z-index:55;
+      background:rgba(5,9,60,.96);
+      backdrop-filter:blur(18px);
+      border-top:1px solid rgba(255,255,255,.08);
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:0;
+      padding:8px 4px calc(8px + var(--safe-bottom));
+      box-shadow:0 -10px 34px rgba(0,0,0,.28);
     }
 
     .nav-btn{
-      min-height:62px;
-      border-radius:18px;
+      min-height:64px;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
-      gap:5px;
+      gap:4px;
       color:#90a5c7;
       text-decoration:none;
-      font-size:12px;
+      font-size:11px;
       font-weight:800;
       text-align:center;
+      border-radius:0;
     }
 
     .nav-btn.active{
       color:#fff;
-      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
-      border:1px solid rgba(45,107,255,.20);
     }
 
     .nav-icon{
@@ -580,31 +613,223 @@
       line-height:1;
     }
 
-    @media (max-width:980px){
-      .col-8,.col-6,.col-4{grid-column:span 12}
-      .profile-head{
-        grid-template-columns:1fr;
-        align-items:start;
-      }
-      .profile-actions{
-        flex-direction:row;
-        flex-wrap:wrap;
-      }
+    .create-nav{
+      position:relative;
     }
 
-    @media (max-width:700px){
+    .create-nav .nav-icon{
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,var(--red),var(--red2));
+      color:#fff;
+      font-size:27px;
+      box-shadow:0 8px 24px rgba(255,47,87,.35);
+      margin-bottom:1px;
+    }
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      z-index:90;
+      background:rgba(0,0,0,.45);
+      backdrop-filter:blur(8px);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding:10px;
+    }
+
+    .modal-backdrop.show{
+      display:flex;
+    }
+
+    .sheet{
+      width:min(100%,720px);
+      border-radius:28px 28px 0 0;
+      background:linear-gradient(180deg,#1d2f9e,#101d73 55%,#0a1252);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      padding:10px 12px 14px;
+    }
+
+    .sheet-handle{
+      width:58px;
+      height:6px;
+      border-radius:999px;
+      background:rgba(255,255,255,.24);
+      margin:4px auto 12px;
+    }
+
+    .sheet-title{
+      text-align:center;
+      font-size:16px;
+      font-weight:900;
+      margin-bottom:12px;
+    }
+
+    .sheet-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .sheet-btn{
+      min-height:88px;
+      border-radius:20px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:8px;
+      font-size:13px;
+      font-weight:900;
+      text-align:center;
+    }
+
+    .sheet-btn .big{
+      font-size:24px;
+      line-height:1;
+    }
+
+    .drawer-backdrop{
+      position:fixed;
+      inset:0;
+      z-index:95;
+      background:rgba(0,0,0,.42);
+      backdrop-filter:blur(8px);
+      display:none;
+    }
+
+    .drawer-backdrop.show{
+      display:block;
+    }
+
+    .drawer{
+      position:fixed;
+      top:0;
+      right:0;
+      bottom:0;
+      width:min(86vw,340px);
+      z-index:96;
+      background:linear-gradient(180deg,#13237f,#0d1861 58%,#09124c);
+      border-left:1px solid rgba(255,255,255,.08);
+      box-shadow:-20px 0 60px rgba(0,0,0,.34);
+      transform:translateX(104%);
+      transition:transform .28s ease;
+      padding:calc(12px + var(--safe-top)) 12px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .drawer.show{
+      transform:translateX(0);
+    }
+
+    .drawer-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:4px 4px 8px;
+    }
+
+    .drawer-title{
+      font-size:16px;
+      font-weight:900;
+    }
+
+    .drawer-close{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      font-size:18px;
+    }
+
+    .drawer-links{
+      display:grid;
+      gap:10px;
+      overflow:auto;
+    }
+
+    .drawer-link{
+      min-height:50px;
+      border-radius:16px;
+      padding:0 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .drawer-link .sub{
+      color:#bfd0ea;
+      font-size:11px;
+      font-weight:700;
+    }
+
+    @media (max-width:760px){
+      .detail-grid,
+      .status-grid{
+        grid-template-columns:1fr;
+      }
       .stats{
         grid-template-columns:repeat(2,1fr);
       }
+      .action-row{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
     }
 
-    @media (max-width:640px){
-      .wrap{padding:14px 12px 0}
-      .full-name{font-size:26px}
-      .quick-row{flex-direction:column}
-      .top-overlay{top:12px;left:12px;right:12px}
-      .top-left,.top-right{gap:8px}
-      .profile-actions{flex-direction:column}
+    @media (max-width:560px){
+      .wrap{
+        padding-left:10px;
+        padding-right:10px;
+      }
+      .brand-logo{
+        width:46px;
+        height:46px;
+        min-width:46px;
+      }
+      .icon-btn{
+        width:44px;
+        height:44px;
+        min-width:44px;
+      }
+      .full-name{
+        font-size:21px;
+      }
+      .sheet-grid{
+        grid-template-columns:1fr 1fr;
+      }
+      .brand-title .view{
+        font-size:18px;
+      }
+      .brand-title .by{
+        font-size:10px;
+      }
+      .action-row{
+        gap:8px;
+      }
+      .action-btn{
+        font-size:11px;
+        padding:0 8px;
+      }
     }
   </style>
 </head>
@@ -612,20 +837,34 @@
   <div class="wrap">
     <div id="notice" class="notice"></div>
 
-    <section class="hero">
-      <div class="cover">
-        <div class="top-overlay">
-          <div class="top-left">
-            <a class="icon-btn" href="notifications.html" title="Notifications" aria-label="Notifications">
-              🔔
-              <span id="notifDot" class="notif-dot"></span>
-            </a>
-          </div>
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="dashboard.html" title="Dashboard" aria-label="Dashboard">📊</a>
+      </div>
 
-          <div class="top-right">
-            <a class="icon-btn" href="settings.html" title="Settings" aria-label="Settings">⚙️</a>
+      <div class="brand">
+        <a class="brand-logo" href="home.html" aria-label="View Home">
+          <img src="icons/view-logo.png" alt="View logo" onerror="this.style.display='none'; this.parentNode.innerHTML='<span style=&quot;font-size:28px;font-weight:900;color:#fff&quot;>V</span>';">
+        </a>
+
+        <div class="brand-copy">
+          <div class="brand-title">
+            <span class="view">VIEW</span>
+            <span class="by">| by Ceetify</span>
           </div>
+          <div class="brand-tagline">Your identity, your space</div>
         </div>
+      </div>
+
+      <div class="top-right">
+        <a class="icon-btn" href="settings.html" title="Settings" aria-label="Settings">⚙️</a>
+        <button id="drawerOpenBtn" class="icon-btn" type="button" title="Menu" aria-label="Menu">☰</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="cover" id="coverBox">
+        <div class="cover-overlay"></div>
       </div>
 
       <div class="profile-main">
@@ -640,43 +879,37 @@
             <div id="username" class="username">@username</div>
             <div id="bio" class="bio">Your profile bio will appear here with a premium look and clean spacing.</div>
 
-            <div class="identity-chips">
-              <span id="planChip" class="chip">Plan: Free</span>
-              <span id="sellerChip" class="chip">Seller: Off</span>
-              <span id="profileStatusChip" class="chip">Profile Ready</span>
+            <div class="meta-row">
+              <span id="planChip" class="meta-chip">Plan: Free</span>
+              <span id="sellerChip" class="meta-chip">Seller: Off</span>
+              <span id="websiteChip" class="meta-chip">Website: None</span>
+              <span id="statusChip" class="meta-chip">Profile Ready</span>
             </div>
-          </div>
-
-          <div class="profile-actions">
-            <a class="primary-btn" href="edit-profile.html">Edit Profile</a>
-            <a class="ghost-btn" href="dashboard.html">Dashboard</a>
-            <a class="soft-btn" href="settings.html">Settings</a>
           </div>
         </div>
 
-        <div class="quick-row">
-          <a id="messageBtn" class="quick-action" href="chats.html">💬 Message</a>
-          <a id="voiceCallBtn" class="quick-action" href="calls.html">📞 Voice Call</a>
-          <a id="videoCallBtn" class="quick-action" href="calls.html">🎥 Video Call</a>
-          <a class="quick-action" href="wallet.html">💼 Wallet</a>
+        <div class="action-row">
+          <a class="action-btn soft" href="profile-visibility.html">Public Profile</a>
+          <a class="action-btn primary" href="edit-profile.html">Edit Profile</a>
+          <a class="action-btn red" href="dashboard.html">Dashboard</a>
         </div>
 
         <div class="stats">
           <div class="stat-card">
-            <div id="statPosts" class="stat-value">0</div>
-            <div class="stat-label">Posts / Content</div>
+            <div id="statFollowers" class="stat-value">0</div>
+            <div class="stat-label">Followers</div>
           </div>
           <div class="stat-card">
-            <div id="statChats" class="stat-value">0</div>
-            <div class="stat-label">Chats</div>
+            <div id="statFollowing" class="stat-value">0</div>
+            <div class="stat-label">Following</div>
           </div>
           <div class="stat-card">
-            <div id="statCalls" class="stat-value">0</div>
-            <div class="stat-label">Calls</div>
+            <div id="statProfileFields" class="stat-value">0%</div>
+            <div class="stat-label">Profile Filled</div>
           </div>
           <div class="stat-card">
-            <div id="statNotifications" class="stat-value">0</div>
-            <div class="stat-label">Alerts</div>
+            <div id="statSaved" class="stat-value">0</div>
+            <div class="stat-label">Saved</div>
           </div>
         </div>
       </div>
@@ -685,297 +918,239 @@
     <div class="tabs">
       <button class="tab-btn active" data-tab="overview" type="button">Overview</button>
       <button class="tab-btn" data-tab="about" type="button">About</button>
-      <button class="tab-btn" data-tab="activity" type="button">Activity</button>
       <button class="tab-btn" data-tab="contact" type="button">Contact</button>
+      <button class="tab-btn" data-tab="public" type="button">Public Profile</button>
+      <button class="tab-btn" data-tab="account" type="button">Account</button>
     </div>
 
     <section id="tab-overview" class="tab-panel active">
-      <div class="grid">
-        <div class="card col-8">
-          <div class="card-head">
-            <div>
-              <h3>Profile Overview</h3>
-              <p>Your premium owner profile summary, identity snapshot, and quick personal details.</p>
-            </div>
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <h3>Overview</h3>
+            <p>Your main profile identity and the most important information saved from Edit Profile.</p>
           </div>
-
-          <div class="info-list">
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Full Name</h4>
-                <p id="overviewName">Loading...</p>
-              </div>
-            </div>
-
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Bio</h4>
-                <p id="overviewBio">Loading...</p>
-              </div>
-            </div>
-
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>About</h4>
-                <p id="overviewAbout">No additional about section added yet.</p>
-              </div>
-            </div>
-          </div>
+          <a class="mini-link" href="edit-profile.html">Update</a>
         </div>
 
-        <div class="card col-4">
-          <div class="card-head">
-            <div>
-              <h3>Owner Tools</h3>
-              <p>Fast routes to your most important profile controls.</p>
-            </div>
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-label">Full Name</div>
+            <div id="overviewName" class="detail-value">Loading...</div>
           </div>
-
-          <div class="link-list">
-            <a class="link-row" href="edit-profile.html">
-              <div>
-                <div>Edit Profile</div>
-                <div style="color:#bfd0ea;font-size:12px;line-height:1.7;">Update your account details and profile fields.</div>
-              </div>
-              <span>→</span>
-            </a>
-
-            <a class="link-row" href="dashboard.html">
-              <div>
-                <div>Open Dashboard</div>
-                <div style="color:#bfd0ea;font-size:12px;line-height:1.7;">Go to your publishing and management control center.</div>
-              </div>
-              <span>→</span>
-            </a>
-
-            <a class="link-row" href="connected-accounts.html">
-              <div>
-                <div>Connected Accounts</div>
-                <div style="color:#bfd0ea;font-size:12px;line-height:1.7;">Manage cross-posting platform connections.</div>
-              </div>
-              <span>→</span>
-            </a>
+          <div class="detail-card">
+            <div class="detail-label">Username</div>
+            <div id="overviewUsername" class="detail-value">Loading...</div>
           </div>
-        </div>
-
-        <div class="card col-6">
-          <div class="card-head">
-            <div>
-              <h3>Marketplace & Shop</h3>
-              <p>Seller mode and public business status.</p>
-            </div>
+          <div class="detail-card">
+            <div class="detail-label">Bio</div>
+            <div id="overviewBio" class="detail-value">Loading...</div>
           </div>
-
-          <div class="info-list">
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Seller Mode</h4>
-                <p id="sellerModeText">Checking seller mode...</p>
-              </div>
-              <span id="sellerBadge" class="status-badge">Off</span>
-            </div>
-
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Shop Visibility</h4>
-                <p id="shopVisibilityText">Checking visibility...</p>
-              </div>
-              <span id="shopBadge" class="status-badge pending">Setup</span>
-            </div>
+          <div class="detail-card">
+            <div class="detail-label">Website</div>
+            <div id="overviewWebsite" class="detail-value">Not added yet.</div>
           </div>
-
-          <div style="margin-top:14px;">
-            <a class="primary-btn" href="marketplace.html">Open Marketplace</a>
+          <div class="detail-card">
+            <div class="detail-label">Location</div>
+            <div id="overviewLocation" class="detail-value">Not added yet.</div>
           </div>
-        </div>
-
-        <div class="card col-6">
-          <div class="card-head">
-            <div>
-              <h3>Wallet & Subscription</h3>
-              <p>Plan and wallet access summary from profile view.</p>
-            </div>
-          </div>
-
-          <div class="info-list">
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Subscription Plan</h4>
-                <p id="subscriptionText">Free Plan</p>
-              </div>
-              <span id="subscriptionBadge" class="status-badge">Free</span>
-            </div>
-
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Wallet Access</h4>
-                <p id="walletText">Wallet ready for quick access.</p>
-              </div>
-              <span class="status-badge green">Ready</span>
-            </div>
-          </div>
-
-          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-            <a class="primary-btn" href="wallet.html">Wallet</a>
-            <a class="ghost-btn" href="subscription.html">Subscription</a>
+          <div class="detail-card">
+            <div class="detail-label">Account Type</div>
+            <div id="overviewAccountType" class="detail-value">Standard</div>
           </div>
         </div>
       </div>
     </section>
 
     <section id="tab-about" class="tab-panel">
-      <div class="grid">
-        <div class="card col-6">
-          <div class="card-head">
-            <div>
-              <h3>About Me</h3>
-              <p>Your extended personal profile information.</p>
-            </div>
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <h3>About</h3>
+            <p>Personal details and descriptive fields that should reflect whatever is entered in Edit Profile.</p>
           </div>
-
-          <div class="info-list">
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>About</h4>
-                <p id="aboutText">Not added yet.</p>
-              </div>
-            </div>
-
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Likes</h4>
-                <p id="likesText">Not added yet.</p>
-              </div>
-            </div>
-
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Hobbies</h4>
-                <p id="hobbiesText">Not added yet.</p>
-              </div>
-            </div>
-          </div>
+          <a class="mini-link" href="edit-profile.html">Edit About</a>
         </div>
 
-        <div class="card col-6">
-          <div class="card-head">
-            <div>
-              <h3>Personal Details</h3>
-              <p>Owner-visible profile details and identity fields.</p>
-            </div>
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-label">About</div>
+            <div id="aboutText" class="detail-value">Not added yet.</div>
           </div>
-
-          <div class="info-list">
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Date of Birth</h4>
-                <p id="dobText">Not added yet.</p>
-              </div>
-            </div>
-
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Location</h4>
-                <p id="locationText">Not added yet.</p>
-              </div>
-            </div>
-
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Address</h4>
-                <p id="addressText">Not added yet.</p>
-              </div>
-            </div>
+          <div class="detail-card">
+            <div class="detail-label">Hobbies</div>
+            <div id="aboutHobbies" class="detail-value">Not added yet.</div>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="tab-activity" class="tab-panel">
-      <div class="grid">
-        <div class="card col-12">
-          <div class="card-head">
-            <div>
-              <h3>Profile Activity</h3>
-              <p>Owner-side recent account actions and quick activity summary.</p>
-            </div>
+          <div class="detail-card">
+            <div class="detail-label">Likes / Interests</div>
+            <div id="aboutLikes" class="detail-value">Not added yet.</div>
           </div>
-
-          <div class="activity-list">
-            <div class="activity-item">
-              <div class="activity-icon">📝</div>
-              <div class="activity-copy">
-                <h4>Profile Management</h4>
-                <p>Use Edit Profile to update name, username, bio, hobbies, location, and owner details.</p>
-              </div>
-            </div>
-
-            <div class="activity-item">
-              <div class="activity-icon">🔗</div>
-              <div class="activity-copy">
-                <h4>Connected Accounts</h4>
-                <p id="connectedActivityText">Connected account summary is loading...</p>
-              </div>
-            </div>
-
-            <div class="activity-item">
-              <div class="activity-icon">📤</div>
-              <div class="activity-copy">
-                <h4>Publishing & Dashboard</h4>
-                <p>Use the Dashboard button below to manage publishing, scheduled posts, analytics, and monetization.</p>
-              </div>
-            </div>
+          <div class="detail-card">
+            <div class="detail-label">Date of Birth</div>
+            <div id="aboutDob" class="detail-value">Not added yet.</div>
           </div>
         </div>
       </div>
     </section>
 
     <section id="tab-contact" class="tab-panel">
-      <div class="grid">
-        <div class="card col-6">
-          <div class="card-head">
-            <div>
-              <h3>Contact Info</h3>
-              <p>Owner-side contact details stored on your account.</p>
-            </div>
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <h3>Contact</h3>
+            <p>Your saved contact and location details.</p>
           </div>
-
-          <div class="info-list">
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Email</h4>
-                <p id="emailText">Loading...</p>
-              </div>
-            </div>
-
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Phone</h4>
-                <p id="phoneText">Not added yet.</p>
-              </div>
-            </div>
-
-            <div class="info-row">
-              <div class="info-copy">
-                <h4>Username</h4>
-                <p id="contactUsernameText">Loading...</p>
-              </div>
-            </div>
-          </div>
+          <a class="mini-link" href="edit-profile.html">Edit Contact</a>
         </div>
 
-        <div class="card col-6">
-          <div class="card-head">
-            <div>
-              <h3>Quick Contact Actions</h3>
-              <p>Fast links for messaging and calling from your profile page.</p>
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-label">Email</div>
+            <div id="contactEmail" class="detail-value">Loading...</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Phone</div>
+            <div id="contactPhone" class="detail-value">Not added yet.</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Website</div>
+            <div id="contactWebsite" class="detail-value">Not added yet.</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Location</div>
+            <div id="contactLocation" class="detail-value">Not added yet.</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Address</div>
+            <div id="contactAddress" class="detail-value">Not added yet.</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Username</div>
+            <div id="contactUsername" class="detail-value">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-public" class="tab-panel">
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <h3>Public Profile</h3>
+            <p>Control and preview what people should see about you.</p>
+          </div>
+          <a class="mini-link" href="profile-visibility.html">Open Visibility</a>
+        </div>
+
+        <div class="status-grid">
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Public Profile Access</h4>
+              <p id="publicProfileText">Checking visibility...</p>
             </div>
+            <span id="publicProfileBadge" class="status-badge pending">Setup</span>
           </div>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <a id="contactMessageBtn" class="primary-btn" href="chats.html">Message</a>
-            <a id="contactVoiceBtn" class="ghost-btn" href="calls.html">Voice Call</a>
-            <a id="contactVideoBtn" class="soft-btn" href="calls.html">Video Call</a>
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Show Email</h4>
+              <p id="showEmailText">Checking preference...</p>
+            </div>
+            <span id="showEmailBadge" class="status-badge">Off</span>
+          </div>
+
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Show Phone</h4>
+              <p id="showPhoneText">Checking preference...</p>
+            </div>
+            <span id="showPhoneBadge" class="status-badge">Off</span>
+          </div>
+
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Show Website</h4>
+              <p id="showWebsiteText">Checking preference...</p>
+            </div>
+            <span id="showWebsiteBadge" class="status-badge">Off</span>
+          </div>
+
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Show Address</h4>
+              <p id="showAddressText">Checking preference...</p>
+            </div>
+            <span id="showAddressBadge" class="status-badge">Off</span>
+          </div>
+
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Who Can Message</h4>
+              <p id="messagePrivacyText">Checking message privacy...</p>
+            </div>
+            <span id="messagePrivacyBadge" class="status-badge pending">Setup</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-account" class="tab-panel">
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <h3>Account</h3>
+            <p>Plan, seller mode, saved content count, and account setup information.</p>
+          </div>
+          <a class="mini-link" href="settings.html">Settings</a>
+        </div>
+
+        <div class="status-grid">
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Subscription Plan</h4>
+              <p id="accountPlanText">Loading plan...</p>
+            </div>
+            <span id="accountPlanBadge" class="status-badge">Free</span>
+          </div>
+
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Seller Mode</h4>
+              <p id="accountSellerText">Checking seller mode...</p>
+            </div>
+            <span id="accountSellerBadge" class="status-badge">Off</span>
+          </div>
+
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Account Type</h4>
+              <p id="accountTypeText">Standard account</p>
+            </div>
+            <span id="accountTypeBadge" class="status-badge green">Active</span>
+          </div>
+
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Saved Posts</h4>
+              <p id="accountSavedText">Checking saved content...</p>
+            </div>
+            <span id="accountSavedBadge" class="status-badge">0</span>
+          </div>
+
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Profile Completion</h4>
+              <p id="accountCompletionText">Checking completion...</p>
+            </div>
+            <span id="accountCompletionBadge" class="status-badge pending">0%</span>
+          </div>
+
+          <div class="status-item">
+            <div class="status-copy">
+              <h4>Joined Date</h4>
+              <p id="joinedDateText">Checking date...</p>
+            </div>
+            <span id="joinedDateBadge" class="status-badge green">Ready</span>
           </div>
         </div>
       </div>
@@ -984,26 +1159,145 @@
 
   <nav class="footer-nav">
     <a href="home.html" class="nav-btn">
-      <span class="nav-icon">⌂</span>
+      <span class="nav-icon">🏠</span>
       <span>Home</span>
     </a>
     <a href="explore.html" class="nav-btn">
-      <span class="nav-icon">🔎</span>
+      <span class="nav-icon">🧭</span>
       <span>Explore</span>
     </a>
-    <a href="dashboard.html" class="nav-btn active">
-      <span class="nav-icon">📊</span>
-      <span>Dashboard</span>
-    </a>
+    <button id="createFooterBtn" class="nav-btn create-nav" type="button">
+      <span class="nav-icon">➕</span>
+      <span>Create</span>
+    </button>
     <a href="chats.html" class="nav-btn">
       <span class="nav-icon">💬</span>
       <span>Chat</span>
     </a>
-    <a href="profile.html" class="nav-btn">
+    <a href="video-feed.html" class="nav-btn">
+      <span class="nav-icon">🎬</span>
+      <span>Video</span>
+    </a>
+    <a href="profile.html" class="nav-btn active">
       <span class="nav-icon">👤</span>
       <span>Profile</span>
     </a>
   </nav>
+
+  <div id="createSheetBackdrop" class="modal-backdrop">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Create</div>
+      <div class="sheet-grid">
+        <a class="sheet-btn" href="create-post.html">
+          <span class="big">✍️</span>
+          <span>Post</span>
+        </a>
+        <a class="sheet-btn" href="create-status.html">
+          <span class="big">🟣</span>
+          <span>Story</span>
+        </a>
+        <a class="sheet-btn" href="go-live.html">
+          <span class="big">📺</span>
+          <span>Go Live</span>
+        </a>
+        <a class="sheet-btn" href="upload-media.html">
+          <span class="big">📷</span>
+          <span>Upload Media</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div id="drawerBackdrop" class="drawer-backdrop"></div>
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div class="drawer-title">Menu</div>
+      <button id="drawerCloseBtn" class="drawer-close" type="button">✕</button>
+    </div>
+
+    <div class="drawer-links">
+      <a class="drawer-link" href="dashboard.html">
+        <div>
+          <div>Dashboard</div>
+          <div class="sub">Publishing and account control</div>
+        </div>
+        <span>→</span>
+      </a>
+
+      <a class="drawer-link" href="notifications.html">
+        <div>
+          <div>Notifications</div>
+          <div class="sub">Alerts and activity updates</div>
+        </div>
+        <span>→</span>
+      </a>
+
+      <a class="drawer-link" href="wallet.html">
+        <div>
+          <div>Wallet</div>
+          <div class="sub">Manage your funds</div>
+        </div>
+        <span>→</span>
+      </a>
+
+      <a class="drawer-link" href="subscription.html">
+        <div>
+          <div>Subscription</div>
+          <div class="sub">Plan and billing</div>
+        </div>
+        <span>→</span>
+      </a>
+
+      <a class="drawer-link" href="connected-accounts.html">
+        <div>
+          <div>Connected Accounts</div>
+          <div class="sub">Social and publishing connections</div>
+        </div>
+        <span>→</span>
+      </a>
+
+      <a class="drawer-link" href="groups.html">
+        <div>
+          <div>Groups</div>
+          <div class="sub">Communities and memberships</div>
+        </div>
+        <span>→</span>
+      </a>
+
+      <a class="drawer-link" href="pages.html">
+        <div>
+          <div>Pages</div>
+          <div class="sub">Manage public brand pages</div>
+        </div>
+        <span>→</span>
+      </a>
+
+      <a class="drawer-link" href="saved.html">
+        <div>
+          <div>Saved</div>
+          <div class="sub">Your saved posts</div>
+        </div>
+        <span>→</span>
+      </a>
+
+      <a class="drawer-link" href="settings.html">
+        <div>
+          <div>Settings</div>
+          <div class="sub">Preferences and controls</div>
+        </div>
+        <span>→</span>
+      </a>
+
+      <a class="drawer-link" href="login.html">
+        <div>
+          <div>Logout</div>
+          <div class="sub">Return to sign in</div>
+        </div>
+        <span>→</span>
+      </a>
+    </div>
+  </aside>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
@@ -1018,55 +1312,77 @@
     });
 
     const noticeBox = document.getElementById("notice");
-    const notifDot = document.getElementById("notifDot");
+    const coverBox = document.getElementById("coverBox");
     const profileAvatar = document.getElementById("profileAvatar");
     const fullName = document.getElementById("fullName");
     const username = document.getElementById("username");
     const bio = document.getElementById("bio");
+
     const planChip = document.getElementById("planChip");
     const sellerChip = document.getElementById("sellerChip");
-    const profileStatusChip = document.getElementById("profileStatusChip");
+    const websiteChip = document.getElementById("websiteChip");
+    const statusChip = document.getElementById("statusChip");
+
+    const statFollowers = document.getElementById("statFollowers");
+    const statFollowing = document.getElementById("statFollowing");
+    const statProfileFields = document.getElementById("statProfileFields");
+    const statSaved = document.getElementById("statSaved");
 
     const overviewName = document.getElementById("overviewName");
+    const overviewUsername = document.getElementById("overviewUsername");
     const overviewBio = document.getElementById("overviewBio");
-    const overviewAbout = document.getElementById("overviewAbout");
-
-    const sellerModeText = document.getElementById("sellerModeText");
-    const sellerBadge = document.getElementById("sellerBadge");
-    const shopVisibilityText = document.getElementById("shopVisibilityText");
-    const shopBadge = document.getElementById("shopBadge");
-
-    const subscriptionText = document.getElementById("subscriptionText");
-    const subscriptionBadge = document.getElementById("subscriptionBadge");
-    const walletText = document.getElementById("walletText");
+    const overviewWebsite = document.getElementById("overviewWebsite");
+    const overviewLocation = document.getElementById("overviewLocation");
+    const overviewAccountType = document.getElementById("overviewAccountType");
 
     const aboutText = document.getElementById("aboutText");
-    const likesText = document.getElementById("likesText");
-    const hobbiesText = document.getElementById("hobbiesText");
-    const dobText = document.getElementById("dobText");
-    const locationText = document.getElementById("locationText");
-    const addressText = document.getElementById("addressText");
+    const aboutHobbies = document.getElementById("aboutHobbies");
+    const aboutLikes = document.getElementById("aboutLikes");
+    const aboutDob = document.getElementById("aboutDob");
 
-    const connectedActivityText = document.getElementById("connectedActivityText");
+    const contactEmail = document.getElementById("contactEmail");
+    const contactPhone = document.getElementById("contactPhone");
+    const contactWebsite = document.getElementById("contactWebsite");
+    const contactLocation = document.getElementById("contactLocation");
+    const contactAddress = document.getElementById("contactAddress");
+    const contactUsername = document.getElementById("contactUsername");
 
-    const emailText = document.getElementById("emailText");
-    const phoneText = document.getElementById("phoneText");
-    const contactUsernameText = document.getElementById("contactUsernameText");
+    const publicProfileText = document.getElementById("publicProfileText");
+    const publicProfileBadge = document.getElementById("publicProfileBadge");
+    const showEmailText = document.getElementById("showEmailText");
+    const showEmailBadge = document.getElementById("showEmailBadge");
+    const showPhoneText = document.getElementById("showPhoneText");
+    const showPhoneBadge = document.getElementById("showPhoneBadge");
+    const showWebsiteText = document.getElementById("showWebsiteText");
+    const showWebsiteBadge = document.getElementById("showWebsiteBadge");
+    const showAddressText = document.getElementById("showAddressText");
+    const showAddressBadge = document.getElementById("showAddressBadge");
+    const messagePrivacyText = document.getElementById("messagePrivacyText");
+    const messagePrivacyBadge = document.getElementById("messagePrivacyBadge");
 
-    const statPosts = document.getElementById("statPosts");
-    const statChats = document.getElementById("statChats");
-    const statCalls = document.getElementById("statCalls");
-    const statNotifications = document.getElementById("statNotifications");
+    const accountPlanText = document.getElementById("accountPlanText");
+    const accountPlanBadge = document.getElementById("accountPlanBadge");
+    const accountSellerText = document.getElementById("accountSellerText");
+    const accountSellerBadge = document.getElementById("accountSellerBadge");
+    const accountTypeText = document.getElementById("accountTypeText");
+    const accountTypeBadge = document.getElementById("accountTypeBadge");
+    const accountSavedText = document.getElementById("accountSavedText");
+    const accountSavedBadge = document.getElementById("accountSavedBadge");
+    const accountCompletionText = document.getElementById("accountCompletionText");
+    const accountCompletionBadge = document.getElementById("accountCompletionBadge");
+    const joinedDateText = document.getElementById("joinedDateText");
+    const joinedDateBadge = document.getElementById("joinedDateBadge");
 
     const tabButtons = [...document.querySelectorAll(".tab-btn")];
     const tabPanels = [...document.querySelectorAll(".tab-panel")];
 
-    const messageBtn = document.getElementById("messageBtn");
-    const voiceCallBtn = document.getElementById("voiceCallBtn");
-    const videoCallBtn = document.getElementById("videoCallBtn");
-    const contactMessageBtn = document.getElementById("contactMessageBtn");
-    const contactVoiceBtn = document.getElementById("contactVoiceBtn");
-    const contactVideoBtn = document.getElementById("contactVideoBtn");
+    const createFooterBtn = document.getElementById("createFooterBtn");
+    const createSheetBackdrop = document.getElementById("createSheetBackdrop");
+
+    const drawer = document.getElementById("drawer");
+    const drawerBackdrop = document.getElementById("drawerBackdrop");
+    const drawerOpenBtn = document.getElementById("drawerOpenBtn");
+    const drawerCloseBtn = document.getElementById("drawerCloseBtn");
 
     let currentUser = null;
     let profileRow = null;
@@ -1074,6 +1390,15 @@
     function showNotice(message, type = "error") {
       noticeBox.className = `notice show ${type}`;
       noticeBox.textContent = message || "";
+    }
+
+    function fillText(el, value, fallback = "Not added yet.") {
+      el.textContent = value && String(value).trim() ? value : fallback;
+    }
+
+    function safeText(value, fallback = "") {
+      const t = String(value ?? "").trim();
+      return t || fallback;
     }
 
     function getDisplayName(profile = {}, fallback = "Your Full Name") {
@@ -1088,13 +1413,88 @@
     }
 
     function getAvatarUrl(profile = {}) {
-      return profile.avatar_url || profile.profile_picture || profile.photo_url || profile.image_url || "";
+      return profile.avatar_url || profile.avatar_path || profile.profile_picture || profile.photo_url || profile.image_url || "";
+    }
+
+    function getCoverUrl(profile = {}) {
+      return profile.cover_url || profile.cover_image || profile.banner_url || profile.header_image || "";
     }
 
     function getInitial(name) {
       const safe = String(name || "U").trim();
       return safe ? safe.charAt(0).toUpperCase() : "U";
     }
+
+    function formatCompact(num) {
+      const n = Number(num || 0);
+      if (n >= 1000000) return (n / 1000000).toFixed(1).replace(".0","") + "M";
+      if (n >= 1000) return (n / 1000).toFixed(1).replace(".0","") + "K";
+      return String(n);
+    }
+
+    function formatDate(value) {
+      if (!value) return "Not available";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "Not available";
+      return date.toLocaleDateString();
+    }
+
+    function setBadge(el, text, kind = "") {
+      el.textContent = text;
+      el.className = `status-badge ${kind}`.trim();
+    }
+
+    function applyAvatar(url, name) {
+      if (url) {
+        profileAvatar.innerHTML = `<img src="${url}" alt="${name}">`;
+      } else {
+        profileAvatar.textContent = getInitial(name);
+      }
+    }
+
+    function applyCover(url) {
+      if (!url) return;
+      coverBox.innerHTML = `<img src="${url}" alt="Cover image"><div class="cover-overlay"></div>`;
+    }
+
+    function openCreateSheet() {
+      createSheetBackdrop.classList.add("show");
+    }
+
+    function closeCreateSheet() {
+      createSheetBackdrop.classList.remove("show");
+    }
+
+    function openDrawer() {
+      drawerBackdrop.classList.add("show");
+      drawer.classList.add("show");
+      drawer.setAttribute("aria-hidden", "false");
+    }
+
+    function closeDrawer() {
+      drawerBackdrop.classList.remove("show");
+      drawer.classList.remove("show");
+      drawer.setAttribute("aria-hidden", "true");
+    }
+
+    createFooterBtn.addEventListener("click", openCreateSheet);
+    createSheetBackdrop.addEventListener("click", (e) => {
+      if (e.target === createSheetBackdrop) closeCreateSheet();
+    });
+
+    drawerOpenBtn.addEventListener("click", openDrawer);
+    drawerCloseBtn.addEventListener("click", closeDrawer);
+    drawerBackdrop.addEventListener("click", closeDrawer);
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tab = btn.dataset.tab;
+        tabButtons.forEach(x => x.classList.remove("active"));
+        tabPanels.forEach(panel => panel.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(`tab-${tab}`).classList.add("active");
+      });
+    });
 
     async function getSessionWithRetry(maxWaitMs = 3000) {
       const start = Date.now();
@@ -1116,84 +1516,28 @@
       return session;
     }
 
-    function applyAvatar(url, name) {
-      if (url) {
-        profileAvatar.innerHTML = `<img src="${url}" alt="${name}">`;
-      } else {
-        profileAvatar.textContent = getInitial(name);
-      }
+    function getSettingsSource() {
+      return profileRow?.settings || profileRow?.preferences || {};
     }
 
-    function setBadge(el, text, kind = "") {
-      el.textContent = text;
-      el.className = `status-badge ${kind}`.trim();
-    }
+    function computeCompletion(profile) {
+      const fields = [
+        profile.full_name || profile.display_name || profile.username,
+        profile.username,
+        profile.bio || profile.about,
+        getAvatarUrl(profile),
+        getCoverUrl(profile),
+        profile.website || profile.link,
+        profile.location,
+        profile.address,
+        profile.phone || profile.phone_number,
+        profile.date_of_birth || profile.dob,
+        profile.hobbies,
+        profile.likes
+      ];
 
-    function fillText(el, value, fallback = "Not added yet.") {
-      el.textContent = value && String(value).trim() ? value : fallback;
-    }
-
-    async function loadNotificationCount() {
-      try {
-        const { count, error } = await supabaseClient
-          .from("notifications")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", currentUser.id)
-          .eq("is_read", false);
-
-        if (!error) {
-          const total = Number(count || 0);
-          statNotifications.textContent = total;
-          notifDot.classList.toggle("show", total > 0);
-        }
-      } catch {
-        statNotifications.textContent = "0";
-      }
-    }
-
-    async function loadChatCount() {
-      try {
-        const { data, error } = await supabaseClient
-          .from("conversation_members")
-          .select("conversation_id")
-          .eq("user_id", currentUser.id);
-
-        if (!error) {
-          statChats.textContent = (data || []).length;
-        }
-      } catch {
-        statChats.textContent = "0";
-      }
-    }
-
-    async function loadCallCount() {
-      try {
-        const { count, error } = await supabaseClient
-          .from("calls")
-          .select("*", { count: "exact", head: true })
-          .or(`caller_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
-
-        if (!error) {
-          statCalls.textContent = Number(count || 0);
-        }
-      } catch {
-        statCalls.textContent = "0";
-      }
-    }
-
-    async function loadPostCount() {
-      try {
-        const { count, error } = await supabaseClient
-          .from("scheduled_posts")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", currentUser.id);
-
-        if (!error) {
-          statPosts.textContent = Number(count || 0);
-          return;
-        }
-      } catch {}
-      statPosts.textContent = "0";
+      const filled = fields.filter(Boolean).length;
+      return Math.round((filled / fields.length) * 100);
     }
 
     async function loadProfile() {
@@ -1206,76 +1550,131 @@
       if (error) throw error;
 
       profileRow = data || {};
-      const settingsSource = profileRow.settings || profileRow.preferences || {};
+      const settingsSource = getSettingsSource();
+
       const name = getDisplayName(profileRow, "Your Full Name");
       const userName = profileRow.username ? `@${profileRow.username}` : "@username";
       const avatarUrl = getAvatarUrl(profileRow);
+      const coverUrl = getCoverUrl(profileRow);
+      const website = profileRow.website || profileRow.link || "";
+      const plan = profileRow.subscription_plan || profileRow.plan_name || profileRow.account_type || "Free";
+      const sellerMode = !!settingsSource.marketplace_sellerMode;
+      const accountType = profileRow.account_type || "Standard";
+      const completion = computeCompletion(profileRow);
 
       fullName.textContent = name;
       username.textContent = userName;
       fillText(bio, profileRow.bio || profileRow.about, "Add a strong bio from Edit Profile.");
       applyAvatar(avatarUrl, name);
+      applyCover(coverUrl);
+
+      planChip.textContent = `Plan: ${plan}`;
+      sellerChip.textContent = `Seller: ${sellerMode ? "On" : "Off"}`;
+      websiteChip.textContent = website ? website : "Website: None";
+      statusChip.textContent = completion >= 70 ? "Profile Ready" : "Complete Profile";
 
       overviewName.textContent = name;
-      fillText(overviewBio, profileRow.bio || profileRow.about, "No bio added yet.");
-      fillText(overviewAbout, profileRow.about || profileRow.bio, "No additional about section added yet.");
+      overviewUsername.textContent = profileRow.username || "Not added yet.";
+      fillText(overviewBio, profileRow.bio || profileRow.about, "Not added yet.");
+      fillText(overviewWebsite, website, "Not added yet.");
+      fillText(overviewLocation, profileRow.location, "Not added yet.");
+      overviewAccountType.textContent = accountType;
 
-      fillText(aboutText, profileRow.about, "Not added yet.");
-      fillText(likesText, profileRow.likes, "Not added yet.");
-      fillText(hobbiesText, profileRow.hobbies, "Not added yet.");
-      fillText(dobText, profileRow.date_of_birth || profileRow.dob, "Not added yet.");
-      fillText(locationText, profileRow.location, "Not added yet.");
-      fillText(addressText, profileRow.address, "Not added yet.");
+      fillText(aboutText, profileRow.about || profileRow.bio, "Not added yet.");
+      fillText(aboutHobbies, profileRow.hobbies, "Not added yet.");
+      fillText(aboutLikes, profileRow.likes, "Not added yet.");
+      fillText(aboutDob, profileRow.date_of_birth || profileRow.dob, "Not added yet.");
 
-      emailText.textContent = currentUser.email || profileRow.email || "Not available";
-      fillText(phoneText, profileRow.phone || profileRow.phone_number, "Not added yet.");
-      contactUsernameText.textContent = profileRow.username || "Not added yet.";
+      contactEmail.textContent = currentUser.email || profileRow.email || "Not available";
+      fillText(contactPhone, profileRow.phone || profileRow.phone_number, "Not added yet.");
+      fillText(contactWebsite, website, "Not added yet.");
+      fillText(contactLocation, profileRow.location, "Not added yet.");
+      fillText(contactAddress, profileRow.address, "Not added yet.");
+      contactUsername.textContent = profileRow.username || "Not added yet.";
 
-      const plan = profileRow.subscription_plan || profileRow.plan_name || "Free";
-      planChip.textContent = `Plan: ${plan}`;
-      subscriptionText.textContent = `${plan} Plan`;
-      subscriptionBadge.textContent = plan;
+      const publicProfileOn = settingsSource.public_profile !== undefined ? !!settingsSource.public_profile : true;
+      const showEmail = !!settingsSource.show_email;
+      const showPhone = !!settingsSource.show_phone;
+      const showWebsite = !!settingsSource.show_website;
+      const showAddress = !!settingsSource.show_address;
+      const messagePrivacy = settingsSource.message_privacy || "everyone";
 
-      const sellerMode = !!settingsSource.marketplace_sellerMode;
-      const shopVisible = !!settingsSource.marketplace_shopVisible;
+      publicProfileText.textContent = publicProfileOn ? "People can view your public profile." : "Your public profile is currently hidden.";
+      setBadge(publicProfileBadge, publicProfileOn ? "On" : "Off", publicProfileOn ? "green" : "pending");
 
-      sellerChip.textContent = `Seller: ${sellerMode ? "On" : "Off"}`;
-      sellerModeText.textContent = sellerMode ? "Seller mode enabled" : "Seller mode disabled";
-      setBadge(sellerBadge, sellerMode ? "On" : "Off", sellerMode ? "green" : "");
+      showEmailText.textContent = showEmail ? "Email can appear on public profile." : "Email is hidden from public profile.";
+      setBadge(showEmailBadge, showEmail ? "On" : "Off", showEmail ? "green" : "");
 
-      shopVisibilityText.textContent = shopVisible ? "Shop is visible to users" : "Shop visibility not enabled";
-      setBadge(shopBadge, shopVisible ? "Visible" : "Setup", shopVisible ? "green" : "pending");
+      showPhoneText.textContent = showPhone ? "Phone can appear on public profile." : "Phone is hidden from public profile.";
+      setBadge(showPhoneBadge, showPhone ? "On" : "Off", showPhone ? "green" : "");
 
-      walletText.textContent = "Wallet is available from your profile shortcuts.";
+      showWebsiteText.textContent = showWebsite ? "Website can appear on public profile." : "Website is hidden from public profile.";
+      setBadge(showWebsiteBadge, showWebsite ? "On" : "Off", showWebsite ? "green" : "");
 
-      const hasUsername = !!profileRow.username;
-      const hasBio = !!(profileRow.bio || profileRow.about);
-      const hasAvatar = !!avatarUrl;
+      showAddressText.textContent = showAddress ? "Address can appear on public profile." : "Address is hidden from public profile.";
+      setBadge(showAddressBadge, showAddress ? "On" : "Off", showAddress ? "green" : "");
 
-      profileStatusChip.textContent = hasUsername && hasBio && hasAvatar ? "Profile Ready" : "Complete Profile";
+      messagePrivacyText.textContent = `Messages allowed from: ${messagePrivacy}.`;
+      setBadge(messagePrivacyBadge, messagePrivacy, "pending");
 
-      connectedActivityText.textContent =
-        "Use Connected Accounts to manage Facebook, Instagram, YouTube, TikTok, and other publishing connections.";
+      accountPlanText.textContent = `${plan} plan is active on this profile.`;
+      setBadge(accountPlanBadge, plan, plan.toLowerCase() === "free" ? "" : "green");
+
+      accountSellerText.textContent = sellerMode ? "Seller mode is enabled for this account." : "Seller mode is currently disabled.";
+      setBadge(accountSellerBadge, sellerMode ? "On" : "Off", sellerMode ? "green" : "");
+
+      accountTypeText.textContent = `${accountType} account`;
+      setBadge(accountTypeBadge, "Active", "green");
+
+      accountCompletionText.textContent = `${completion}% of key profile fields are filled.`;
+      setBadge(accountCompletionBadge, `${completion}%`, completion >= 70 ? "green" : "pending");
+
+      joinedDateText.textContent = profileRow.created_at ? `Joined on ${formatDate(profileRow.created_at)}.` : "Joined date not available.";
+      setBadge(joinedDateBadge, "Ready", "green");
+
+      statProfileFields.textContent = `${completion}%`;
     }
 
-    function wireActions() {
-      messageBtn.href = "chats.html";
-      contactMessageBtn.href = "chats.html";
-      voiceCallBtn.href = "calls.html";
-      videoCallBtn.href = "calls.html";
-      contactVoiceBtn.href = "calls.html";
-      contactVideoBtn.href = "calls.html";
+    async function loadFollowerStats() {
+      try {
+        const [{ count: followersCount }, { count: followingCount }] = await Promise.all([
+          supabaseClient
+            .from("followers")
+            .select("*", { count: "exact", head: true })
+            .eq("following_id", currentUser.id),
+          supabaseClient
+            .from("followers")
+            .select("*", { count: "exact", head: true })
+            .eq("follower_id", currentUser.id)
+        ]);
+
+        statFollowers.textContent = formatCompact(followersCount || 0);
+        statFollowing.textContent = formatCompact(followingCount || 0);
+      } catch {
+        statFollowers.textContent = "0";
+        statFollowing.textContent = "0";
+      }
     }
 
-    tabButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const tab = btn.dataset.tab;
-        tabButtons.forEach(x => x.classList.remove("active"));
-        tabPanels.forEach(panel => panel.classList.remove("active"));
-        btn.classList.add("active");
-        document.getElementById(`tab-${tab}`).classList.add("active");
-      });
-    });
+    async function loadSavedCount() {
+      try {
+        const { count, error } = await supabaseClient
+          .from("saved_posts")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", currentUser.id);
+
+        if (error) throw error;
+
+        const total = Number(count || 0);
+        statSaved.textContent = formatCompact(total);
+        accountSavedText.textContent = `You currently have ${total} saved post${total === 1 ? "" : "s"}.`;
+        setBadge(accountSavedBadge, String(total), total > 0 ? "green" : "");
+      } catch {
+        statSaved.textContent = "0";
+        accountSavedText.textContent = "Could not check saved posts.";
+        setBadge(accountSavedBadge, "0");
+      }
+    }
 
     async function init() {
       try {
@@ -1284,12 +1683,9 @@
         currentUser = session.user;
 
         await loadProfile();
-        wireActions();
         await Promise.all([
-          loadNotificationCount(),
-          loadChatCount(),
-          loadCallCount(),
-          loadPostCount()
+          loadFollowerStats(),
+          loadSavedCount()
         ]);
       } catch (error) {
         showNotice(error.message || "Could not load profile.");
