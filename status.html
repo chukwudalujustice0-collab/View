@@ -4,1535 +4,525 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Status | View</title>
-  <meta name="theme-color" content="#08111f" />
+  <meta name="theme-color" content="#0a1028" />
   <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root{
-      --bg:#071120;
-      --bg2:#0a1630;
-      --panel:#0f1a31;
-      --panel-soft:rgba(255,255,255,.05);
-      --line:rgba(255,255,255,.08);
-      --line-strong:rgba(255,255,255,.14);
-      --text:#f8fbff;
-      --muted:#9db0cf;
-      --soft:#7e93b8;
-      --primary:#2d6bff;
-      --primary2:#5b8cff;
-      --success:#10b981;
-      --danger:#ef4444;
-      --warning:#f59e0b;
-      --shadow:0 16px 44px rgba(0,0,0,.28);
-      --safe-top:env(safe-area-inset-top);
-      --safe-bottom:env(safe-area-inset-bottom);
+      --bg1:#081a8f;
+      --bg2:#07115f;
+      --bg3:#05093c;
+      --line:rgba(255,255,255,.10);
+      --text:#fff;
+      --muted:#d4dcff;
+      --blue:#2f7bff;
+      --blue2:#5ba0ff;
+      --red:#ff2f57;
+      --red2:#ff5a74;
+      --shadow:0 18px 44px rgba(0,0,0,.30);
+      --safe-top:env(safe-area-inset-top,0px);
+      --safe-bottom:env(safe-area-inset-bottom,0px);
     }
-
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Inter,Arial,sans-serif;
-      -webkit-tap-highlight-color:transparent;
-    }
-
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
     html,body{
       min-height:100%;
       background:
-        radial-gradient(circle at top right, rgba(45,107,255,.12), transparent 24%),
-        linear-gradient(180deg,#08142b 0%, #071120 56%, #050d1a 100%);
+        radial-gradient(circle at top left, rgba(91,160,255,.22), transparent 20%),
+        radial-gradient(circle at top right, rgba(255,47,87,.18), transparent 16%),
+        linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
       color:var(--text);
     }
+    body{overflow-x:hidden;padding-bottom:108px}
+    a{text-decoration:none;color:inherit}
+    img{display:block;max-width:100%}
+    button,input{font:inherit}
 
-    body{
-      padding-bottom:110px;
-    }
-
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
-
-    button{
-      border:none;
-      outline:none;
-      background:none;
-      color:inherit;
-      font:inherit;
-      cursor:pointer;
-    }
-
-    .wrap{
-      width:min(100%,980px);
+    .page{
+      width:min(100%,960px);
       margin:0 auto;
-      padding:calc(16px + var(--safe-top)) 14px 0;
+      padding:calc(12px + var(--safe-top)) 14px calc(20px + var(--safe-bottom));
     }
 
     .notice{
-      display:none;
-      margin-bottom:14px;
-      padding:14px 16px;
-      border-radius:14px;
-      font-size:14px;
-      line-height:1.55;
-      border:1px solid transparent;
+      display:none;margin-bottom:12px;padding:12px 14px;border-radius:14px;
+      font-size:12px;line-height:1.5;border:1px solid transparent;background:rgba(255,255,255,.05)
     }
     .notice.show{display:block}
-    .notice.error{
-      background:rgba(239,68,68,.10);
-      border-color:rgba(239,68,68,.18);
-      color:#ffd7d7;
-    }
-    .notice.success{
-      background:rgba(16,185,129,.10);
-      border-color:rgba(16,185,129,.18);
-      color:#dbfff3;
-    }
-    .notice.info{
-      background:rgba(45,107,255,.10);
-      border-color:rgba(45,107,255,.18);
-      color:#dcebff;
-    }
+    .notice.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.22);color:#ffd7df}
+    .notice.info{background:rgba(47,123,255,.10);border-color:rgba(47,123,255,.22);color:#dcebff}
+    .notice.success{background:rgba(25,195,125,.10);border-color:rgba(25,195,125,.22);color:#dcffe7}
 
     .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:18px;
-      padding-bottom:14px;
-      border-bottom:1px solid var(--line);
-      flex-wrap:wrap;
+      display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-bottom:14px
     }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
     .icon-btn{
-      width:46px;
-      height:46px;
-      min-width:46px;
-      border-radius:14px;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:18px;
-      box-shadow:var(--shadow);
+      width:46px;height:46px;min-width:46px;border:none;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);color:#fff;box-shadow:var(--shadow);cursor:pointer
     }
-
-    .title-group{
-      min-width:0;
-    }
-
     .title{
-      font-size:28px;
-      font-weight:900;
-      letter-spacing:-.03em;
-      line-height:1;
-      margin-bottom:6px;
+      font-size:20px;font-weight:900;line-height:1.1
     }
-
     .subtitle{
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.6;
+      font-size:12px;color:var(--muted);margin-top:4px
     }
-
-    .top-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .btn,
-    .btn-soft,
-    .btn-danger{
-      min-height:44px;
-      padding:0 16px;
-      border-radius:14px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      font-size:13px;
-      font-weight:800;
-      transition:.2s ease;
-    }
-
-    .btn{
-      color:#fff;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:0 12px 28px rgba(45,107,255,.24);
-    }
-
-    .btn-soft{
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      color:#fff;
-    }
-
-    .btn-danger{
-      background:rgba(239,68,68,.12);
-      border:1px solid rgba(239,68,68,.22);
-      color:#fff;
-    }
+    .top-actions{display:flex;gap:8px}
 
     .hero{
-      display:grid;
-      grid-template-columns:1.05fr .95fr;
-      gap:18px;
-      margin-bottom:20px;
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);
+      padding:14px;margin-bottom:14px
     }
 
-    .card{
-      border:1px solid var(--line);
-      border-radius:24px;
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      box-shadow:var(--shadow);
-      overflow:hidden;
+    .hero-row{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap
     }
-
-    .card-body{
-      padding:18px;
+    .hero-copy h2{font-size:18px;font-weight:900;margin-bottom:6px}
+    .hero-copy p{font-size:12px;color:var(--muted);line-height:1.5}
+    .hero-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{
+      min-height:42px;padding:0 14px;border:none;border-radius:14px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:8px;color:#fff;font-weight:900
     }
+    .btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2))}
+    .btn.red{background:linear-gradient(135deg,var(--red),var(--red2))}
+    .btn.soft{background:rgba(255,255,255,.07);border:1px solid var(--line)}
 
-    .composer-head{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-      flex-wrap:wrap;
-    }
-
-    .composer-head h2{
-      font-size:22px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      margin-bottom:4px;
-    }
-
-    .composer-head p{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
-    }
-
-    .tag{
-      min-height:30px;
-      padding:0 12px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-size:11px;
-      font-weight:900;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      color:#dce8ff;
-      white-space:nowrap;
-    }
-
-    .composer-types{
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:10px;
-      margin-bottom:14px;
-    }
-
-    .type-btn{
-      min-height:62px;
-      padding:10px 8px;
-      border-radius:18px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      font-size:12px;
-      font-weight:800;
-      color:#dce8ff;
-      text-align:center;
-    }
-
-    .type-btn.active{
-      background:linear-gradient(135deg, rgba(45,107,255,.22), rgba(91,140,255,.08));
-      border-color:rgba(91,140,255,.28);
-      color:#fff;
-    }
-
-    .input,
-    .textarea,
-    .select{
-      width:100%;
-      min-height:52px;
-      border:none;
-      outline:none;
-      border-radius:14px;
-      padding:0 14px;
-      background:rgba(255,255,255,.04);
-      border:1px solid var(--line);
-      color:#fff;
-      font-size:14px;
-    }
-
-    .textarea{
-      min-height:126px;
-      padding:14px;
-      resize:vertical;
-    }
-
-    .input::placeholder,
-    .textarea::placeholder{
-      color:#8fa3c2;
-    }
-
-    .composer-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
-      margin-bottom:14px;
-    }
-
-    .field{
-      display:grid;
-      gap:8px;
-    }
-
-    .field.full{
-      grid-column:1 / -1;
-    }
-
-    .field label{
-      font-size:12px;
-      font-weight:800;
-      color:#dce8ff;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-    }
-
-    .field-note{
-      color:var(--soft);
-      font-size:12px;
-      line-height:1.65;
-    }
-
-    .media-preview{
-      border:1px dashed rgba(255,255,255,.14);
-      border-radius:18px;
-      min-height:150px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      background:rgba(255,255,255,.02);
-      color:var(--muted);
-      font-size:13px;
-      text-align:center;
-      padding:16px;
-    }
-
-    .media-preview img,
-    .media-preview video{
-      width:100%;
-      max-height:260px;
-      object-fit:cover;
-      display:block;
-      border-radius:16px;
-    }
-
-    .media-preview audio{
-      width:100%;
-    }
-
-    .actions-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .section{
-      margin-bottom:20px;
+    .ring-section,.feed-section,.reply-section{
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);
+      padding:14px;margin-bottom:14px
     }
 
     .section-head{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:12px;
-      flex-wrap:wrap;
+      display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px
+    }
+    .section-head h3{font-size:15px;font-weight:900}
+    .section-head span{font-size:12px;color:var(--muted)}
+
+    .rings{
+      display:flex;gap:12px;overflow:auto hidden;scrollbar-width:none;padding-bottom:4px
+    }
+    .rings::-webkit-scrollbar{display:none}
+    .ring-card{
+      flex:0 0 auto;width:88px;text-align:center;cursor:pointer
+    }
+    .ring-wrap{
+      width:76px;height:76px;margin:0 auto 8px;border-radius:50%;padding:3px;
+      background:linear-gradient(135deg,var(--blue),var(--red));
+      box-shadow:0 10px 24px rgba(0,0,0,.22)
+    }
+    .ring-wrap.viewed{background:linear-gradient(135deg,#7c879b,#9ea8bb)}
+    .ring-inner{
+      width:100%;height:100%;border-radius:50%;overflow:hidden;background:#0f1e66;
+      border:2px solid rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center
+    }
+    .ring-inner img{width:100%;height:100%;object-fit:cover}
+    .ring-fallback{font-weight:900;font-size:20px}
+    .ring-name{
+      font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+    }
+    .ring-sub{
+      font-size:10px;color:var(--muted);margin-top:3px
     }
 
-    .section-head h3{
-      font-size:21px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      margin-bottom:4px;
-    }
-
-    .section-head p{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
-    }
-
-    .stories-row{
-      display:flex;
-      gap:14px;
-      overflow:auto;
-      padding:2px 2px 6px;
-      scroll-snap-type:x proximity;
-    }
-
-    .stories-row::-webkit-scrollbar{ display:none; }
-
-    .story-chip{
-      min-width:88px;
-      width:88px;
-      scroll-snap-align:start;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:8px;
-      text-align:center;
-      color:#dce8ff;
-    }
-
-    .story-avatar-wrap{
-      width:82px;
-      height:82px;
-      padding:3px;
-      border-radius:50%;
-      background:linear-gradient(135deg,#2d6bff,#7c3aed,#ef4444);
-      box-shadow:var(--shadow);
-    }
-
-    .story-avatar{
-      width:100%;
-      height:100%;
-      border-radius:50%;
-      overflow:hidden;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      border:3px solid #071120;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:24px;
-      font-weight:900;
-      color:#fff;
-    }
-
-    .story-avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .story-name{
-      width:100%;
-      font-size:12px;
-      font-weight:800;
-      color:#dce8ff;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .story-time{
-      font-size:11px;
-      color:var(--muted);
-    }
-
-    .feed-grid{
-      display:grid;
-      gap:14px;
+    .status-grid{
+      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px
     }
 
     .status-card{
-      border:1px solid var(--line);
-      border-radius:22px;
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      box-shadow:var(--shadow);
-      overflow:hidden;
+      border:1px solid var(--line);border-radius:22px;overflow:hidden;background:rgba(255,255,255,.05)
     }
-
-    .status-head{
-      padding:14px 16px 0;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
-    .status-user{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
-    .mini-avatar{
-      width:48px;
-      height:48px;
-      border-radius:50%;
-      overflow:hidden;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:900;
-      font-size:18px;
-      color:#fff;
-      flex:0 0 auto;
-    }
-
-    .mini-avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .status-user-meta{
-      min-width:0;
-    }
-
-    .status-user-meta h4{
-      font-size:15px;
-      font-weight:900;
-      margin-bottom:4px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .status-user-meta p{
-      color:var(--muted);
-      font-size:12px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .status-badges{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .badge{
-      min-height:28px;
-      padding:0 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      font-size:11px;
-      font-weight:900;
-      color:#dce8ff;
-      white-space:nowrap;
-    }
-
-    .status-body{
-      padding:14px 16px 16px;
-      display:grid;
-      gap:12px;
-    }
-
-    .status-text{
-      font-size:15px;
-      line-height:1.75;
-      color:#f8fbff;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-
     .status-media{
-      border-radius:18px;
-      overflow:hidden;
-      background:#050913;
-      border:1px solid var(--line);
+      aspect-ratio:9/12;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--blue),var(--red))
+    }
+    .status-media img,.status-media video{
+      width:100%;height:100%;object-fit:cover
+    }
+    .status-text{
+      width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;
+      padding:18px;font-size:22px;font-weight:900;line-height:1.35;white-space:pre-wrap;word-break:break-word
+    }
+    .status-overlay{
+      position:absolute;left:0;right:0;bottom:0;padding:14px;
+      background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.72));
+      display:grid;gap:8px
+    }
+    .status-user{
+      display:flex;align-items:center;gap:10px
+    }
+    .status-avatar{
+      width:38px;height:38px;border-radius:50%;overflow:hidden;
+      border:2px solid rgba(255,255,255,.95);background:linear-gradient(135deg,var(--blue2),var(--red2));
+      display:flex;align-items:center;justify-content:center;font-weight:900
+    }
+    .status-avatar img{width:100%;height:100%;object-fit:cover}
+    .status-name{font-size:13px;font-weight:900}
+    .status-time{font-size:11px;color:#dfe7ff}
+    .status-chip-row{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{
+      min-height:26px;padding:0 10px;border-radius:999px;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:11px;font-weight:800;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)
     }
 
-    .status-media img,
-    .status-media video{
-      width:100%;
-      max-height:460px;
-      object-fit:cover;
-      display:block;
+    .reply-list{display:grid;gap:10px}
+    .reply-card{
+      border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:18px;padding:12px
     }
-
-    .status-media audio{
-      width:100%;
-      display:block;
-      background:#0d1526;
-    }
-
-    .status-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .action{
-      min-height:40px;
-      padding:0 14px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      font-size:13px;
-      font-weight:800;
-      color:#e5efff;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-    }
+    .reply-card strong{display:block;font-size:12px;margin-bottom:4px}
+    .reply-card p{font-size:12px;color:var(--muted);line-height:1.5}
 
     .empty{
-      border:1px dashed rgba(255,255,255,.14);
-      border-radius:20px;
-      padding:28px 18px;
-      text-align:center;
-      color:var(--muted);
-      background:rgba(255,255,255,.02);
+      padding:26px 14px;text-align:center;font-size:13px;color:var(--muted);
+      border:1px dashed rgba(255,255,255,.18);border-radius:18px;background:rgba(255,255,255,.03)
     }
 
-    .footer-nav{
-      position:fixed;
-      left:50%;
-      bottom:14px;
-      transform:translateX(-50%);
-      width:min(100%,820px);
-      max-width:calc(100% - 18px);
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:8px;
-      padding:10px 8px calc(10px + var(--safe-bottom));
-      border-radius:28px;
-      background:rgba(7,18,43,.94);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 22px 56px rgba(0,0,0,.34);
-      backdrop-filter:blur(18px);
-      z-index:55;
+    .bottom-nav{
+      position:fixed;left:50%;bottom:10px;transform:translateX(-50%);
+      width:min(720px,calc(100% - 12px));
+      display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;
+      padding:8px 4px calc(8px + var(--safe-bottom));border-radius:18px;
+      background:rgba(7,14,54,.95);border:1px solid var(--line);box-shadow:0 18px 42px rgba(0,0,0,.35);
+      backdrop-filter:blur(14px);z-index:40
     }
-
-    .nav-btn{
-      min-height:62px;
-      border-radius:18px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:5px;
-      color:#90a5c7;
-      text-decoration:none;
-      font-size:12px;
-      font-weight:800;
-      text-align:center;
+    .nav-link{
+      min-height:54px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;
+      font-size:10px;color:#d6e0ff;border-radius:14px
     }
+    .nav-link.active{color:var(--red)}
 
-    .nav-btn.active{
-      color:#fff;
-      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
-      border:1px solid rgba(45,107,255,.20);
-    }
-
-    .nav-icon{
-      font-size:21px;
-      line-height:1;
-    }
-
-    .modal{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.6);
-      backdrop-filter:blur(10px);
-      z-index:120;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:14px;
-    }
-
-    .modal.show{ display:flex; }
-
-    .viewer{
-      width:min(100%,720px);
-      max-height:92vh;
-      overflow:auto;
-      border:1px solid var(--line-strong);
-      border-radius:26px;
-      background:linear-gradient(180deg,#0e1930,#08111f);
-      box-shadow:var(--shadow);
-    }
-
-    .viewer-head{
-      padding:16px;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .viewer-body{
-      padding:16px;
-      display:grid;
-      gap:14px;
-    }
-
-    .viewer-close{
-      width:42px;
-      height:42px;
-      min-width:42px;
-      border-radius:14px;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:18px;
-    }
-
-    @media (max-width:920px){
-      .hero{
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (max-width:720px){
-      .composer-types{
-        grid-template-columns:repeat(3,1fr);
-      }
-
-      .composer-grid{
-        grid-template-columns:1fr;
-      }
-
-      .title{
-        font-size:24px;
-      }
-    }
-
-    @media (max-width:560px){
-      .composer-types{
-        grid-template-columns:repeat(2,1fr);
-      }
+    @media (max-width:760px){
+      .status-grid{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="page">
     <div id="notice" class="notice"></div>
 
-    <div class="topbar">
-      <div class="brand">
-        <a class="icon-btn" href="home.html" title="Back">←</a>
-        <div class="title-group">
-          <div class="title">Status</div>
-          <div class="subtitle">Share moments that disappear in 24 hours.</div>
-        </div>
+    <header class="topbar">
+      <button class="icon-btn" onclick="window.location.href='home.html'" aria-label="Back">←</button>
+      <div>
+        <div class="title">Status</div>
+        <div class="subtitle">Browse rings, open stories, reply, and track your own views</div>
       </div>
-
       <div class="top-actions">
-        <a class="btn-soft" href="chats.html">Inbox</a>
-        <button id="refreshBtn" class="btn-soft" type="button">Refresh</button>
+        <button class="icon-btn" id="refreshBtn" aria-label="Refresh">↻</button>
       </div>
-    </div>
+    </header>
 
-    <div id="hero" class="hero">
-      <section class="card">
-        <div class="card-body">
-          <div class="composer-head">
-            <div>
-              <h2>Create Status</h2>
-              <p>Text, music, voice, image, or video. Every status expires automatically after 24 hours.</p>
-            </div>
-            <span id="composerTag" class="tag">New status</span>
-          </div>
-
-          <div class="composer-types">
-            <button class="type-btn active" data-type="text">📝<span>Text</span></button>
-            <button class="type-btn" data-type="image">🖼️<span>Picture</span></button>
-            <button class="type-btn" data-type="video">🎬<span>Video</span></button>
-            <button class="type-btn" data-type="voice">🎤<span>Voice</span></button>
-            <button class="type-btn" data-type="music">🎵<span>Music</span></button>
-          </div>
-
-          <div class="composer-grid">
-            <div class="field full">
-              <label for="statusText">Text or caption</label>
-              <textarea id="statusText" class="textarea" placeholder="What's happening today?"></textarea>
-            </div>
-
-            <div class="field">
-              <label for="statusTypeView">Selected type</label>
-              <input id="statusTypeView" class="input" type="text" value="text" readonly />
-            </div>
-
-            <div class="field">
-              <label for="statusFile">Media file</label>
-              <input id="statusFile" class="input" type="file" />
-              <div class="field-note">Required for image, video, voice, and music statuses.</div>
-            </div>
-
-            <div class="field full">
-              <label>Preview</label>
-              <div id="mediaPreview" class="media-preview">No media selected yet.</div>
-            </div>
-          </div>
-
-          <div class="actions-row">
-            <button id="postStatusBtn" class="btn" type="button">Post Status</button>
-            <button id="cancelEditBtn" class="btn-soft" type="button" style="display:none;">Cancel Edit</button>
-          </div>
+    <section class="hero">
+      <div class="hero-row">
+        <div class="hero-copy">
+          <h2>Status Hub</h2>
+          <p>Open your status viewer, create a new story, and manage replies and views in one premium page.</p>
         </div>
-      </section>
-
-      <section class="card">
-        <div class="card-body">
-          <div class="composer-head">
-            <div>
-              <h2>Your Status Summary</h2>
-              <p>Quick overview of your active 24-hour statuses.</p>
-            </div>
-            <span class="tag">Live</span>
-          </div>
-
-          <div id="mySummary" class="feed-grid">
-            <div class="empty">Loading your active statuses...</div>
-          </div>
+        <div class="hero-actions">
+          <button class="btn blue" id="createStatusBtn" type="button">Create Status</button>
+          <button class="btn red" id="myViewerBtn" type="button">My Viewer</button>
         </div>
-      </section>
-    </div>
-
-    <section class="section">
-      <div class="section-head">
-        <div>
-          <h3>Status Rings</h3>
-          <p>Tap any ring to view that status instantly.</p>
-        </div>
-        <span class="tag">24h active</span>
-      </div>
-
-      <div id="storiesRow" class="stories-row">
-        <div class="empty" style="min-width:100%;">Loading statuses...</div>
       </div>
     </section>
 
-    <section class="section">
+    <section class="ring-section">
       <div class="section-head">
-        <div>
-          <h3>Recent Status Feed</h3>
-          <p>Statuses from you, your followers, and people you follow.</p>
-        </div>
-        <span id="feedCount" class="tag">0 active</span>
+        <h3>Active Status Rings</h3>
+        <span id="ringCountText">0 active users</span>
       </div>
+      <div class="rings" id="ringsWrap"></div>
+    </section>
 
-      <div id="statusFeed" class="feed-grid">
-        <div class="empty">Loading status feed...</div>
+    <section class="feed-section">
+      <div class="section-head">
+        <h3>Latest Active Statuses</h3>
+        <span>Click any card to open full-screen viewer</span>
       </div>
+      <div class="status-grid" id="statusGrid"></div>
+    </section>
+
+    <section class="reply-section">
+      <div class="section-head">
+        <h3>Recent Replies To Your Status</h3>
+        <span id="replyCountText">0 replies</span>
+      </div>
+      <div class="reply-list" id="replyList"></div>
     </section>
   </div>
 
-  <div id="viewerModal" class="modal">
-    <div class="viewer">
-      <div class="viewer-head">
-        <div id="viewerHeadLeft" class="status-user"></div>
-        <button id="closeViewerBtn" class="viewer-close" type="button">✕</button>
-      </div>
-      <div id="viewerBody" class="viewer-body"></div>
-    </div>
-  </div>
-
-  <nav class="footer-nav">
-    <a href="home.html" class="nav-btn">
-      <span class="nav-icon">⌂</span>
-      <span>Home</span>
-    </a>
-    <a href="explore.html" class="nav-btn">
-      <span class="nav-icon">🔎</span>
-      <span>Explore</span>
-    </a>
-    <a href="status.html" class="nav-btn active">
-      <span class="nav-icon">⭕</span>
-      <span>Status</span>
-    </a>
-    <a href="chats.html" class="nav-btn">
-      <span class="nav-icon">💬</span>
-      <span>Inbox</span>
-    </a>
-    <a href="profile.html" class="nav-btn">
-      <span class="nav-icon">👤</span>
-      <span>Profile</span>
-    </a>
+  <nav class="bottom-nav">
+    <a href="home.html" class="nav-link"><span>🏠</span><span>Home</span></a>
+    <a href="status.html" class="nav-link active"><span>⭕</span><span>Status</span></a>
+    <a href="create-status.html" class="nav-link"><span>➕</span><span>Create</span></a>
+    <a href="status-viewer.html" class="nav-link"><span>▶</span><span>Viewer</span></a>
+    <a href="settings.html" class="nav-link"><span>⚙</span><span>Settings</span></a>
   </nav>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const STATUS_BUCKET = "statuses";
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        flowType: "pkce"
       }
     });
 
-    const noticeBox = document.getElementById("notice");
-    const statusText = document.getElementById("statusText");
-    const statusTypeView = document.getElementById("statusTypeView");
-    const statusFile = document.getElementById("statusFile");
-    const mediaPreview = document.getElementById("mediaPreview");
-    const postStatusBtn = document.getElementById("postStatusBtn");
-    const cancelEditBtn = document.getElementById("cancelEditBtn");
-    const composerTag = document.getElementById("composerTag");
-    const storiesRow = document.getElementById("storiesRow");
-    const statusFeed = document.getElementById("statusFeed");
-    const mySummary = document.getElementById("mySummary");
-    const feedCount = document.getElementById("feedCount");
-    const refreshBtn = document.getElementById("refreshBtn");
+    const notice = document.getElementById("notice");
+    const ringsWrap = document.getElementById("ringsWrap");
+    const statusGrid = document.getElementById("statusGrid");
+    const replyList = document.getElementById("replyList");
+    const ringCountText = document.getElementById("ringCountText");
+    const replyCountText = document.getElementById("replyCountText");
 
-    const viewerModal = document.getElementById("viewerModal");
-    const viewerHeadLeft = document.getElementById("viewerHeadLeft");
-    const viewerBody = document.getElementById("viewerBody");
-    const closeViewerBtn = document.getElementById("closeViewerBtn");
-
-    const state = {
-      user: null,
-      profiles: new Map(),
-      relationIds: [],
-      statuses: [],
-      myStatuses: [],
-      selectedType: "text",
-      editStatusId: null,
-      statusChannel: null
-    };
+    let currentUser = null;
 
     function showNotice(message, type = "info") {
-      noticeBox.className = `notice show ${type}`;
-      noticeBox.textContent = message || "";
-      clearTimeout(showNotice._t);
-      showNotice._t = setTimeout(() => {
-        noticeBox.className = "notice";
-        noticeBox.textContent = "";
-      }, 2600);
+      notice.className = `notice show ${type}`;
+      notice.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        notice.className = "notice";
+        notice.textContent = "";
+      }, 3000);
     }
 
-    function escapeHtml(value) {
-      return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    function initials(name) {
+      const parts = String(name || "V").trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return "V";
+      if (parts.length === 1) return parts[0][0].toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
     }
 
-    function getInitial(value) {
-      return String(value || "U").trim().charAt(0).toUpperCase() || "U";
+    function timeAgo(value) {
+      if (!value) return "Just now";
+      const date = new Date(value);
+      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+      if (diff < 60) return "Just now";
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      return `${Math.floor(diff / 86400)}d ago`;
     }
 
-    function formatTimeAgo(dateValue) {
-      const date = new Date(dateValue);
-      const diff = Math.max(1, Date.now() - date.getTime());
-      const sec = Math.floor(diff / 1000);
-      const min = Math.floor(sec / 60);
-      const hr = Math.floor(min / 60);
-
-      if (sec < 60) return `${sec}s ago`;
-      if (min < 60) return `${min}m ago`;
-      if (hr < 24) return `${hr}h ago`;
-      return date.toLocaleDateString();
-    }
-
-    function formatTimeLeft(expiresAt) {
-      const diff = new Date(expiresAt).getTime() - Date.now();
-      if (diff <= 0) return "Expired";
-      const hr = Math.floor(diff / (1000 * 60 * 60));
-      const min = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      if (hr > 0) return `${hr}h ${min}m left`;
-      return `${Math.max(1, min)}m left`;
-    }
-
-    function getDisplayName(row) {
-      return row?.profiles?.full_name || row?.profiles?.username || "User";
-    }
-
-    function getUsername(row) {
-      const u = row?.profiles?.username || "";
-      return u ? `@${u}` : "";
-    }
-
-    function getAvatar(row) {
-      return row?.profiles?.avatar_url || "";
-    }
-
-    function isOwner(row) {
-      return state.user && row.user_id === state.user.id;
-    }
-
-    function setSelectedType(type) {
-      state.selectedType = type;
-      statusTypeView.value = type;
-
-      document.querySelectorAll(".type-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.type === type);
-      });
-
-      if (type === "text") {
-        statusFile.value = "";
-        statusFile.removeAttribute("accept");
-        mediaPreview.innerHTML = "No media required for text status.";
-      } else if (type === "image") {
-        statusFile.accept = "image/*";
-        mediaPreview.innerHTML = "Select an image to preview it here.";
-      } else if (type === "video") {
-        statusFile.accept = "video/*";
-        mediaPreview.innerHTML = "Select a video to preview it here.";
-      } else if (type === "voice") {
-        statusFile.accept = "audio/*";
-        mediaPreview.innerHTML = "Select a voice note audio file.";
-      } else if (type === "music") {
-        statusFile.accept = "audio/*";
-        mediaPreview.innerHTML = "Select a music audio file.";
-      }
-    }
-
-    function resetComposer() {
-      state.editStatusId = null;
-      composerTag.textContent = "New status";
-      postStatusBtn.textContent = "Post Status";
-      cancelEditBtn.style.display = "none";
-      statusText.value = "";
-      statusFile.value = "";
-      setSelectedType("text");
-    }
-
-    function renderFilePreview(file) {
-      if (!file) {
-        mediaPreview.innerHTML = state.selectedType === "text"
-          ? "No media required for text status."
-          : "No media selected yet.";
-        return;
-      }
-
-      const url = URL.createObjectURL(file);
-
-      if (file.type.startsWith("image/")) {
-        mediaPreview.innerHTML = `<img src="${url}" alt="Preview">`;
-      } else if (file.type.startsWith("video/")) {
-        mediaPreview.innerHTML = `<video src="${url}" controls playsinline></video>`;
-      } else if (file.type.startsWith("audio/")) {
-        mediaPreview.innerHTML = `<audio src="${url}" controls></audio>`;
-      } else {
-        mediaPreview.textContent = file.name;
-      }
-    }
-
-    async function requireSession() {
-      const { data, error } = await supabaseClient.auth.getSession();
+    async function requireUser() {
+      const { data, error } = await supabase.auth.getUser();
       if (error) throw error;
-      if (!data.session?.user) {
-        location.href = "login.html?next=status.html";
+      if (!data?.user) {
+        window.location.href = "login.html?next=status.html";
         return null;
       }
-      state.user = data.session.user;
-      return state.user;
+      currentUser = data.user;
+      return currentUser;
     }
 
-    async function loadRelationIds() {
-      if (!state.user) return [];
-      const ids = new Set([state.user.id]);
-
-      const { data: followingRows } = await supabaseClient
-        .from("followers")
-        .select("following_id")
-        .eq("follower_id", state.user.id);
-
-      (followingRows || []).forEach(row => {
-        if (row.following_id) ids.add(row.following_id);
-      });
-
-      const { data: followerRows } = await supabaseClient
-        .from("followers")
-        .select("follower_id")
-        .eq("following_id", state.user.id);
-
-      (followerRows || []).forEach(row => {
-        if (row.follower_id) ids.add(row.follower_id);
-      });
-
-      state.relationIds = Array.from(ids);
-      return state.relationIds;
+    function openViewer(userId, statusId = "") {
+      const url = new URL("status-viewer.html", window.location.href);
+      url.searchParams.set("user_id", userId);
+      if (statusId) url.searchParams.set("status_id", statusId);
+      window.location.href = url.toString();
     }
 
-    async function uploadStatusMedia(file, type) {
-      if (!file || !state.user) return { media_url: null, media_path: null };
+    async function loadStatusPage() {
+      const user = currentUser || await requireUser();
+      if (!user) return;
 
-      const ext = (file.name.split(".").pop() || "").toLowerCase() || (type === "image" ? "jpg" : type === "video" ? "mp4" : "mp3");
-      const path = `${state.user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const nowIso = new Date().toISOString();
 
-      const { error: uploadError } = await supabaseClient
-        .storage
-        .from(STATUS_BUCKET)
-        .upload(path, file, {
-          cacheControl: "3600",
-          upsert: false
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabaseClient
-        .storage
-        .from(STATUS_BUCKET)
-        .getPublicUrl(path);
-
-      return {
-        media_path: path,
-        media_url: data?.publicUrl || null
-      };
-    }
-
-    async function submitStatus() {
-      try {
-        postStatusBtn.disabled = true;
-        const text = statusText.value.trim();
-        const file = statusFile.files?.[0] || null;
-        const type = state.selectedType;
-
-        if (type === "text" && !text) {
-          showNotice("Write some text before posting.", "info");
-          return;
-        }
-
-        if (type !== "text" && !file && !state.editStatusId) {
-          showNotice("Please choose a media file for this status type.", "info");
-          return;
-        }
-
-        let upload = { media_url: null, media_path: null };
-        if (file) {
-          upload = await uploadStatusMedia(file, type);
-        }
-
-        const payload = {
-          user_id: state.user.id,
-          status_type: type,
-          text_content: text || null,
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-        };
-
-        if (upload.media_url) payload.media_url = upload.media_url;
-        if (upload.media_path) payload.media_path = upload.media_path;
-
-        if (state.editStatusId) {
-          const { error } = await supabaseClient
-            .from("statuses")
-            .update({
-              ...payload,
-              user_id: undefined
-            })
-            .eq("id", state.editStatusId)
-            .eq("user_id", state.user.id);
-
-          if (error) throw error;
-          showNotice("Status updated successfully.", "success");
-        } else {
-          const { error } = await supabaseClient
-            .from("statuses")
-            .insert(payload);
-
-          if (error) throw error;
-          showNotice("Status posted successfully.", "success");
-        }
-
-        resetComposer();
-        await loadStatuses();
-      } catch (error) {
-        showNotice(error.message || "Could not save status.", "error");
-      } finally {
-        postStatusBtn.disabled = false;
-      }
-    }
-
-    async function loadStatuses() {
-      try {
-        if (!state.relationIds.length) await loadRelationIds();
-
-        const nowIso = new Date().toISOString();
-        const { data, error } = await supabaseClient
+      const [
+        statusesRes,
+        profilesRes,
+        repliesRes,
+        viewsRes
+      ] = await Promise.all([
+        supabase
           .from("statuses")
-          .select(`
-            id,
-            user_id,
-            status_type,
-            text_content,
-            media_url,
-            media_path,
-            thumbnail_url,
-            bg_style,
-            expires_at,
-            created_at,
-            updated_at,
-            profiles:profiles!statuses_user_id_fkey (
-              username,
-              full_name,
-              avatar_url
-            )
-          `)
-          .in("user_id", state.relationIds)
+          .select("id,user_id,status_type,text_content,content,media_url,thumbnail_url,bg_style,privacy,expires_at,created_at")
           .gt("expires_at", nowIso)
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false }),
 
-        if (error) throw error;
+        supabase
+          .from("profiles")
+          .select("id,username,full_name,avatar_url,avatar_path"),
 
-        state.statuses = data || [];
-        state.myStatuses = state.statuses.filter(row => row.user_id === state.user.id);
+        supabase
+          .from("status_replies")
+          .select("id,status_id,sender_id,message,created_at")
+          .order("created_at", { ascending: false })
+          .limit(20),
 
-        renderStories();
-        renderFeed();
-        renderMySummary();
-      } catch (error) {
-        showNotice(error.message || "Could not load statuses.", "error");
-      }
-    }
+        supabase
+          .from("status_views")
+          .select("id,status_id,viewer_id,viewed_at")
+      ]);
 
-    function renderStories() {
-      if (!state.statuses.length) {
-        storiesRow.innerHTML = `<div class="empty" style="min-width:100%;">No active statuses right now.</div>`;
-        return;
-      }
+      if (statusesRes.error) throw statusesRes.error;
+      if (profilesRes.error) throw profilesRes.error;
+      if (repliesRes.error) throw repliesRes.error;
+      if (viewsRes.error) throw viewsRes.error;
 
-      const grouped = [];
-      const seen = new Set();
+      const statuses = statusesRes.data || [];
+      const profiles = profilesRes.data || [];
+      const replies = repliesRes.data || [];
+      const views = viewsRes.data || [];
 
-      state.statuses.forEach(row => {
-        if (!seen.has(row.user_id)) {
-          seen.add(row.user_id);
-          grouped.push(row);
-        }
+      const profileMap = Object.fromEntries(profiles.map(p => [p.id, p]));
+      const viewsByStatus = {};
+      views.forEach(v => {
+        if (!viewsByStatus[v.status_id]) viewsByStatus[v.status_id] = [];
+        viewsByStatus[v.status_id].push(v);
       });
 
-      storiesRow.innerHTML = grouped.map(row => {
-        const name = getDisplayName(row);
-        const avatar = getAvatar(row);
-
-        return `
-          <button class="story-chip" data-open-status="${escapeHtml(row.id)}" type="button">
-            <div class="story-avatar-wrap">
-              <div class="story-avatar">
-                ${avatar ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">` : escapeHtml(getInitial(name))}
-              </div>
-            </div>
-            <div class="story-name">${escapeHtml(name)}</div>
-            <div class="story-time">${escapeHtml(formatTimeAgo(row.created_at))}</div>
-          </button>
-        `;
-      }).join("");
-
-      storiesRow.querySelectorAll("[data-open-status]").forEach(btn => {
-        btn.addEventListener("click", () => openViewer(btn.dataset.openStatus));
+      const statusesByUser = {};
+      statuses.forEach(s => {
+        if (!statusesByUser[s.user_id]) statusesByUser[s.user_id] = [];
+        statusesByUser[s.user_id].push(s);
       });
-    }
 
-    function renderStatusMedia(row) {
-      if (!row.media_url) return "";
+      const ringUsers = Object.keys(statusesByUser).map(userId => {
+        const profile = profileMap[userId] || {};
+        const userStatuses = statusesByUser[userId];
+        const viewedAll = userStatuses.every(st => (viewsByStatus[st.id] || []).some(v => v.viewer_id === currentUser.id));
+        return {
+          userId,
+          profile,
+          statuses: userStatuses,
+          viewedAll
+        };
+      });
 
-      if (row.status_type === "image") {
-        return `
-          <div class="status-media">
-            <img src="${escapeHtml(row.media_url)}" alt="Status image">
-          </div>
-        `;
-      }
+      ringCountText.textContent = `${ringUsers.length} active users`;
 
-      if (row.status_type === "video") {
-        return `
-          <div class="status-media">
-            <video src="${escapeHtml(row.media_url)}" controls playsinline></video>
-          </div>
-        `;
-      }
-
-      if (row.status_type === "voice" || row.status_type === "music") {
-        return `
-          <div class="status-media">
-            <audio src="${escapeHtml(row.media_url)}" controls></audio>
-          </div>
-        `;
-      }
-
-      return "";
-    }
-
-    function renderFeed() {
-      feedCount.textContent = `${state.statuses.length} active`;
-
-      if (!state.statuses.length) {
-        statusFeed.innerHTML = `<div class="empty">No statuses from your network yet.</div>`;
-        return;
-      }
-
-      statusFeed.innerHTML = state.statuses.map(row => {
-        const name = getDisplayName(row);
-        const username = getUsername(row);
-        const avatar = getAvatar(row);
-
-        return `
-          <article class="status-card">
-            <div class="status-head">
-              <div class="status-user">
-                <div class="mini-avatar">
-                  ${avatar ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">` : escapeHtml(getInitial(name))}
-                </div>
-                <div class="status-user-meta">
-                  <h4>${escapeHtml(name)}</h4>
-                  <p>${escapeHtml(username || formatTimeAgo(row.created_at))} • ${escapeHtml(formatTimeLeft(row.expires_at))}</p>
+      if (!ringUsers.length) {
+        ringsWrap.innerHTML = `<div class="empty" style="min-width:100%">No active status yet.</div>`;
+      } else {
+        ringsWrap.innerHTML = ringUsers.map(item => {
+          const name = item.profile.full_name || item.profile.username || (item.userId === currentUser.id ? "You" : "User");
+          const avatar = item.profile.avatar_url || item.profile.avatar_path || "";
+          const latest = item.statuses[0];
+          const viewCount = item.userId === currentUser.id ? item.statuses.reduce((n, s) => n + (viewsByStatus[s.id]?.length || 0), 0) : null;
+          return `
+            <div class="ring-card" onclick="openViewer('${item.userId}','${latest.id}')">
+              <div class="ring-wrap ${item.viewedAll ? 'viewed' : ''}">
+                <div class="ring-inner">
+                  ${avatar
+                    ? `<img src="${avatar}" alt="${name}">`
+                    : `<div class="ring-fallback">${initials(name)}</div>`}
                 </div>
               </div>
-
-              <div class="status-badges">
-                <span class="badge">${escapeHtml(row.status_type)}</span>
-                ${isOwner(row) ? `<span class="badge">Your status</span>` : ``}
-              </div>
+              <div class="ring-name">${name}</div>
+              <div class="ring-sub">${item.userId === currentUser.id ? `${viewCount} views` : timeAgo(latest.created_at)}</div>
             </div>
-
-            <div class="status-body">
-              ${row.text_content ? `<div class="status-text">${escapeHtml(row.text_content)}</div>` : ``}
-              ${renderStatusMedia(row)}
-
-              <div class="status-actions">
-                <button class="action" data-view="${escapeHtml(row.id)}" type="button">👁️ View</button>
-                <button class="action" data-reply="${escapeHtml(row.id)}" type="button">💬 Reply</button>
-                ${isOwner(row) ? `<button class="action" data-edit="${escapeHtml(row.id)}" type="button">✏️ Edit</button>` : ``}
-                ${isOwner(row) ? `<button class="action" data-delete="${escapeHtml(row.id)}" type="button">🗑️ Delete</button>` : ``}
-              </div>
-            </div>
-          </article>
-        `;
-      }).join("");
-
-      statusFeed.querySelectorAll("[data-view]").forEach(btn => {
-        btn.addEventListener("click", () => openViewer(btn.dataset.view));
-      });
-
-      statusFeed.querySelectorAll("[data-reply]").forEach(btn => {
-        btn.addEventListener("click", () => startReply(btn.dataset.reply));
-      });
-
-      statusFeed.querySelectorAll("[data-edit]").forEach(btn => {
-        btn.addEventListener("click", () => beginEdit(btn.dataset.edit));
-      });
-
-      statusFeed.querySelectorAll("[data-delete]").forEach(btn => {
-        btn.addEventListener("click", () => deleteStatus(btn.dataset.delete));
-      });
-    }
-
-    function renderMySummary() {
-      if (!state.myStatuses.length) {
-        mySummary.innerHTML = `<div class="empty">You have no active status right now.</div>`;
-        return;
+          `;
+        }).join("");
       }
 
-      mySummary.innerHTML = state.myStatuses.slice(0, 4).map(row => `
-        <div class="status-card">
-          <div class="status-body">
-            <div class="status-text">
-              <strong>${escapeHtml(row.status_type)}</strong> • ${escapeHtml(formatTimeLeft(row.expires_at))}
+      if (!statuses.length) {
+        statusGrid.innerHTML = `<div class="empty">No active status found. Click create status to post one.</div>`;
+      } else {
+        statusGrid.innerHTML = statuses.map(s => {
+          const p = profileMap[s.user_id] || {};
+          const name = p.full_name || p.username || (s.user_id === currentUser.id ? "You" : "User");
+          const avatar = p.avatar_url || p.avatar_path || "";
+          const bg = s.bg_style ? {
+            sunset:"linear-gradient(135deg,#2f7bff,#ff2f57)",
+            royal:"linear-gradient(135deg,#081a8f,#5ba0ff)",
+            flare:"linear-gradient(135deg,#ff2f57,#ff8a00)",
+            deep:"linear-gradient(135deg,#091127,#7c3aed)",
+            ocean:"linear-gradient(135deg,#00bcd4,#2f7bff)",
+            berry:"linear-gradient(135deg,#7f1d1d,#ff2f57)",
+            night:"linear-gradient(135deg,#05093c,#1d4ed8)",
+            mix:"linear-gradient(135deg,#5ba0ff,#ff5a74,#2f7bff)"
+          }[s.bg_style] : "linear-gradient(135deg,#2f7bff,#ff2f57)";
+          const viewCount = viewsByStatus[s.id]?.length || 0;
+
+          let mediaBlock = `<div class="status-text" style="background:${bg}">${(s.text_content || s.content || "Status").replace(/</g,"&lt;")}</div>`;
+          if (s.status_type === "image" && s.media_url) {
+            mediaBlock = `<img src="${s.media_url}" alt="Status image">`;
+          } else if (s.status_type === "video" && s.media_url) {
+            mediaBlock = `<video src="${s.media_url}" muted playsinline preload="metadata"></video>`;
+          }
+
+          return `
+            <div class="status-card" onclick="openViewer('${s.user_id}','${s.id}')">
+              <div class="status-media">
+                ${mediaBlock}
+                <div class="status-overlay">
+                  <div class="status-user">
+                    <div class="status-avatar">
+                      ${avatar ? `<img src="${avatar}" alt="${name}">` : initials(name)}
+                    </div>
+                    <div>
+                      <div class="status-name">${name}</div>
+                      <div class="status-time">${timeAgo(s.created_at)}</div>
+                    </div>
+                  </div>
+                  <div class="status-chip-row">
+                    <span class="chip">${s.status_type}</span>
+                    <span class="chip">${s.privacy || "public"}</span>
+                    ${s.user_id === currentUser.id ? `<span class="chip">👁 ${viewCount}</span>` : ``}
+                  </div>
+                </div>
+              </div>
             </div>
-            ${row.text_content ? `<div class="status-text">${escapeHtml(row.text_content)}</div>` : ``}
-            <div class="status-actions">
-              <button class="action" data-edit="${escapeHtml(row.id)}" type="button">✏️ Edit</button>
-              <button class="action" data-delete="${escapeHtml(row.id)}" type="button">🗑️ Delete</button>
-            </div>
-          </div>
-        </div>
-      `).join("");
-
-      mySummary.querySelectorAll("[data-edit]").forEach(btn => {
-        btn.addEventListener("click", () => beginEdit(btn.dataset.edit));
-      });
-
-      mySummary.querySelectorAll("[data-delete]").forEach(btn => {
-        btn.addEventListener("click", () => deleteStatus(btn.dataset.delete));
-      });
-    }
-
-    function openViewer(statusId) {
-      const row = state.statuses.find(item => item.id === statusId);
-      if (!row) return;
-
-      const name = getDisplayName(row);
-      const username = getUsername(row);
-      const avatar = getAvatar(row);
-
-      viewerHeadLeft.innerHTML = `
-        <div class="mini-avatar">
-          ${avatar ? `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}">` : escapeHtml(getInitial(name))}
-        </div>
-        <div class="status-user-meta">
-          <h4>${escapeHtml(name)}</h4>
-          <p>${escapeHtml(username || formatTimeAgo(row.created_at))} • ${escapeHtml(formatTimeLeft(row.expires_at))}</p>
-        </div>
-      `;
-
-      viewerBody.innerHTML = `
-        ${row.text_content ? `<div class="status-text">${escapeHtml(row.text_content)}</div>` : ``}
-        ${renderStatusMedia(row)}
-        <div class="status-actions">
-          <button class="action" data-viewer-reply="${escapeHtml(row.id)}" type="button">💬 Reply in chat</button>
-          ${isOwner(row) ? `<button class="action" data-viewer-edit="${escapeHtml(row.id)}" type="button">✏️ Edit</button>` : ``}
-          ${isOwner(row) ? `<button class="action" data-viewer-delete="${escapeHtml(row.id)}" type="button">🗑️ Delete</button>` : ``}
-        </div>
-      `;
-
-      viewerBody.querySelectorAll("[data-viewer-reply]").forEach(btn => {
-        btn.addEventListener("click", () => startReply(btn.dataset.viewerReply));
-      });
-
-      viewerBody.querySelectorAll("[data-viewer-edit]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          closeViewer();
-          beginEdit(btn.dataset.viewerEdit);
-        });
-      });
-
-      viewerBody.querySelectorAll("[data-viewer-delete]").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          closeViewer();
-          await deleteStatus(btn.dataset.viewerDelete);
-        });
-      });
-
-      viewerModal.classList.add("show");
-    }
-
-    function closeViewer() {
-      viewerModal.classList.remove("show");
-    }
-
-    function beginEdit(statusId) {
-      const row = state.statuses.find(item => item.id === statusId && item.user_id === state.user.id);
-      if (!row) return;
-
-      state.editStatusId = row.id;
-      composerTag.textContent = "Editing status";
-      postStatusBtn.textContent = "Save Status";
-      cancelEditBtn.style.display = "inline-flex";
-      setSelectedType(row.status_type);
-      statusText.value = row.text_content || "";
-
-      if (row.media_url) {
-        if (row.status_type === "image") {
-          mediaPreview.innerHTML = `<img src="${escapeHtml(row.media_url)}" alt="Current media">`;
-        } else if (row.status_type === "video") {
-          mediaPreview.innerHTML = `<video src="${escapeHtml(row.media_url)}" controls playsinline></video>`;
-        } else if (row.status_type === "voice" || row.status_type === "music") {
-          mediaPreview.innerHTML = `<audio src="${escapeHtml(row.media_url)}" controls></audio>`;
-        }
+          `;
+        }).join("");
       }
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const myStatusIds = statuses.filter(s => s.user_id === currentUser.id).map(s => s.id);
+      const myReplies = replies.filter(r => myStatusIds.includes(r.status_id));
+
+      replyCountText.textContent = `${myReplies.length} replies`;
+
+      if (!myReplies.length) {
+        replyList.innerHTML = `<div class="empty">No replies to your statuses yet.</div>`;
+      } else {
+        replyList.innerHTML = myReplies.map(r => {
+          const sender = profileMap[r.sender_id] || {};
+          const senderName = sender.full_name || sender.username || "Viewer";
+          return `
+            <div class="reply-card">
+              <strong>${senderName}</strong>
+              <p>${(r.message || "").replace(/</g,"&lt;")} • ${timeAgo(r.created_at)}</p>
+            </div>
+          `;
+        }).join("");
+      }
     }
 
-    async function deleteStatus(statusId) {
-      const row = state.statuses.find(item => item.id === statusId && item.user_id === state.user.id);
-      if (!row) return;
+    document.getElementById("createStatusBtn").addEventListener("click", () => {
+      window.location.href = "create-status.html";
+    });
 
-      const ok = confirm("Delete this status?");
-      if (!ok) return;
+    document.getElementById("myViewerBtn").addEventListener("click", async () => {
+      const user = currentUser || await requireUser();
+      if (!user) return;
+      openViewer(user.id);
+    });
 
+    document.getElementById("refreshBtn").addEventListener("click", async () => {
       try {
-        const { error } = await supabaseClient
-          .from("statuses")
-          .delete()
-          .eq("id", statusId)
-          .eq("user_id", state.user.id);
-
-        if (error) throw error;
-
-        showNotice("Status deleted.", "success");
-        if (state.editStatusId === statusId) resetComposer();
-        await loadStatuses();
+        await loadStatusPage();
+        showNotice("Status page refreshed.", "success");
       } catch (error) {
-        showNotice(error.message || "Could not delete status.", "error");
+        showNotice(error.message || "Could not refresh statuses.", "error");
       }
-    }
-
-    function startReply(statusId) {
-      const row = state.statuses.find(item => item.id === statusId);
-      if (!row) return;
-
-      const name = getDisplayName(row);
-      const text = row.text_content ? row.text_content.slice(0, 120) : `${row.status_type} status`;
-      location.href =
-        `chat-room.html?user=${encodeURIComponent(row.user_id)}` +
-        `&reply_status=${encodeURIComponent(row.id)}` +
-        `&reply_type=status` +
-        `&reply_name=${encodeURIComponent(name)}` +
-        `&reply_text=${encodeURIComponent(text)}`;
-    }
-
-    function subscribeRealtime() {
-      if (state.statusChannel) return;
-
-      state.statusChannel = supabaseClient
-        .channel("statuses-live")
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "statuses"
-        }, async () => {
-          await loadStatuses();
-        })
-        .subscribe();
-    }
-
-    document.querySelectorAll(".type-btn").forEach(btn => {
-      btn.addEventListener("click", () => setSelectedType(btn.dataset.type));
     });
 
-    statusFile.addEventListener("change", () => {
-      renderFilePreview(statusFile.files?.[0] || null);
-    });
+    window.openViewer = openViewer;
 
-    postStatusBtn.addEventListener("click", submitStatus);
-    cancelEditBtn.addEventListener("click", resetComposer);
-    refreshBtn.addEventListener("click", loadStatuses);
-    closeViewerBtn.addEventListener("click", closeViewer);
-    viewerModal.addEventListener("click", (e) => {
-      if (e.target === viewerModal) closeViewer();
-    });
-
-    async function init() {
+    (async function init() {
       try {
-        await requireSession();
-        setSelectedType("text");
-        await loadRelationIds();
-        await loadStatuses();
-        subscribeRealtime();
+        await requireUser();
+        await loadStatusPage();
       } catch (error) {
         showNotice(error.message || "Could not load status page.", "error");
       }
-    }
-
-    init();
+    })();
   </script>
 </body>
 </html>
