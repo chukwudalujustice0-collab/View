@@ -3,18 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>View Chats</title>
-  <meta name="theme-color" content="#120a2f" />
+  <title>Chats | View</title>
+  <meta name="theme-color" content="#081a8f" />
   <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{
-      --text:#f7f4ff;
-      --muted:#c9bde9;
-      --blue:#4e88ff;
-      --red:#ff3c63;
-      --green:#4be282;
+      --text:#f8fbff;
+      --muted:#c9d6f3;
+      --blue:#2f7bff;
+      --blue2:#5ba0ff;
+      --red:#ff2f57;
+      --red2:#ff5a74;
+      --green:#22c55e;
+      --bg:#05093c;
+      --bg2:#07115f;
+      --bg3:#081a8f;
       --shadow:0 18px 36px rgba(0,0,0,.28);
       --shadow-soft:0 10px 22px rgba(0,0,0,.18);
       --safe-top:env(safe-area-inset-top, 0px);
@@ -32,23 +37,36 @@
     html,body{
       min-height:100%;
       background:
-        radial-gradient(circle at 20% 12%, rgba(255,85,120,.14), transparent 12%),
-        radial-gradient(circle at 72% 18%, rgba(90,140,255,.14), transparent 14%),
-        radial-gradient(circle at 35% 42%, rgba(255,110,160,.11), transparent 16%),
+        radial-gradient(circle at 20% 12%, rgba(255,47,87,.14), transparent 12%),
+        radial-gradient(circle at 72% 18%, rgba(47,123,255,.14), transparent 14%),
+        radial-gradient(circle at 35% 42%, rgba(255,110,160,.10), transparent 16%),
         radial-gradient(circle at 80% 58%, rgba(120,90,255,.10), transparent 16%),
         radial-gradient(circle at 55% 78%, rgba(255,80,120,.08), transparent 20%),
-        linear-gradient(180deg, #14092e 0%, #190a3d 42%, #110820 100%);
+        linear-gradient(180deg, #081a8f 0%, #07115f 42%, #05093c 100%);
       color:var(--text);
     }
 
     body{
       overflow-x:hidden;
-      padding-bottom:92px;
+      padding-bottom:104px;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button{
+      border:none;
+      background:none;
+      cursor:pointer;
+      font:inherit;
+      color:inherit;
     }
 
     .app{
       position:relative;
-      width:min(100%, 820px);
+      width:min(100%, 860px);
       margin:0 auto;
       padding:calc(10px + var(--safe-top)) 12px 0;
     }
@@ -67,40 +85,101 @@
     .notice.show{display:block}
     .notice.error{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.24);color:#ffd9df}
     .notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffea}
-    .notice.info{background:rgba(78,136,255,.14);border-color:rgba(78,136,255,.24);color:#dcebff}
+    .notice.info{background:rgba(47,123,255,.14);border-color:rgba(47,123,255,.24);color:#dcebff}
 
     .topbar{
-      display:grid;
-      grid-template-columns:40px 1fr 40px;
+      display:flex;
       align-items:center;
-      gap:8px;
-      margin-bottom:10px;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+      background:rgba(7,17,95,.35);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px;
+      padding:12px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+    }
+
+    .top-left,
+    .top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
     }
 
     .icon-btn{
-      width:40px;
-      height:40px;
-      border:none;
-      border-radius:50%;
+      width:44px;
+      height:44px;
+      min-width:44px;
+      border-radius:16px;
       display:flex;
       align-items:center;
       justify-content:center;
-      background:rgba(255,255,255,.05);
+      background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.08);
       color:#fff;
       font-size:18px;
-      cursor:pointer;
       box-shadow:var(--shadow-soft);
-      text-decoration:none;
       backdrop-filter:blur(12px);
+      position:relative;
     }
 
-    .title{
-      text-align:center;
-      font-size:22px;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-logo{
+      width:50px;
+      height:50px;
+      min-width:50px;
+      border-radius:18px;
+      overflow:hidden;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      display:grid;
+      place-items:center;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .brand-copy{
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-title{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
       font-weight:900;
-      letter-spacing:-.03em;
-      text-transform:lowercase;
+      line-height:1;
+    }
+
+    .brand-title .view{
+      font-size:19px;
+      letter-spacing:-.02em;
+      text-transform:uppercase;
+      color:#fff;
+    }
+
+    .brand-title .by{
+      font-size:11px;
+      color:var(--red2);
+      font-weight:900;
+    }
+
+    .brand-tagline{
+      margin-top:5px;
+      color:var(--muted);
+      font-size:11px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .hero-card{
@@ -108,8 +187,8 @@
       padding:14px;
       margin-bottom:12px;
       background:
-        radial-gradient(circle at top right, rgba(78,136,255,.14), transparent 26%),
-        radial-gradient(circle at bottom left, rgba(255,60,99,.14), transparent 24%),
+        radial-gradient(circle at top right, rgba(47,123,255,.14), transparent 26%),
+        radial-gradient(circle at bottom left, rgba(255,47,87,.14), transparent 24%),
         linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       border:1px solid rgba(255,255,255,.08);
       box-shadow:var(--shadow);
@@ -145,9 +224,9 @@
 
     .menu{
       position:fixed;
-      top:62px;
+      top:74px;
       right:12px;
-      width:220px;
+      width:236px;
       border-radius:18px;
       background:rgba(20,10,45,.96);
       border:1px solid rgba(255,255,255,.10);
@@ -197,6 +276,7 @@
     .search-input{
       flex:1;
       border:none;
+      outline:none;
       background:transparent;
       color:#fff;
       font-size:14px;
@@ -250,7 +330,7 @@
 
     .chat-list{
       display:grid;
-      gap:2px;
+      gap:8px;
       padding-bottom:8px;
     }
 
@@ -259,8 +339,11 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding:12px 4px;
-      border-bottom:1px solid rgba(255,255,255,.08);
+      padding:12px;
+      border-radius:20px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow-soft);
       cursor:pointer;
     }
 
@@ -274,17 +357,17 @@
 
     .avatar-wrap{
       position:relative;
-      width:58px;
-      height:58px;
-      min-width:58px;
+      width:56px;
+      height:56px;
+      min-width:56px;
     }
 
     .avatar-ring{
-      width:58px;
-      height:58px;
+      width:56px;
+      height:56px;
       border-radius:50%;
       padding:2px;
-      background:linear-gradient(135deg, #4e88ff, #ff5d7f);
+      background:linear-gradient(135deg, var(--blue), var(--red));
     }
 
     .avatar{
@@ -341,7 +424,7 @@
     }
 
     .chat-name{
-      font-size:15px;
+      font-size:14px;
       font-weight:900;
       white-space:nowrap;
       overflow:hidden;
@@ -377,11 +460,30 @@
 
     .chat-side{
       display:flex;
-      flex-direction:column;
-      align-items:flex-end;
-      justify-content:center;
+      align-items:center;
+      gap:8px;
+      min-width:86px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+
+    .call-buttons{
+      display:flex;
       gap:6px;
-      min-width:30px;
+    }
+
+    .call-btn{
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      background:linear-gradient(135deg,var(--red),var(--blue));
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      box-shadow:var(--shadow-soft);
+      flex-shrink:0;
     }
 
     .badge{
@@ -446,48 +548,158 @@
       margin-bottom:6px;
     }
 
-    .footer{
+    .footer-nav{
       position:fixed;
-      left:50%;
-      bottom:10px;
-      transform:translateX(-50%);
-      width:min(460px, calc(100% - 18px));
-      padding:8px 8px calc(8px + var(--safe-bottom));
-      border-radius:22px;
-      background:rgba(12,7,26,.92);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 18px 38px rgba(0,0,0,.34);
-      backdrop-filter:blur(16px);
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:55;
+      background:rgba(5,9,60,.96);
+      backdrop-filter:blur(18px);
+      border-top:1px solid rgba(255,255,255,.08);
       display:grid;
-      grid-template-columns:repeat(3,1fr);
-      z-index:90;
+      grid-template-columns:repeat(6,1fr);
+      gap:0;
+      padding:8px 4px calc(8px + var(--safe-bottom));
+      box-shadow:0 -10px 34px rgba(0,0,0,.28);
     }
 
-    .footer a{
-      min-height:50px;
+    .nav-btn{
+      min-height:64px;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
       gap:4px;
+      color:#90a5c7;
       text-decoration:none;
-      color:#baacd9;
       font-size:11px;
       font-weight:800;
-      border-radius:16px;
+      text-align:center;
+      border-radius:0;
     }
 
-    .footer a span.icon{
-      font-size:18px;
-      line-height:1;
-    }
-
-    .footer a.active{
+    .nav-btn.active{
       color:#fff;
     }
 
-    .footer a.active span.icon{
-      color:#7aa3ff;
+    .nav-icon{
+      font-size:21px;
+      line-height:1;
+    }
+
+    .create-nav{
+      position:relative;
+    }
+
+    .create-nav .nav-icon{
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,var(--red),var(--red2));
+      color:#fff;
+      font-size:27px;
+      box-shadow:0 8px 24px rgba(255,47,87,.35);
+      margin-bottom:1px;
+    }
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      z-index:90;
+      background:rgba(0,0,0,.45);
+      backdrop-filter:blur(8px);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding:10px;
+    }
+
+    .modal-backdrop.show{
+      display:flex;
+    }
+
+    .sheet{
+      width:min(100%,720px);
+      border-radius:28px 28px 0 0;
+      background:linear-gradient(180deg,#1d2f9e,#101d73 55%,#0a1252);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      padding:10px 12px 14px;
+    }
+
+    .sheet-handle{
+      width:58px;
+      height:6px;
+      border-radius:999px;
+      background:rgba(255,255,255,.24);
+      margin:4px auto 12px;
+    }
+
+    .sheet-title{
+      text-align:center;
+      font-size:16px;
+      font-weight:900;
+      margin-bottom:12px;
+    }
+
+    .sheet-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .sheet-btn{
+      min-height:88px;
+      border-radius:20px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:8px;
+      font-size:13px;
+      font-weight:900;
+      text-align:center;
+    }
+
+    .sheet-btn .big{
+      font-size:24px;
+      line-height:1;
+    }
+
+    @media (max-width:560px){
+      .brand-logo{
+        width:46px;
+        height:46px;
+        min-width:46px;
+      }
+      .icon-btn{
+        width:42px;
+        height:42px;
+        min-width:42px;
+        border-radius:15px;
+      }
+      .brand-title .view{
+        font-size:18px;
+      }
+      .brand-title .by{
+        font-size:10px;
+      }
+      .chat-item{
+        padding:10px;
+      }
+      .chat-side{
+        min-width:74px;
+      }
+      .call-btn{
+        width:28px;
+        height:28px;
+      }
     }
   </style>
 </head>
@@ -495,11 +707,30 @@
   <div class="app">
     <div id="notice" class="notice"></div>
 
-    <div class="topbar">
-      <a class="icon-btn" href="home.html" aria-label="Back to home">←</a>
-      <div class="title">view chats</div>
-      <button id="menuToggle" class="icon-btn" type="button" aria-label="More options">☰</button>
-    </div>
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="dashboard.html" title="Dashboard" aria-label="Dashboard">📊</a>
+      </div>
+
+      <div class="brand">
+        <a class="brand-logo" href="home.html" aria-label="View Home">
+          <img src="icons/view-logo.png" alt="View logo" onerror="this.style.display='none'; this.parentNode.innerHTML='<span style=&quot;font-size:28px;font-weight:900;color:#fff&quot;>V</span>';">
+        </a>
+
+        <div class="brand-copy">
+          <div class="brand-title">
+            <span class="view">VIEW</span>
+            <span class="by">| by Ceetify</span>
+          </div>
+          <div class="brand-tagline">Your messages, calls and inbox</div>
+        </div>
+      </div>
+
+      <div class="top-right">
+        <a class="icon-btn" href="call-history.html" aria-label="Call history" title="Call History">📞</a>
+        <button id="menuToggle" class="icon-btn" type="button" aria-label="More options">☰</button>
+      </div>
+    </header>
 
     <section class="hero-card">
       <div class="hero-text">
@@ -509,6 +740,7 @@
         <span class="hero-chip" id="heroTotalChip">Chats: 0</span>
         <span class="hero-chip" id="heroUnreadChip">Unread: 0</span>
         <span class="hero-chip" id="heroOnlineChip">Online: 0</span>
+        <a class="hero-chip" href="call-history.html">📞 Call History</a>
       </div>
     </section>
 
@@ -541,20 +773,57 @@
     <div id="chatList" class="chat-list"></div>
   </div>
 
-  <nav class="footer">
-    <a href="explore.html">
-      <span class="icon">⌕</span>
+  <nav class="footer-nav">
+    <a href="home.html" class="nav-btn">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="explore.html" class="nav-btn">
+      <span class="nav-icon">🧭</span>
       <span>Explore</span>
     </a>
-    <a href="chats.html" class="active">
-      <span class="icon">💬</span>
+    <button id="createFooterBtn" class="nav-btn create-nav" type="button">
+      <span class="nav-icon">➕</span>
+      <span>Create</span>
+    </button>
+    <a href="chats.html" class="nav-btn active">
+      <span class="nav-icon">💬</span>
       <span>Chat</span>
     </a>
-    <a href="calls.html">
-      <span class="icon">📞</span>
-      <span>Calls</span>
+    <a href="video-feed.html" class="nav-btn">
+      <span class="nav-icon">🎬</span>
+      <span>Video</span>
+    </a>
+    <a href="profile.html" class="nav-btn">
+      <span class="nav-icon">👤</span>
+      <span>Profile</span>
     </a>
   </nav>
+
+  <div id="createSheetBackdrop" class="modal-backdrop">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Create</div>
+      <div class="sheet-grid">
+        <a class="sheet-btn" href="create-post.html">
+          <span class="big">✍️</span>
+          <span>Post</span>
+        </a>
+        <a class="sheet-btn" href="create-status.html">
+          <span class="big">🟣</span>
+          <span>Story</span>
+        </a>
+        <a class="sheet-btn" href="go-live.html">
+          <span class="big">📺</span>
+          <span>Go Live</span>
+        </a>
+        <a class="sheet-btn" href="upload-media.html">
+          <span class="big">📷</span>
+          <span>Upload Media</span>
+        </a>
+      </div>
+    </div>
+  </div>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
@@ -577,7 +846,6 @@
     const searchInput = document.getElementById("searchInput");
     const menu = document.getElementById("menu");
     const menuToggle = document.getElementById("menuToggle");
-    const tabs = [...document.querySelectorAll(".tab")];
 
     const newChatBtn = document.getElementById("newChatBtn");
     const refreshBtn = document.getElementById("refreshBtn");
@@ -592,6 +860,10 @@
     const heroTotalChip = document.getElementById("heroTotalChip");
     const heroUnreadChip = document.getElementById("heroUnreadChip");
     const heroOnlineChip = document.getElementById("heroOnlineChip");
+
+    const tabs = [...document.querySelectorAll(".tab")];
+    const createFooterBtn = document.getElementById("createFooterBtn");
+    const createSheetBackdrop = document.getElementById("createSheetBackdrop");
 
     let currentUserId = "";
     let currentFilter = "all";
@@ -614,10 +886,6 @@
     function getLocalMap(key) {
       try { return JSON.parse(localStorage.getItem(key) || "{}"); }
       catch { return {}; }
-    }
-
-    function setLocalMap(key, value) {
-      localStorage.setItem(key, JSON.stringify(value));
     }
 
     function isArchived(conversationId) {
@@ -677,6 +945,19 @@
         return "";
       }
     }
+
+    function openCreateSheet() {
+      createSheetBackdrop.classList.add("show");
+    }
+
+    function closeCreateSheet() {
+      createSheetBackdrop.classList.remove("show");
+    }
+
+    createFooterBtn.addEventListener("click", openCreateSheet);
+    createSheetBackdrop.addEventListener("click", (e) => {
+      if (e.target === createSheetBackdrop) closeCreateSheet();
+    });
 
     function updateHeroStats() {
       const total = allChats.filter(chat => !chat.archived).length;
@@ -738,12 +1019,12 @@
           avatar_url,
           is_group,
           created_by,
-          created_at,
-          updated_at,
           last_message,
           last_message_type,
           last_message_sender_id,
-          last_message_at
+          last_message_at,
+          created_at,
+          updated_at
         `)
         .in("id", conversationIds);
 
@@ -787,11 +1068,7 @@
     }
 
     function getProfileName(profile) {
-      return (
-        profile?.full_name ||
-        profile?.username ||
-        "User"
-      );
+      return profile?.full_name || profile?.username || "User";
     }
 
     function getProfileUsername(profile) {
@@ -891,7 +1168,8 @@
               preview_is_voice: preview.voice,
               last_message_at: latest?.created_at || conversation.last_message_at || conversation.updated_at || conversation.created_at || "",
               unread_count: unreadMap.get(conversationId) || 0,
-              archived: isArchived(conversationId)
+              archived: isArchived(conversationId),
+              is_group: isGroup
             };
           })
           .sort((a, b) => new Date(b.last_message_at || 0) - new Date(a.last_message_at || 0));
@@ -943,6 +1221,15 @@
           ? `<span class="voice-preview"><span class="voice-play">▶</span><span>${escapeHtml(chat.last_message)}</span></span>`
           : escapeHtml(chat.last_message);
 
+        const openCallButtons = chat.is_group
+          ? ``
+          : `
+            <div class="call-buttons">
+              <button class="call-btn" onclick="event.stopPropagation(); startCall('${escapeHtml(chat.other_user_id)}','audio')" title="Audio Call">📞</button>
+              <button class="call-btn" onclick="event.stopPropagation(); startCall('${escapeHtml(chat.other_user_id)}','video')" title="Video Call">🎥</button>
+            </div>
+          `;
+
         return `
           <div class="chat-item" onclick="openChat('${escapeHtml(chat.id)}','${escapeHtml(chat.other_user_id)}','${escapeHtml(chat.full_name)}','${escapeHtml(chat.avatar_url)}')">
             <div class="chat-main">
@@ -967,6 +1254,7 @@
             </div>
 
             <div class="chat-side">
+              ${openCallButtons}
               ${chat.archived ? `<span class="archived-pill">Arc</span>` : ``}
               ${chat.unread_count > 0 ? `<span class="badge">${chat.unread_count > 99 ? "99+" : chat.unread_count}</span>` : ``}
             </div>
@@ -984,6 +1272,11 @@
       window.location.href = `chat-room.html?${params.toString()}`;
     }
 
+    function startCall(userId, type) {
+      if (!userId) return;
+      window.location.href = `call-room.html?user_id=${encodeURIComponent(userId)}&type=${encodeURIComponent(type)}`;
+    }
+
     async function markAllRead() {
       if (!currentConversationIds.length) return;
 
@@ -992,9 +1285,7 @@
           .from("messages")
           .update({
             is_read: true,
-            read_at: new Date().toISOString(),
-            is_seen: true,
-            seen_at: new Date().toISOString()
+            read_at: new Date().toISOString()
           })
           .in("conversation_id", currentConversationIds)
           .neq("sender_id", currentUserId);
@@ -1134,6 +1425,7 @@
     });
 
     window.openChat = openChat;
+    window.startCall = startCall;
 
     async function init() {
       try {
