@@ -1,4 +1,11 @@
 const { createClient } = require("@supabase/supabase-js");
+const {
+  ensureFreshAccountToken,
+  normalizePlatform,
+  extractApiErrorMessage,
+  safeJsonParse,
+  trimText
+} = require("./token-manager");
 
 const JOB_STATUS = {
   QUEUED: "queued",
@@ -21,10 +28,6 @@ function getEnv(name, fallbackNames = []) {
   return process.env[name] || fallbackNames.map((k) => process.env[k]).find(Boolean) || "";
 }
 
-function normalizePlatform(value) {
-  return String(value || "").trim().toLowerCase();
-}
-
 function nowIso() {
   return new Date().toISOString();
 }
@@ -33,19 +36,33 @@ function makePlatformPostId(platform, id) {
   return `${platform}_${id}_${Date.now()}`;
 }
 
-function safeJsonParse(text, fallback = {}) {
-  try {
-    return text ? JSON.parse(text) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 function hasText(value) {
   return String(value || "").trim().length > 0;
 }
 
-function trimText(value, max = 3000) {
+function clampNumber(value, min, max, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, Math.floor(n)));
+}
+
+function sanitizeErrorMessage(errorLike, fallback = "Unknown publish error") {
+  if (!errorLike) return fallback;
+
+  if (typeof errorLike === "string") {
+    const cleaned = errorLike.replace(/\s+/g, " ").trim();
+    if (!cleaned) return fallback;
+    return trimText(cleaned, 500);
+  }
+
+  if (errorLike instanceof Error) {
+    return sanitizeErrorMessage(errorLike.message, fallback);
+  }
+
+  return trimText(JSON.stringify(errorLike), 500);
+}
+
+function trimPostText(value, max = 3000) {
   return String(value || "").slice(0, max);
 }
 
@@ -85,68 +102,8 @@ function getMediaType(post) {
 function getSupabase() {
   const url = getEnv("SUPABASE_URL", ["SUPABASE_URL_VALUE", "NEXT_PUBLIC_SUPABASE_URL"]);
   const key = getEnv("SUPABASE_SERVICE_ROLE_KEY", ["SUPABASE_SERVICE_KEY"]);
-  if (!url || !key) {
-    throw new Error("Missing SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY");
-  }
+  if (!url || !key) throw new Error("Missing SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY");
   return createClient(url, key);
-}
-
-function clampNumber(value, min, max, fallback) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.max(min, Math.min(max, Math.floor(n)));
-}
-
-function isAllowedJobStatus(status) {
-  return ALLOWED_JOB_STATUSES.has(String(status || "").trim().toLowerCase());
-}
-
-function extractApiErrorMessage(payload, fallback = "Request failed") {
-  if (!payload) return fallback;
-
-  if (typeof payload === "string") {
-    const cleaned = payload.replace(/\s+/g, " ").trim();
-    return trimText(cleaned || fallback, 500);
-  }
-
-  return trimText(
-    payload?.error?.message ||
-      payload?.message ||
-      payload?.error_description ||
-      payload?.description ||
-      payload?.detail ||
-      payload?.title ||
-      payload?.errorDetails ||
-      fallback,
-    500
-  );
-}
-
-function sanitizeErrorMessage(errorLike, fallback = "Unknown publish error") {
-  if (!errorLike) return fallback;
-
-  if (typeof errorLike === "string") {
-    const cleaned = errorLike.replace(/\s+/g, " ").trim();
-    if (!cleaned) return fallback;
-
-    const lower = cleaned.toLowerCase();
-    if (
-      lower.includes('"uploadurl"') ||
-      lower.includes('"uploadinstructions"') ||
-      lower.includes('"uploadedvideo"') ||
-      lower.includes('"value":')
-    ) {
-      return "Provider returned upload session data instead of a final publish result";
-    }
-
-    return trimText(cleaned, 500);
-  }
-
-  if (errorLike instanceof Error) {
-    return sanitizeErrorMessage(errorLike.message, fallback);
-  }
-
-  return trimText(JSON.stringify(errorLike), 500);
 }
 
 async function addLog(supabase, payload) {
@@ -158,22 +115,21 @@ async function addLog(supabase, payload) {
 }
 
 async function markJob(supabase, jobId, patch) {
-  const nextStatus = patch?.status;
-  if (nextStatus && !isAllowedJobStatus(nextStatus)) {
-    throw new Error(`Refusing to write invalid job status: ${nextStatus}`);
+  if (patch?.status && !ALLOWED_JOB_STATUSES.has(patch.status)) {
+    throw new Error(`Refusing to write invalid job status: ${patch.status}`);
   }
 
-  const update = { ...patch, updated_at: nowIso() };
-  const { error } = await supabase.from("post_publish_jobs").update(update).eq("id", jobId);
+  const { error } = await supabase
+    .from("post_publish_jobs")
+    .update({ ...patch, updated_at: nowIso() })
+    .eq("id", jobId);
 
   if (error) throw new Error(error.message || "Failed updating job");
 }
 
 async function fetchBinaryWithMeta(url) {
   const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch media: ${res.status}`);
-  }
+  if (!res.ok) throw new Error(`Failed to fetch media: ${res.status}`);
 
   const buffer = Buffer.from(await res.arrayBuffer());
   return {
@@ -185,9 +141,7 @@ async function fetchBinaryWithMeta(url) {
 
 function resolveConnectedAccountField(account, names) {
   for (const name of names) {
-    if (account && account[name] != null && account[name] !== "") {
-      return account[name];
-    }
+    if (account && account[name] != null && account[name] !== "") return account[name];
   }
   return null;
 }
@@ -226,9 +180,8 @@ async function uploadToYouTube(post, account) {
   if (!accessToken) throw new Error("Missing YouTube access token");
 
   const text = getPostText(post);
-  const title = hasText(text) ? trimText(text, 100) : "View Upload";
-  const description = hasText(text) ? trimText(text, 5000) : "";
-
+  const title = hasText(text) ? trimPostText(text, 100) : "View Upload";
+  const description = hasText(text) ? trimPostText(text, 5000) : "";
   const media = await fetchBinaryWithMeta(mediaUrl);
 
   const initRes = await fetch(
@@ -250,7 +203,6 @@ async function uploadToYouTube(post, account) {
 
   const initText = await initRes.text();
   const uploadUrl = initRes.headers.get("location");
-
   if (!initRes.ok || !uploadUrl) {
     throw new Error(`YouTube init failed: ${extractApiErrorMessage(initText, `HTTP ${initRes.status}`)}`);
   }
@@ -266,11 +218,8 @@ async function uploadToYouTube(post, account) {
 
   const uploadText = await uploadRes.text();
   const uploadJson = safeJsonParse(uploadText, {});
-
   if (!uploadRes.ok) {
-    throw new Error(
-      extractApiErrorMessage(uploadJson, uploadText || `YouTube upload failed: ${uploadRes.status}`)
-    );
+    throw new Error(extractApiErrorMessage(uploadJson, uploadText || `YouTube upload failed: ${uploadRes.status}`));
   }
 
   return uploadJson?.id || makePlatformPostId("youtube", post.id);
@@ -296,20 +245,20 @@ async function sendToTelegram(post, account) {
   const mediaType = getMediaType(post);
 
   let endpoint = "sendMessage";
-  let body = { chat_id: chatId, text: hasText(text) ? trimText(text, 4096) : " " };
+  let body = { chat_id: chatId, text: hasText(text) ? trimPostText(text, 4096) : " " };
 
   if (mediaUrl && isImage(mediaType, mediaUrl)) {
     endpoint = "sendPhoto";
     body = { chat_id: chatId, photo: mediaUrl };
-    if (hasText(text)) body.caption = trimText(text, 1024);
+    if (hasText(text)) body.caption = trimPostText(text, 1024);
   } else if (mediaUrl && isVideo(mediaType, mediaUrl)) {
     endpoint = "sendVideo";
     body = { chat_id: chatId, video: mediaUrl };
-    if (hasText(text)) body.caption = trimText(text, 1024);
+    if (hasText(text)) body.caption = trimPostText(text, 1024);
   } else if (mediaUrl) {
     endpoint = "sendDocument";
     body = { chat_id: chatId, document: mediaUrl };
-    if (hasText(text)) body.caption = trimText(text, 1024);
+    if (hasText(text)) body.caption = trimPostText(text, 1024);
   }
 
   const res = await fetch(`https://api.telegram.org/bot${botToken}/${endpoint}`, {
@@ -320,7 +269,6 @@ async function sendToTelegram(post, account) {
 
   const textRes = await res.text();
   const data = safeJsonParse(textRes, {});
-
   if (!res.ok || data?.ok === false) {
     throw new Error(extractApiErrorMessage(data, textRes || "Telegram publish failed"));
   }
@@ -349,27 +297,16 @@ async function sendToFacebook(post, account) {
 
   if (mediaUrl && isImage(mediaType, mediaUrl)) {
     url = `https://graph.facebook.com/v23.0/${pageId}/photos`;
-    body = new URLSearchParams({
-      url: mediaUrl,
-      access_token: accessToken,
-    });
-    if (hasText(text)) body.set("caption", trimText(text, 2200));
+    body = new URLSearchParams({ url: mediaUrl, access_token: accessToken });
+    if (hasText(text)) body.set("caption", trimPostText(text, 2200));
   } else if (mediaUrl && isVideo(mediaType, mediaUrl)) {
     url = `https://graph.facebook.com/v23.0/${pageId}/videos`;
-    body = new URLSearchParams({
-      file_url: mediaUrl,
-      access_token: accessToken,
-    });
-    if (hasText(text)) body.set("description", trimText(text, 2200));
-    if (hasText(text)) body.set("title", trimText(text, 100));
+    body = new URLSearchParams({ file_url: mediaUrl, access_token: accessToken });
+    if (hasText(text)) body.set("description", trimPostText(text, 2200));
+    if (hasText(text)) body.set("title", trimPostText(text, 100));
   } else {
-    if (!hasText(text)) {
-      throw new Error("Facebook text-only post requires content");
-    }
-    body = new URLSearchParams({
-      message: trimText(text, 5000),
-      access_token: accessToken,
-    });
+    if (!hasText(text)) throw new Error("Facebook text-only post requires content");
+    body = new URLSearchParams({ message: trimPostText(text, 5000), access_token: accessToken });
   }
 
   const res = await fetch(url, {
@@ -380,7 +317,6 @@ async function sendToFacebook(post, account) {
 
   const textRes = await res.text();
   const data = safeJsonParse(textRes, {});
-
   if (!res.ok || data?.error) {
     throw new Error(extractApiErrorMessage(data, textRes || "Facebook publish failed"));
   }
@@ -406,25 +342,19 @@ async function sendToInstagram(post, account) {
   const mediaType = getMediaType(post);
   const caption = getPostText(post);
 
-  if (!mediaUrl) {
-    throw new Error("Instagram publishing requires media_url/media_path");
-  }
+  if (!mediaUrl) throw new Error("Instagram publishing requires media_url/media_path");
 
   let createBody;
-
   if (isImage(mediaType, mediaUrl)) {
-    createBody = new URLSearchParams({
-      image_url: mediaUrl,
-      access_token: accessToken,
-    });
-    if (hasText(caption)) createBody.set("caption", trimText(caption, 2200));
+    createBody = new URLSearchParams({ image_url: mediaUrl, access_token: accessToken });
+    if (hasText(caption)) createBody.set("caption", trimPostText(caption, 2200));
   } else if (isVideo(mediaType, mediaUrl)) {
     createBody = new URLSearchParams({
       media_type: "REELS",
       video_url: mediaUrl,
       access_token: accessToken,
     });
-    if (hasText(caption)) createBody.set("caption", trimText(caption, 2200));
+    if (hasText(caption)) createBody.set("caption", trimPostText(caption, 2200));
   } else {
     throw new Error(`Instagram unsupported media type: ${mediaType || "unknown"}`);
   }
@@ -437,7 +367,6 @@ async function sendToInstagram(post, account) {
 
   const createText = await createRes.text();
   const createData = safeJsonParse(createText, {});
-
   if (!createRes.ok || createData?.error || !createData?.id) {
     throw new Error(extractApiErrorMessage(createData, createText || "Instagram media container failed"));
   }
@@ -453,7 +382,6 @@ async function sendToInstagram(post, account) {
 
   const publishText = await publishRes.text();
   const publishData = safeJsonParse(publishText, {});
-
   if (!publishRes.ok || publishData?.error) {
     throw new Error(extractApiErrorMessage(publishData, publishText || "Instagram publish failed"));
   }
@@ -502,11 +430,7 @@ async function registerLinkedInImage(mediaUrl, accessToken, ownerUrn) {
   const initRes = await fetch("https://api.linkedin.com/rest/images?action=initializeUpload", {
     method: "POST",
     headers: getLinkedInHeaders(accessToken),
-    body: JSON.stringify({
-      initializeUploadRequest: {
-        owner: ownerUrn,
-      },
-    }),
+    body: JSON.stringify({ initializeUploadRequest: { owner: ownerUrn } }),
   });
 
   const initText = await initRes.text();
@@ -519,7 +443,6 @@ async function registerLinkedInImage(mediaUrl, accessToken, ownerUrn) {
   }
 
   const media = await fetchBinaryWithMeta(mediaUrl);
-
   const uploadRes = await fetch(uploadUrl, {
     method: "PUT",
     headers: {
@@ -566,7 +489,6 @@ async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
   }
 
   const uploadedPartIds = [];
-
   for (const part of uploadInstructions) {
     const start = Number(part.firstByte || 0);
     const end = Number(part.lastByte != null ? part.lastByte : media.contentLength - 1);
@@ -582,15 +504,12 @@ async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
     });
 
     const uploadText = await uploadRes.text();
-
     if (!uploadRes.ok) {
       throw new Error(extractApiErrorMessage(uploadText, "LinkedIn video upload failed"));
     }
 
     const etagRaw = uploadRes.headers.get("etag") || uploadRes.headers.get("ETag");
-    if (!etagRaw) {
-      throw new Error("LinkedIn video upload missing ETag header");
-    }
+    if (!etagRaw) throw new Error("LinkedIn video upload missing ETag header");
 
     const cleanEtag = etagRaw.replace(/^W\//, "").replace(/^"|"$/g, "");
     uploadedPartIds.push(cleanEtag);
@@ -615,7 +534,6 @@ async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
 
   const finalizeText = await finalizeRes.text();
   const finalizeData = safeJsonParse(finalizeText, {});
-
   if (!finalizeRes.ok) {
     throw new Error(extractApiErrorMessage(finalizeData, finalizeText || "LinkedIn video finalize failed"));
   }
@@ -644,24 +562,14 @@ async function sendToLinkedIn(post, account) {
     isReshareDisabledByAuthor: false,
   };
 
-  if (hasText(commentary)) {
-    body.commentary = trimText(commentary, 3000);
-  }
+  if (hasText(commentary)) body.commentary = trimPostText(commentary, 3000);
 
   if (mediaUrl && isImage(mediaType, mediaUrl)) {
     const imageUrn = await registerLinkedInImage(mediaUrl, accessToken, author);
-    body.content = {
-      media: {
-        id: imageUrn,
-      },
-    };
+    body.content = { media: { id: imageUrn } };
   } else if (mediaUrl && isVideo(mediaType, mediaUrl)) {
     const videoUrn = await registerLinkedInVideo(mediaUrl, accessToken, author);
-    body.content = {
-      media: {
-        id: videoUrn,
-      },
-    };
+    body.content = { media: { id: videoUrn } };
   } else if (!hasText(commentary)) {
     throw new Error("LinkedIn text-only post requires content when there is no media");
   }
@@ -675,7 +583,6 @@ async function sendToLinkedIn(post, account) {
   const textRes = await res.text();
   const idHeader = res.headers.get("x-restli-id");
   const data = safeJsonParse(textRes, {});
-
   if (!res.ok) {
     throw new Error(extractApiErrorMessage(data, textRes || "LinkedIn publish failed"));
   }
@@ -697,12 +604,11 @@ async function sendToX(post, account) {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ text: trimText(text, 280) }),
+    body: JSON.stringify({ text: trimPostText(text, 280) }),
   });
 
   const bodyText = await res.text();
   const data = safeJsonParse(bodyText, {});
-
   if (!res.ok || data?.errors) {
     throw new Error(extractApiErrorMessage(data, bodyText || "X publish failed"));
   }
@@ -721,28 +627,20 @@ async function sendToTikTok(post, account) {
   if (!mediaUrl) throw new Error("TikTok requires media_url/media_path");
 
   let sourceInfo;
-
   if (isVideo(mediaType, mediaUrl)) {
-    sourceInfo = {
-      source: "PULL_FROM_URL",
-      video_url: mediaUrl,
-    };
+    sourceInfo = { source: "PULL_FROM_URL", video_url: mediaUrl };
   } else if (isImage(mediaType, mediaUrl)) {
-    sourceInfo = {
-      source: "PULL_FROM_URL",
-      photo_images: [mediaUrl],
-    };
+    sourceInfo = { source: "PULL_FROM_URL", photo_images: [mediaUrl] };
   } else {
     throw new Error(`TikTok unsupported media type: ${mediaType || "unknown"}`);
   }
 
-  const privacyLevel =
-    resolveConnectedAccountField(account, ["privacy_level"]) || "PUBLIC_TO_EVERYONE";
+  const privacyLevel = resolveConnectedAccountField(account, ["privacy_level"]) || "PUBLIC_TO_EVERYONE";
   const postMode = resolveConnectedAccountField(account, ["post_mode"]) || "DIRECT_POST";
 
   const body = {
     post_info: {
-      title: hasText(text) ? trimText(text, 90) : "View post",
+      title: hasText(text) ? trimPostText(text, 90) : "View post",
       privacy_level: privacyLevel,
       disable_comment: false,
       disable_duet: false,
@@ -765,16 +663,15 @@ async function sendToTikTok(post, account) {
 
   const textRes = await res.text();
   const data = safeJsonParse(textRes, {});
-
   if (!res.ok || data?.error?.code) {
     throw new Error(extractApiErrorMessage(data, textRes || "TikTok publish init failed"));
   }
 
   return String(
     data?.data?.publish_id ||
-      data?.data?.task_id ||
-      data?.data?.share_id ||
-      makePlatformPostId("tiktok", post.id)
+    data?.data?.task_id ||
+    data?.data?.share_id ||
+    makePlatformPostId("tiktok", post.id)
   );
 }
 
@@ -803,28 +700,28 @@ async function dispatchPlatform(post, account, platform) {
 }
 
 async function loadPostAndAccount(supabase, job) {
-  const [{ data: post, error: postError }, { data: account, error: accountError }] =
-    await Promise.all([
-      supabase.from("posts").select("*").eq("id", job.post_id).single(),
-      supabase
-        .from("connected_accounts")
-        .select("*")
-        .eq("user_id", job.user_id)
-        .eq("platform", job.platform)
-        .maybeSingle(),
-    ]);
+  const [{ data: post, error: postError }, { data: account, error: accountError }] = await Promise.all([
+    supabase.from("posts").select("*").eq("id", job.post_id).single(),
+    supabase
+      .from("connected_accounts")
+      .select("*")
+      .eq("user_id", job.user_id)
+      .eq("platform", job.platform)
+      .maybeSingle(),
+  ]);
 
   if (postError || !post) throw new Error(postError?.message || "Post not found");
 
   if (normalizePlatform(job.platform) !== "view") {
     if (accountError) throw new Error(accountError.message || "Connected account lookup failed");
     if (!account) throw new Error(`No connected ${job.platform} account found`);
-    if (!resolveConnectedFlag(account)) {
-      throw new Error(`${job.platform} account exists but is not active`);
-    }
+    if (!resolveConnectedFlag(account)) throw new Error(`${job.platform} account exists but is not active`);
+
+    const freshAccount = await ensureFreshAccountToken(supabase, account);
+    return { post, account: freshAccount };
   }
 
-  return { post, account };
+  return { post, account: null };
 }
 
 async function updatePostAggregateStatus(supabase, postId) {
@@ -965,10 +862,7 @@ async function runWithConcurrency(items, limit, worker) {
 module.exports = async function handler(req, res) {
   setCors(res);
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
+  if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "GET" && req.method !== "POST") {
     return res.status(405).json({ success: false, error: "Method not allowed" });
   }
@@ -994,9 +888,7 @@ module.exports = async function handler(req, res) {
       .order("created_at", { ascending: true })
       .limit(batchSize);
 
-    if (jobsError) {
-      throw new Error(jobsError.message || "Failed to load publish jobs");
-    }
+    if (jobsError) throw new Error(jobsError.message || "Failed to load publish jobs");
 
     const runnableJobs = (jobs || []).filter((job) => {
       if (job.status !== JOB_STATUS.RETRYING) return true;
@@ -1028,10 +920,7 @@ module.exports = async function handler(req, res) {
       success_count: results.filter((r) => r.ok).length,
       failed_count: results.filter((r) => !r.ok).length,
       results,
-      message: `Processed ${results.length} job(s) with concurrency ${Math.min(
-        concurrency,
-        runnableJobs.length
-      )}`,
+      message: `Processed ${results.length} job(s) with concurrency ${Math.min(concurrency, runnableJobs.length)}`,
     });
   } catch (err) {
     console.error("process-publish-jobs fatal:", err);
