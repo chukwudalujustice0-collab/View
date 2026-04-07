@@ -4,21 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Video Feed | View</title>
-  <meta name="theme-color" content="#000000" />
+  <meta name="theme-color" content="#05093c" />
   <link rel="manifest" href="/manifest.json" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{
-      --bg:#000;
-      --panel:rgba(0,0,0,.46);
+      --bg:#05093c;
+      --bg2:#07115f;
+      --bg3:#081a8f;
+      --panel:rgba(7,17,95,.46);
       --panel-soft:rgba(255,255,255,.12);
       --line:rgba(255,255,255,.12);
       --text:#fff;
       --muted:rgba(255,255,255,.82);
       --muted-2:rgba(255,255,255,.64);
-      --primary:#ff2f73;
-      --blue:#22d3ee;
+      --primary:#ff2f57;
+      --blue:#2f7bff;
+      --blue2:#5ba0ff;
+      --red:#ff2f57;
+      --red2:#ff5a74;
       --shadow:0 12px 30px rgba(0,0,0,.28);
       --safe-top:env(safe-area-inset-top);
       --safe-bottom:env(safe-area-inset-bottom);
@@ -63,7 +68,7 @@
       left:50%;
       transform:translateX(-50%);
       width:min(92%,540px);
-      z-index:120;
+      z-index:130;
       padding:13px 14px;
       border-radius:16px;
       font-size:14px;
@@ -74,7 +79,7 @@
     .notice.show{display:block}
     .notice.error{background:rgba(127,29,29,.92);color:#fecaca;border:1px solid rgba(255,255,255,.08)}
     .notice.success{background:rgba(5,46,22,.92);color:#d1fae5;border:1px solid rgba(255,255,255,.08)}
-    .notice.info{background:rgba(12,20,36,.94);color:#dbeafe;border:1px solid rgba(255,255,255,.08)}
+    .notice.info{background:rgba(7,17,95,.94);color:#dbeafe;border:1px solid rgba(255,255,255,.08)}
 
     .feed-shell{
       position:relative;
@@ -113,8 +118,9 @@
       display:grid;
       place-items:center;
       background:
-        radial-gradient(circle at top, rgba(34,211,238,.16), transparent 28%),
-        linear-gradient(180deg,#111827,#020617);
+        radial-gradient(circle at top, rgba(47,123,255,.20), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(255,47,87,.16), transparent 22%),
+        linear-gradient(180deg,#081a8f,#07115f 55%, #05093c);
       color:#fff;
       text-align:center;
       padding:24px;
@@ -124,13 +130,19 @@
     }
 
     .overlay-top{
-      position:absolute;
+      position:fixed;
       top:0;
       left:0;
       right:0;
-      z-index:20;
+      z-index:25;
       padding:calc(var(--safe-top) + 8px) 12px 12px;
       background:linear-gradient(180deg, rgba(0,0,0,.54), rgba(0,0,0,0));
+      pointer-events:none;
+    }
+
+    .overlay-top .topbar,
+    .overlay-top .feed-tabs{
+      pointer-events:auto;
     }
 
     .topbar{
@@ -147,6 +159,87 @@
       gap:10px;
     }
 
+    .brand-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+      padding-left:2px;
+    }
+
+    .brand-logo{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      background:linear-gradient(135deg,#5b8cff,#1e3a8a);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      font-size:30px;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .brand-logo img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .brand-copy{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+
+    .brand-title{
+      display:flex;
+      align-items:flex-end;
+      gap:8px;
+      flex-wrap:wrap;
+      font-size:17px;
+      font-weight:900;
+      color:#fff;
+      line-height:1;
+      white-space:nowrap;
+    }
+
+    .brand-view{
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:-.02em;
+    }
+
+    .brand-dot{
+      color:#ff2f57;
+      font-size:14px;
+      line-height:1;
+      margin-left:2px;
+    }
+
+    .brand-by{
+      font-size:13px;
+      font-weight:800;
+      color:#fff;
+      opacity:.95;
+    }
+
+    .brand-underline{
+      width:148px;
+      max-width:100%;
+      height:5px;
+      border-radius:999px;
+      margin-top:8px;
+      background:linear-gradient(135deg,var(--red),var(--red2));
+      box-shadow:0 6px 18px rgba(255,47,87,.28);
+    }
+
     .icon-btn{
       width:42px;
       height:42px;
@@ -160,6 +253,29 @@
       backdrop-filter:blur(12px);
       box-shadow:var(--shadow);
       font-size:18px;
+    }
+
+    .profile-chip{
+      width:48px;
+      height:48px;
+      min-width:48px;
+      border-radius:50%;
+      overflow:hidden;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,var(--blue),var(--red));
+      border:2px solid rgba(255,255,255,.2);
+      box-shadow:var(--shadow);
+      font-size:22px;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .profile-chip img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
     }
 
     .feed-tabs{
@@ -194,13 +310,13 @@
       width:42px;
       height:4px;
       border-radius:999px;
-      background:#fff;
+      background:linear-gradient(135deg,var(--blue),var(--red));
     }
 
     .right-rail{
       position:absolute;
       right:10px;
-      bottom:112px;
+      bottom:122px;
       z-index:20;
       display:flex;
       flex-direction:column;
@@ -216,7 +332,7 @@
       overflow:hidden;
       border:2px solid rgba(255,255,255,.9);
       box-shadow:var(--shadow);
-      background:#1d4ed8;
+      background:linear-gradient(135deg,var(--blue),var(--red));
       display:grid;
       place-items:center;
       font-weight:800;
@@ -282,7 +398,7 @@
       position:absolute;
       left:0;
       right:0;
-      bottom:86px;
+      bottom:96px;
       z-index:20;
       padding:0 88px 0 14px;
     }
@@ -370,7 +486,7 @@
       z-index:20;
       height:48px;
       border-radius:14px;
-      background:rgba(17,24,39,.88);
+      background:rgba(7,17,95,.88);
       border:1px solid rgba(255,255,255,.10);
       display:flex;
       align-items:center;
@@ -452,18 +568,18 @@
       right:0;
       bottom:0;
       z-index:30;
-      background:rgba(0,0,0,.92);
+      background:rgba(5,9,60,.96);
       backdrop-filter:blur(18px);
       border-top:1px solid rgba(255,255,255,.08);
       display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:4px;
-      padding:8px 8px calc(8px + var(--safe-bottom));
+      grid-template-columns:repeat(6,1fr);
+      gap:0;
+      padding:8px 4px calc(8px + var(--safe-bottom));
     }
 
     .bottom-link{
-      min-height:58px;
-      border-radius:14px;
+      min-height:64px;
+      border-radius:0;
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -476,7 +592,23 @@
 
     .bottom-link.active{
       color:#fff;
-      background:rgba(255,255,255,.08);
+    }
+
+    .create-link{
+      position:relative;
+    }
+
+    .create-link span:first-child{
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,var(--red),var(--red2));
+      color:#fff;
+      font-size:26px;
+      box-shadow:0 8px 24px rgba(255,47,87,.35);
+      margin-bottom:2px;
     }
 
     .modal-backdrop{
@@ -502,6 +634,9 @@
       border:1px solid rgba(255,255,255,.08);
       box-shadow:var(--shadow);
       overflow:hidden;
+      max-height:min(84vh,720px);
+      display:flex;
+      flex-direction:column;
     }
 
     .sheet-handle{
@@ -550,16 +685,205 @@
       cursor:pointer;
     }
 
+    .comments-sheet{
+      width:min(100%,620px);
+      border-radius:26px 26px 18px 18px;
+      background:#0f172a;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      max-height:min(88vh,760px);
+      display:flex;
+      flex-direction:column;
+    }
+
+    .comments-head{
+      padding:14px 16px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .comments-meta h3{
+      font-size:18px;
+      margin-bottom:4px;
+    }
+
+    .comments-meta p{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .comments-list{
+      padding:12px;
+      overflow:auto;
+      display:grid;
+      gap:10px;
+      min-height:180px;
+      max-height:52vh;
+    }
+
+    .comment-item{
+      padding:12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .comment-top{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:8px;
+    }
+
+    .comment-avatar{
+      width:38px;
+      height:38px;
+      min-width:38px;
+      border-radius:50%;
+      overflow:hidden;
+      background:linear-gradient(135deg,var(--blue),var(--red));
+      display:grid;
+      place-items:center;
+      font-size:14px;
+      font-weight:800;
+    }
+
+    .comment-avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .comment-name{
+      font-size:13px;
+      font-weight:800;
+      color:#fff;
+    }
+
+    .comment-time{
+      font-size:11px;
+      color:var(--muted-2);
+      margin-top:2px;
+    }
+
+    .comment-text{
+      font-size:13px;
+      line-height:1.55;
+      color:#fff;
+      word-break:break-word;
+      white-space:pre-wrap;
+    }
+
+    .comments-empty{
+      padding:24px 14px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .comments-compose{
+      padding:12px;
+      border-top:1px solid rgba(255,255,255,.06);
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      background:rgba(255,255,255,.02);
+    }
+
+    .comments-input{
+      min-height:48px;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      padding:0 14px;
+      outline:none;
+    }
+
+    .comments-input::placeholder{
+      color:#a9bce0;
+    }
+
+    .comments-send{
+      min-width:92px;
+      min-height:48px;
+      border-radius:14px;
+      background:linear-gradient(135deg,var(--blue),var(--red));
+      color:#fff;
+      font-weight:800;
+      padding:0 16px;
+    }
+
+    @media (max-width:680px){
+      .brand-title{
+        gap:6px;
+      }
+      .brand-view{
+        font-size:20px;
+      }
+      .brand-by{
+        font-size:12px;
+      }
+      .brand-underline{
+        width:132px;
+      }
+    }
+
     @media (max-width:560px){
       .feed-tabs{ gap:18px; }
       .feed-tab{ font-size:16px; }
       .bottom-caption{ padding-right:82px; }
       .author-name{ font-size:15px; }
+      .comments-compose{
+        grid-template-columns:1fr;
+      }
+      .comments-send{
+        width:100%;
+      }
+      .topbar{
+        gap:8px;
+      }
+      .top-right{
+        gap:8px;
+      }
+      .brand-logo{
+        width:42px;
+        height:42px;
+        min-width:42px;
+      }
+      .profile-chip{
+        width:46px;
+        height:46px;
+        min-width:46px;
+      }
+      .icon-btn{
+        width:42px;
+        height:42px;
+        min-width:42px;
+      }
+      .brand-view{
+        font-size:19px;
+      }
+      .brand-by{
+        font-size:12px;
+      }
+      .brand-underline{
+        width:120px;
+      }
     }
   </style>
 </head>
 <body>
   <div id="notice" class="notice"></div>
+
+  <div class="overlay-top" id="fixedTopChrome"></div>
 
   <main id="feedShell" class="feed-shell"></main>
 
@@ -568,17 +892,21 @@
       <span>🏠</span>
       <span>Home</span>
     </a>
-    <a href="friends.html" class="bottom-link">
-      <span>👥</span>
-      <span>Friends</span>
+    <a href="explore.html" class="bottom-link">
+      <span>🧭</span>
+      <span>Explore</span>
     </a>
-    <a href="create-post.html" class="bottom-link">
+    <a href="create-post.html" class="bottom-link create-link">
       <span>➕</span>
       <span>Create</span>
     </a>
     <a href="chats.html" class="bottom-link">
       <span>💬</span>
-      <span>Inbox</span>
+      <span>Chat</span>
+    </a>
+    <a href="video-feed.html" class="bottom-link active">
+      <span>🎬</span>
+      <span>Video</span>
     </a>
     <a href="profile.html" class="bottom-link">
       <span>👤</span>
@@ -596,21 +924,40 @@
       <div class="sheet-actions">
         <button id="sheetProfileBtn" class="sheet-btn">Open creator profile <span>↗</span></button>
         <button id="sheetCommentsBtn" class="sheet-btn">Open comments <span>💬</span></button>
-        <button id="sheetCopyBtn" class="sheet-btn">Copy link <span>🔗</span></button>
-        <button id="sheetShareBtn" class="sheet-btn">Share video <span>↗</span></button>
+        <button id="sheetFriendShareBtn" class="sheet-btn">Share to friends <span>👥</span></button>
+        <button id="sheetCopyBtn" class="sheet-btn">Copy video link <span>🔗</span></button>
+        <button id="sheetShareBtn" class="sheet-btn">Share to apps <span>📲</span></button>
         <button id="sheetReportBtn" class="sheet-btn">Report post <span>⚑</span></button>
         <button id="sheetCloseBtn" class="sheet-btn">Close <span>✕</span></button>
       </div>
     </div>
   </div>
 
+  <div id="commentsBackdrop" class="modal-backdrop">
+    <div class="comments-sheet">
+      <div class="sheet-handle"></div>
+      <div class="comments-head">
+        <div class="comments-meta">
+          <h3>Comments</h3>
+          <p id="commentsSubtitle">Join the conversation</p>
+        </div>
+        <button id="commentsCloseBtn" class="icon-btn" type="button">✕</button>
+      </div>
+
+      <div id="commentsList" class="comments-list"></div>
+
+      <div class="comments-compose">
+        <input id="commentsInput" class="comments-input" type="text" placeholder="Write a comment..." />
+        <button id="commentsSendBtn" class="comments-send" type="button">Send</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    const REAL_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, REAL_SUPABASE_ANON_KEY, {
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -620,27 +967,40 @@
 
     const noticeBox = document.getElementById("notice");
     const feedShell = document.getElementById("feedShell");
+    const fixedTopChrome = document.getElementById("fixedTopChrome");
     const actionSheetBackdrop = document.getElementById("actionSheetBackdrop");
+    const commentsBackdrop = document.getElementById("commentsBackdrop");
 
     const sheetProfileBtn = document.getElementById("sheetProfileBtn");
     const sheetCommentsBtn = document.getElementById("sheetCommentsBtn");
+    const sheetFriendShareBtn = document.getElementById("sheetFriendShareBtn");
     const sheetCopyBtn = document.getElementById("sheetCopyBtn");
     const sheetShareBtn = document.getElementById("sheetShareBtn");
     const sheetReportBtn = document.getElementById("sheetReportBtn");
     const sheetCloseBtn = document.getElementById("sheetCloseBtn");
 
+    const commentsList = document.getElementById("commentsList");
+    const commentsSubtitle = document.getElementById("commentsSubtitle");
+    const commentsInput = document.getElementById("commentsInput");
+    const commentsSendBtn = document.getElementById("commentsSendBtn");
+    const commentsCloseBtn = document.getElementById("commentsCloseBtn");
+
     const state = {
       user: null,
+      userProfile: null,
       posts: [],
       followingSet: new Set(),
       savedSet: new Set(JSON.parse(localStorage.getItem("view_saved_video_posts") || "[]")),
       likesMap: JSON.parse(localStorage.getItem("view_video_likes") || "{}"),
       activeVideoId: null,
       currentActionPost: null,
+      currentCommentPost: null,
       observer: null,
       postsChannel: null,
       followersChannel: null,
-      activeTab: "for_you"
+      commentsChannel: null,
+      activeTab: "for_you",
+      commentProfileMap: {}
     };
 
     function showNotice(message, type = "info") {
@@ -673,6 +1033,17 @@
       return String(value || "U").trim().charAt(0).toUpperCase() || "U";
     }
 
+    function timeAgo(value) {
+      if (!value) return "Just now";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "Just now";
+      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+      if (diff < 60) return "Just now";
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      return `${Math.floor(diff / 86400)}d ago`;
+    }
+
     function looksLikeVideoByUrl(value) {
       const v = String(value || "").toLowerCase();
       return (
@@ -695,11 +1066,7 @@
       const mediaPath = String(post.media_path || "").trim();
 
       if (mediaUrl) return mediaUrl;
-
-      if (mediaPath && /^https?:\/\//i.test(mediaPath)) {
-        return mediaPath;
-      }
-
+      if (mediaPath && /^https?:\/\//i.test(mediaPath)) return mediaPath;
       return "";
     }
 
@@ -748,8 +1115,7 @@
           sound_name: post.sound_name || "Original sound",
           likes_count: Number(post.likes_count || 0),
           comments_count: Number(post.comments_count || 0),
-          shares_count: Number(post.shares_count || 0),
-          saves_count: Number(post.saves_count || 0)
+          shares_count: Number(post.shares_count || 0)
         };
       }).filter(post => isVideoPost(post) && !!post.media_url);
     }
@@ -758,6 +1124,19 @@
       const { data, error } = await supabaseClient.auth.getSession();
       if (error) throw error;
       state.user = data.session?.user || null;
+
+      if (state.user) {
+        const { data: profileData } = await supabaseClient
+          .from("profiles")
+          .select("id,username,full_name,avatar_url")
+          .eq("id", state.user.id)
+          .maybeSingle();
+
+        state.userProfile = profileData || null;
+      } else {
+        state.userProfile = null;
+      }
+
       return state.user;
     }
 
@@ -803,6 +1182,9 @@
           visibility,
           media_name,
           media_path,
+          likes_count,
+          comments_count,
+          shares_count,
           profiles:profiles!posts_user_id_fkey (
             username,
             full_name,
@@ -844,20 +1226,84 @@
       return `<span>${escapeHtml(getInitial(displayName))}</span>`;
     }
 
+    function renderCurrentUserAvatar() {
+      const avatar = state.userProfile?.avatar_url || "";
+      const name = state.userProfile?.full_name || state.userProfile?.username || state.user?.email || "V";
+
+      if (avatar) {
+        return `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}" />`;
+      }
+      return `<span>${escapeHtml(getInitial(name || "V"))}</span>`;
+    }
+
+    function renderTopChrome() {
+      fixedTopChrome.innerHTML = `
+        <div class="topbar">
+          <div class="brand-wrap">
+            <a href="home.html" class="brand-logo" aria-label="View Home">
+              <span>V</span>
+            </a>
+
+            <div class="brand-copy">
+              <div class="brand-title">
+                <span class="brand-view">view</span>
+                <span class="brand-dot">•</span>
+                <span class="brand-by">by Ceetify</span>
+              </div>
+              <div class="brand-underline"></div>
+            </div>
+          </div>
+
+          <div class="top-right">
+            <button class="icon-btn" onclick="location.href='notifications.html'" title="Notifications">🔔</button>
+            <button class="icon-btn" onclick="location.href='chats.html'" title="Chat">💬</button>
+            <a href="profile.html" class="profile-chip" title="Profile">
+              ${renderCurrentUserAvatar()}
+            </a>
+          </div>
+        </div>
+
+        <div class="feed-tabs">
+          <button class="feed-tab ${state.activeTab === "stem" ? "active" : ""}" data-tab="stem">STEM</button>
+          <button class="feed-tab ${state.activeTab === "explore" ? "active" : ""}" data-tab="explore">Explore</button>
+          <button class="feed-tab ${state.activeTab === "following" ? "active" : ""}" data-tab="following">Following</button>
+          <button class="feed-tab ${state.activeTab === "for_you" ? "active" : ""}" data-tab="for_you">For You</button>
+        </div>
+      `;
+
+      document.querySelectorAll(".feed-tab").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const tab = btn.dataset.tab;
+          if (tab === "stem") {
+            showNotice("STEM feed can be connected later. Showing current video feed.", "info");
+            return;
+          }
+          if (tab === "explore") {
+            location.href = "explore.html";
+            return;
+          }
+          state.activeTab = tab;
+          renderFeed();
+          setTimeout(setupIntersectionPlayback, 120);
+        });
+      });
+    }
+
     function renderFeed() {
+      renderTopChrome();
+
       const posts = filteredPosts();
 
       if (!posts.length) {
         feedShell.innerHTML = `
           <section class="video-slide">
-            ${renderTopChrome()}
             <div class="video-placeholder">No videos found in the feed yet.</div>
           </section>
         `;
         return;
       }
 
-      feedShell.innerHTML = posts.map((post, index) => {
+      feedShell.innerHTML = posts.map((post) => {
         const displayName = getDisplayName(post);
         const liked = activeLiked(post.id);
         const saved = activeSaved(post.id);
@@ -866,8 +1312,6 @@
 
         return `
           <section class="video-slide" data-post-id="${escapeHtml(post.id)}">
-            ${index === 0 ? renderTopChrome() : ""}
-
             <video
               class="video-media"
               src="${escapeHtml(post.media_url)}"
@@ -906,7 +1350,7 @@
 
               <div class="rail-action">
                 <button class="rail-circle save-btn" data-post-id="${escapeHtml(post.id)}" title="Save">${saved ? "🔖" : "📑"}</button>
-                <div class="rail-count">${saved ? "Saved" : formatCompact(post.saves_count)}</div>
+                <div class="rail-count">${saved ? "Saved" : "Save"}</div>
               </div>
 
               <div class="rail-action">
@@ -953,48 +1397,7 @@
       bindFeedActions();
     }
 
-    function renderTopChrome() {
-      return `
-        <div class="overlay-top">
-          <div class="topbar">
-            <div class="top-left">
-              <button class="icon-btn" onclick="location.href='home.html'" title="Home">🏠</button>
-            </div>
-
-            <div class="top-right">
-              <button class="icon-btn" onclick="location.href='notifications.html'" title="Notifications">🔔</button>
-              <button class="icon-btn" onclick="location.href='explore.html'" title="Search">🔎</button>
-            </div>
-          </div>
-
-          <div class="feed-tabs">
-            <button class="feed-tab ${state.activeTab === "stem" ? "active" : ""}" data-tab="stem">STEM</button>
-            <button class="feed-tab ${state.activeTab === "explore" ? "active" : ""}" data-tab="explore">Explore</button>
-            <button class="feed-tab ${state.activeTab === "following" ? "active" : ""}" data-tab="following">Following</button>
-            <button class="feed-tab ${state.activeTab === "for_you" ? "active" : ""}" data-tab="for_you">For You</button>
-          </div>
-        </div>
-      `;
-    }
-
     function bindFeedActions() {
-      document.querySelectorAll(".feed-tab").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const tab = btn.dataset.tab;
-          if (tab === "stem") {
-            showNotice("STEM feed can be connected later. Showing current video feed.", "info");
-            return;
-          }
-          if (tab === "explore") {
-            location.href = "explore.html";
-            return;
-          }
-          state.activeTab = tab;
-          renderFeed();
-          setTimeout(setupIntersectionPlayback, 120);
-        });
-      });
-
       document.querySelectorAll(".creator-profile-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
@@ -1005,7 +1408,7 @@
 
       document.querySelectorAll(".comment-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-          location.href = `comments.html?post=${encodeURIComponent(btn.dataset.postId)}`;
+          openComments(btn.dataset.postId);
         });
       });
 
@@ -1186,6 +1589,7 @@
             text: shareText,
             url: shareUrl
           });
+          showNotice("Sharing opened.", "success");
           return;
         }
       } catch (error) {
@@ -1200,6 +1604,11 @@
       }
     }
 
+    function shareToFriends(postId) {
+      const url = `chats.html?share_post=${encodeURIComponent(postId)}&share_link=${encodeURIComponent(getPostUrl(postId))}`;
+      location.href = url;
+    }
+
     function openActionSheet(postId) {
       const post = state.posts.find(p => p.id === postId);
       if (!post) return;
@@ -1211,6 +1620,122 @@
       actionSheetBackdrop.classList.remove("show");
     }
 
+    async function openComments(postId) {
+      state.currentCommentPost = state.posts.find(p => p.id === postId) || null;
+      if (!state.currentCommentPost) return;
+
+      commentsSubtitle.textContent = state.currentCommentPost.title || state.currentCommentPost.caption || "Join the conversation";
+      commentsList.innerHTML = `<div class="comments-empty">Loading comments...</div>`;
+      commentsBackdrop.classList.add("show");
+      commentsInput.value = "";
+
+      try {
+        await loadComments(postId);
+      } catch (error) {
+        commentsList.innerHTML = `<div class="comments-empty">Could not load comments.</div>`;
+        showNotice(error.message || "Could not load comments.", "error");
+      }
+    }
+
+    function closeComments() {
+      commentsBackdrop.classList.remove("show");
+      state.currentCommentPost = null;
+    }
+
+    async function loadCommentProfiles(userIds) {
+      const uniqueIds = Array.from(new Set((userIds || []).filter(Boolean)));
+      const missing = uniqueIds.filter(id => !state.commentProfileMap[id]);
+      if (!missing.length) return;
+
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("id,full_name,username,avatar_url")
+        .in("id", missing);
+
+      if (!error) {
+        (data || []).forEach(profile => {
+          state.commentProfileMap[profile.id] = profile;
+        });
+      }
+    }
+
+    function renderCommentAvatar(profile) {
+      if (profile?.avatar_url) {
+        return `<img src="${escapeHtml(profile.avatar_url)}" alt="${escapeHtml(profile.full_name || profile.username || "User")}" />`;
+      }
+      return `<span>${escapeHtml(getInitial(profile?.full_name || profile?.username || "U"))}</span>`;
+    }
+
+    async function loadComments(postId) {
+      const { data, error } = await supabaseClient
+        .from("comments")
+        .select("id,post_id,user_id,content,created_at")
+        .eq("post_id", postId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const comments = data || [];
+      await loadCommentProfiles(comments.map(item => item.user_id));
+
+      if (!comments.length) {
+        commentsList.innerHTML = `<div class="comments-empty">No comments yet. Be the first to comment.</div>`;
+        return;
+      }
+
+      commentsList.innerHTML = comments.map(comment => {
+        const profile = state.commentProfileMap[comment.user_id] || {};
+        const name = profile.full_name || profile.username || "User";
+        return `
+          <div class="comment-item">
+            <div class="comment-top">
+              <div class="comment-avatar">${renderCommentAvatar(profile)}</div>
+              <div>
+                <div class="comment-name">${escapeHtml(name)}</div>
+                <div class="comment-time">${escapeHtml(timeAgo(comment.created_at))}</div>
+              </div>
+            </div>
+            <div class="comment-text">${escapeHtml(comment.content || "")}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function submitComment() {
+      const post = state.currentCommentPost;
+      if (!post) return;
+
+      if (!state.user) {
+        showNotice("Please log in to comment.", "info");
+        location.href = "login.html?next=video-feed.html";
+        return;
+      }
+
+      const content = commentsInput.value.trim();
+      if (!content) {
+        showNotice("Write a comment first.", "info");
+        return;
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from("comments")
+          .insert({
+            post_id: post.id,
+            user_id: state.user.id,
+            content
+          });
+
+        if (error) throw error;
+
+        commentsInput.value = "";
+        await loadComments(post.id);
+        showNotice("Comment added.", "success");
+      } catch (error) {
+        showNotice(error.message || "Could not add comment.", "error");
+      }
+    }
+
     sheetProfileBtn.addEventListener("click", () => {
       if (!state.currentActionPost) return;
       location.href = buildProfileUrl(state.currentActionPost.user_id);
@@ -1218,7 +1743,14 @@
 
     sheetCommentsBtn.addEventListener("click", () => {
       if (!state.currentActionPost) return;
-      location.href = `comments.html?post=${encodeURIComponent(state.currentActionPost.id)}`;
+      closeActionSheet();
+      openComments(state.currentActionPost.id);
+    });
+
+    sheetFriendShareBtn.addEventListener("click", () => {
+      if (!state.currentActionPost) return;
+      shareToFriends(state.currentActionPost.id);
+      closeActionSheet();
     });
 
     sheetCopyBtn.addEventListener("click", async () => {
@@ -1248,6 +1780,18 @@
       if (e.target === actionSheetBackdrop) closeActionSheet();
     });
 
+    commentsCloseBtn.addEventListener("click", closeComments);
+    commentsBackdrop.addEventListener("click", (e) => {
+      if (e.target === commentsBackdrop) closeComments();
+    });
+    commentsSendBtn.addEventListener("click", submitComment);
+    commentsInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        submitComment();
+      }
+    });
+
     function subscribeRealtime() {
       if (!state.postsChannel) {
         state.postsChannel = supabaseClient
@@ -1273,6 +1817,21 @@
             await loadFollowing();
             renderFeed();
             setTimeout(setupIntersectionPlayback, 120);
+          })
+          .subscribe();
+      }
+
+      if (!state.commentsChannel) {
+        state.commentsChannel = supabaseClient
+          .channel("video-feed-comments")
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "comments"
+          }, async (payload) => {
+            if (state.currentCommentPost && payload.new?.post_id === state.currentCommentPost.id) {
+              await loadComments(state.currentCommentPost.id);
+            }
           })
           .subscribe();
       }
