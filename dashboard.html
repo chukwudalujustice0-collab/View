@@ -1,218 +1,934 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>Dashboard | View</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Dashboard | View</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0a1028" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<link rel="manifest" href="/manifest.json"/>
-<meta name="theme-color" content="#0a1028"/>
+  <style>
+    :root{
+      --bg1:#081a8f;
+      --bg2:#07115f;
+      --bg3:#05093c;
+      --card:#122a9ad9;
+      --card2:#1833aad9;
+      --line:rgba(255,255,255,.08);
+      --text:#ffffff;
+      --muted:#d4dcff;
+      --blue:#2f7bff;
+      --blue2:#5ba0ff;
+      --red:#ff2f57;
+      --red2:#ff5a74;
+      --shadow:0 16px 36px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top, 0px);
+      --safe-bottom:env(safe-area-inset-bottom, 0px);
+    }
 
-<link rel="stylesheet" href="css/dashboard.css"/>
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Inter, Arial, sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(91,160,255,.22), transparent 20%),
+        radial-gradient(circle at top right, rgba(255,47,87,.18), transparent 16%),
+        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 45%, var(--bg3) 100%);
+      color:var(--text);
+    }
+
+    body{
+      overflow-x:hidden;
+      padding-bottom:100px;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    img{
+      max-width:100%;
+      display:block;
+    }
+
+    .dashboard-page{
+      width:min(100%, 900px);
+      margin:0 auto;
+      padding:calc(12px + var(--safe-top)) 14px calc(18px + var(--safe-bottom));
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:12px;
+      line-height:1.5;
+      border:1px solid transparent;
+      background:rgba(255,255,255,.05);
+    }
+
+    .notice.show{display:block}
+    .notice.error{
+      background:rgba(239,68,68,.10);
+      border-color:rgba(239,68,68,.25);
+      color:#ffd7df;
+    }
+    .notice.info{
+      background:rgba(47,123,255,.10);
+      border-color:rgba(47,123,255,.25);
+      color:#dcebff;
+    }
+    .notice.success{
+      background:rgba(34,197,94,.10);
+      border-color:rgba(34,197,94,.25);
+      color:#dcffe7;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns:52px 1fr auto;
+      gap:10px;
+      align-items:center;
+      margin-bottom:14px;
+    }
+
+    .topbar-right{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+
+    .avatar{
+      width:48px;
+      height:48px;
+      border-radius:50%;
+      object-fit:cover;
+      border:2px solid rgba(255,255,255,.9);
+      box-shadow:0 0 0 2px rgba(255,47,87,.5);
+      background:linear-gradient(135deg,var(--blue),var(--red));
+    }
+
+    .welcome-text{
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:3px;
+    }
+
+    .user-name{
+      font-size:20px;
+      font-weight:900;
+      line-height:1.05;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .icon-btn{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border:1px solid var(--line);
+      color:#fff;
+      text-decoration:none;
+      font-size:18px;
+      position:relative;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+    }
+
+    .badge{
+      position:absolute;
+      top:-4px;
+      right:-4px;
+      min-width:18px;
+      height:18px;
+      border-radius:999px;
+      padding:0 4px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:10px;
+      font-weight:800;
+      background:linear-gradient(135deg, var(--red), var(--red2));
+      color:#fff;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .summary-card{
+      min-height:98px;
+      padding:12px;
+      border-radius:18px;
+      background:
+        radial-gradient(circle at bottom right, rgba(255,47,87,.14), transparent 34%),
+        linear-gradient(180deg, var(--card2), var(--card));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      color:#fff;
+      text-decoration:none;
+    }
+
+    .card-title{
+      font-size:11px;
+      font-weight:800;
+      text-transform:uppercase;
+    }
+
+    .card-value{
+      font-size:16px;
+      font-weight:900;
+      margin:8px 0 4px;
+    }
+
+    .card-sub{
+      font-size:10px;
+      color:var(--muted);
+    }
+
+    .section{
+      margin-bottom:12px;
+      padding:12px;
+      border-radius:18px;
+      background:
+        radial-gradient(circle at bottom right, rgba(255,47,87,.12), transparent 34%),
+        linear-gradient(180deg, rgba(14,31,118,.95), rgba(8,21,90,.96));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+    }
+
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .section-head h3{
+      font-size:14px;
+      font-weight:900;
+    }
+
+    .section-head a{
+      font-size:11px;
+      color:#c8dbff;
+      font-weight:800;
+    }
+
+    .publish-stats,
+    .analytics-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:8px;
+      margin-bottom:10px;
+    }
+
+    .stat-box,
+    .analytics-box{
+      min-height:64px;
+      border-radius:14px;
+      padding:8px 6px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+
+    .stat-box span,
+    .analytics-box span{
+      font-size:16px;
+      font-weight:900;
+      margin-bottom:4px;
+    }
+
+    .stat-box p,
+    .analytics-box p{
+      font-size:9px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .action-row,
+    .wallet-actions,
+    .subscription-actions{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+
+    .btn{
+      min-height:36px;
+      padding:0 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      font-size:10px;
+      font-weight:800;
+      box-shadow:0 8px 18px rgba(0,0,0,.18);
+    }
+
+    .btn.blue{
+      background:linear-gradient(135deg, var(--blue), var(--blue2));
+    }
+
+    .btn.red{
+      background:linear-gradient(135deg, var(--red), var(--red2));
+    }
+
+    .history-list{
+      display:grid;
+      gap:8px;
+    }
+
+    .history-item{
+      display:grid;
+      grid-template-columns:46px 1fr auto;
+      gap:8px;
+      align-items:center;
+      padding:8px;
+      border-radius:14px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+    }
+
+    .history-thumb{
+      width:46px;
+      height:46px;
+      border-radius:12px;
+      object-fit:cover;
+      background:linear-gradient(135deg, rgba(91,160,255,.24), rgba(255,47,87,.18));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-weight:800;
+    }
+
+    .history-title{
+      font-size:11px;
+      font-weight:800;
+      margin-bottom:3px;
+    }
+
+    .history-sub{
+      font-size:9px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+
+    .history-status{
+      min-width:58px;
+      padding:7px 8px;
+      border-radius:999px;
+      font-size:9px;
+      font-weight:800;
+      text-align:center;
+      background:linear-gradient(135deg, var(--blue), var(--blue2));
+    }
+
+    .history-status.failed{
+      background:linear-gradient(135deg, var(--red), var(--red2));
+    }
+
+    .wallet-balance{
+      font-size:24px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .plan-name{
+      font-size:18px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      bottom:10px;
+      transform:translateX(-50%);
+      width:min(520px, calc(100% - 12px));
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:2px;
+      padding:8px 4px calc(8px + var(--safe-bottom));
+      border-radius:18px;
+      background:rgba(7,14,54,.95);
+      border:1px solid var(--line);
+      box-shadow:0 18px 42px rgba(0,0,0,.35);
+      backdrop-filter:blur(14px);
+    }
+
+    .nav-link{
+      min-height:52px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      color:#d6e0ff;
+      text-decoration:none;
+      border-radius:14px;
+    }
+
+    .nav-link.active{
+      color:var(--red);
+    }
+
+    .nav-link.create{
+      width:54px;
+      height:54px;
+      margin:-16px auto 0;
+      border-radius:50%;
+      background:linear-gradient(135deg, var(--red), var(--red2));
+      color:#fff;
+      font-size:28px;
+      box-shadow:0 0 0 4px rgba(7,14,54,.95), 0 12px 26px rgba(255,47,87,.35);
+    }
+
+    @media (max-width:560px){
+      .dashboard-page{
+        padding-left:12px;
+        padding-right:12px;
+      }
+      .publish-stats,
+      .analytics-grid{
+        gap:6px;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="dashboard-page">
+    <div id="notice" class="notice"></div>
 
-<div class="dashboard-page">
+    <header class="topbar">
+      <div class="topbar-left">
+        <img id="userAvatar" src="icons/view-logo.png" class="avatar" alt="User avatar" />
+      </div>
 
-<!-- ================= HEADER ================= -->
-<header class="topbar">
-  <div class="topbar-left">
-    <img id="userAvatar" src="icons/view-logo.png" class="avatar"/>
+      <div class="topbar-center">
+        <div class="welcome-text">Welcome back,</div>
+        <div class="user-name" id="userName">Loading...</div>
+      </div>
+
+      <div class="topbar-right">
+        <a href="notifications.html" class="icon-btn" aria-label="Notifications">
+          🔔
+          <span id="notifCount" class="badge" style="display:none">0</span>
+        </a>
+        <a href="search.html" class="icon-btn" aria-label="Search">⌕</a>
+      </div>
+    </header>
+
+    <section class="summary-grid">
+      <a href="create-post.html" class="summary-card">
+        <div class="card-title">Publish</div>
+        <div class="card-value" id="totalPosts">0</div>
+        <div class="card-sub">Total Posts</div>
+      </a>
+
+      <a href="wallet.html" class="summary-card">
+        <div class="card-title">Wallet</div>
+        <div class="card-value" id="walletBalance">₦0</div>
+        <div class="card-sub">Balance</div>
+      </a>
+
+      <a href="subscription.html" class="summary-card">
+        <div class="card-title">Subscription</div>
+        <div class="card-value" id="planName">Free</div>
+        <div class="card-sub">Active Plan</div>
+      </a>
+
+      <a href="analytics.html" class="summary-card">
+        <div class="card-title">Analytics</div>
+        <div class="card-value" id="totalViews">0</div>
+        <div class="card-sub">Views</div>
+      </a>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>Publish Dashboard</h3>
+        <a href="publish-dashboard.html">View All ›</a>
+      </div>
+
+      <div class="publish-stats">
+        <div class="stat-box"><span id="scheduledCount">0</span><p>Scheduled</p></div>
+        <div class="stat-box"><span id="pendingCount">0</span><p>Pending</p></div>
+        <div class="stat-box"><span id="deliveredCount">0</span><p>Delivered</p></div>
+        <div class="stat-box"><span id="failedCount">0</span><p>Failed</p></div>
+      </div>
+
+      <div class="action-row">
+        <a href="create-post.html" class="btn blue">+ Create Post</a>
+        <a href="publish-dashboard.html" class="btn red">Run Delivery</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>Publish History</h3>
+        <a href="publish-history.html">View All ›</a>
+      </div>
+
+      <div id="historyList" class="history-list"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>Wallet</h3>
+        <a href="wallet.html">View All ›</a>
+      </div>
+
+      <div class="wallet-box">
+        <div class="wallet-balance" id="walletMain">₦0</div>
+        <div class="wallet-actions">
+          <a href="wallet.html?action=fund" class="btn blue">Fund</a>
+          <a href="wallet.html?action=withdraw" class="btn">Withdraw</a>
+          <a href="wallet.html?action=transfer" class="btn">Transfer</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>Subscription</h3>
+        <a href="subscription.html">View All ›</a>
+      </div>
+
+      <div class="subscription-box">
+        <div class="plan-name" id="subPlan">Free Plan</div>
+        <div class="subscription-actions">
+          <a href="subscription.html" class="btn red">Upgrade</a>
+          <a href="subscription.html" class="btn">Manage</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>Analytics</h3>
+        <a href="analytics.html">View All ›</a>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="analytics-box"><span id="viewsCount">0</span><p>Views</p></div>
+        <div class="analytics-box"><span id="likesCount">0</span><p>Likes</p></div>
+        <div class="analytics-box"><span id="commentsCount">0</span><p>Comments</p></div>
+        <div class="analytics-box"><span id="sharesCount">0</span><p>Shares</p></div>
+      </div>
+    </section>
   </div>
 
-  <div class="topbar-center">
-    <div class="welcome-text">Welcome back,</div>
-    <div class="user-name" id="userName">User</div>
-  </div>
+  <nav class="bottom-nav">
+    <a href="home.html" class="nav-link">⌂</a>
+    <a href="explore.html" class="nav-link">⌕</a>
+    <a href="create-post.html" class="nav-link create">＋</a>
+    <a href="chats.html" class="nav-link">✉</a>
+    <a href="dashboard.html" class="nav-link active">▣</a>
+  </nav>
 
-  <div class="topbar-right">
-    <a href="notifications.html" class="icon-btn">
-      🔔 <span id="notifCount" class="badge">0</span>
-    </a>
-    <a href="search.html" class="icon-btn">⌕</a>
-  </div>
-</header>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
 
-<!-- ================= SUMMARY CARDS ================= -->
-<section class="summary-grid">
+    const noticeBox = document.getElementById("notice");
+    const userAvatar = document.getElementById("userAvatar");
+    const userName = document.getElementById("userName");
+    const notifCount = document.getElementById("notifCount");
 
-  <a href="create-post.html" class="summary-card">
-    <div class="card-title">Publish</div>
-    <div class="card-value" id="totalPosts">0</div>
-    <div class="card-sub">Total Posts</div>
-  </a>
+    const totalPosts = document.getElementById("totalPosts");
+    const walletBalance = document.getElementById("walletBalance");
+    const planName = document.getElementById("planName");
+    const totalViews = document.getElementById("totalViews");
 
-  <a href="wallet.html" class="summary-card">
-    <div class="card-title">Wallet</div>
-    <div class="card-value" id="walletBalance">₦0</div>
-    <div class="card-sub">Balance</div>
-  </a>
+    const scheduledCount = document.getElementById("scheduledCount");
+    const pendingCount = document.getElementById("pendingCount");
+    const deliveredCount = document.getElementById("deliveredCount");
+    const failedCount = document.getElementById("failedCount");
 
-  <a href="subscription.html" class="summary-card">
-    <div class="card-title">Subscription</div>
-    <div class="card-value" id="planName">Free</div>
-    <div class="card-sub">Active Plan</div>
-  </a>
+    const historyList = document.getElementById("historyList");
 
-  <a href="analytics.html" class="summary-card">
-    <div class="card-title">Analytics</div>
-    <div class="card-value" id="totalViews">0</div>
-    <div class="card-sub">Views</div>
-  </a>
+    const walletMain = document.getElementById("walletMain");
+    const subPlan = document.getElementById("subPlan");
 
-</section>
+    const viewsCount = document.getElementById("viewsCount");
+    const likesCount = document.getElementById("likesCount");
+    const commentsCount = document.getElementById("commentsCount");
+    const sharesCount = document.getElementById("sharesCount");
 
+    let currentUser = null;
 
-<!-- ================= PUBLISH DASHBOARD ================= -->
-<section class="section">
+    function showNotice(message, type = "info") {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+    }
 
-<div class="section-head">
-  <h3>Publish Dashboard</h3>
-  <a href="publish-dashboard.html">View All ›</a>
-</div>
+    function hideNotice() {
+      noticeBox.className = "notice";
+      noticeBox.textContent = "";
+    }
 
-<div class="publish-stats">
+    function safeText(value, fallback = "") {
+      const text = String(value ?? "").trim();
+      return text || fallback;
+    }
 
-<div class="stat-box">
-<span id="scheduledCount">0</span>
-<p>Scheduled</p>
-</div>
+    function formatCurrency(value) {
+      const amount = Number(value || 0);
+      return `₦${amount.toLocaleString("en-NG", {
+        minimumFractionDigits: amount % 1 ? 2 : 0,
+        maximumFractionDigits: 2
+      })}`;
+    }
 
-<div class="stat-box">
-<span id="pendingCount">0</span>
-<p>Pending</p>
-</div>
+    function formatCount(value) {
+      const num = Number(value || 0);
+      if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+      if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+      return `${num}`;
+    }
 
-<div class="stat-box">
-<span id="deliveredCount">0</span>
-<p>Delivered</p>
-</div>
+    function timeAgo(value) {
+      if (!value) return "Just now";
+      try {
+        const date = new Date(value);
+        const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+        if (diff < 60) return "Just now";
+        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+        return `${Math.floor(diff / 86400)}d ago`;
+      } catch {
+        return "Just now";
+      }
+    }
 
-<div class="stat-box">
-<span id="failedCount">0</span>
-<p>Failed</p>
-</div>
+    function initials(name) {
+      const parts = safeText(name, "U").split(/\s+/).filter(Boolean);
+      if (!parts.length) return "U";
+      if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+      return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase();
+    }
 
-</div>
+    function setAvatar(profile, authUser) {
+      const avatarUrl =
+        safeText(profile?.avatar_url) ||
+        safeText(profile?.avatar_path) ||
+        safeText(authUser?.user_metadata?.avatar_url) ||
+        safeText(authUser?.user_metadata?.picture);
 
-<div class="action-row">
-<a href="create-post.html" class="btn blue">+ Create Post</a>
-<a href="publish-dashboard.html" class="btn red">Run Delivery</a>
-</div>
+      const name =
+        safeText(profile?.full_name) ||
+        safeText(profile?.username) ||
+        safeText(authUser?.user_metadata?.full_name) ||
+        safeText(authUser?.user_metadata?.name) ||
+        safeText(authUser?.email) ||
+        "User";
 
-</section>
+      if (avatarUrl) {
+        userAvatar.src = avatarUrl;
+        userAvatar.alt = name;
+        return;
+      }
 
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+              <stop stop-color="#2f7bff"/>
+              <stop offset="1" stop-color="#ff2f57"/>
+            </linearGradient>
+          </defs>
+          <rect width="100%" height="100%" rx="60" fill="url(#g)"/>
+          <text x="50%" y="54%" text-anchor="middle" fill="white" font-family="Arial" font-size="42" font-weight="700">${initials(name)}</text>
+        </svg>
+      `.trim();
 
-<!-- ================= HISTORY ================= -->
-<section class="section">
+      userAvatar.src = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+      userAvatar.alt = name;
+    }
 
-<div class="section-head">
-  <h3>Publish History</h3>
-  <a href="publish-history.html">View All ›</a>
-</div>
+    function normalizeJobStatus(status) {
+      const s = safeText(status).toLowerCase();
+      if (["scheduled", "queued"].includes(s)) return "scheduled";
+      if (["pending", "processing", "running", "started", "retrying"].includes(s)) return "pending";
+      if (["delivered", "published", "success", "completed", "done"].includes(s)) return "delivered";
+      if (["failed", "error", "cancelled"].includes(s)) return "failed";
+      return "pending";
+    }
 
-<div id="historyList" class="history-list">
-<!-- dynamic -->
-</div>
+    function historyStatusLabel(status) {
+      const n = normalizeJobStatus(status);
+      if (n === "scheduled") return "Scheduled";
+      if (n === "pending") return "Pending";
+      if (n === "failed") return "Failed";
+      return "Delivered";
+    }
 
-</section>
+    function historyStatusClass(status) {
+      return normalizeJobStatus(status) === "failed" ? "failed" : "";
+    }
 
+    function renderHistory(items) {
+      if (!items.length) {
+        historyList.innerHTML = `
+          <div class="history-item">
+            <div class="history-thumb">V</div>
+            <div>
+              <div class="history-title">No publish history yet</div>
+              <div class="history-sub">Your recent publish records will appear here.</div>
+            </div>
+            <div class="history-status">Empty</div>
+          </div>
+        `;
+        return;
+      }
 
-<!-- ================= WALLET ================= -->
-<section class="section">
+      historyList.innerHTML = items.map(item => `
+        <div class="history-item">
+          <div class="history-thumb">${item.icon || initials(item.title)}</div>
+          <div>
+            <div class="history-title">${item.title}</div>
+            <div class="history-sub">${item.subtitle}</div>
+          </div>
+          <div class="history-status ${item.statusClass}">${item.statusLabel}</div>
+        </div>
+      `).join("");
+    }
 
-<div class="section-head">
-  <h3>Wallet</h3>
-  <a href="wallet.html">View All ›</a>
-</div>
+    function getDisplayName(profile, authUser) {
+      return (
+        safeText(profile?.full_name) ||
+        safeText(profile?.username) ||
+        safeText(profile?.email) ||
+        safeText(authUser?.user_metadata?.full_name) ||
+        safeText(authUser?.user_metadata?.name) ||
+        safeText(authUser?.email) ||
+        "User"
+      );
+    }
 
-<div class="wallet-box">
-<div class="wallet-balance" id="walletMain">₦0</div>
+    async function requireUser() {
+      const { data, error } = await supabaseClient.auth.getUser();
+      if (error) throw error;
 
-<div class="wallet-actions">
-<a href="wallet.html?action=fund" class="btn blue">Fund</a>
-<a href="wallet.html?action=withdraw" class="btn">Withdraw</a>
-<a href="wallet.html?action=transfer" class="btn">Transfer</a>
-</div>
-</div>
+      if (!data?.user) {
+        window.location.href = "login.html?next=dashboard.html";
+        return null;
+      }
 
-</section>
+      currentUser = data.user;
+      return currentUser;
+    }
 
+    async function loadDashboard() {
+      const user = currentUser || await requireUser();
+      if (!user) return;
 
-<!-- ================= SUBSCRIPTION ================= -->
-<section class="section">
+      userName.textContent =
+        safeText(user?.user_metadata?.full_name) ||
+        safeText(user?.user_metadata?.name) ||
+        safeText(user?.email) ||
+        "User";
 
-<div class="section-head">
-  <h3>Subscription</h3>
-  <a href="subscription.html">View All ›</a>
-</div>
+      setAvatar(null, user);
 
-<div class="subscription-box">
-<div class="plan-name" id="subPlan">Free Plan</div>
+      const [
+        profileRes,
+        notificationsRes,
+        postsRes,
+        publishJobsRes,
+        publishHistoryRes,
+        walletRes,
+        subscriptionRes
+      ] = await Promise.all([
+        supabaseClient
+          .from("profiles")
+          .select("id,username,full_name,avatar_url,avatar_path,email,account_type")
+          .eq("id", user.id)
+          .maybeSingle(),
 
-<div class="subscription-actions">
-<a href="subscription.html" class="btn red">Upgrade</a>
-<a href="subscription.html" class="btn">Manage</a>
-</div>
-</div>
+        supabaseClient
+          .from("notifications")
+          .select("id,is_read,created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
 
-</section>
+        supabaseClient
+          .from("posts")
+          .select("id,title,content,caption,media_url,media_type,cover_url,publish_status,status,published_at,created_at,updated_at,likes_count,comments_count,shares_count")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
 
+        supabaseClient
+          .from("post_publish_jobs")
+          .select("id,post_id,user_id,platform,status,error_message,attempts,created_at,updated_at,last_error,platform_post_id,delivered_at,next_retry_at,started_at,finished_at,caption,media_url,attempt_count,published_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
 
-<!-- ================= ANALYTICS ================= -->
-<section class="section">
+        supabaseClient
+          .from("publish_history")
+          .select("id,user_id,source_type,source_id,title,platforms,status,charge_amount,result_message,created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(5),
 
-<div class="section-head">
-  <h3>Analytics</h3>
-  <a href="analytics.html">View All ›</a>
-</div>
+        supabaseClient
+          .from("wallets")
+          .select("balance,currency")
+          .eq("user_id", user.id)
+          .maybeSingle(),
 
-<div class="analytics-grid">
+        supabaseClient
+          .from("subscriptions")
+          .select("plan_name,status,expires_at")
+          .eq("user_id", user.id)
+          .maybeSingle()
+      ]);
 
-<div class="analytics-box">
-<span id="viewsCount">0</span>
-<p>Views</p>
-</div>
+      if (profileRes.error) throw profileRes.error;
+      if (notificationsRes.error) throw notificationsRes.error;
+      if (postsRes.error) throw postsRes.error;
+      if (publishJobsRes.error) throw publishJobsRes.error;
+      if (publishHistoryRes.error) throw publishHistoryRes.error;
+      if (walletRes.error && walletRes.error.code !== "PGRST116") throw walletRes.error;
+      if (subscriptionRes.error && subscriptionRes.error.code !== "PGRST116") throw subscriptionRes.error;
 
-<div class="analytics-box">
-<span id="likesCount">0</span>
-<p>Likes</p>
-</div>
+      const profile = profileRes.data || null;
+      const notifications = notificationsRes.data || [];
+      const posts = postsRes.data || [];
+      const publishJobs = publishJobsRes.data || [];
+      const publishHistory = publishHistoryRes.data || [];
+      const wallet = walletRes.data || null;
+      const subscription = subscriptionRes.data || null;
 
-<div class="analytics-box">
-<span id="commentsCount">0</span>
-<p>Comments</p>
-</div>
+      const displayName = getDisplayName(profile, user);
+      userName.textContent = displayName;
+      setAvatar(profile, user);
 
-<div class="analytics-box">
-<span id="sharesCount">0</span>
-<p>Shares</p>
-</div>
+      const unreadCount = notifications.filter(item => item.is_read === false).length;
+      notifCount.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
+      notifCount.style.display = unreadCount > 0 ? "flex" : "none";
 
-</div>
+      let scheduled = 0;
+      let pending = 0;
+      let delivered = 0;
+      let failed = 0;
 
-</section>
+      for (const job of publishJobs) {
+        const normalized = normalizeJobStatus(job.status);
+        if (normalized === "scheduled") scheduled += 1;
+        else if (normalized === "pending") pending += 1;
+        else if (normalized === "delivered") delivered += 1;
+        else if (normalized === "failed") failed += 1;
+      }
 
+      let likes = 0;
+      let comments = 0;
+      let shares = 0;
 
-</div>
+      for (const post of posts) {
+        likes += Number(post.likes_count || 0);
+        comments += Number(post.comments_count || 0);
+        shares += Number(post.shares_count || 0);
+      }
 
+      let views = (likes * 8) + (comments * 12) + (shares * 16) + (delivered * 25);
+      if (!views && posts.length) views = posts.length * 120;
 
-<!-- ================= BOTTOM NAV ================= -->
-<nav class="bottom-nav">
+      const walletValue = Number(wallet?.balance || 0);
+      const activePlan = safeText(subscription?.plan_name) || safeText(profile?.account_type) || "Free";
 
-<a href="home.html" class="nav-link">⌂</a>
-<a href="explore.html" class="nav-link">⌕</a>
-<a href="create-post.html" class="nav-link create">＋</a>
-<a href="messages.html" class="nav-link">✉</a>
-<a href="dashboard.html" class="nav-link active">▣</a>
+      totalPosts.textContent = formatCount(posts.length);
+      walletBalance.textContent = formatCurrency(walletValue);
+      planName.textContent = activePlan;
+      totalViews.textContent = formatCount(views);
 
-</nav>
+      scheduledCount.textContent = String(scheduled);
+      pendingCount.textContent = String(pending);
+      deliveredCount.textContent = String(delivered);
+      failedCount.textContent = String(failed);
 
-<script src="js/dashboard.js"></script>
+      walletMain.textContent = formatCurrency(walletValue);
+      subPlan.textContent = activePlan;
 
+      viewsCount.textContent = formatCount(views);
+      likesCount.textContent = formatCount(likes);
+      commentsCount.textContent = formatCount(comments);
+      sharesCount.textContent = formatCount(shares);
+
+      const historyItems = publishHistory.map(row => {
+        const statusLabel = historyStatusLabel(row.status);
+        const statusClass = historyStatusClass(row.status);
+        const platforms = Array.isArray(row.platforms) ? row.platforms.join(", ") : safeText(row.platforms);
+        const title = safeText(row.title, "Publish record");
+        const subtitleParts = [timeAgo(row.created_at)];
+        if (platforms) subtitleParts.push(platforms);
+        if (safeText(row.result_message)) subtitleParts.push(row.result_message);
+
+        return {
+          icon: "↗",
+          title: title.length > 30 ? `${title.slice(0, 30)}...` : title,
+          subtitle: subtitleParts.join(" • "),
+          statusLabel,
+          statusClass
+        };
+      });
+
+      renderHistory(historyItems);
+
+      if (!profile) {
+        showNotice("Authenticated user loaded. Profile row not found, so dashboard is using your auth account info.", "info");
+      } else {
+        hideNotice();
+      }
+    }
+
+    async function init() {
+      try {
+        const user = await requireUser();
+        if (!user) return;
+        await loadDashboard();
+      } catch (error) {
+        showNotice(error.message || "Could not load dashboard.", "error");
+      }
+    }
+
+    init();
+  </script>
 </body>
 </html>
