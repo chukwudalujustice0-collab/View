@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
   <title>Home | View</title>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#081a6b" />
@@ -10,6 +13,10 @@
   <script src="/push-helper.js"></script>
 
   <style>
+    html.auth-loading, html.auth-loading body{
+      visibility:hidden;
+    }
+
     :root{
       --bg:#08114c;
       --bg2:#0a1b6f;
@@ -31,6 +38,7 @@
       --shadow:0 18px 38px rgba(0,0,0,.34);
       --shadow-soft:0 10px 22px rgba(0,0,0,.24);
       --safe-bottom:env(safe-area-inset-bottom, 0px);
+      --safe-top:env(safe-area-inset-top, 0px);
       --radius:22px;
     }
 
@@ -115,7 +123,7 @@
       position:sticky;
       top:0;
       z-index:40;
-      padding:10px 10px 9px;
+      padding:calc(10px + var(--safe-top)) 10px 9px;
       background:
         radial-gradient(circle at top left, rgba(255,255,255,.08), transparent 28%),
         linear-gradient(180deg, rgba(10,27,111,.98), rgba(8,20,82,.97));
@@ -685,6 +693,28 @@
       font-weight:1000;
       cursor:pointer;
       box-shadow:0 10px 18px rgba(255,24,41,.18);
+    }
+
+    .install-app-btn{
+      min-height:42px;
+      border:none;
+      border-radius:14px;
+      background:linear-gradient(180deg,#3a88ff,#1c5ee7);
+      color:#fff;
+      font-size:13px;
+      font-weight:1000;
+      cursor:pointer;
+      box-shadow:0 10px 18px rgba(37,108,255,.18);
+      padding:0 14px;
+      display:none;
+      white-space:nowrap;
+    }
+
+    .install-app-btn.show{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
     }
 
     .trending-grid{
@@ -1375,7 +1405,57 @@
         grid-template-columns:1fr;
       }
     }
+
+    @media (max-width:560px){
+      .composer-post-row{
+        flex-direction:column;
+      }
+
+      .install-app-btn{
+        width:100%;
+      }
+
+      .create-sheet-grid{
+        grid-template-columns:1fr 1fr;
+      }
+    }
   </style>
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
+
+    async function protectPage(nextPage) {
+      try {
+        const { data, error } = await window.supabaseClient.auth.getSession();
+        if (error) throw error;
+
+        const user = data?.session?.user || null;
+        if (!user) {
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || location.pathname.split("/").pop() || "home.html")}`);
+          return null;
+        }
+
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      } catch (err) {
+        location.replace(`login.html?next=${encodeURIComponent(nextPage || location.pathname.split("/").pop() || "home.html")}`);
+        return null;
+      }
+    }
+  </script>
 </head>
 <body>
   <div class="app">
@@ -1385,7 +1465,7 @@
       <div class="topbar">
         <div class="brand-wrap">
           <a class="brand-logo-box" href="home.html" aria-label="View Home">
-            <img src="view-logo.png" alt="View logo" onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;fallback&quot;>v</span>';">
+            <img src="icons/view-logo.png" alt="View logo" onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;fallback&quot;>v</span>';">
           </a>
 
           <div class="brand-text">
@@ -1468,6 +1548,7 @@
 
           <div class="composer-post-row">
             <button id="postStatusBtn" class="status-post-btn" type="button">Post to Status</button>
+            <button id="installAppBtn" class="install-app-btn" type="button">📲 Install App</button>
           </div>
         </div>
       </section>
@@ -1591,7 +1672,7 @@
     <div class="create-sheet-title">Create</div>
     <div class="create-sheet-grid">
       <a class="create-sheet-link" href="create-post.html">✍️ Post</a>
-      <a class="create-sheet-link" href="status.html">🟣 Story</a>
+      <a class="create-sheet-link" href="create-status.html">🟣 Story</a>
       <a class="create-sheet-link" href="live-stream.html">📺 Go Live</a>
       <a class="create-sheet-link" href="create-post.html?mode=photo">📷 Upload Media</a>
     </div>
@@ -1630,17 +1711,6 @@
   </nav>
 
   <script>
-    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    });
-
     const noticeBox = document.getElementById("notice");
     const composerAvatar = document.getElementById("composerAvatar");
     const composerInput = document.getElementById("composerInput");
@@ -1664,6 +1734,7 @@
     const createTabBtn = document.getElementById("createTabBtn");
     const createSheet = document.getElementById("createSheet");
     const createSheetBackdrop = document.getElementById("createSheetBackdrop");
+    const installAppBtn = document.getElementById("installAppBtn");
 
     let allPosts = [];
     let currentUserId = "";
@@ -1679,6 +1750,7 @@
     let commentsChannel = null;
     let notificationsChannel = null;
     let storiesChannel = null;
+    let statusesChannel = null;
     let deferredInstallPrompt = null;
     let speechRecognitionInstance = null;
     let selectedComposerFile = null;
@@ -1715,24 +1787,10 @@
       noticeBox.textContent = "";
     }
 
-    async function getSessionWithRetry(maxWaitMs = 3000) {
-      const start = Date.now();
-      while (Date.now() - start < maxWaitMs) {
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (error) throw error;
-        if (data.session?.user) return data.session;
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-      return null;
-    }
-
     async function requireSession() {
-      const session = await getSessionWithRetry();
-      if (!session?.user) {
-        window.location.href = "login.html?next=home.html";
-        return null;
-      }
-      return session;
+      const user = await protectPage("home.html");
+      if (!user) return null;
+      return { user };
     }
 
     function escapeHtml(value) {
@@ -1847,7 +1905,7 @@
       try {
         const item = likesByPost.get(postId) || { count: 0, likedByMe: false };
         if (item.likedByMe) {
-          const { error } = await supabaseClient
+          const { error } = await window.supabaseClient
             .from("post_likes")
             .delete()
             .eq("post_id", postId)
@@ -1856,7 +1914,7 @@
           item.likedByMe = false;
           item.count = Math.max(0, item.count - 1);
         } else {
-          const { error } = await supabaseClient
+          const { error } = await window.supabaseClient
             .from("post_likes")
             .insert({ post_id: postId, user_id: currentUserId });
           if (error) throw error;
@@ -1924,7 +1982,7 @@
       if (!userId || userId === currentUserId) return;
 
       try {
-        const { error } = await supabaseClient
+        const { error } = await window.supabaseClient
           .from("follows")
           .insert({
             follower_id: currentUserId,
@@ -2099,16 +2157,17 @@
 
     async function loadNotificationsBadge() {
       try {
-        const { count, error } = await supabaseClient
+        const { count, error } = await window.supabaseClient
           .from("notifications")
           .select("*", { count: "exact", head: true })
           .eq("user_id", currentUserId)
           .eq("is_read", false);
 
         if (!error) {
-          const text = Number(count || 0) > 9 ? "9+" : String(Number(count || 0));
+          const total = Number(count || 0);
+          const text = total > 9 ? "9+" : String(total);
           notifDot.textContent = text;
-          notifDot.classList.toggle("show", Number(count || 0) > 0);
+          notifDot.classList.toggle("show", total > 0);
         }
       } catch {}
     }
@@ -2119,7 +2178,7 @@
         const ids = posts.map(p => p.id).filter(Boolean);
         if (!ids.length) return;
 
-        const { data, error } = await supabaseClient
+        const { data, error } = await window.supabaseClient
           .from("post_likes")
           .select("post_id,user_id")
           .in("post_id", ids);
@@ -2143,7 +2202,7 @@
         const ids = posts.map(p => p.id).filter(Boolean);
         if (!ids.length) return;
 
-        const { data, error } = await supabaseClient
+        const { data, error } = await window.supabaseClient
           .from("comments")
           .select(`
             id,
@@ -2175,7 +2234,7 @@
     async function loadFollowing() {
       currentUserFollowing = new Set();
       try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await window.supabaseClient
           .from("follows")
           .select("following_id")
           .eq("follower_id", currentUserId);
@@ -2202,30 +2261,32 @@
 
         let rows = [];
         for (const item of candidates) {
-          const { data, error } = await supabaseClient
-            .from(item.table)
-            .select(`
-              *,
-              profiles:profiles!${item.table}_${item.user}_fkey (
-                full_name,
-                username,
-                avatar_url
-              )
-            `)
-            .order(item.created, { ascending: false })
-            .limit(15);
+          try {
+            const { data, error } = await window.supabaseClient
+              .from(item.table)
+              .select(`
+                *,
+                profiles:profiles!${item.table}_${item.user}_fkey (
+                  full_name,
+                  username,
+                  avatar_url
+                )
+              `)
+              .order(item.created, { ascending: false })
+              .limit(15);
 
-          if (!error && data) {
-            rows = data.map(row => ({
-              id: row.id,
-              user_id: row[item.user],
-              name: row.profiles?.full_name || row.profiles?.username || "User",
-              avatar_url: row.profiles?.avatar_url || "",
-              preview: createStatusPreviewText(row),
-              media_url: row.media_url || row.image_url || row.video_url || ""
-            }));
-            break;
-          }
+            if (!error && data) {
+              rows = data.map(row => ({
+                id: row.id,
+                user_id: row[item.user],
+                name: row.profiles?.full_name || row.profiles?.username || "User",
+                avatar_url: row.profiles?.avatar_url || "",
+                preview: createStatusPreviewText(row),
+                media_url: row.media_url || row.image_url || row.video_url || ""
+              }));
+              break;
+            }
+          } catch {}
         }
 
         storiesWrap.innerHTML = `
@@ -2239,7 +2300,7 @@
             <div class="story-name">Your Story</div>
           </a>
           ${rows.map(story => `
-            <a class="story" href="status.html">
+            <a class="story" href="status-viewer.html?id=${encodeURIComponent(story.id)}">
               <div class="story-ring">
                 <div class="story-inner">
                   ${story.avatar_url ? `<img src="${escapeHtml(story.avatar_url)}" alt="${escapeHtml(story.name)}">` : escapeHtml(story.name.charAt(0).toUpperCase())}
@@ -2310,13 +2371,13 @@
 
       for (const bucket of candidateBuckets) {
         try {
-          const { error } = await supabaseClient.storage.from(bucket).upload(path, file, {
+          const { error } = await window.supabaseClient.storage.from(bucket).upload(path, file, {
             cacheControl: "3600",
             upsert: false
           });
 
           if (!error) {
-            const { data } = supabaseClient.storage.from(bucket).getPublicUrl(path);
+            const { data } = window.supabaseClient.storage.from(bucket).getPublicUrl(path);
             return data?.publicUrl || "";
           }
         } catch {}
@@ -2325,20 +2386,12 @@
     }
 
     async function insertStatusRecord(payload) {
-      const candidates = [
-        { table: "statuses" },
-        { table: "status" },
-        { table: "stories" }
-      ];
-
+      const candidates = ["statuses", "status", "stories"];
       let lastError = null;
 
-      for (const item of candidates) {
+      for (const table of candidates) {
         try {
-          const { error } = await supabaseClient
-            .from(item.table)
-            .insert(payload);
-
+          const { error } = await window.supabaseClient.from(table).insert(payload);
           if (!error) return true;
           lastError = error;
         } catch (err) {
@@ -2405,15 +2458,23 @@
       const installed = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
       if (installed) {
         installStatusChip.textContent = "Install: done";
+        installAppBtn.classList.remove("show");
       } else if (deferredInstallPrompt) {
         installStatusChip.textContent = "Install: available";
+        installAppBtn.classList.add("show");
       } else {
         installStatusChip.textContent = "Install: pending";
+        installAppBtn.classList.remove("show");
       }
     }
 
     async function updatePushStatus() {
       try {
+        if (!window.ViewPushHelper || typeof window.ViewPushHelper.checkPushStatus !== "function") {
+          pushStatusChip.textContent = "Push: unavailable";
+          return;
+        }
+
         const status = await window.ViewPushHelper.checkPushStatus();
         if (!status.supported) {
           pushStatusChip.textContent = "Push: unsupported";
@@ -2488,6 +2549,35 @@
       };
     }
 
+    async function handleInstallClick() {
+      const installed = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+      if (installed) {
+        showNotice("App is already installed.", "success");
+        return;
+      }
+
+      if (!deferredInstallPrompt) {
+        showNotice("Install prompt is not available yet. Keep browsing a little and try again.", "info");
+        return;
+      }
+
+      try {
+        await deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+
+        if (choice.outcome === "accepted") {
+          showNotice("Installing app...", "success");
+        } else {
+          showNotice("Install dismissed.", "info");
+        }
+      } catch {
+        showNotice("Could not open install prompt.", "error");
+      } finally {
+        deferredInstallPrompt = null;
+        updateInstallStatus();
+      }
+    }
+
     async function loadHome(showPostNotification = false) {
       clearNotice();
 
@@ -2504,7 +2594,7 @@
 
       setTopProfileImage(user);
 
-      const { data, error } = await supabaseClient
+      const { data, error } = await window.supabaseClient
         .from("posts")
         .select(`
           id,
@@ -2544,19 +2634,21 @@
 
       if (showPostNotification && previousTopPostId && allPosts[0]?.id && allPosts[0].id !== previousTopPostId) {
         try {
-          await window.ViewPushHelper.showLocalSystemNotification({
-            title: "New post on View",
-            body: "A new post has appeared in your feed.",
-            tag: "view-new-post",
-            data: { url: "/home.html" }
-          });
+          if (window.ViewPushHelper && typeof window.ViewPushHelper.showLocalSystemNotification === "function") {
+            await window.ViewPushHelper.showLocalSystemNotification({
+              title: "New post on View",
+              body: "A new post has appeared in your feed.",
+              tag: "view-new-post",
+              data: { url: "/home.html" }
+            });
+          }
         } catch {}
       }
     }
 
     function subscribeRealtime() {
       if (!postsChannel) {
-        postsChannel = supabaseClient
+        postsChannel = window.supabaseClient
           .channel("home-posts-live")
           .on("postgres_changes", {
             event: "*",
@@ -2569,7 +2661,7 @@
       }
 
       if (!likesChannel) {
-        likesChannel = supabaseClient
+        likesChannel = window.supabaseClient
           .channel("home-likes-live")
           .on("postgres_changes", {
             event: "*",
@@ -2583,7 +2675,7 @@
       }
 
       if (!followsChannel) {
-        followsChannel = supabaseClient
+        followsChannel = window.supabaseClient
           .channel("home-follows-live")
           .on("postgres_changes", {
             event: "*",
@@ -2597,7 +2689,7 @@
       }
 
       if (!commentsChannel) {
-        commentsChannel = supabaseClient
+        commentsChannel = window.supabaseClient
           .channel("home-comments-live")
           .on("postgres_changes", {
             event: "*",
@@ -2610,8 +2702,8 @@
           .subscribe();
       }
 
-      if (!notificationsChannel) {
-        notificationsChannel = supabaseClient
+      if (!notificationsChannel && currentUserId) {
+        notificationsChannel = window.supabaseClient
           .channel("home-notifications-live")
           .on("postgres_changes", {
             event: "*",
@@ -2625,12 +2717,25 @@
       }
 
       if (!storiesChannel) {
-        storiesChannel = supabaseClient
+        storiesChannel = window.supabaseClient
           .channel("home-stories-live")
           .on("postgres_changes", {
             event: "*",
             schema: "public",
             table: "stories"
+          }, async () => {
+            await loadStories();
+          })
+          .subscribe();
+      }
+
+      if (!statusesChannel) {
+        statusesChannel = window.supabaseClient
+          .channel("home-statuses-live")
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "statuses"
           }, async () => {
             await loadStories();
           })
@@ -2658,6 +2763,7 @@
     removeComposerMediaBtn.addEventListener("click", resetComposerMedia);
     postStatusBtn.addEventListener("click", postComposerToStatus);
     goStatusPageBtn.addEventListener("click", openStatusPageWithDraft);
+    installAppBtn.addEventListener("click", handleInstallClick);
 
     window.addEventListener("beforeinstallprompt", (event) => {
       event.preventDefault();
@@ -2678,23 +2784,33 @@
           if (reg.waiting) {
             reg.waiting.postMessage({ type: "SKIP_WAITING" });
           }
+          updateInstallStatus();
         } catch (error) {
           console.error("Service worker failed:", error);
+          updateInstallStatus();
         }
       });
 
       navigator.serviceWorker.addEventListener("controllerchange", () => {
         window.location.reload();
       });
+    } else {
+      updateInstallStatus();
     }
 
     setupVoiceToText();
 
-    loadHome(false).then(() => {
-      subscribeRealtime();
-    }).catch(err => {
-      showNotice(err.message || "Could not load home.");
-    });
+    (async () => {
+      try {
+        const session = await requireSession();
+        if (!session) return;
+
+        await loadHome(false);
+        subscribeRealtime();
+      } catch (err) {
+        showNotice(err.message || "Could not load home.");
+      }
+    })();
 
     window.togglePostMenu = togglePostMenu;
     window.toggleLike = toggleLike;
