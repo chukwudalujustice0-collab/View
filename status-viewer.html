@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Status Viewer | View</title>
+  <meta name="theme-color" content="#050a18" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg:#050a18;
+      --line:rgba(255,255,255,.12);
+      --text:#fff;
+      --muted:#dce8ff;
+      --blue:#2f7bff;
+      --blue2:#5ba0ff;
+      --red:#ff2f57;
+      --red2:#ff5a74;
+      --safe-top:env(safe-area-inset-top,0px);
+      --safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:#050a18;color:#fff}
+    body{overflow:hidden}
+    button,input{font:inherit}
+    .viewer{
+      position:fixed;inset:0;
+      background:
+        radial-gradient(circle at top left, rgba(47,123,255,.20), transparent 18%),
+        radial-gradient(circle at top right, rgba(255,47,87,.16), transparent 14%),
+        linear-gradient(180deg,#091127 0%,#050a18 100%);
+      display:flex;flex-direction:column;
+    }
+    .top{
+      padding:calc(10px + var(--safe-top)) 12px 0;
+      display:grid;gap:10px;z-index:10;
+    }
+    .progress{
+      display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px
+    }
+    .progress span{
+      height:4px;border-radius:999px;background:rgba(255,255,255,.22);overflow:hidden
+    }
+    .progress i{
+      display:block;height:100%;width:0;background:#fff;border-radius:999px
+    }
+    .head{
+      display:flex;align-items:center;justify-content:space-between;gap:10px
+    }
+    .head-left{
+      display:flex;align-items:center;gap:10px;min-width:0
+    }
+    .avatar{
+      width:42px;height:42px;border-radius:50%;overflow:hidden;
+      border:2px solid rgba(255,255,255,.95);
+      background:linear-gradient(135deg,var(--blue2),var(--red2));
+      display:flex;align-items:center;justify-content:center;font-weight:900
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover}
+    .name{font-size:15px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meta{font-size:11px;color:#e8efff}
+    .head-actions{display:flex;gap:8px}
+    .head-btn{
+      width:38px;height:38px;border:none;border-radius:12px;
+      background:rgba(0,0,0,.24);color:#fff;cursor:pointer
+    }
+
+    .stage{
+      position:relative;flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center
+    }
+    .pane{
+      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      text-align:center;padding:24px
+    }
+    .pane img,.pane video{width:100%;height:100%;object-fit:cover}
+    .text-pane{
+      width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+      padding:24px;font-size:32px;font-weight:900;line-height:1.3;
+      white-space:pre-wrap;word-break:break-word;text-shadow:0 10px 30px rgba(0,0,0,.28)
+    }
+    .tap-zone{
+      position:absolute;top:0;bottom:0;width:50%;z-index:8
+    }
+    .tap-left{left:0}
+    .tap-right{right:0}
+
+    .foot{
+      padding:0 12px calc(12px + var(--safe-bottom));
+      display:grid;gap:10px;z-index:10
+    }
+    .meta-row{
+      display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+      font-size:12px;color:#eef4ff
+    }
+    .reply-bar{
+      display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;
+      background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;padding:8px
+    }
+    .reply-input{
+      min-height:42px;border:none;outline:none;background:transparent;color:#fff;padding:0 8px
+    }
+    .reply-input::placeholder{color:#dce8ff}
+    .reply-btn,.send-btn,.delete-btn{
+      min-width:42px;height:42px;border:none;border-radius:12px;cursor:pointer
+    }
+    .reply-btn{background:rgba(255,255,255,.10);color:#fff}
+    .send-btn{background:linear-gradient(135deg,var(--blue),var(--red));color:#fff;padding:0 14px;font-weight:800}
+    .delete-row{display:flex;justify-content:flex-end}
+    .delete-btn{background:rgba(255,255,255,.10);color:#fff;padding:0 14px;min-width:auto}
+
+    .viewer-list{
+      position:absolute;top:82px;left:12px;right:12px;display:flex;gap:10px;overflow:auto hidden;scrollbar-width:none;z-index:9
+    }
+    .viewer-list::-webkit-scrollbar{display:none}
+    .ring{
+      flex:0 0 auto;text-align:center;cursor:pointer;width:70px
+    }
+    .ring-wrap{
+      width:58px;height:58px;margin:0 auto 6px;border-radius:50%;padding:2px;
+      background:linear-gradient(135deg,var(--blue),var(--red))
+    }
+    .ring-inner{
+      width:100%;height:100%;border-radius:50%;overflow:hidden;background:#0f1e66;
+      border:2px solid rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;font-weight:900
+    }
+    .ring-inner img{width:100%;height:100%;object-fit:cover}
+    .ring-name{font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    @media (max-width:560px){
+      .text-pane{font-size:26px}
+      .reply-bar{grid-template-columns:1fr auto auto}
+      .send-btn{grid-column:1/-1}
+      .viewer-list{top:92px}
+    }
+  </style>
+</head>
+<body>
+  <div class="viewer">
+    <div class="top">
+      <div class="progress" id="progressBar"></div>
+
+      <div class="head">
+        <div class="head-left">
+          <div class="avatar" id="viewerAvatar">V</div>
+          <div>
+            <div class="name" id="viewerName">Loading...</div>
+            <div class="meta" id="viewerMeta">Just now</div>
+          </div>
+        </div>
+
+        <div class="head-actions">
+          <button class="head-btn" id="muteBtn" type="button">🔇</button>
+          <button class="head-btn" id="closeBtn" type="button">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="viewer-list" id="viewerUserStrip"></div>
+
+    <div class="stage" id="stage">
+      <div class="pane" id="pane"></div>
+      <div class="tap-zone tap-left" id="tapLeft"></div>
+      <div class="tap-zone tap-right" id="tapRight"></div>
+    </div>
+
+    <div class="foot">
+      <div class="meta-row">
+        <span id="viewCountText">👁 0 views</span>
+        <span id="privacyText">Public</span>
+      </div>
+
+      <div class="reply-bar">
+        <input id="replyInput" class="reply-input" type="text" placeholder="Reply to status..." />
+        <button class="reply-btn" type="button">📷</button>
+        <button class="reply-btn" type="button">🎤</button>
+        <button id="sendReplyBtn" class="send-btn" type="button">Send</button>
+      </div>
+
+      <div class="delete-row">
+        <button id="deleteStatusBtn" class="delete-btn" type="button">🗑 Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
+
+    const qs = new URLSearchParams(window.location.search);
+    let selectedUserId = qs.get("user_id") || "";
+    let selectedStatusId = qs.get("status_id") || "";
+
+    let currentUser = null;
+    let statuses = [];
+    let usersWithStatuses = [];
+    let currentIndex = 0;
+    let progressTimer = null;
+    let progressValue = 0;
+    let muted = true;
+    let held = false;
+
+    const pane = document.getElementById("pane");
+    const viewerName = document.getElementById("viewerName");
+    const viewerMeta = document.getElementById("viewerMeta");
+    const viewerAvatar = document.getElementById("viewerAvatar");
+    const viewCountText = document.getElementById("viewCountText");
+    const privacyText = document.getElementById("privacyText");
+    const progressBar = document.getElementById("progressBar");
+    const viewerUserStrip = document.getElementById("viewerUserStrip");
+    const replyInput = document.getElementById("replyInput");
+    const sendReplyBtn = document.getElementById("sendReplyBtn");
+    const deleteStatusBtn = document.getElementById("deleteStatusBtn");
+    const muteBtn = document.getElementById("muteBtn");
+
+    const bgStyles = {
+      sunset: "linear-gradient(135deg,#2f7bff,#ff2f57)",
+      royal: "linear-gradient(135deg,#081a8f,#5ba0ff)",
+      flare: "linear-gradient(135deg,#ff2f57,#ff8a00)",
+      deep: "linear-gradient(135deg,#091127,#7c3aed)",
+      ocean: "linear-gradient(135deg,#00bcd4,#2f7bff)",
+      berry: "linear-gradient(135deg,#7f1d1d,#ff2f57)",
+      night: "linear-gradient(135deg,#05093c,#1d4ed8)",
+      mix: "linear-gradient(135deg,#5ba0ff,#ff5a74,#2f7bff)"
+    };
+
+    function initials(name) {
+      const parts = String(name || "V").trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return "V";
+      if (parts.length === 1) return parts[0][0].toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+
+    function timeAgo(value) {
+      if (!value) return "Just now";
+      const date = new Date(value);
+      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+      if (diff < 60) return "Just now";
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      return `${Math.floor(diff / 86400)}d ago`;
+    }
+
+    async function requireUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      if (!data?.user) {
+        window.location.href = "login.html?next=status-viewer.html";
+        return null;
+      }
+      currentUser = data.user;
+      return currentUser;
+    }
+
+    async function loadAllStatuses() {
+      const user = currentUser || await requireUser();
+      if (!user) return;
+
+      const nowIso = new Date().toISOString();
+      const [statusesRes, profilesRes, viewsRes] = await Promise.all([
+        supabase
+          .from("statuses")
+          .select("id,user_id,status_type,text_content,content,media_url,thumbnail_url,bg_style,privacy,allow_replies,expires_at,created_at")
+          .gt("expires_at", nowIso)
+          .order("created_at", { ascending: true }),
+
+        supabase
+          .from("profiles")
+          .select("id,username,full_name,avatar_url,avatar_path"),
+
+        supabase
+          .from("status_views")
+          .select("id,status_id,viewer_id,viewed_at")
+      ]);
+
+      if (statusesRes.error) throw statusesRes.error;
+      if (profilesRes.error) throw profilesRes.error;
+      if (viewsRes.error) throw viewsRes.error;
+
+      const allStatuses = statusesRes.data || [];
+      const profiles = profilesRes.data || [];
+      const views = viewsRes.data || [];
+
+      const profileMap = Object.fromEntries(profiles.map(p => [p.id, p]));
+      const viewsByStatus = {};
+      views.forEach(v => {
+        if (!viewsByStatus[v.status_id]) viewsByStatus[v.status_id] = [];
+        viewsByStatus[v.status_id].push(v);
+      });
+
+      const grouped = {};
+      allStatuses.forEach(s => {
+        if (!grouped[s.user_id]) grouped[s.user_id] = [];
+        grouped[s.user_id].push(s);
+      });
+
+      usersWithStatuses = Object.keys(grouped).map(userId => ({
+        userId,
+        profile: profileMap[userId] || {},
+        statuses: grouped[userId]
+      }));
+
+      if (!selectedUserId && usersWithStatuses.length) {
+        selectedUserId = usersWithStatuses[0].userId;
+      }
+
+      const currentGroup = usersWithStatuses.find(u => u.userId === selectedUserId) || usersWithStatuses[0];
+      if (!currentGroup) {
+        pane.innerHTML = `<div class="text-pane" style="background:linear-gradient(135deg,#2f7bff,#ff2f57)">No active status.</div>`;
+        return;
+      }
+
+      statuses = currentGroup.statuses.map(s => ({
+        ...s,
+        profile: currentGroup.profile,
+        viewCount: viewsByStatus[s.id]?.length || 0,
+        viewedByMe: (viewsByStatus[s.id] || []).some(v => v.viewer_id === currentUser.id)
+      }));
+
+      if (selectedStatusId) {
+        const index = statuses.findIndex(s => s.id === selectedStatusId);
+        currentIndex = index >= 0 ? index : 0;
+      } else {
+        const firstUnviewed = statuses.findIndex(s => !s.viewedByMe);
+        currentIndex = firstUnviewed >= 0 ? firstUnviewed : 0;
+      }
+
+      renderUserStrip();
+      renderCurrent();
+      await markViewed(statuses[currentIndex]?.id);
+      startProgress();
+    }
+
+    function renderUserStrip() {
+      viewerUserStrip.innerHTML = usersWithStatuses.map(item => {
+        const p = item.profile || {};
+        const name = p.full_name || p.username || "User";
+        const avatar = p.avatar_url || p.avatar_path || "";
+        return `
+          <div class="ring" onclick="switchUser('${item.userId}')">
+            <div class="ring-wrap">
+              <div class="ring-inner">
+                ${avatar ? `<img src="${avatar}" alt="${name}">` : initials(name)}
+              </div>
+            </div>
+            <div class="ring-name">${name}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderProgress() {
+      progressBar.innerHTML = statuses.map((_, i) => `
+        <span><i style="width:${i < currentIndex ? 100 : i === currentIndex ? progressValue : 0}%"></i></span>
+      `).join("");
+    }
+
+    function renderCurrent() {
+      const current = statuses[currentIndex];
+      if (!current) return;
+
+      const p = current.profile || {};
+      const name = p.full_name || p.username || (current.user_id === currentUser.id ? "You" : "User");
+      const avatar = p.avatar_url || p.avatar_path || "";
+
+      viewerName.textContent = name;
+      viewerMeta.textContent = timeAgo(current.created_at);
+      privacyText.textContent = current.privacy || "public";
+      viewCountText.textContent = `👁 ${current.viewCount || 0} views`;
+
+      if (avatar) {
+        viewerAvatar.innerHTML = `<img src="${avatar}" alt="${name}">`;
+      } else {
+        viewerAvatar.textContent = initials(name);
+      }
+
+      deleteStatusBtn.style.display = current.user_id === currentUser.id ? "inline-flex" : "none";
+      replyInput.disabled = current.user_id === currentUser.id || current.allow_replies === false;
+      sendReplyBtn.disabled = current.user_id === currentUser.id || current.allow_replies === false;
+      replyInput.placeholder = current.user_id === currentUser.id ? "This is your status" : (current.allow_replies === false ? "Replies disabled" : "Reply to status...");
+
+      let html = "";
+      if (current.status_type === "image" && current.media_url) {
+        html = `<img src="${current.media_url}" alt="Status image">`;
+      } else if (current.status_type === "video" && current.media_url) {
+        html = `<video id="viewerVideo" src="${current.media_url}" playsinline ${muted ? "muted" : ""} autoplay></video>`;
+      } else {
+        const bg = bgStyles[current.bg_style] || bgStyles.sunset;
+        const text = (current.text_content || current.content || "Status").replace(/</g, "&lt;");
+        html = `<div class="text-pane" style="background:${bg}">${text}</div>`;
+      }
+
+      pane.innerHTML = html;
+      renderProgress();
+    }
+
+    async function markViewed(statusId) {
+      if (!statusId || !currentUser) return;
+      const { data: existing } = await supabase
+        .from("status_views")
+        .select("id")
+        .eq("status_id", statusId)
+        .eq("viewer_id", currentUser.id)
+        .maybeSingle();
+
+      if (!existing) {
+        await supabase.from("status_views").insert({
+          status_id: statusId,
+          viewer_id: currentUser.id
+        });
+      }
+    }
+
+    function clearProgressTimer() {
+      if (progressTimer) {
+        clearInterval(progressTimer);
+        progressTimer = null;
+      }
+    }
+
+    function startProgress() {
+      clearProgressTimer();
+      progressValue = 0;
+      renderProgress();
+
+      const current = statuses[currentIndex];
+      if (!current) return;
+
+      const isVideo = current.status_type === "video" && current.media_url;
+      if (isVideo) {
+        const video = document.getElementById("viewerVideo");
+        if (!video) return;
+        video.muted = muted;
+        video.play().catch(() => {});
+        progressTimer = setInterval(() => {
+          if (held) return;
+          if (!video.duration || !isFinite(video.duration)) return;
+          progressValue = Math.min(100, (video.currentTime / video.duration) * 100);
+          renderProgress();
+          if (video.ended || progressValue >= 100) {
+            nextStatus();
+          }
+        }, 120);
+      } else {
+        progressTimer = setInterval(() => {
+          if (held) return;
+          progressValue += 2;
+          renderProgress();
+          if (progressValue >= 100) nextStatus();
+        }, 120);
+      }
+    }
+
+    async function nextStatus() {
+      clearProgressTimer();
+      if (currentIndex < statuses.length - 1) {
+        currentIndex += 1;
+        renderCurrent();
+        await markViewed(statuses[currentIndex]?.id);
+        startProgress();
+        return;
+      }
+
+      const currentUserIdx = usersWithStatuses.findIndex(u => u.userId === selectedUserId);
+      if (currentUserIdx >= 0 && currentUserIdx < usersWithStatuses.length - 1) {
+        switchUser(usersWithStatuses[currentUserIdx + 1].userId);
+      } else {
+        window.location.href = "status.html";
+      }
+    }
+
+    async function prevStatus() {
+      clearProgressTimer();
+      if (currentIndex > 0) {
+        currentIndex -= 1;
+        renderCurrent();
+        await markViewed(statuses[currentIndex]?.id);
+        startProgress();
+        return;
+      }
+
+      const currentUserIdx = usersWithStatuses.findIndex(u => u.userId === selectedUserId);
+      if (currentUserIdx > 0) {
+        switchUser(usersWithStatuses[currentUserIdx - 1].userId);
+      } else {
+        renderCurrent();
+        startProgress();
+      }
+    }
+
+    async function switchUser(userId) {
+      selectedUserId = userId;
+      selectedStatusId = "";
+      clearProgressTimer();
+      await loadAllStatuses();
+    }
+
+    async function sendReply() {
+      const current = statuses[currentIndex];
+      const message = replyInput.value.trim();
+      if (!current || !message || current.user_id === currentUser.id || current.allow_replies === false) return;
+
+      const { error } = await supabase.from("status_replies").insert({
+        status_id: current.id,
+        sender_id: currentUser.id,
+        recipient_id: current.user_id,
+        message
+      });
+
+      if (!error) {
+        replyInput.value = "";
+      }
+    }
+
+    async function deleteCurrentStatus() {
+      const current = statuses[currentIndex];
+      if (!current || current.user_id !== currentUser.id) return;
+      const ok = confirm("Delete this status?");
+      if (!ok) return;
+
+      const { error } = await supabase.from("statuses").delete().eq("id", current.id);
+      if (!error) {
+        window.location.href = "status.html";
+      }
+    }
+
+    document.getElementById("tapLeft").addEventListener("click", prevStatus);
+    document.getElementById("tapRight").addEventListener("click", nextStatus);
+    document.getElementById("tapLeft").addEventListener("pointerdown", () => held = true);
+    document.getElementById("tapRight").addEventListener("pointerdown", () => held = true);
+    document.getElementById("tapLeft").addEventListener("pointerup", () => held = false);
+    document.getElementById("tapRight").addEventListener("pointerup", () => held = false);
+    document.getElementById("tapLeft").addEventListener("pointercancel", () => held = false);
+    document.getElementById("tapRight").addEventListener("pointercancel", () => held = false);
+
+    document.getElementById("closeBtn").addEventListener("click", () => window.location.href = "status.html");
+    document.getElementById("sendReplyBtn").addEventListener("click", sendReply);
+    document.getElementById("deleteStatusBtn").addEventListener("click", deleteCurrentStatus);
+    muteBtn.addEventListener("click", () => {
+      muted = !muted;
+      muteBtn.textContent = muted ? "🔇" : "🔊";
+      const video = document.getElementById("viewerVideo");
+      if (video) video.muted = muted;
+    });
+
+    window.switchUser = switchUser;
+
+    (async function init() {
+      try {
+        await requireUser();
+        await loadAllStatuses();
+      } catch (error) {
+        pane.innerHTML = `<div class="text-pane" style="background:linear-gradient(135deg,#2f7bff,#ff2f57)">Could not load viewer.</div>`;
+      }
+    })();
+  </script>
+</body>
+</html>
