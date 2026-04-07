@@ -1,5 +1,15 @@
 const { createClient } = require("@supabase/supabase-js");
 
+const JOB_STATUS = {
+  QUEUED: "queued",
+  PROCESSING: "processing",
+  RETRYING: "retrying",
+  COMPLETED: "completed",
+  FAILED: "failed",
+};
+
+const ALLOWED_JOB_STATUSES = new Set(Object.values(JOB_STATUS));
+
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -81,6 +91,64 @@ function getSupabase() {
   return createClient(url, key);
 }
 
+function clampNumber(value, min, max, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, Math.floor(n)));
+}
+
+function isAllowedJobStatus(status) {
+  return ALLOWED_JOB_STATUSES.has(String(status || "").trim().toLowerCase());
+}
+
+function extractApiErrorMessage(payload, fallback = "Request failed") {
+  if (!payload) return fallback;
+
+  if (typeof payload === "string") {
+    const cleaned = payload.replace(/\s+/g, " ").trim();
+    return trimText(cleaned || fallback, 500);
+  }
+
+  return trimText(
+    payload?.error?.message ||
+      payload?.message ||
+      payload?.error_description ||
+      payload?.description ||
+      payload?.detail ||
+      payload?.title ||
+      payload?.errorDetails ||
+      fallback,
+    500
+  );
+}
+
+function sanitizeErrorMessage(errorLike, fallback = "Unknown publish error") {
+  if (!errorLike) return fallback;
+
+  if (typeof errorLike === "string") {
+    const cleaned = errorLike.replace(/\s+/g, " ").trim();
+    if (!cleaned) return fallback;
+
+    const lower = cleaned.toLowerCase();
+    if (
+      lower.includes('"uploadurl"') ||
+      lower.includes('"uploadinstructions"') ||
+      lower.includes('"uploadedvideo"') ||
+      lower.includes('"value":')
+    ) {
+      return "Provider returned upload session data instead of a final publish result";
+    }
+
+    return trimText(cleaned, 500);
+  }
+
+  if (errorLike instanceof Error) {
+    return sanitizeErrorMessage(errorLike.message, fallback);
+  }
+
+  return trimText(JSON.stringify(errorLike), 500);
+}
+
 async function addLog(supabase, payload) {
   try {
     await supabase.from("post_publish_logs").insert(payload);
@@ -90,8 +158,14 @@ async function addLog(supabase, payload) {
 }
 
 async function markJob(supabase, jobId, patch) {
+  const nextStatus = patch?.status;
+  if (nextStatus && !isAllowedJobStatus(nextStatus)) {
+    throw new Error(`Refusing to write invalid job status: ${nextStatus}`);
+  }
+
   const update = { ...patch, updated_at: nowIso() };
   const { error } = await supabase.from("post_publish_jobs").update(update).eq("id", jobId);
+
   if (error) throw new Error(error.message || "Failed updating job");
 }
 
@@ -100,6 +174,7 @@ async function fetchBinaryWithMeta(url) {
   if (!res.ok) {
     throw new Error(`Failed to fetch media: ${res.status}`);
   }
+
   const buffer = Buffer.from(await res.arrayBuffer());
   return {
     buffer,
@@ -152,7 +227,7 @@ async function uploadToYouTube(post, account) {
 
   const text = getPostText(post);
   const title = hasText(text) ? trimText(text, 100) : "View Upload";
-  const description = hasText(text) ? text : "";
+  const description = hasText(text) ? trimText(text, 5000) : "";
 
   const media = await fetchBinaryWithMeta(mediaUrl);
 
@@ -177,7 +252,7 @@ async function uploadToYouTube(post, account) {
   const uploadUrl = initRes.headers.get("location");
 
   if (!initRes.ok || !uploadUrl) {
-    throw new Error(`YouTube init failed: ${initText || initRes.status}`);
+    throw new Error(`YouTube init failed: ${extractApiErrorMessage(initText, `HTTP ${initRes.status}`)}`);
   }
 
   const uploadRes = await fetch(uploadUrl, {
@@ -194,7 +269,7 @@ async function uploadToYouTube(post, account) {
 
   if (!uploadRes.ok) {
     throw new Error(
-      uploadJson?.error?.message || uploadText || `YouTube upload failed: ${uploadRes.status}`
+      extractApiErrorMessage(uploadJson, uploadText || `YouTube upload failed: ${uploadRes.status}`)
     );
   }
 
@@ -221,7 +296,7 @@ async function sendToTelegram(post, account) {
   const mediaType = getMediaType(post);
 
   let endpoint = "sendMessage";
-  let body = { chat_id: chatId, text: hasText(text) ? text : " " };
+  let body = { chat_id: chatId, text: hasText(text) ? trimText(text, 4096) : " " };
 
   if (mediaUrl && isImage(mediaType, mediaUrl)) {
     endpoint = "sendPhoto";
@@ -247,7 +322,7 @@ async function sendToTelegram(post, account) {
   const data = safeJsonParse(textRes, {});
 
   if (!res.ok || data?.ok === false) {
-    throw new Error(data?.description || textRes || "Telegram publish failed");
+    throw new Error(extractApiErrorMessage(data, textRes || "Telegram publish failed"));
   }
 
   return String(data?.result?.message_id || makePlatformPostId("telegram", post.id));
@@ -278,21 +353,21 @@ async function sendToFacebook(post, account) {
       url: mediaUrl,
       access_token: accessToken,
     });
-    if (hasText(text)) body.set("caption", text);
+    if (hasText(text)) body.set("caption", trimText(text, 2200));
   } else if (mediaUrl && isVideo(mediaType, mediaUrl)) {
     url = `https://graph.facebook.com/v23.0/${pageId}/videos`;
     body = new URLSearchParams({
       file_url: mediaUrl,
       access_token: accessToken,
     });
-    if (hasText(text)) body.set("description", text);
+    if (hasText(text)) body.set("description", trimText(text, 2200));
     if (hasText(text)) body.set("title", trimText(text, 100));
   } else {
     if (!hasText(text)) {
       throw new Error("Facebook text-only post requires content");
     }
     body = new URLSearchParams({
-      message: text,
+      message: trimText(text, 5000),
       access_token: accessToken,
     });
   }
@@ -307,7 +382,7 @@ async function sendToFacebook(post, account) {
   const data = safeJsonParse(textRes, {});
 
   if (!res.ok || data?.error) {
-    throw new Error(data?.error?.message || textRes || "Facebook publish failed");
+    throw new Error(extractApiErrorMessage(data, textRes || "Facebook publish failed"));
   }
 
   return String(data?.post_id || data?.id || makePlatformPostId("facebook", post.id));
@@ -342,14 +417,14 @@ async function sendToInstagram(post, account) {
       image_url: mediaUrl,
       access_token: accessToken,
     });
-    if (hasText(caption)) createBody.set("caption", caption);
+    if (hasText(caption)) createBody.set("caption", trimText(caption, 2200));
   } else if (isVideo(mediaType, mediaUrl)) {
     createBody = new URLSearchParams({
       media_type: "REELS",
       video_url: mediaUrl,
       access_token: accessToken,
     });
-    if (hasText(caption)) createBody.set("caption", caption);
+    if (hasText(caption)) createBody.set("caption", trimText(caption, 2200));
   } else {
     throw new Error(`Instagram unsupported media type: ${mediaType || "unknown"}`);
   }
@@ -364,7 +439,7 @@ async function sendToInstagram(post, account) {
   const createData = safeJsonParse(createText, {});
 
   if (!createRes.ok || createData?.error || !createData?.id) {
-    throw new Error(createData?.error?.message || createText || "Instagram media container failed");
+    throw new Error(extractApiErrorMessage(createData, createText || "Instagram media container failed"));
   }
 
   const publishRes = await fetch(`https://graph.facebook.com/v23.0/${igUserId}/media_publish`, {
@@ -380,7 +455,7 @@ async function sendToInstagram(post, account) {
   const publishData = safeJsonParse(publishText, {});
 
   if (!publishRes.ok || publishData?.error) {
-    throw new Error(publishData?.error?.message || publishText || "Instagram publish failed");
+    throw new Error(extractApiErrorMessage(publishData, publishText || "Instagram publish failed"));
   }
 
   return String(publishData?.id || createData.id || makePlatformPostId("instagram", post.id));
@@ -440,7 +515,7 @@ async function registerLinkedInImage(mediaUrl, accessToken, ownerUrn) {
   const imageUrn = initData?.value?.image;
 
   if (!initRes.ok || !uploadUrl || !imageUrn) {
-    throw new Error(initData?.message || initText || "LinkedIn image initialize failed");
+    throw new Error(extractApiErrorMessage(initData, initText || "LinkedIn image initialize failed"));
   }
 
   const media = await fetchBinaryWithMeta(mediaUrl);
@@ -456,7 +531,7 @@ async function registerLinkedInImage(mediaUrl, accessToken, ownerUrn) {
 
   if (!uploadRes.ok) {
     const uploadText = await uploadRes.text();
-    throw new Error(uploadText || "LinkedIn image upload failed");
+    throw new Error(extractApiErrorMessage(uploadText, "LinkedIn image upload failed"));
   }
 
   return imageUrn;
@@ -483,15 +558,11 @@ async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
   const value = initData?.value || {};
   const videoUrn = value.video;
   const uploadInstructions = Array.isArray(value.uploadInstructions) ? value.uploadInstructions : [];
-  const uploadToken = value.uploadToken;
+  const hasUploadTokenKey = Object.prototype.hasOwnProperty.call(value, "uploadToken");
+  const uploadToken = hasUploadTokenKey ? String(value.uploadToken ?? "") : "";
 
-  if (!initRes.ok || !videoUrn || !uploadInstructions.length || !uploadToken) {
-    throw new Error(
-      initData?.message ||
-      initData?.errorDetails ||
-      initText ||
-      "LinkedIn video initialize failed"
-    );
+  if (!initRes.ok || !videoUrn || !uploadInstructions.length) {
+    throw new Error(extractApiErrorMessage(initData, initText || "LinkedIn video initialize failed"));
   }
 
   const uploadedPartIds = [];
@@ -513,7 +584,7 @@ async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
     const uploadText = await uploadRes.text();
 
     if (!uploadRes.ok) {
-      throw new Error(uploadText || "LinkedIn video upload failed");
+      throw new Error(extractApiErrorMessage(uploadText, "LinkedIn video upload failed"));
     }
 
     const etagRaw = uploadRes.headers.get("etag") || uploadRes.headers.get("ETag");
@@ -525,28 +596,28 @@ async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
     uploadedPartIds.push(cleanEtag);
   }
 
+  const finalizePayload = {
+    finalizeUploadRequest: {
+      video: videoUrn,
+      uploadedPartIds,
+    },
+  };
+
+  if (hasUploadTokenKey) {
+    finalizePayload.finalizeUploadRequest.uploadToken = uploadToken;
+  }
+
   const finalizeRes = await fetch("https://api.linkedin.com/rest/videos?action=finalizeUpload", {
     method: "POST",
     headers: getLinkedInHeaders(accessToken),
-    body: JSON.stringify({
-      finalizeUploadRequest: {
-        video: videoUrn,
-        uploadToken,
-        uploadedPartIds,
-      },
-    }),
+    body: JSON.stringify(finalizePayload),
   });
 
   const finalizeText = await finalizeRes.text();
   const finalizeData = safeJsonParse(finalizeText, {});
 
   if (!finalizeRes.ok) {
-    throw new Error(
-      finalizeData?.message ||
-      finalizeData?.errorDetails ||
-      finalizeText ||
-      "LinkedIn video finalize failed"
-    );
+    throw new Error(extractApiErrorMessage(finalizeData, finalizeText || "LinkedIn video finalize failed"));
   }
 
   return videoUrn;
@@ -574,7 +645,7 @@ async function sendToLinkedIn(post, account) {
   };
 
   if (hasText(commentary)) {
-    body.commentary = commentary;
+    body.commentary = trimText(commentary, 3000);
   }
 
   if (mediaUrl && isImage(mediaType, mediaUrl)) {
@@ -606,7 +677,7 @@ async function sendToLinkedIn(post, account) {
   const data = safeJsonParse(textRes, {});
 
   if (!res.ok) {
-    throw new Error(data?.message || textRes || "LinkedIn publish failed");
+    throw new Error(extractApiErrorMessage(data, textRes || "LinkedIn publish failed"));
   }
 
   return String(idHeader || data?.id || makePlatformPostId("linkedin", post.id));
@@ -626,14 +697,14 @@ async function sendToX(post, account) {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text: trimText(text, 280) }),
   });
 
   const bodyText = await res.text();
   const data = safeJsonParse(bodyText, {});
 
   if (!res.ok || data?.errors) {
-    throw new Error(data?.detail || data?.title || bodyText || "X publish failed");
+    throw new Error(extractApiErrorMessage(data, bodyText || "X publish failed"));
   }
 
   return String(data?.data?.id || makePlatformPostId("x", post.id));
@@ -665,7 +736,8 @@ async function sendToTikTok(post, account) {
     throw new Error(`TikTok unsupported media type: ${mediaType || "unknown"}`);
   }
 
-  const privacyLevel = resolveConnectedAccountField(account, ["privacy_level"]) || "PUBLIC_TO_EVERYONE";
+  const privacyLevel =
+    resolveConnectedAccountField(account, ["privacy_level"]) || "PUBLIC_TO_EVERYONE";
   const postMode = resolveConnectedAccountField(account, ["post_mode"]) || "DIRECT_POST";
 
   const body = {
@@ -695,9 +767,7 @@ async function sendToTikTok(post, account) {
   const data = safeJsonParse(textRes, {});
 
   if (!res.ok || data?.error?.code) {
-    throw new Error(
-      data?.error?.message || data?.error?.code || textRes || "TikTok publish init failed"
-    );
+    throw new Error(extractApiErrorMessage(data, textRes || "TikTok publish init failed"));
   }
 
   return String(
@@ -733,15 +803,16 @@ async function dispatchPlatform(post, account, platform) {
 }
 
 async function loadPostAndAccount(supabase, job) {
-  const [{ data: post, error: postError }, { data: account, error: accountError }] = await Promise.all([
-    supabase.from("posts").select("*").eq("id", job.post_id).single(),
-    supabase
-      .from("connected_accounts")
-      .select("*")
-      .eq("user_id", job.user_id)
-      .eq("platform", job.platform)
-      .maybeSingle(),
-  ]);
+  const [{ data: post, error: postError }, { data: account, error: accountError }] =
+    await Promise.all([
+      supabase.from("posts").select("*").eq("id", job.post_id).single(),
+      supabase
+        .from("connected_accounts")
+        .select("*")
+        .eq("user_id", job.user_id)
+        .eq("platform", job.platform)
+        .maybeSingle(),
+    ]);
 
   if (postError || !post) throw new Error(postError?.message || "Post not found");
 
@@ -764,24 +835,33 @@ async function updatePostAggregateStatus(supabase, postId) {
 
   if (error || !jobs) return;
 
-  const statuses = jobs.map((j) => j.status);
+  const statuses = jobs.map((j) => String(j.status || "").toLowerCase());
   let publishStatus = "queued";
 
-  if (statuses.length && statuses.every((s) => s === "success")) {
+  if (statuses.length && statuses.every((s) => s === JOB_STATUS.COMPLETED)) {
     publishStatus = "published";
-  } else if (statuses.some((s) => s === "success") && statuses.some((s) => s === "failed")) {
+  } else if (
+    statuses.some((s) => s === JOB_STATUS.COMPLETED) &&
+    statuses.some((s) => s === JOB_STATUS.FAILED)
+  ) {
     publishStatus = "partial";
-  } else if (statuses.some((s) => s === "success") && statuses.some((s) => s === "retrying")) {
+  } else if (
+    statuses.some((s) => s === JOB_STATUS.COMPLETED) &&
+    statuses.some((s) => s === JOB_STATUS.RETRYING || s === JOB_STATUS.QUEUED)
+  ) {
     publishStatus = "partial";
-  } else if (statuses.some((s) => s === "processing")) {
+  } else if (statuses.some((s) => s === JOB_STATUS.PROCESSING)) {
     publishStatus = "processing";
-  } else if (statuses.some((s) => s === "retrying" || s === "queued")) {
+  } else if (statuses.some((s) => s === JOB_STATUS.RETRYING || s === JOB_STATUS.QUEUED)) {
     publishStatus = "queued";
-  } else if (statuses.length && statuses.every((s) => s === "failed")) {
+  } else if (statuses.length && statuses.every((s) => s === JOB_STATUS.FAILED)) {
     publishStatus = "failed";
   }
 
-  await supabase.from("posts").update({ publish_status: publishStatus }).eq("id", postId);
+  await supabase
+    .from("posts")
+    .update({ publish_status: publishStatus, updated_at: nowIso() })
+    .eq("id", postId);
 }
 
 async function processJob(supabase, job) {
@@ -790,7 +870,7 @@ async function processJob(supabase, job) {
   const attempts = (job.attempts || 0) + 1;
 
   await markJob(supabase, job.id, {
-    status: "processing",
+    status: JOB_STATUS.PROCESSING,
     attempts,
     last_error: null,
   });
@@ -799,7 +879,7 @@ async function processJob(supabase, job) {
   const platformPostId = await dispatchPlatform(post, account, platform);
 
   await markJob(supabase, job.id, {
-    status: "success",
+    status: JOB_STATUS.COMPLETED,
     platform_post_id: String(platformPostId),
     delivered_at: startedAt,
     next_retry_at: null,
@@ -810,7 +890,7 @@ async function processJob(supabase, job) {
     post_id: job.post_id,
     job_id: job.id,
     platform,
-    status: "success",
+    status: JOB_STATUS.COMPLETED,
     attempts,
     platform_post_id: String(platformPostId),
     created_at: startedAt,
@@ -823,18 +903,22 @@ async function processJob(supabase, job) {
     job_id: job.id,
     platform,
     platform_post_id: String(platformPostId),
+    status: JOB_STATUS.COMPLETED,
   };
 }
 
 async function failJob(supabase, job, message) {
   const attempts = (job.attempts || 0) + 1;
   const retryable = attempts < 3;
-  const nextRetryAt = retryable ? new Date(Date.now() + attempts * 2 * 60 * 1000).toISOString() : null;
-  const status = retryable ? "retrying" : "failed";
+  const nextRetryAt = retryable
+    ? new Date(Date.now() + attempts * 2 * 60 * 1000).toISOString()
+    : null;
+  const status = retryable ? JOB_STATUS.RETRYING : JOB_STATUS.FAILED;
+  const cleanMessage = sanitizeErrorMessage(message);
 
   await markJob(supabase, job.id, {
     status,
-    last_error: message,
+    last_error: cleanMessage,
     next_retry_at: nextRetryAt,
     attempts,
   });
@@ -845,7 +929,7 @@ async function failJob(supabase, job, message) {
     platform: normalizePlatform(job.platform),
     status,
     attempts,
-    error_message: message,
+    error_message: cleanMessage,
     created_at: nowIso(),
   });
 
@@ -855,20 +939,21 @@ async function failJob(supabase, job, message) {
     ok: false,
     job_id: job.id,
     platform: normalizePlatform(job.platform),
-    error: message,
+    error: cleanMessage,
     status,
   };
 }
 
 async function runWithConcurrency(items, limit, worker) {
-  const results = [];
+  const results = new Array(items.length);
   let index = 0;
 
   async function runner() {
-    while (index < items.length) {
-      const current = items[index++];
-      const result = await worker(current);
-      results.push(result);
+    while (true) {
+      const currentIndex = index++;
+      if (currentIndex >= items.length) return;
+      const current = items[currentIndex];
+      results[currentIndex] = await worker(current);
     }
   }
 
@@ -890,12 +975,17 @@ module.exports = async function handler(req, res) {
 
   try {
     const supabase = getSupabase();
-    const statuses = ["queued", "retrying"];
+    const statuses = [JOB_STATUS.QUEUED, JOB_STATUS.RETRYING];
     const now = new Date().toISOString();
-    const body = req.method === "POST" && req.body ? req.body : {};
+    const body =
+      req.method === "POST" && req.body
+        ? typeof req.body === "string"
+          ? safeJsonParse(req.body, {})
+          : req.body
+        : {};
     const query = req.query || {};
-    const batchSize = Number(query.limit || body.limit || 20);
-    const concurrency = Number(query.concurrency || body.concurrency || 4);
+    const batchSize = clampNumber(query.limit || body.limit || 20, 1, 100, 20);
+    const concurrency = clampNumber(query.concurrency || body.concurrency || 4, 1, 10, 4);
 
     const { data: jobs, error: jobsError } = await supabase
       .from("post_publish_jobs")
@@ -909,7 +999,7 @@ module.exports = async function handler(req, res) {
     }
 
     const runnableJobs = (jobs || []).filter((job) => {
-      if (job.status !== "retrying") return true;
+      if (job.status !== JOB_STATUS.RETRYING) return true;
       if (!job.next_retry_at) return true;
       return job.next_retry_at <= now;
     });
@@ -927,6 +1017,7 @@ module.exports = async function handler(req, res) {
       try {
         return await processJob(supabase, job);
       } catch (err) {
+        console.error(`Publish failed for job ${job.id}:`, err);
         return await failJob(supabase, job, err?.message || "Unknown publish error");
       }
     });
@@ -937,13 +1028,16 @@ module.exports = async function handler(req, res) {
       success_count: results.filter((r) => r.ok).length,
       failed_count: results.filter((r) => !r.ok).length,
       results,
-      message: `Processed ${results.length} job(s) with concurrency ${Math.min(concurrency, runnableJobs.length)}`,
+      message: `Processed ${results.length} job(s) with concurrency ${Math.min(
+        concurrency,
+        runnableJobs.length
+      )}`,
     });
   } catch (err) {
     console.error("process-publish-jobs fatal:", err);
     return res.status(500).json({
       success: false,
-      error: err?.message || "Internal server error",
+      error: sanitizeErrorMessage(err?.message || err || "Internal server error"),
     });
   }
 };
