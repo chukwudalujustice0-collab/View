@@ -5,27 +5,24 @@ if (!window.supabase) {
   throw new Error("Supabase JS is required before loading auth-guard.js");
 }
 
-window.supabaseClient = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    flowType: "pkce"
-  }
-});
+window.viewSupabase =
+  window.viewSupabase ||
+  window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: "pkce"
+    }
+  });
 
-const supabase = window.supabaseClient;
+const supabase = window.viewSupabase;
 
 window.currentUser = window.currentUser || null;
 window.currentProfile = window.currentProfile || null;
 
 function setAuthLoading(isLoading) {
   document.documentElement.classList.toggle("auth-loading", !!isLoading);
-  document.body.classList.toggle("auth-loading", !!isLoading);
-}
-
-function safeText(value, fallback = "") {
-  return value == null || value === "" ? fallback : String(value);
 }
 
 function applyUserBindings(user, profile) {
@@ -34,14 +31,14 @@ function applyUserBindings(user, profile) {
     profile?.username ||
     user?.user_metadata?.full_name ||
     user?.user_metadata?.name ||
-    "User";
+    (user?.email ? user.email.split("@")[0] : "User");
 
   const username =
     profile?.username ||
     user?.user_metadata?.username ||
     (user?.email ? user.email.split("@")[0] : "user");
 
-  const email = user?.email || "—";
+  const email = user?.email || "";
   const avatar =
     profile?.avatar_url ||
     user?.user_metadata?.avatar_url ||
@@ -66,12 +63,10 @@ function applyUserBindings(user, profile) {
         el.src = avatar;
         el.alt = `${fullName} avatar`;
       }
-    } else {
-      if (avatar) {
-        el.style.backgroundImage = `url("${avatar}")`;
-        el.style.backgroundSize = "cover";
-        el.style.backgroundPosition = "center";
-      }
+    } else if (avatar) {
+      el.style.backgroundImage = `url("${avatar}")`;
+      el.style.backgroundSize = "cover";
+      el.style.backgroundPosition = "center";
     }
   });
 }
@@ -93,19 +88,15 @@ async function fetchProfile(userId) {
   return data || null;
 }
 
-function buildLoginRedirect(nextPage = "") {
-  const target =
-    nextPage ||
-    window.location.pathname.split("/").pop() ||
-    "home.html";
-
-  return `/login.html?next=${encodeURIComponent(target)}`;
+function buildLoginRedirect() {
+  const next = encodeURIComponent(
+    window.location.pathname + window.location.search + window.location.hash
+  );
+  return `/login.html?next=${next}`;
 }
 
-async function loadUserGlobals(session) {
-  const user = session?.user || null;
-
-  window.currentUser = user;
+async function loadUserGlobals(user) {
+  window.currentUser = user || null;
   window.currentProfile = user ? await fetchProfile(user.id) : null;
 
   applyUserBindings(window.currentUser, window.currentProfile);
@@ -116,65 +107,56 @@ async function loadUserGlobals(session) {
   };
 }
 
-async function requireSession(nextPage = "") {
-  const { data, error } = await supabase.auth.getSession();
-
-  if (error) {
-    console.error("Session check failed:", error.message);
-  }
-
-  const session = data?.session || null;
-
-  if (!session) {
-    window.currentUser = null;
-    window.currentProfile = null;
-    window.location.href = buildLoginRedirect(nextPage);
-    return null;
-  }
-
-  return session;
-}
-
-async function protectPage(nextPage = "") {
+async function protectPage() {
   setAuthLoading(true);
 
   try {
-    const session = await requireSession(nextPage);
-    if (!session) return null;
+    const { data, error } = await supabase.auth.getUser();
 
-    const result = await loadUserGlobals(session);
+    if (error || !data?.user) {
+      window.currentUser = null;
+      window.currentProfile = null;
+      window.location.replace(buildLoginRedirect());
+      return null;
+    }
+
+    const result = await loadUserGlobals(data.user);
     setAuthLoading(false);
     return result;
   } catch (error) {
     console.error("protectPage failed:", error);
-    window.location.href = buildLoginRedirect(nextPage);
+    window.currentUser = null;
+    window.currentProfile = null;
+    window.location.replace(buildLoginRedirect());
     return null;
   }
 }
 
-async function initAuth(nextPage = "") {
-  return await protectPage(nextPage);
+async function initAuth() {
+  return await protectPage();
 }
 
 supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === "SIGNED_OUT" || !session) {
+  if (event === "SIGNED_OUT") {
     window.currentUser = null;
     window.currentProfile = null;
 
-    const isPublicPage = ["/login.html", "/signup.html", "/index.html"].some((page) =>
-      window.location.pathname.endsWith(page)
+    const publicPages = ["/", "/index.html", "/login.html", "/signup.html"];
+    const isPublicPage = publicPages.some((page) =>
+      window.location.pathname === page || window.location.pathname.endsWith(page)
     );
 
     if (!isPublicPage) {
-      window.location.href = buildLoginRedirect(
-        window.location.pathname.split("/").pop() || "home.html"
-      );
+      window.location.replace(buildLoginRedirect());
     }
     return;
   }
 
-  if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
-    await loadUserGlobals(session);
+  if (
+    (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") &&
+    session?.user
+  ) {
+    await loadUserGlobals(session.user);
   }
 });
 
