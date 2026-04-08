@@ -1,12 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Protected A</title>
+
   <script>
     document.documentElement.classList.add("auth-loading");
   </script>
+
   <style>
-    html.auth-loading body { visibility: hidden; }
+    html.auth-loading body {
+      visibility: hidden;
+      opacity: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -14,30 +26,68 @@
       align-items: center;
       justify-content: center;
       background: #0a0f24;
-      color: #fff;
+      color: #ffffff;
       font-family: Arial, sans-serif;
     }
+
+    .card {
+      width: min(92vw, 380px);
+      padding: 28px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      text-align: center;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 24px;
+    }
+
+    p {
+      margin: 8px 0;
+      color: rgba(255,255,255,0.88);
+    }
+
+    button {
+      margin-top: 16px;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-weight: 700;
+      background: #ffffff;
+      color: #0a0f24;
+    }
   </style>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/auth-guard.js"></script>
 </head>
 <body>
-  <div>
+  <div class="card">
     <h2>Protected Page</h2>
-    <p>Hello <span data-user-name>...</span></p>
-    <p><span data-user-email></span></p>
-    <button id="logoutBtn">Logout</button>
+    <p>Hello <span data-user-name>Loading...</span></p>
+    <p><span data-user-email>Loading...</span></p>
+    <button id="logoutBtn" type="button">Logout</button>
   </div>
 
   <script>
     async function start() {
-      const auth = await protectPage();
-      if (!auth) return;
+      try {
+        const auth = await window.protectPage();
+        if (!auth) return;
 
-      document.getElementById("logoutBtn").addEventListener("click", async () => {
-        await window.viewSupabase.auth.signOut();
+        document.documentElement.classList.remove("auth-loading");
+
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+          await window.viewSupabase.auth.signOut();
+          window.location.replace("/login.html");
+        });
+      } catch (err) {
+        console.error("Page auth failed:", err);
         window.location.replace("/login.html");
-      });
+      }
     }
 
     start();
