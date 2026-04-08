@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Protected Test</title>
+
+  <!-- Hide page until auth is confirmed -->
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <style>
+    html.auth-loading body { visibility: hidden; opacity: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background:#0b1020;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      margin:0;
+    }
+    .card{
+      background:rgba(255,255,255,.08);
+      padding:30px;
+      border-radius:16px;
+      text-align:center;
+      border:1px solid rgba(255,255,255,.1);
+    }
+  </style>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Your existing auth guard -->
+  <script src="/js/auth-guard.js"></script>
+</head>
+
+<body>
+  <div class="card">
+    <h2>✅ Protected Page</h2>
+    <p>Welcome <span data-user-name>Loading...</span></p>
+    <p>Email: <span data-user-email>Loading...</span></p>
+
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    const sb = window.viewSupabase;
+
+    async function init() {
+      const auth = await protectPage("login.html");
+      if (!auth) return;
+
+      // show page after auth success
+      document.documentElement.classList.remove("auth-loading");
+    }
+
+    async function logout(){
+      await sb.auth.signOut();
+      window.location.href = "/login.html";
+    }
+
+    init();
+  </script>
+</body>
+</html>
