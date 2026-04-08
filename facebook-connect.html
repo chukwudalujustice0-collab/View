@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Facebook Connection | View</title>
+  <title>YouTube Connection | View</title>
   <meta name="theme-color" content="#08111f" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -13,7 +13,8 @@
       --line:rgba(255,255,255,.08);
       --text:#f4f7ff;
       --muted:#9fb1d7;
-      --primary:#1877f2;
+      --primary:#ff0033;
+      --primary-2:#e11d48;
       --success:#10b981;
       --warn:#f59e0b;
       --danger:#ef4444;
@@ -29,8 +30,8 @@
       min-height:100vh;
       color:var(--text);
       background:
-        radial-gradient(circle at top right, rgba(24,119,242,.18), transparent 28%),
-        radial-gradient(circle at top left, rgba(124,58,237,.16), transparent 22%),
+        radial-gradient(circle at top right, rgba(255,0,51,.18), transparent 28%),
+        radial-gradient(circle at top left, rgba(59,130,246,.16), transparent 22%),
         linear-gradient(180deg,#08111f 0%, #0c162b 100%);
     }
 
@@ -48,7 +49,7 @@
       margin-bottom:18px;
     }
 
-    .back-btn,.link-btn,.btn,.page-btn{
+    .back-btn,.link-btn,.btn,.channel-btn{
       border:none;
       cursor:pointer;
       font:inherit;
@@ -87,8 +88,8 @@
     .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
     .brand{display:flex;gap:14px;align-items:center;min-width:0}
     .brand-icon{
-      width:58px;height:58px;border-radius:18px;background:linear-gradient(180deg,#2b84ff,#1768d9);
-      display:grid;place-items:center;font-size:30px;font-weight:900;color:#fff;flex:0 0 auto;
+      width:58px;height:58px;border-radius:18px;background:linear-gradient(180deg,#ff274f,#d90429);
+      display:grid;place-items:center;font-size:26px;font-weight:900;color:#fff;flex:0 0 auto;
     }
     .brand-text h2{margin:0 0 5px;font-size:20px}
     .brand-text p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
@@ -107,7 +108,7 @@
       min-height:48px;border-radius:16px;padding:0 16px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:10px;
     }
     .btn[disabled]{opacity:.6;cursor:not-allowed}
-    .btn-primary{background:linear-gradient(180deg,#2b84ff,#1768d9);color:#fff}
+    .btn-primary{background:linear-gradient(180deg,#ff274f,#d90429);color:#fff}
     .btn-secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}
     .btn-danger{background:rgba(239,68,68,.12);color:#fecaca;border:1px solid rgba(239,68,68,.22)}
 
@@ -130,24 +131,24 @@
     }
     .spinner.show{display:inline-block}
 
-    .pages-list{display:grid;gap:12px;margin-top:12px}
-    .page-item{
+    .channels-list{display:grid;gap:12px;margin-top:12px}
+    .channel-item{
       border:1px solid var(--line);
       background:rgba(255,255,255,.04);
       border-radius:18px;
       padding:14px;
     }
-    .page-item-top{
+    .channel-item-top{
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
       gap:12px;
       margin-bottom:8px;
     }
-    .page-name{font-weight:800;font-size:15px}
-    .page-meta{font-size:13px;color:var(--muted);line-height:1.5}
-    .page-btn{
-      min-height:40px;padding:0 14px;border-radius:12px;background:linear-gradient(180deg,#2b84ff,#1768d9);color:#fff;font-weight:800;
+    .channel-name{font-weight:800;font-size:15px}
+    .channel-meta{font-size:13px;color:var(--muted);line-height:1.5}
+    .channel-btn{
+      min-height:40px;padding:0 14px;border-radius:12px;background:linear-gradient(180deg,#ff274f,#d90429);color:#fff;font-weight:800;
     }
     .selected-badge{
       display:inline-block;
@@ -170,7 +171,7 @@
       <button class="back-btn" id="backBtn" type="button">←</button>
       <div class="heading-wrap">
         <div class="eyebrow">View account center</div>
-        <h1>Facebook connection</h1>
+        <h1>YouTube connection</h1>
       </div>
       <a class="link-btn" href="connect-account.html">All accounts</a>
     </div>
@@ -180,26 +181,26 @@
     <section class="hero">
       <div class="hero-top">
         <div class="brand">
-          <div class="brand-icon">f</div>
+          <div class="brand-icon">▶</div>
           <div class="brand-text">
-            <h2>Connect Facebook</h2>
-            <p>Connect Facebook, list your pages, and select the page you want to use for publishing.</p>
+            <h2>Connect YouTube</h2>
+            <p>Connect YouTube, load your channels, and choose the channel you want to use for publishing videos.</p>
           </div>
         </div>
         <div id="statusChip" class="chip disconnected">Not connected</div>
       </div>
 
       <p class="hero-copy">
-        This page loads your saved Facebook connection, fetches available pages, and lets you save one page for posting.
+        This page loads your saved YouTube connection, fetches available channels, and lets you save one channel for posting.
       </p>
 
       <div class="actions">
         <button id="connectBtn" class="btn btn-primary" type="button">
           <span id="connectSpinner" class="spinner"></span>
-          <span id="connectBtnText">Connect Facebook</span>
+          <span id="connectBtnText">Connect YouTube</span>
         </button>
         <button id="refreshBtn" class="btn btn-secondary" type="button">Refresh status</button>
-        <button id="loadPagesBtn" class="btn btn-secondary" type="button">Load pages</button>
+        <button id="loadChannelsBtn" class="btn btn-secondary" type="button">Load channels</button>
         <button id="disconnectBtn" class="btn btn-danger hidden" type="button">Disconnect</button>
       </div>
     </section>
@@ -211,8 +212,8 @@
           <div class="row"><div class="label">Status</div><div class="value" id="detailStatus">—</div></div>
           <div class="row"><div class="label">Name</div><div class="value" id="detailName">—</div></div>
           <div class="row"><div class="label">Handle / email</div><div class="value" id="detailHandle">—</div></div>
-          <div class="row"><div class="label">Facebook user ID</div><div class="value" id="detailUserId">—</div></div>
-          <div class="row"><div class="label">Selected page ID</div><div class="value" id="detailPageId">—</div></div>
+          <div class="row"><div class="label">YouTube user ID</div><div class="value" id="detailUserId">—</div></div>
+          <div class="row"><div class="label">Selected channel ID</div><div class="value" id="detailPageId">—</div></div>
           <div class="row"><div class="label">Scope</div><div class="value" id="detailScope">—</div></div>
           <div class="row"><div class="label">Token expiry</div><div class="value" id="detailExpiry">—</div></div>
           <div class="row"><div class="label">Last synced</div><div class="value" id="detailSynced">—</div></div>
@@ -220,10 +221,10 @@
       </div>
 
       <div class="card">
-        <h3>Available pages</h3>
-        <p class="muted">After connecting, tap “Load pages” to see your Facebook Pages and choose one.</p>
-        <div id="pagesEmpty" class="muted">No pages loaded yet.</div>
-        <div id="pagesList" class="pages-list"></div>
+        <h3>Available channels</h3>
+        <p class="muted">After connecting, tap “Load channels” to see your YouTube channels and choose one.</p>
+        <div id="channelsEmpty" class="muted">No channels loaded yet.</div>
+        <div id="channelsList" class="channels-list"></div>
       </div>
     </section>
   </div>
@@ -243,7 +244,7 @@
         connectSpinner: document.getElementById("connectSpinner"),
         connectBtnText: document.getElementById("connectBtnText"),
         refreshBtn: document.getElementById("refreshBtn"),
-        loadPagesBtn: document.getElementById("loadPagesBtn"),
+        loadChannelsBtn: document.getElementById("loadChannelsBtn"),
         disconnectBtn: document.getElementById("disconnectBtn"),
         detailStatus: document.getElementById("detailStatus"),
         detailName: document.getElementById("detailName"),
@@ -253,8 +254,8 @@
         detailScope: document.getElementById("detailScope"),
         detailExpiry: document.getElementById("detailExpiry"),
         detailSynced: document.getElementById("detailSynced"),
-        pagesList: document.getElementById("pagesList"),
-        pagesEmpty: document.getElementById("pagesEmpty")
+        channelsList: document.getElementById("channelsList"),
+        channelsEmpty: document.getElementById("channelsEmpty")
       };
 
       let currentAccount = null;
@@ -280,10 +281,10 @@
       function setBusy(state) {
         els.connectBtn.disabled = state;
         els.refreshBtn.disabled = state;
-        els.loadPagesBtn.disabled = state;
+        els.loadChannelsBtn.disabled = state;
         els.disconnectBtn.disabled = state;
         els.connectSpinner.classList.toggle("show", state);
-        els.connectBtnText.textContent = state ? "Please wait..." : "Connect Facebook";
+        els.connectBtnText.textContent = state ? "Please wait..." : "Connect YouTube";
       }
 
       function setDisconnectedUI() {
@@ -291,7 +292,7 @@
         els.statusChip.textContent = "Not connected";
         els.statusChip.className = "chip disconnected";
         els.disconnectBtn.classList.add("hidden");
-        els.detailStatus.textContent = "No saved Facebook connection";
+        els.detailStatus.textContent = "No saved YouTube connection";
         els.detailName.textContent = "—";
         els.detailHandle.textContent = "—";
         els.detailUserId.textContent = "—";
@@ -299,9 +300,9 @@
         els.detailScope.textContent = "—";
         els.detailExpiry.textContent = "—";
         els.detailSynced.textContent = "—";
-        els.pagesList.innerHTML = "";
-        els.pagesEmpty.textContent = "No pages loaded yet.";
-        els.pagesEmpty.classList.remove("hidden");
+        els.channelsList.innerHTML = "";
+        els.channelsEmpty.textContent = "No channels loaded yet.";
+        els.channelsEmpty.classList.remove("hidden");
       }
 
       function setConnectedUI(data) {
@@ -349,39 +350,38 @@
             return;
           }
 
-          const res = await safeFetch(`${FN_BASE}/facebook-status`, {
+          const res = await safeFetch(`${FN_BASE}/youtube-status`, {
             method: "GET",
             headers: { "Authorization": `Bearer ${session.access_token}` }
           });
 
           const data = await res.json().catch(() => ({}));
-
           if (!res.ok) throw new Error(data?.error || `Status failed (${res.status})`);
 
           if (data.connected && data.account) {
             setConnectedUI(data.account);
-            showNotice("Facebook status loaded.", "success");
+            showNotice("YouTube status loaded.", "success");
           } else {
             setDisconnectedUI();
-            showNotice("No Facebook account is connected yet.", "warn");
+            showNotice("No YouTube account is connected yet.", "warn");
           }
         } catch (err) {
           setDisconnectedUI();
-          showNotice(err.message || "Could not load Facebook status.", "error");
+          showNotice(err.message || "Could not load YouTube status.", "error");
         } finally {
           setBusy(false);
         }
       }
 
-      async function connectFacebook() {
+      async function connectYouTube() {
         setBusy(true);
         try {
           const session = await getSessionOrWarn();
           if (!session) return;
 
-          const redirect_to = `${window.location.origin}/facebook-connect.html`;
+          const redirect_to = `${window.location.origin}/youtube-connect.html`;
 
-          const res = await safeFetch(`${FN_BASE}/facebook-connect`, {
+          const res = await safeFetch(`${FN_BASE}/youtube-connect`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -391,20 +391,19 @@
           });
 
           const data = await res.json().catch(() => ({}));
-
           if (!res.ok) throw new Error(data?.error || `Connect failed (${res.status})`);
-          if (!data?.auth_url) throw new Error("facebook-connect did not return auth_url.");
+          if (!data?.auth_url) throw new Error("youtube-connect did not return auth_url.");
 
           window.location.href = data.auth_url;
         } catch (err) {
-          showNotice(err.message || "Failed to start Facebook login.", "error");
+          showNotice(err.message || "Failed to start YouTube login.", "error");
         } finally {
           setBusy(false);
         }
       }
 
-      async function disconnectFacebook() {
-        const ok = confirm("Disconnect saved Facebook account?");
+      async function disconnectYouTube() {
+        const ok = confirm("Disconnect saved YouTube account?");
         if (!ok) return;
 
         setBusy(true);
@@ -412,7 +411,7 @@
           const session = await getSessionOrWarn();
           if (!session) return;
 
-          const res = await safeFetch(`${FN_BASE}/facebook-disconnect`, {
+          const res = await safeFetch(`${FN_BASE}/youtube-disconnect`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -424,7 +423,7 @@
           if (!res.ok) throw new Error(data?.error || `Disconnect failed (${res.status})`);
 
           setDisconnectedUI();
-          showNotice("Facebook disconnected successfully.", "success");
+          showNotice("YouTube disconnected successfully.", "success");
         } catch (err) {
           showNotice(err.message || "Disconnect failed.", "error");
         } finally {
@@ -432,13 +431,13 @@
         }
       }
 
-      async function loadPages() {
+      async function loadChannels() {
         setBusy(true);
         try {
           const session = await getSessionOrWarn();
           if (!session) return;
 
-          const res = await safeFetch(`${FN_BASE}/facebook-pages`, {
+          const res = await safeFetch(`${FN_BASE}/youtube-channels`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${session.access_token}`
@@ -446,74 +445,79 @@
           });
 
           const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(data?.error || `Load pages failed (${res.status})`);
+          if (!res.ok) throw new Error(data?.error || `Load channels failed (${res.status})`);
 
-          renderPages(Array.isArray(data.pages) ? data.pages : []);
-          showNotice("Facebook pages loaded.", "success");
+          renderChannels(Array.isArray(data.channels) ? data.channels : []);
+          showNotice("YouTube channels loaded.", "success");
         } catch (err) {
-          renderPages([]);
-          showNotice(err.message || "Could not load Facebook pages.", "error");
+          renderChannels([]);
+          showNotice(err.message || "Could not load YouTube channels.", "error");
         } finally {
           setBusy(false);
         }
       }
 
-      async function selectPage(page) {
+      async function selectChannel(channel) {
         setBusy(true);
         try {
           const session = await getSessionOrWarn();
           if (!session) return;
 
-          const res = await safeFetch(`${FN_BASE}/facebook-select-page`, {
+          const res = await safeFetch(`${FN_BASE}/youtube-select-channel`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${session.access_token}`
             },
             body: JSON.stringify({
-              page_id: page.id,
-              page_name: page.name,
-              page_access_token: page.access_token
+              channel_id: channel.id,
+              channel_name: channel.name || channel.title || "",
+              channel_handle: channel.handle || channel.custom_url || channel.username || ""
             })
           });
 
           const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(data?.error || `Select page failed (${res.status})`);
+          if (!res.ok) throw new Error(data?.error || `Select channel failed (${res.status})`);
 
-          showNotice(data?.message || "Page selected successfully.", "success");
+          showNotice(data?.message || "Channel selected successfully.", "success");
           await loadStatus();
-          await loadPages();
+          await loadChannels();
         } catch (err) {
-          showNotice(err.message || "Could not save selected page.", "error");
+          showNotice(err.message || "Could not save selected channel.", "error");
         } finally {
           setBusy(false);
         }
       }
 
-      function renderPages(pages) {
-        els.pagesList.innerHTML = "";
+      function renderChannels(channels) {
+        els.channelsList.innerHTML = "";
 
-        if (!pages.length) {
-          els.pagesEmpty.textContent = "No pages found for this account.";
-          els.pagesEmpty.classList.remove("hidden");
+        if (!channels.length) {
+          els.channelsEmpty.textContent = "No channels found for this account.";
+          els.channelsEmpty.classList.remove("hidden");
           return;
         }
 
-        els.pagesEmpty.classList.add("hidden");
+        els.channelsEmpty.classList.add("hidden");
 
-        pages.forEach((page) => {
+        channels.forEach((channel) => {
           const wrap = document.createElement("div");
-          wrap.className = "page-item";
+          wrap.className = "channel-item";
 
-          const isSelected = currentAccount?.external_page_id && String(currentAccount.external_page_id) === String(page.id);
+          const channelId = channel.id || channel.channel_id || "";
+          const channelName = channel.name || channel.title || "Unnamed Channel";
+          const channelHandle = channel.handle || channel.custom_url || channel.username || "—";
+          const subscriberCount = channel.subscriber_count ?? channel.subscribers ?? "—";
+          const isSelected = currentAccount?.external_page_id && String(currentAccount.external_page_id) === String(channelId);
 
           wrap.innerHTML = `
-            <div class="page-item-top">
+            <div class="channel-item-top">
               <div>
-                <div class="page-name">${page.name || "Unnamed Page"}</div>
-                <div class="page-meta">
-                  ID: ${page.id || "—"}<br>
-                  Category: ${page.category || "—"}
+                <div class="channel-name">${channelName}</div>
+                <div class="channel-meta">
+                  ID: ${channelId || "—"}<br>
+                  Handle: ${channelHandle || "—"}<br>
+                  Subscribers: ${subscriberCount}
                 </div>
               </div>
               ${isSelected ? '<span class="selected-badge">Selected</span>' : ''}
@@ -521,14 +525,18 @@
           `;
 
           const btn = document.createElement("button");
-          btn.className = "page-btn";
+          btn.className = "channel-btn";
           btn.type = "button";
-          btn.textContent = isSelected ? "Selected page" : "Use this page";
+          btn.textContent = isSelected ? "Selected channel" : "Use this channel";
           btn.disabled = isSelected;
-          btn.addEventListener("click", () => selectPage(page));
+          btn.addEventListener("click", () => selectChannel({
+            id: channelId,
+            name: channelName,
+            handle: channelHandle
+          }));
 
           wrap.appendChild(btn);
-          els.pagesList.appendChild(wrap);
+          els.channelsList.appendChild(wrap);
         });
       }
 
@@ -538,9 +546,9 @@
         const message = params.get("message");
 
         if (status === "success") {
-          showNotice(message || "Facebook connected successfully.", "success");
+          showNotice(message || "YouTube connected successfully.", "success");
         } else if (status === "error") {
-          showNotice(message || "Facebook connection failed.", "error");
+          showNotice(message || "YouTube connection failed.", "error");
         }
       }
 
@@ -549,10 +557,10 @@
         else window.location.href = "connect-account.html";
       });
 
-      els.connectBtn.addEventListener("click", connectFacebook);
+      els.connectBtn.addEventListener("click", connectYouTube);
       els.refreshBtn.addEventListener("click", loadStatus);
-      els.loadPagesBtn.addEventListener("click", loadPages);
-      els.disconnectBtn.addEventListener("click", disconnectFacebook);
+      els.loadChannelsBtn.addEventListener("click", loadChannels);
+      els.disconnectBtn.addEventListener("click", disconnectYouTube);
 
       readQueryMessage();
       loadStatus();
