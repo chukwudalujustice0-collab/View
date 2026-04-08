@@ -1,27 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="auth-loading">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Create Post | View</title>
-  <meta name="theme-color" content="#f8fbff" />
-  <link rel="manifest" href="/manifest.json" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta name="theme-color" content="#0b1454" />
 
   <style>
+    html.auth-loading, html.auth-loading body{
+      visibility:hidden;
+    }
+
     :root{
-      --bg:#f6f8fc;
+      --bg:#08114c;
+      --bg2:#0b1454;
+      --bg3:#0a1b6f;
+      --panel:#ffffff;
+      --panel2:#f8fbff;
       --text:#111827;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --card:#ffffff;
+      --muted:#667085;
+      --line:#dbe4ff;
+      --white:#ffffff;
       --primary:#2563eb;
       --primary2:#4f46e5;
+      --red:#ef4444;
+      --red2:#ff5f7a;
       --success:#10b981;
       --danger:#ef4444;
-      --warning:#f59e0b;
-      --shadow:0 10px 30px rgba(15,23,42,.08);
-      --shadow-soft:0 18px 40px rgba(37,99,235,.08);
+      --shadow:0 16px 40px rgba(8,17,76,.14);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);
       --safe-bottom:env(safe-area-inset-bottom);
     }
 
@@ -36,14 +44,15 @@
     html,body{
       min-height:100%;
       background:
-        radial-gradient(circle at top left, rgba(37,99,235,.07), transparent 22%),
-        radial-gradient(circle at bottom right, rgba(79,70,229,.08), transparent 22%),
-        linear-gradient(180deg,#fbfcff 0%, #f5f7fb 100%);
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
       color:var(--text);
     }
 
     body{
-      padding:16px 14px 110px;
+      padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
     }
 
     a{
@@ -63,7 +72,7 @@
     }
 
     .wrap{
-      width:min(100%, 900px);
+      width:min(100%, 860px);
       margin:0 auto;
     }
 
@@ -71,16 +80,15 @@
       display:none;
       margin-bottom:14px;
       padding:12px 14px;
-      border-radius:16px;
+      border-radius:14px;
       font-size:14px;
       line-height:1.55;
-      box-shadow:var(--shadow);
+      box-shadow:var(--shadow-soft);
     }
     .notice.show{display:block}
     .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
     .notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
     .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
-    .notice.warn{background:#fff7ed;color:#9a3412;border:1px solid #fdba74}
 
     .topbar{
       display:flex;
@@ -98,6 +106,12 @@
       flex:1;
     }
 
+    .top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
     .icon-btn{
       width:46px;
       height:46px;
@@ -107,16 +121,29 @@
       align-items:center;
       justify-content:center;
       background:#fff;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow);
+      border:1px solid rgba(219,228,255,.95);
+      box-shadow:var(--shadow-soft);
       font-size:18px;
       color:#111827;
-      transition:.18s ease;
     }
 
-    .icon-btn:hover{
-      transform:translateY(-1px);
-      box-shadow:var(--shadow-soft);
+    .brand-box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-logo{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      object-fit:cover;
+      box-shadow:0 8px 20px rgba(37,99,235,.15);
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
     }
 
     .title-box{
@@ -125,12 +152,13 @@
     }
 
     .title{
-      font-size:24px;
+      font-size:22px;
       font-weight:800;
       margin-bottom:3px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      color:#0b1454;
     }
 
     .sub{
@@ -142,17 +170,17 @@
     }
 
     .section{
-      background:rgba(255,255,255,.92);
+      background:rgba(255,255,255,.95);
       backdrop-filter:blur(10px);
-      border:1px solid rgba(255,255,255,.8);
-      border-radius:24px;
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:22px;
       box-shadow:var(--shadow);
       overflow:hidden;
       margin-bottom:14px;
     }
 
     .section-body{
-      padding:15px;
+      padding:14px;
       display:grid;
       gap:14px;
     }
@@ -164,45 +192,62 @@
     }
 
     .avatar{
-      width:56px;
-      height:56px;
-      min-width:56px;
+      width:54px;
+      height:54px;
+      min-width:54px;
       border-radius:18px;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:23px;
+      font-size:22px;
       font-weight:800;
       color:#fff;
-      box-shadow:0 8px 24px rgba(37,99,235,.18);
+      box-shadow:0 10px 24px rgba(37,99,235,.18);
     }
 
     .composer-meta{
       min-width:0;
       flex:1;
-      display:grid;
-      gap:6px;
     }
 
     .composer-name{
       font-size:16px;
       font-weight:800;
+      margin-bottom:5px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
+    .composer-mini{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .tiny-pill{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      border:1px solid #dbe4ff;
+      background:#f8fbff;
+      color:#475569;
+      font-size:11px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
     .privacy-select{
-      min-height:42px;
+      min-height:40px;
       padding:0 12px;
       border-radius:12px;
       border:1px solid var(--line);
       background:#fff;
       color:var(--text);
       outline:none;
-      width:max-content;
-      max-width:100%;
     }
 
     .field{
@@ -217,9 +262,11 @@
     }
 
     .textarea,
-    .file-wrap{
+    .file-wrap,
+    .ai-input,
+    .ai-select{
       width:100%;
-      border-radius:16px;
+      border-radius:14px;
       border:1px solid var(--line);
       background:#fff;
       color:var(--text);
@@ -228,7 +275,9 @@
     }
 
     .textarea:focus,
-    .privacy-select:focus{
+    .privacy-select:focus,
+    .ai-input:focus,
+    .ai-select:focus{
       border-color:#93c5fd;
       box-shadow:0 0 0 3px rgba(37,99,235,.08);
     }
@@ -236,12 +285,12 @@
     .textarea{
       min-height:180px;
       resize:vertical;
-      line-height:1.65;
+      line-height:1.6;
     }
 
     .composer-box{
       border:1px solid var(--line);
-      border-radius:18px;
+      border-radius:16px;
       background:#fff;
       padding:12px;
       display:grid;
@@ -274,27 +323,42 @@
     .media-preview-wrap{
       display:none;
       position:relative;
-      width:180px;
-      height:180px;
-      border-radius:18px;
+      width:170px;
+      height:170px;
+      border-radius:16px;
       overflow:hidden;
       border:1px solid var(--line);
       background:#f8fafc;
       flex-shrink:0;
-      box-shadow:var(--shadow);
+      pointer-events:none;
+      user-select:none;
+      -webkit-user-select:none;
+      -webkit-touch-callout:none;
     }
 
     .media-preview-wrap.show{
       display:block;
     }
 
-    .media-preview-image,
+    .media-preview-image{
+      width:100%;
+      height:100%;
+      display:none;
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      pointer-events:none;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
     .media-preview-video{
       width:100%;
       height:100%;
       object-fit:cover;
       display:none;
       background:#000;
+      pointer-events:none;
     }
 
     .media-preview-image.show,
@@ -306,38 +370,95 @@
       position:absolute;
       top:8px;
       right:8px;
-      width:30px;
-      height:30px;
+      width:28px;
+      height:28px;
       border-radius:999px;
       background:rgba(17,24,39,.78);
       color:#fff;
-      font-size:15px;
+      font-size:14px;
       display:flex;
       align-items:center;
       justify-content:center;
       line-height:1;
       z-index:2;
+      pointer-events:auto;
     }
 
-    .stats-row{
+    .preview-placeholder{
+      width:100%;
+      height:100%;
       display:flex;
-      justify-content:space-between;
       align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:8px;
+      color:#1d4ed8;
+      background:linear-gradient(135deg,#dbeafe,#eef2ff);
+      text-align:center;
+      padding:12px;
+      font-weight:700;
+    }
+
+    .preview-placeholder span{
+      font-size:32px;
+      line-height:1;
+    }
+
+    .preview-placeholder small{
+      font-size:11px;
+      color:#475569;
+      line-height:1.4;
+      word-break:break-word;
+      max-width:100%;
+    }
+
+    .ai-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .ai-card{
+      border:1px solid #dbeafe;
+      background:linear-gradient(135deg, rgba(37,99,235,.06), rgba(79,70,229,.05), rgba(239,68,68,.05));
+      border-radius:16px;
+      padding:12px;
+      display:grid;
+      gap:10px;
+    }
+
+    .ai-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
       gap:10px;
       flex-wrap:wrap;
     }
 
-    .mini-pill{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:8px 10px;
-      border-radius:999px;
-      background:#f8fafc;
-      border:1px solid var(--line);
+    .ai-head-left{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .ai-title{
+      font-size:14px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .ai-sub{
       font-size:12px;
-      color:#475569;
-      font-weight:700;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .ai-balance{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
     }
 
     .platforms-head{
@@ -360,7 +481,7 @@
     }
 
     .platform{
-      min-height:74px;
+      min-height:70px;
       padding:12px;
       border-radius:18px;
       border:1px solid var(--line);
@@ -371,11 +492,6 @@
       cursor:pointer;
       transition:.18s ease;
       text-align:left;
-    }
-
-    .platform:hover{
-      transform:translateY(-1px);
-      box-shadow:var(--shadow-soft);
     }
 
     .platform.active{
@@ -389,7 +505,7 @@
     }
 
     .platform.disabled{
-      opacity:.7;
+      opacity:.6;
     }
 
     .platform-icon{
@@ -403,18 +519,16 @@
       color:#fff;
       font-size:18px;
       font-weight:800;
-      box-shadow:0 8px 18px rgba(15,23,42,.12);
     }
 
     .facebook{background:linear-gradient(135deg,#1877f2,#0f5fd4)}
     .instagram{background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4)}
     .youtube{background:linear-gradient(135deg,#ff0000,#d70000)}
     .tiktok{background:linear-gradient(135deg,#111827,#25f4ee)}
-    .whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
+    .linkedin{background:linear-gradient(135deg,#0a66c2,#004182)}
     .xhandle{background:linear-gradient(135deg,#111827,#334155)}
     .telegram{background:linear-gradient(135deg,#229ED9,#1277a9)}
-    .linkedin{background:linear-gradient(135deg,#0a66c2,#004182)}
-    .viewapp{background:linear-gradient(135deg,var(--primary),var(--primary2))}
+    .viewapp{background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red))}
 
     .platform-meta{
       min-width:0;
@@ -464,7 +578,7 @@
 
     .btn{
       flex:1;
-      min-height:50px;
+      min-height:48px;
       padding:0 16px;
       border-radius:14px;
       border:1px solid var(--line);
@@ -472,11 +586,6 @@
       color:#111827;
       font-size:14px;
       font-weight:700;
-      transition:.18s ease;
-    }
-
-    .btn:hover{
-      transform:translateY(-1px);
     }
 
     .btn.primary{
@@ -491,47 +600,199 @@
       color:#fff;
     }
 
+    .btn.ai{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.ghost{
+      background:#fff;
+      border:1px solid var(--line);
+      color:#111827;
+    }
+
     .btn:disabled{
       opacity:.6;
       cursor:not-allowed;
-      transform:none;
     }
 
-    .bottom-nav{
+    .drawer-backdrop{
       position:fixed;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:12px;
-      width:min(760px, calc(100% - 20px));
-      background:rgba(255,255,255,.92);
-      border:1px solid rgba(229,231,235,.9);
-      border-radius:20px;
-      padding:8px 6px calc(8px + var(--safe-bottom));
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:6px;
-      box-shadow:var(--shadow);
-      z-index:40;
-      backdrop-filter:blur(10px);
+      inset:0;
+      background:rgba(2,6,23,.38);
+      opacity:0;
+      pointer-events:none;
+      transition:.24s ease;
+      z-index:59;
     }
 
-    .nav-btn{
-      min-height:56px;
-      border-radius:14px;
+    .drawer-backdrop.show{
+      opacity:1;
+      pointer-events:auto;
+    }
+
+    .drawer{
+      position:fixed;
+      top:0;
+      right:-320px;
+      width:min(320px, 90vw);
+      height:100dvh;
+      background:rgba(255,255,255,.98);
+      border-left:1px solid rgba(229,231,235,.9);
+      box-shadow:0 20px 60px rgba(15,23,42,.18);
+      z-index:60;
+      transition:.24s ease;
       display:flex;
       flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      font-size:11px;
-      font-weight:700;
-      color:var(--muted);
-      text-decoration:none;
+      backdrop-filter:blur(12px);
     }
 
-    .nav-btn.active{
-      background:#eef4ff;
-      color:#1d4ed8;
+    .drawer.show{
+      right:0;
+    }
+
+    .drawer-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:18px 16px 12px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .drawer-title{
+      font-size:16px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .drawer-close{
+      width:40px;
+      height:40px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+    }
+
+    .drawer-body{
+      padding:14px;
+      display:grid;
+      gap:10px;
+      overflow:auto;
+    }
+
+    .drawer-link{
+      min-height:58px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff;
+      padding:12px 13px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .drawer-link-icon{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,#eff6ff,#eef2ff);
+      font-size:18px;
+    }
+
+    .drawer-link-title{
+      font-size:14px;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+
+    .drawer-link-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.48);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      z-index:70;
+      padding:16px;
+    }
+
+    .modal-backdrop.show{
+      display:flex;
+    }
+
+    .modal{
+      width:min(100%, 560px);
+      border-radius:24px;
+      background:#fff;
+      border:1px solid rgba(229,231,235,.9);
+      box-shadow:0 24px 70px rgba(15,23,42,.25);
+      overflow:hidden;
+    }
+
+    .modal-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:14px 14px 12px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(135deg, rgba(37,99,235,.05), rgba(79,70,229,.04), rgba(239,68,68,.04));
+    }
+
+    .modal-title{
+      font-size:16px;
+      font-weight:800;
+      margin-bottom:3px;
+      color:#0b1454;
+    }
+
+    .modal-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .modal-body{
+      padding:14px;
+      display:grid;
+      gap:12px;
+    }
+
+    .modal-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .ai-result{
+      min-height:140px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#f8fafc;
+      padding:12px;
+      white-space:pre-wrap;
+      line-height:1.6;
+      font-size:14px;
+      display:none;
+    }
+
+    .ai-result.show{
+      display:block;
     }
 
     @media (max-width:720px){
@@ -539,27 +800,167 @@
         grid-template-columns:repeat(2,1fr);
       }
     }
+  </style>
 
-    @media (max-width:420px){
-      .platform-grid{
-        grid-template-columns:1fr;
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
+
+    async function protectPage(nextPage) {
+      try {
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if (!user) {
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      } catch (e) {
+        document.documentElement.classList.remove("auth-loading");
+        location.replace("login.html");
+        return null;
       }
     }
-  </style>
+  </script>
 </head>
 <body>
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <aside class="drawer" id="sideDrawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <div class="drawer-title">Create Menu</div>
+        <div class="drawer-link-sub">Quick actions for View</div>
+      </div>
+      <button id="closeDrawerBtn" class="drawer-close" type="button">×</button>
+    </div>
+
+    <div class="drawer-body">
+      <a class="drawer-link" href="live.html">
+        <div class="drawer-link-icon">🔴</div>
+        <div>
+          <div class="drawer-link-title">Go Live</div>
+          <div class="drawer-link-sub">Start a live broadcast</div>
+        </div>
+      </a>
+
+      <a class="drawer-link" href="create-story.html">
+        <div class="drawer-link-icon">🟣</div>
+        <div>
+          <div class="drawer-link-title">Create Story</div>
+          <div class="drawer-link-sub">Post a quick story update</div>
+        </div>
+      </a>
+
+      <a class="drawer-link" href="saved-post.html">
+        <div class="drawer-link-icon">📌</div>
+        <div>
+          <div class="drawer-link-title">Saved Post</div>
+          <div class="drawer-link-sub">Open your saved drafts and posts</div>
+        </div>
+      </a>
+
+      <button class="drawer-link" id="drawerCreateAiBtn" type="button">
+        <div class="drawer-link-icon">✨</div>
+        <div style="text-align:left">
+          <div class="drawer-link-title">Create with AI</div>
+          <div class="drawer-link-sub">Generate content for your post</div>
+        </div>
+      </button>
+
+      <a class="drawer-link" href="connected-accounts.html">
+        <div class="drawer-link-icon">🔗</div>
+        <div>
+          <div class="drawer-link-title">Accounts</div>
+          <div class="drawer-link-sub">Manage linked platforms</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+  <div class="modal-backdrop" id="aiModalBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">Create with AI</div>
+          <div class="modal-sub">Tell AI what you want to post and it will generate the content for you.</div>
+        </div>
+        <button id="closeAiModalBtn" class="drawer-close" type="button">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="ai-head">
+          <div class="ai-head-left">
+            <div class="ai-title">AI Status</div>
+            <div class="ai-sub" id="aiStatusText">Checking your plan and credits...</div>
+          </div>
+          <div class="ai-balance">
+            <div class="tiny-pill" id="aiPlanPill">Plan: --</div>
+            <div class="tiny-pill" id="aiCreditPill">Credits: --</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="aiPromptInput">What do you want to post?</label>
+          <textarea id="aiPromptInput" class="ai-input" style="min-height:120px;resize:vertical" placeholder="Example: Write a catchy post to promote my fashion business in Owerri with a confident and professional tone."></textarea>
+        </div>
+
+        <div class="field">
+          <label class="label" for="aiToneSelect">Tone</label>
+          <select id="aiToneSelect" class="ai-select">
+            <option value="professional">Professional</option>
+            <option value="friendly">Friendly</option>
+            <option value="bold">Bold</option>
+            <option value="fun">Fun</option>
+            <option value="sales">Sales / Marketing</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button id="generateAiBtn" class="btn ai" type="button">Generate</button>
+          <button id="regenerateAiBtn" class="btn ghost" type="button">Regenerate</button>
+          <button id="useAiBtn" class="btn primary" type="button">Use Result</button>
+        </div>
+
+        <div id="aiResultBox" class="ai-result"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="wrap">
     <div id="notice" class="notice"></div>
 
     <header class="topbar">
       <div class="top-left">
-        <button class="icon-btn" type="button" onclick="history.back()">←</button>
-        <div class="title-box">
-          <div class="title">Create Post</div>
-          <div class="sub">Publish to View and your connected platforms</div>
+        <a class="icon-btn" href="home.html" aria-label="Back to Home">←</a>
+
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+          <div class="title-box">
+            <div class="title">Create Post</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
         </div>
       </div>
-      <button class="icon-btn" id="reloadBtn" type="button" title="Refresh connections">↻</button>
+
+      <div class="top-right">
+        <button class="icon-btn" id="reloadBtn" type="button" aria-label="Refresh">↻</button>
+        <button class="icon-btn" id="openDrawerBtn" type="button" aria-label="Open Menu">☰</button>
+      </div>
     </header>
 
     <section class="section">
@@ -568,29 +969,49 @@
           <div class="avatar" id="avatarInitial">V</div>
           <div class="composer-meta">
             <div class="composer-name" id="composerName">Loading...</div>
-            <select id="privacySelect" class="privacy-select">
-              <option value="public">Public</option>
-              <option value="friends">Friends</option>
-              <option value="private">Private</option>
-            </select>
+            <div class="composer-mini">
+              <div class="tiny-pill" id="currentPlanPill">Plan: --</div>
+              <div class="tiny-pill" id="currentCreditPill">AI Credits: --</div>
+            </div>
           </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="privacySelect">Privacy</label>
+          <select id="privacySelect" class="privacy-select">
+            <option value="public">Public</option>
+            <option value="friends">Friends</option>
+            <option value="private">Private</option>
+          </select>
         </div>
 
         <div class="field">
           <label class="label" for="postBody">Write something</label>
           <div class="composer-box">
-            <textarea id="postBody" class="textarea" maxlength="5000" placeholder="What's new in your world?"></textarea>
+            <textarea id="postBody" class="textarea" placeholder="What's new in your world?"></textarea>
 
-            <div class="stats-row">
-              <div class="mini-pill"><span>✍</span><span id="charCount">0 / 5000</span></div>
-              <div class="mini-pill"><span>📡</span><span id="selectedCount">1 platform selected</span></div>
+            <div class="ai-card">
+              <div class="ai-head">
+                <div class="ai-head-left">
+                  <div class="ai-title">Post with AI</div>
+                  <div class="ai-sub">Generate your caption with AI if you don’t want to type it manually.</div>
+                </div>
+                <div class="ai-balance">
+                  <div class="tiny-pill">Cost: 1 credit</div>
+                </div>
+              </div>
+
+              <div class="ai-row">
+                <button id="openAiBtn" class="btn ai" type="button">✨ Post with AI</button>
+                <a href="ai-upgrade.html?from=create-post" class="btn ghost" style="display:flex;align-items:center;justify-content:center;flex:1">Upgrade / Top Up</a>
+              </div>
             </div>
 
             <div class="upload-row">
               <div id="mediaPreviewWrap" class="media-preview-wrap">
                 <button id="removeMediaBtn" class="remove-media" type="button">×</button>
-                <img id="mediaPreviewImage" class="media-preview-image" alt="Selected media preview" />
-                <video id="mediaPreviewVideo" class="media-preview-video" muted playsinline controls></video>
+                <div id="mediaPreviewImage" class="media-preview-image"></div>
+                <video id="mediaPreviewVideo" class="media-preview-video" muted playsinline preload="metadata"></video>
               </div>
               <div class="hint" id="mediaNote">No media selected.</div>
             </div>
@@ -602,7 +1023,7 @@
           <div class="file-wrap">
             <input id="postMedia" type="file" accept="image/*,video/*" />
           </div>
-          <div class="hint">Recommended: images under 10MB, videos under 50MB. Media uploads first, then your post is queued for publishing.</div>
+          <div class="hint">Media is uploaded only when you publish. The preview below is local and safe.</div>
         </div>
       </div>
     </section>
@@ -627,54 +1048,22 @@
     </section>
   </div>
 
-  <nav class="bottom-nav">
-    <a class="nav-btn" href="home.html"><span>🏠</span><span>Home</span></a>
-    <a class="nav-btn" href="explore.html"><span>🔎</span><span>Explore</span></a>
-    <a class="nav-btn active" href="create-post.html"><span>➕</span><span>Create</span></a>
-    <a class="nav-btn" href="connected-accounts.html"><span>🔗</span><span>Accounts</span></a>
-    <a class="nav-btn" href="settings.html"><span>⚙️</span><span>Settings</span></a>
-  </nav>
-
   <script>
-    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-
     const POST_BUCKET = "post-media";
-    const POSTS_TABLE = "posts";
-    const DRAFTS_TABLE = "post_drafts";
-    const CONNECTIONS_TABLE = "connected_accounts";
     const PUBLISH_JOBS_TABLE = "post_publish_jobs";
     const PROCESS_WORKER_URL = "https://view-psi-lac.vercel.app/api/process-publish-jobs";
-
-    const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
-    const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
-
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: "pkce"
-      }
-    });
+    const GENERATE_POST_FUNCTION_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/generate-post";
 
     const PLATFORMS = [
       { key: "view", name: "View", icon: "V", iconClass: "viewapp", always: true },
       { key: "facebook", name: "Facebook", icon: "f", iconClass: "facebook", connect: "facebook-connect.html" },
-      { key: "instagram", name: "Instagram", icon: "◎", iconClass: "instagram", connect: "instagram-connect.html" },
-      { key: "youtube", name: "YouTube", icon: "▶", iconClass: "youtube", connect: "youtube-connect.html" },
       { key: "tiktok", name: "TikTok", icon: "♪", iconClass: "tiktok", connect: "tiktok-connect.html" },
+      { key: "youtube", name: "YouTube", icon: "▶", iconClass: "youtube", connect: "youtube-connect.html" },
+      { key: "instagram", name: "Instagram", icon: "◎", iconClass: "instagram", connect: "instagram-connect.html" },
       { key: "x", name: "X", icon: "X", iconClass: "xhandle", connect: "x-connect.html" },
       { key: "telegram", name: "Telegram", icon: "✈", iconClass: "telegram", connect: "telegram-connect.html" },
-      { key: "whatsapp", name: "WhatsApp", icon: "✆", iconClass: "whatsapp", connect: "whatsapp-connect.html" },
       { key: "linkedin", name: "LinkedIn", icon: "in", iconClass: "linkedin", connect: "linkedin-connect.html" }
     ];
-
-    const PLATFORM_ALIASES = {
-      twitter: "x",
-      linkedln: "linkedin",
-      linked_in: "linkedin"
-    };
 
     const noticeBox = document.getElementById("notice");
     const reloadBtn = document.getElementById("reloadBtn");
@@ -692,21 +1081,41 @@
     const mediaPreviewImage = document.getElementById("mediaPreviewImage");
     const mediaPreviewVideo = document.getElementById("mediaPreviewVideo");
     const removeMediaBtn = document.getElementById("removeMediaBtn");
-    const charCount = document.getElementById("charCount");
-    const selectedCount = document.getElementById("selectedCount");
+
+    const drawerBackdrop = document.getElementById("drawerBackdrop");
+    const sideDrawer = document.getElementById("sideDrawer");
+    const openDrawerBtn = document.getElementById("openDrawerBtn");
+    const closeDrawerBtn = document.getElementById("closeDrawerBtn");
+    const drawerCreateAiBtn = document.getElementById("drawerCreateAiBtn");
+
+    const openAiBtn = document.getElementById("openAiBtn");
+    const aiModalBackdrop = document.getElementById("aiModalBackdrop");
+    const closeAiModalBtn = document.getElementById("closeAiModalBtn");
+    const aiPromptInput = document.getElementById("aiPromptInput");
+    const aiToneSelect = document.getElementById("aiToneSelect");
+    const generateAiBtn = document.getElementById("generateAiBtn");
+    const regenerateAiBtn = document.getElementById("regenerateAiBtn");
+    const useAiBtn = document.getElementById("useAiBtn");
+    const aiResultBox = document.getElementById("aiResultBox");
+    const aiPlanPill = document.getElementById("aiPlanPill");
+    const aiCreditPill = document.getElementById("aiCreditPill");
+    const aiStatusText = document.getElementById("aiStatusText");
+    const currentPlanPill = document.getElementById("currentPlanPill");
+    const currentCreditPill = document.getElementById("currentCreditPill");
 
     let currentUser = null;
     let connections = {};
     let selectedPlatforms = new Set(["view"]);
     let cachedMedia = null;
-    let cachedMediaUrl = "";
-    let isBusy = false;
+    let currentPlan = "Free";
+    let currentCredits = 0;
+    let aiResultText = "";
+    let lastAiPrompt = "";
 
     function showNotice(message, type = "info", duration = 3200) {
       noticeBox.className = `notice show ${type}`;
       noticeBox.textContent = message || "";
       clearTimeout(showNotice._timer);
-
       if (duration > 0) {
         showNotice._timer = setTimeout(() => {
           noticeBox.className = "notice";
@@ -715,41 +1124,16 @@
       }
     }
 
-    function normalizePlatformKey(platform) {
-      const raw = String(platform || "").trim().toLowerCase();
-      return PLATFORM_ALIASES[raw] || raw;
-    }
-
     function getInitial(name = "V") {
       return String(name).trim().charAt(0).toUpperCase() || "V";
     }
 
-    function setBusy(state) {
-      isBusy = !!state;
-      draftBtn.disabled = state;
-      publishBtn.disabled = state;
-      reloadBtn.disabled = state;
-      postMedia.disabled = state;
-      postBody.disabled = state;
-      privacySelect.disabled = state;
-    }
-
-    function updateCounters() {
-      charCount.textContent = `${postBody.value.length} / 5000`;
-      selectedCount.textContent = `${selectedPlatforms.size} platform${selectedPlatforms.size > 1 ? "s" : ""} selected`;
-    }
-
     function clearMediaPreview() {
-      if (cachedMediaUrl) {
-        URL.revokeObjectURL(cachedMediaUrl);
-        cachedMediaUrl = "";
-      }
-
-      mediaPreviewImage.src = "";
+      mediaPreviewImage.style.backgroundImage = "";
+      mediaPreviewImage.innerHTML = "";
       mediaPreviewVideo.pause();
       mediaPreviewVideo.removeAttribute("src");
       mediaPreviewVideo.load();
-
       mediaPreviewImage.classList.remove("show");
       mediaPreviewVideo.classList.remove("show");
       mediaPreviewWrap.classList.remove("show");
@@ -757,13 +1141,22 @@
 
     function showMediaPreview(file) {
       clearMediaPreview();
-      cachedMediaUrl = URL.createObjectURL(file);
 
       if ((file.type || "").startsWith("video/")) {
-        mediaPreviewVideo.src = cachedMediaUrl;
-        mediaPreviewVideo.classList.add("show");
+        mediaPreviewImage.innerHTML = `
+          <div class="preview-placeholder">
+            <span>🎥</span>
+            <small>${file.name || "Selected video"}</small>
+          </div>
+        `;
+        mediaPreviewImage.classList.add("show");
       } else {
-        mediaPreviewImage.src = cachedMediaUrl;
+        mediaPreviewImage.innerHTML = `
+          <div class="preview-placeholder">
+            <span>🖼️</span>
+            <small>${file.name || "Selected image"}</small>
+          </div>
+        `;
         mediaPreviewImage.classList.add("show");
       }
 
@@ -776,17 +1169,6 @@
         mediaNote.textContent = "No media selected.";
         clearMediaPreview();
         return;
-      }
-
-      const isVideo = (file.type || "").startsWith("video/");
-      const limit = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
-
-      if (file.size > limit) {
-        postMedia.value = "";
-        clearMediaPreview();
-        cachedMedia = null;
-        mediaNote.textContent = "No media selected.";
-        throw new Error(isVideo ? "Video is too large. Use a file under 50MB." : "Image is too large. Use a file under 10MB.");
       }
 
       cachedMedia = file;
@@ -808,9 +1190,7 @@
       const names = PLATFORMS
         .filter(p => selectedPlatforms.has(p.key))
         .map(p => p.name);
-
       platformSummary.textContent = names.join(", ");
-      updateCounters();
     }
 
     function renderPlatforms() {
@@ -845,22 +1225,18 @@
 
     async function loadConnections() {
       const { data, error } = await supabaseClient
-        .from(CONNECTIONS_TABLE)
+        .from("connected_accounts")
         .select("id, user_id, platform, account_name, account_handle, status, external_user_id")
         .eq("user_id", currentUser.id);
 
       if (error) throw error;
 
       connections = {};
-
       (data || []).forEach(row => {
-        const key = normalizePlatformKey(row.platform);
-        if (key) {
-          connections[key] = { ...row, platform: key };
-        }
+        if (row.platform) connections[row.platform] = row;
       });
 
-      [...selectedPlatforms].forEach(platform => {
+      selectedPlatforms.forEach(platform => {
         if (platform !== "view" && !isPlatformConnected(platform)) {
           selectedPlatforms.delete(platform);
         }
@@ -871,15 +1247,11 @@
 
     function togglePlatform(platformKey) {
       const item = PLATFORMS.find(p => p.key === platformKey);
-      if (!item || isBusy) return;
+      if (!item) return;
       if (platformKey === "view") return;
 
       if (!isPlatformConnected(platformKey)) {
-        if (item.connect) {
-          window.location.href = item.connect;
-        } else {
-          showNotice(`${item.name} connect page not found.`, "warn");
-        }
+        if (item.connect) window.location.href = item.connect;
         return;
       }
 
@@ -890,15 +1262,8 @@
     }
 
     async function initUser() {
-      const { data, error } = await supabaseClient.auth.getUser();
-      if (error) throw error;
-
-      if (!data?.user) {
-        window.location.href = "login.html?next=create-post.html";
-        return false;
-      }
-
-      currentUser = data.user;
+      currentUser = await protectPage("home.html");
+      if (!currentUser) return false;
 
       const name =
         currentUser.user_metadata?.full_name ||
@@ -926,11 +1291,11 @@
         throw new Error("Write something or select media.");
       }
 
-      if (!payload.selected_platforms.length) {
+      if (selectedPlatforms.size === 0) {
         throw new Error("Select at least one platform.");
       }
 
-      for (const platform of payload.selected_platforms) {
+      for (const platform of selectedPlatforms) {
         if (platform !== "view" && !isPlatformConnected(platform)) {
           const item = PLATFORMS.find(p => p.key === platform);
           throw new Error(`${item?.name || platform} is not connected.`);
@@ -951,7 +1316,7 @@
       }
 
       const file = cachedMedia;
-      const safeName = (file.name || "media").replace(/[^\w.\-]+/g, "_");
+      const safeName = file.name.replace(/[^\w.\-]+/g, "_");
       const filePath = `posts/${currentUser.id}/${Date.now()}-${safeName}`;
 
       const { data: uploadData, error: uploadError } = await supabaseClient.storage
@@ -986,64 +1351,51 @@
     }
 
     async function saveDraft() {
-      if (isBusy) return;
+      draftBtn.disabled = true;
 
       try {
-        setBusy(true);
-
         const payload = getPostPayload();
 
-        if (!payload.content && !cachedMedia) {
-          throw new Error("Write something or select media before saving draft.");
-        }
-
-        let mediaPayload = {
-          media_path: null,
-          media_url: null,
-          media_type: null,
-          media_name: null
-        };
-
-        if (cachedMedia) {
-          showNotice("Uploading media and saving draft...", "info", 0);
-          mediaPayload = await uploadMediaIfNeeded();
-        } else {
-          showNotice("Saving draft...", "info", 0);
-        }
+        const mediaData = cachedMedia
+          ? {
+              media_type: cachedMedia.type || null,
+              media_name: cachedMedia.name || null
+            }
+          : {
+              media_type: null,
+              media_name: null
+            };
 
         const { error } = await supabaseClient
-          .from(DRAFTS_TABLE)
+          .from("post_drafts")
           .insert({
             user_id: currentUser.id,
             content: payload.content || null,
             privacy: payload.privacy,
             selected_platforms: payload.selected_platforms,
-            ...mediaPayload
+            ...mediaData
           });
 
         if (error) throw error;
-
-        showNotice("Draft saved successfully.", "success");
+        showNotice("Draft saved.", "success");
       } catch (error) {
         showNotice(error.message || "Could not save draft.", "error");
       } finally {
-        setBusy(false);
+        draftBtn.disabled = false;
       }
     }
 
     async function publishPost() {
-      if (isBusy) return;
+      publishBtn.disabled = true;
 
       try {
-        setBusy(true);
-
         const payload = validatePost();
-        showNotice("Uploading post and queuing publish jobs...", "info", 0);
+        showNotice("Uploading and publishing post...", "info", 0);
 
         const mediaPayload = await uploadMediaIfNeeded();
 
         const { data: insertedPost, error: postError } = await supabaseClient
-          .from(POSTS_TABLE)
+          .from("posts")
           .insert({
             user_id: currentUser.id,
             content: payload.content || null,
@@ -1073,32 +1425,238 @@
 
         await triggerWorkerSilently();
 
-        showNotice("Post queued successfully. Publishing will continue in the background.", "success");
+        showNotice("Post published successfully. Redirecting to Home...", "success");
 
         setTimeout(() => {
           window.location.href = "home.html";
         }, 1400);
       } catch (error) {
-        showNotice(error.message || "Could not publish post.", "error");
+        showNotice(error.message || "Could not publish post.", "error", 4200);
       } finally {
-        setBusy(false);
+        publishBtn.disabled = false;
       }
     }
 
+    function openDrawer() {
+      sideDrawer.classList.add("show");
+      drawerBackdrop.classList.add("show");
+    }
+
+    function closeDrawer() {
+      sideDrawer.classList.remove("show");
+      drawerBackdrop.classList.remove("show");
+    }
+
+    function openAiModal() {
+      aiModalBackdrop.classList.add("show");
+      aiPromptInput.focus();
+    }
+
+    function closeAiModal() {
+      aiModalBackdrop.classList.remove("show");
+    }
+
+    function updateAiDisplay() {
+      aiPlanPill.textContent = `Plan: ${currentPlan || "Free"}`;
+      aiCreditPill.textContent = `Credits: ${currentCredits}`;
+      currentPlanPill.textContent = `Plan: ${currentPlan || "Free"}`;
+      currentCreditPill.textContent = `AI Credits: ${currentCredits}`;
+      aiStatusText.textContent = `${currentPlan || "Free"} plan • ${currentCredits} credits available`;
+    }
+
+    async function loadAiAccess() {
+      currentPlan = "Free";
+      currentCredits = 0;
+
+      try {
+        const { data: sub, error: subErr } = await supabaseClient
+          .from("user_subscriptions")
+          .select("plan_name,status")
+          .eq("user_id", currentUser.id)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!subErr && sub?.plan_name) {
+          currentPlan = sub.plan_name;
+        }
+      } catch (_) {}
+
+      try {
+        const { data: creditsRow, error: creditErr } = await supabaseClient
+          .from("ai_credits")
+          .select("balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (!creditErr && creditsRow && typeof creditsRow.balance !== "undefined") {
+          currentCredits = Number(creditsRow.balance || 0);
+        }
+      } catch (_) {}
+
+      updateAiDisplay();
+    }
+
+    function planSupportsAi() {
+      return ["Plus", "Pro", "Enterprise"].includes(String(currentPlan || "").trim());
+    }
+
+    async function goToAiUpgrade(message) {
+      if (message) showNotice(message, "error", 2600);
+      setTimeout(() => {
+        window.location.href = "ai-upgrade.html?from=create-post";
+      }, 700);
+    }
+
+    async function deductAiCreditSafe() {
+      try {
+        const { data: row, error } = await supabaseClient
+          .from("ai_credits")
+          .select("id,balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (error || !row) return false;
+        if (Number(row.balance || 0) < 1) return false;
+
+        const { error: updateErr } = await supabaseClient
+          .from("ai_credits")
+          .update({
+            balance: Number(row.balance) - 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", row.id);
+
+        if (updateErr) return false;
+
+        currentCredits = Number(row.balance) - 1;
+        updateAiDisplay();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    async function generateAiPost() {
+  const prompt = aiPromptInput.value.trim();
+  const tone = aiToneSelect.value;
+
+  if (!prompt) {
+    showNotice("Tell AI what you want to post.", "error");
+    return;
+  }
+
+  generateAiBtn.disabled = true;
+  regenerateAiBtn.disabled = true;
+  useAiBtn.disabled = true;
+  aiStatusText.textContent = "Generating post...";
+
+  try {
+    // 🔐 Get logged-in user token
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const token = sessionData?.session?.access_token;
+
+    if (!token) {
+      throw new Error("Session expired. Please login again.");
+    }
+
+    // 🚀 Call your edge function
+    const res = await fetch(GENERATE_POST_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        prompt,
+        tone,
+        mode: "post"
+      })
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    // ❌ HANDLE ALL ERROR TYPES CLEANLY
+    if (!res.ok) {
+
+      // Plan restriction
+      if (data?.code === "PLAN_NOT_SUPPORTED") {
+        showNotice("Upgrade your plan to use AI.", "error");
+        return setTimeout(() => {
+          window.location.href = "ai-upgrade.html";
+        }, 800);
+      }
+
+      // No credit
+      if (data?.code === "NO_AI_CREDIT") {
+        showNotice("No AI credit left. Top up now.", "error");
+        return setTimeout(() => {
+          window.location.href = "ai-upgrade.html";
+        }, 800);
+      }
+
+      throw new Error(data?.error || "AI failed.");
+    }
+
+    // ✅ SUCCESS
+    const generatedText = data.text || "";
+
+    if (!generatedText) {
+      throw new Error("Empty AI response.");
+    }
+
+    aiResultText = generatedText;
+    aiResultBox.textContent = generatedText;
+    aiResultBox.classList.add("show");
+
+    // update UI
+    currentCredits = data.remaining_credits ?? currentCredits;
+    updateAiDisplay();
+
+    useAiBtn.disabled = false;
+
+    aiStatusText.textContent = `Generated successfully • 1 credit used • ${currentCredits} left`;
+
+  } catch (error) {
+    showNotice(error.message || "AI generation failed.", "error");
+    aiStatusText.textContent = "AI failed. Try again.";
+  } finally {
+    generateAiBtn.disabled = false;
+    regenerateAiBtn.disabled = false;
+  }
+}
+
+    function useAiResult() {
+      if (!aiResultText) {
+        showNotice("No AI result to use yet.", "error");
+        return;
+      }
+      postBody.value = aiResultText;
+      closeAiModal();
+      showNotice("AI result inserted into your post.", "success");
+    }
+
     function bindStaticActions() {
-      postBody.addEventListener("input", updateCounters);
+      mediaPreviewWrap.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      mediaPreviewWrap.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+      }, { passive:false });
+
+      mediaPreviewWrap.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+      });
 
       postMedia.addEventListener("change", async (e) => {
-        try {
-          const file = e.target.files?.[0] || null;
-          await cacheMedia(file);
-        } catch (error) {
-          showNotice(error.message || "Could not read selected file.", "error");
-        }
+        const file = e.target.files?.[0] || null;
+        await cacheMedia(file);
       });
 
       removeMediaBtn.addEventListener("click", () => {
-        if (isBusy) return;
         cachedMedia = null;
         postMedia.value = "";
         mediaNote.textContent = "No media selected.";
@@ -1112,20 +1670,42 @@
       });
 
       reloadBtn.addEventListener("click", async () => {
-        if (isBusy) return;
         try {
-          setBusy(true);
           await loadConnections();
-          showNotice("Connections updated.", "success");
+          await loadAiAccess();
+          showNotice("Page data refreshed.", "success");
         } catch (error) {
-          showNotice(error.message || "Could not refresh connections.", "error");
-        } finally {
-          setBusy(false);
+          showNotice(error.message || "Could not refresh.", "error");
         }
       });
 
       draftBtn.addEventListener("click", saveDraft);
       publishBtn.addEventListener("click", publishPost);
+
+      openDrawerBtn.addEventListener("click", openDrawer);
+      closeDrawerBtn.addEventListener("click", closeDrawer);
+      drawerBackdrop.addEventListener("click", closeDrawer);
+
+      openAiBtn.addEventListener("click", openAiModal);
+      drawerCreateAiBtn.addEventListener("click", () => {
+        closeDrawer();
+        openAiModal();
+      });
+
+      closeAiModalBtn.addEventListener("click", closeAiModal);
+      aiModalBackdrop.addEventListener("click", (e) => {
+        if (e.target === aiModalBackdrop) closeAiModal();
+      });
+
+      generateAiBtn.addEventListener("click", generateAiPost);
+      regenerateAiBtn.addEventListener("click", async () => {
+        if (!lastAiPrompt && !aiPromptInput.value.trim()) {
+          showNotice("Enter what you want to post first.", "error");
+          return;
+        }
+        await generateAiPost();
+      });
+      useAiBtn.addEventListener("click", useAiResult);
     }
 
     async function init() {
@@ -1135,16 +1715,10 @@
 
         bindStaticActions();
         renderPlatforms();
-        updateCounters();
         await loadConnections();
-
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-          if (!session?.user && event === "SIGNED_OUT") {
-            window.location.href = "login.html?next=create-post.html";
-          }
-        });
+        await loadAiAccess();
       } catch (error) {
-        showNotice(error.message || "Could not load page.", "error", 5000);
+        showNotice(error.message || "Could not load page.", "error");
       }
     }
 
