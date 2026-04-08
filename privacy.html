@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>Privacy Policy | View</title>
+  <meta
+    name="description"
+    content="Privacy Policy for View by Ceetify. Learn how we collect, use, store, and protect your data."
+  />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="icon" href="/favicon.ico" />
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg2:#0b1628;
+      --card:rgba(255,255,255,0.08);
+      --card2:rgba(255,255,255,0.05);
+      --text:#eaf2ff;
+      --muted:#a9bbd6;
+      --line:rgba(255,255,255,0.12);
+      --blue:#3b82f6;
+      --cyan:#22d3ee;
+      --red:#ef4444;
+      --green:#22c55e;
+      --shadow:0 20px 50px rgba(0,0,0,0.35);
+      --radius:24px;
+      --radius-sm:16px;
+      --max:1100px;
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+
+    html{
+      scroll-behavior:smooth;
+    }
+
+    body{
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(34,211,238,0.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(59,130,246,0.12), transparent 25%),
+        linear-gradient(180deg, #07111f 0%, #081322 38%, #0b1628 100%);
+      color:var(--text);
+      min-height:100vh;
+      line-height:1.65;
+      overflow-x:hidden;
+    }
+
+    a{
+      color:#9ed0ff;
+      text-decoration:none;
+    }
+
+    a:hover{
+      text-decoration:underline;
+    }
+
+    .noise{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.06;
+      background-image:
+        radial-gradient(rgba(255,255,255,.35) 0.7px, transparent 0.7px);
+      background-size:18px 18px;
+      z-index:0;
+    }
+
+    .page{
+      position:relative;
+      z-index:1;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      backdrop-filter:blur(14px);
+      background:rgba(7,17,31,0.75);
+      border-bottom:1px solid var(--line);
+    }
+
+    .topbar-inner{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-badge{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      background:
+        linear-gradient(135deg, rgba(239,68,68,.95), rgba(59,130,246,.95));
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:white;
+      box-shadow:var(--shadow);
+      letter-spacing:.5px;
+      flex-shrink:0;
+    }
+
+    .brand-text{
+      min-width:0;
+    }
+
+    .brand-text h1{
+      font-size:1rem;
+      line-height:1.1;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .brand-text p{
+      color:var(--muted);
+      font-size:.84rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      gap:10px;
+    }
+
+    .nav a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 14px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      color:var(--text);
+      background:rgba(255,255,255,0.04);
+      font-size:.92rem;
+      text-decoration:none;
+      transition:.25s ease;
+    }
+
+    .nav a:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,0.08);
+      border-color:rgba(255,255,255,0.2);
+    }
+
+    .hero{
+      width:min(100% - 24px, var(--max));
+      margin:34px auto 22px;
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:22px;
+    }
+
+    .hero-card,
+    .summary-card,
+    .section,
+    .contact-card,
+    .toc{
+      background:linear-gradient(180deg, var(--card), var(--card2));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+
+    .hero-card{
+      padding:28px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      width:240px;
+      height:240px;
+      right:-70px;
+      top:-70px;
+      background:radial-gradient(circle, rgba(34,211,238,0.18), transparent 70%);
+      border-radius:50%;
+      pointer-events:none;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border:1px solid rgba(34,211,238,0.25);
+      border-radius:999px;
+      background:rgba(34,211,238,0.08);
+      color:#c9f7ff;
+      font-size:.86rem;
+      margin-bottom:14px;
+    }
+
+    .hero h2{
+      font-size:clamp(2rem, 4vw, 3.2rem);
+      line-height:1.02;
+      margin-bottom:14px;
+      letter-spacing:-.03em;
+    }
+
+    .hero p.lead{
+      color:var(--muted);
+      font-size:1.04rem;
+      max-width:760px;
+    }
+
+    .meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:20px;
+    }
+
+    .meta span{
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.05);
+      font-size:.92rem;
+      color:#dce8ff;
+    }
+
+    .summary-card{
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      justify-content:center;
+    }
+
+    .summary-card h3{
+      font-size:1.15rem;
+      font-weight:800;
+    }
+
+    .summary-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .summary-item{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .summary-item strong{
+      display:block;
+      font-size:.96rem;
+      margin-bottom:4px;
+    }
+
+    .summary-item span{
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .layout{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 48px;
+      display:grid;
+      grid-template-columns:320px 1fr;
+      gap:22px;
+      align-items:start;
+    }
+
+    .toc{
+      position:sticky;
+      top:92px;
+      padding:18px;
+    }
+
+    .toc h3{
+      font-size:1rem;
+      margin-bottom:12px;
+      font-weight:800;
+    }
+
+    .toc a{
+      display:block;
+      padding:11px 12px;
+      border-radius:14px;
+      color:#dbeafe;
+      font-size:.94rem;
+      text-decoration:none;
+      transition:.2s ease;
+      border:1px solid transparent;
+    }
+
+    .toc a:hover{
+      background:rgba(255,255,255,0.06);
+      border-color:rgba(255,255,255,0.08);
+    }
+
+    .content{
+      display:grid;
+      gap:18px;
+    }
+
+    .section{
+      padding:26px;
+    }
+
+    .section h3{
+      font-size:1.35rem;
+      font-weight:800;
+      margin-bottom:12px;
+      letter-spacing:-.01em;
+    }
+
+    .section h4{
+      font-size:1rem;
+      margin:18px 0 10px;
+      color:#dfeeff;
+      font-weight:800;
+    }
+
+    .section p{
+      color:var(--muted);
+      margin-bottom:12px;
+    }
+
+    .section ul{
+      padding-left:20px;
+      color:var(--muted);
+      margin:10px 0 14px;
+    }
+
+    .section li{
+      margin-bottom:8px;
+    }
+
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .pill{
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(59,130,246,0.10);
+      border:1px solid rgba(59,130,246,0.22);
+      color:#dceeff;
+      font-size:.9rem;
+    }
+
+    .highlight{
+      padding:16px 18px;
+      border-radius:18px;
+      background:rgba(34,197,94,0.08);
+      border:1px solid rgba(34,197,94,0.18);
+      color:#dafce7;
+      margin-top:14px;
+    }
+
+    .warn{
+      padding:16px 18px;
+      border-radius:18px;
+      background:rgba(239,68,68,0.08);
+      border:1px solid rgba(239,68,68,0.18);
+      color:#ffd7d7;
+      margin-top:14px;
+    }
+
+    .contact-card{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 36px;
+      padding:24px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:center;
+    }
+
+    .contact-card h3{
+      font-size:1.35rem;
+      margin-bottom:8px;
+    }
+
+    .contact-card p{
+      color:var(--muted);
+    }
+
+    .contact-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:13px 18px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      text-decoration:none;
+      color:white;
+      transition:.25s ease;
+      font-weight:700;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg, var(--blue), var(--cyan));
+      border:none;
+    }
+
+    .btn.secondary{
+      background:rgba(255,255,255,0.05);
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      opacity:.96;
+      text-decoration:none;
+    }
+
+    footer{
+      width:min(100% - 24px, var(--max));
+      margin:0 auto 40px;
+      color:var(--muted);
+      text-align:center;
+      padding:10px 0 40px;
+      font-size:.92rem;
+    }
+
+    @media (max-width: 960px){
+      .hero,
+      .layout,
+      .contact-card{
+        grid-template-columns:1fr;
+      }
+
+      .toc{
+        position:relative;
+        top:0;
+      }
+
+      .contact-actions{
+        justify-content:flex-start;
+      }
+    }
+
+    @media (max-width: 640px){
+      .topbar-inner{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .nav{
+        width:100%;
+        justify-content:flex-start;
+      }
+
+      .hero-card,
+      .summary-card,
+      .section,
+      .toc,
+      .contact-card{
+        border-radius:20px;
+      }
+
+      .hero-card,
+      .summary-card,
+      .section{
+        padding:20px;
+      }
+
+      .meta span{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-badge">V</div>
+          <div class="brand-text">
+            <h1>View Privacy Policy</h1>
+            <p>View by Ceetify — Social, chat, media, and connected posting</p>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a href="/index.html">Home</a>
+          <a href="/terms.html">Terms</a>
+          <a href="mailto:info.ceeticegroup@gmail.com">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">Privacy • Security • Transparency</div>
+        <h2>Your privacy matters on View.</h2>
+        <p class="lead">
+          This Privacy Policy explains how View collects, uses, stores, protects,
+          and shares information when you use our app, website, messaging features,
+          media tools, account connections, notifications, and other services.
+        </p>
+
+        <div class="meta">
+          <span><strong>Effective date:</strong> March 30, 2026</span>
+          <span><strong>Platform:</strong> View by Ceetify</span>
+          <span><strong>Contact:</strong> info.ceeticegroup@gmail.com</span>
+        </div>
+      </div>
+
+      <aside class="summary-card">
+        <h3>Quick summary</h3>
+
+        <div class="summary-list">
+          <div class="summary-item">
+            <strong>What we collect</strong>
+            <span>Profile info, content, messages, connected account data, device info, and usage data.</span>
+          </div>
+
+          <div class="summary-item">
+            <strong>Why we use it</strong>
+            <span>To run View, improve safety, deliver features, send notifications, and support connected posting.</span>
+          </div>
+
+          <div class="summary-item">
+            <strong>When we share</strong>
+            <span>With service providers, connected platforms you authorize, legal authorities when required, and to protect users.</span>
+          </div>
+
+          <div class="summary-item">
+            <strong>Your control</strong>
+            <span>You can edit profile details, disconnect linked services, manage notifications, and request support.</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="layout">
+      <aside class="toc">
+        <h3>Contents</h3>
+        <a href="#info-we-collect">1. Information We Collect</a>
+        <a href="#how-we-use">2. How We Use Information</a>
+        <a href="#sharing">3. How We Share Information</a>
+        <a href="#connected-accounts">4. Connected Accounts & Cross-Posting</a>
+        <a href="#messages">5. Messages, Posts & Media</a>
+        <a href="#cookies">6. Cookies, Storage & Analytics</a>
+        <a href="#notifications">7. Notifications</a>
+        <a href="#security">8. Security</a>
+        <a href="#retention">9. Data Retention</a>
+        <a href="#children">10. Children’s Privacy</a>
+        <a href="#rights">11. Your Choices & Rights</a>
+        <a href="#changes">12. Changes to This Policy</a>
+        <a href="#contact-us">13. Contact Us</a>
+      </aside>
+
+      <main class="content">
+        <section class="section" id="intro">
+          <h3>Introduction</h3>
+          <p>
+            View is a social and communication platform that may include features
+            such as user profiles, posts, comments, likes, chat, group messaging,
+            media sharing, creator tools, notifications, connected third-party
+            accounts, and cross-posting tools.
+          </p>
+          <p>
+            By using View, you agree that your information may be processed as
+            described in this Privacy Policy. If you do not agree, please do not
+            use the service.
+          </p>
+        </section>
+
+        <section class="section" id="info-we-collect">
+          <h3>1. Information We Collect</h3>
+
+          <h4>a. Information you provide directly</h4>
+          <ul>
+            <li>Name, username, display name, bio, profile photo, and account details.</li>
+            <li>Email address, phone number, password, and login credentials.</li>
+            <li>Posts, captions, comments, reactions, uploads, and profile edits.</li>
+            <li>Messages, group chats, media attachments, and communication preferences.</li>
+            <li>Information submitted when you contact support or report abuse.</li>
+          </ul>
+
+          <h4>b. Information collected automatically</h4>
+          <ul>
+            <li>Device model, operating system, browser type, app version, language, and IP address.</li>
+            <li>Log data such as sign-ins, session activity, crashes, diagnostics, and access times.</li>
+            <li>Usage data such as pages visited, features used, buttons clicked, and content interactions.</li>
+            <li>Approximate location derived from IP address or device settings where permitted.</li>
+          </ul>
+
+          <h4>c. Information from third parties</h4>
+          <ul>
+            <li>Data from sign-in providers or connected services when you link them to View.</li>
+            <li>Public profile details and permissions you approve from third-party platforms.</li>
+            <li>Reports or moderation signals relating to safety, abuse, or fraud prevention.</li>
+          </ul>
+
+          <div class="pill-row">
+            <span class="pill">Profile data</span>
+            <span class="pill">Media uploads</span>
+            <span class="pill">Usage logs</span>
+            <span class="pill">Device details</span>
+            <span class="pill">Connected account tokens</span>
+          </div>
+        </section>
+
+        <section class="section" id="how-we-use">
+          <h3>2. How We Use Information</h3>
+          <p>We use your information to operate, secure, and improve View. This may include:</p>
+          <ul>
+            <li>Creating and maintaining your account.</li>
+            <li>Displaying your profile, content, and activity according to your settings.</li>
+            <li>Delivering messaging, comments, likes, uploads, and creator tools.</li>
+            <li>Supporting account connection and cross-posting features you enable.</li>
+            <li>Sending service updates, login alerts, security warnings, and notifications.</li>
+            <li>Preventing spam, fraud, impersonation, abuse, and unauthorized access.</li>
+            <li>Analyzing performance, debugging issues, and improving user experience.</li>
+            <li>Complying with legal obligations and enforcing our platform rules.</li>
+          </ul>
+
+          <div class="highlight">
+            We do not need your private data for unrelated purposes. We aim to use
+            only what is reasonably necessary to run and improve View.
+          </div>
+        </section>
+
+        <section class="section" id="sharing">
+          <h3>3. How We Share Information</h3>
+          <p>We may share information in the following situations:</p>
+
+          <h4>a. With other users</h4>
+          <p>
+            Your public profile, username, profile photo, public posts, comments,
+            reactions, and other content may be visible to other users depending on
+            your privacy settings and how you use the platform.
+          </p>
+
+          <h4>b. With service providers</h4>
+          <p>
+            We may use hosting, storage, analytics, messaging, moderation,
+            notification, and infrastructure providers that process information on
+            our behalf under appropriate safeguards.
+          </p>
+
+          <h4>c. With connected platforms you authorize</h4>
+          <p>
+            If you choose to connect a third-party account, we may exchange the
+            necessary data with that platform to support login, publishing,
+            synchronization, or related approved features.
+          </p>
+
+          <h4>d. For legal and safety reasons</h4>
+          <p>
+            We may disclose information where required by law, regulation, court
+            order, legal process, or where necessary to protect the rights, safety,
+            and security of View, our users, or the public.
+          </p>
+
+          <h4>e. Business transfers</h4>
+          <p>
+            If View is involved in a merger, acquisition, restructuring, financing,
+            or sale of assets, user information may be transferred as part of that
+            transaction, subject to applicable law.
+          </p>
+        </section>
+
+        <section class="section" id="connected-accounts">
+          <h3>4. Connected Accounts & Cross-Posting</h3>
+          <p>
+            View may allow you to connect third-party platforms for sign-in,
+            publishing, account linking, media import, or cross-posting.
+          </p>
+          <ul>
+            <li>We only access the connected account permissions you approve.</li>
+            <li>We may store access tokens or connection details securely to keep that feature working.</li>
+            <li>You can disconnect connected services where that option is available in your account settings.</li>
+            <li>Content sent to third-party platforms will also be subject to their own privacy policies and terms.</li>
+          </ul>
+
+          <div class="warn">
+            If you post or sync content from View to another platform, that content
+            may become visible under that platform’s own rules, settings, and data
+            practices.
+          </div>
+        </section>
+
+        <section class="section" id="messages">
+          <h3>5. Messages, Posts & Media</h3>
+          <p>
+            Content you create on View may include text, images, audio, video,
+            comments, messages, group discussions, and profile materials.
+          </p>
+          <ul>
+            <li>Messages and media may be processed to deliver, store, and display them properly.</li>
+            <li>We may use automated systems and manual review where necessary to detect spam, abuse, fraud, harmful activity, or violations of our rules.</li>
+            <li>Public content may be searchable, shareable, or viewable by others depending on your privacy choices.</li>
+            <li>Deleted content may remain in backups or logs for a limited period where operationally necessary.</li>
+          </ul>
+          <p>
+            You are responsible for the content you choose to post, send, or share
+            through View.
+          </p>
+        </section>
+
+        <section class="section" id="cookies">
+          <h3>6. Cookies, Local Storage & Analytics</h3>
+          <p>
+            View may use cookies, local storage, session storage, device identifiers,
+            and similar technologies to keep you signed in, remember settings,
+            improve performance, analyze usage, and support security.
+          </p>
+          <ul>
+            <li>Authentication and account session management.</li>
+            <li>Saving preferences such as theme, language, or notification settings.</li>
+            <li>Fraud prevention, rate limiting, and device/session protection.</li>
+            <li>Analytics to understand app usage and improve features.</li>
+          </ul>
+          <p>
+            Some browser or device settings may allow you to limit certain storage
+            technologies, but doing so may affect how View works.
+          </p>
+        </section>
+
+        <section class="section" id="notifications">
+          <h3>7. Notifications</h3>
+          <p>
+            View may send email, in-app, SMS, browser, or device push notifications
+            for activity alerts, messages, security notices, account events,
+            product updates, and moderation actions.
+          </p>
+          <ul>
+            <li>You can manage many notifications from your account or device settings.</li>
+            <li>Some critical security or service notifications may still be sent when necessary.</li>
+            <li>If you enable push notifications, your device or browser may provide a push token used to deliver alerts.</li>
+          </ul>
+        </section>
+
+        <section class="section" id="security">
+          <h3>8. Security</h3>
+          <p>
+            We use reasonable administrative, technical, and organizational measures
+            to help protect information against unauthorized access, loss, misuse,
+            alteration, or disclosure.
+          </p>
+          <ul>
+            <li>Access controls and authentication protections.</li>
+            <li>Monitoring, logging, and abuse detection systems.</li>
+            <li>Secure infrastructure, backups, and service-level controls.</li>
+            <li>Token handling and account/session protection for connected features.</li>
+          </ul>
+          <p>
+            No method of storage or transmission is completely secure. Because of
+            this, we cannot guarantee absolute security.
+          </p>
+        </section>
+
+        <section class="section" id="retention">
+          <h3>9. Data Retention</h3>
+          <p>
+            We keep information for as long as reasonably necessary to provide View,
+            comply with legal obligations, resolve disputes, enforce our rules, and
+            maintain security and operational records.
+          </p>
+          <ul>
+            <li>Account data may be retained while your account remains active.</li>
+            <li>Backups and logs may continue for a limited period after deletion requests.</li>
+            <li>Some records may be retained longer when required for legal, fraud, or safety reasons.</li>
+          </ul>
+        </section>
+
+        <section class="section" id="children">
+          <h3>10. Children’s Privacy</h3>
+          <p>
+            View is not intended for children under the minimum age required by
+            applicable law in their region to use the service independently.
+          </p>
+          <p>
+            If we learn that personal information has been collected from a child in
+            violation of applicable law, we may take steps to delete that
+            information and restrict the account where appropriate.
+          </p>
+        </section>
+
+        <section class="section" id="rights">
+          <h3>11. Your Choices & Rights</h3>
+          <p>Depending on where you live, you may have the ability to:</p>
+          <ul>
+            <li>Access or review certain account information.</li>
+            <li>Update profile details and settings.</li>
+            <li>Delete content or request account deletion.</li>
+            <li>Disconnect linked accounts and revoke some permissions.</li>
+            <li>Manage certain communication and notification preferences.</li>
+          </ul>
+          <p>
+            To request support regarding your data, contact us using the details at
+            the end of this page.
+          </p>
+        </section>
+
+        <section class="section" id="changes">
+          <h3>12. Changes to This Policy</h3>
+          <p>
+            We may update this Privacy Policy from time to time to reflect changes
+            in our services, features, legal requirements, or data practices.
+          </p>
+          <p>
+            When we make material changes, we may update the effective date above
+            and provide additional notice where appropriate.
+          </p>
+        </section>
+
+        <section class="section" id="contact-us">
+          <h3>13. Contact Us</h3>
+          <p>
+            If you have questions, requests, or concerns about this Privacy Policy
+            or how your information is handled on View, contact us:
+          </p>
+
+          <ul>
+            <li><strong>App:</strong> View</li>
+            <li><strong>Company:</strong> Ceetify / Ceetify Multi-Ventures Ltd</li>
+            <li><strong>Email:</strong> <a href="mailto:info.ceeticegroup@gmail.com">info.ceeticegroup@gmail.com</a></li>
+            <li><strong>Website:</strong> <a href="https://view.ceetice.com">view.ceetice.com</a></li>
+          </ul>
+
+          <div class="highlight">
+            For faster support, include your username, the email connected to your
+            account, and a clear description of your request.
+          </div>
+        </section>
+      </main>
+    </section>
+
+    <section class="contact-card">
+      <div>
+        <h3>Need help with privacy or account data?</h3>
+        <p>
+          Reach out to our support contact for account, policy, or privacy-related
+          questions.
+        </p>
+      </div>
+
+      <div class="contact-actions">
+        <a class="btn primary" href="mailto:info.ceeticegroup@gmail.com">Email Support</a>
+        <a class="btn secondary" href="/terms.html">View Terms</a>
+      </div>
+    </section>
+
+    <footer>
+      © 2026 View by Ceetify. All rights reserved.
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Create Status | View</title>
+  <meta name="theme-color" content="#0a1028" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg1:#081a8f;
+      --bg2:#07115f;
+      --bg3:#05093c;
+      --card:rgba(255,255,255,.08);
+      --card-2:rgba(255,255,255,.05);
+      --line:rgba(255,255,255,.10);
+      --text:#ffffff;
+      --muted:#d4dcff;
+      --blue:#2f7bff;
+      --blue2:#5ba0ff;
+      --red:#ff2f57;
+      --red2:#ff5a74;
+      --good:#19c37d;
+      --warn:#ffb020;
+      --danger:#ef4444;
+      --shadow:0 18px 46px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top,0px);
+      --safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(91,160,255,.22), transparent 20%),
+        radial-gradient(circle at top right, rgba(255,47,87,.18), transparent 16%),
+        linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 48%,var(--bg3) 100%);
+      color:var(--text);
+    }
+    body{overflow-x:hidden;padding-bottom:110px}
+    a{text-decoration:none;color:inherit}
+    button,input,textarea,select{font:inherit}
+    img{display:block;max-width:100%}
+
+    .page{
+      width:min(100%,920px);
+      margin:0 auto;
+      padding:calc(12px + var(--safe-top)) 14px calc(20px + var(--safe-bottom));
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:12px;
+      line-height:1.5;
+      border:1px solid transparent;
+      backdrop-filter:blur(12px);
+    }
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.22);color:#ffd7df}
+    .notice.success{background:rgba(25,195,125,.10);border-color:rgba(25,195,125,.22);color:#dcffe7}
+    .notice.info{background:rgba(47,123,255,.10);border-color:rgba(47,123,255,.22);color:#dcebff}
+
+    .topbar{
+      display:grid;
+      grid-template-columns:48px 1fr auto;
+      gap:10px;
+      align-items:center;
+      margin-bottom:14px;
+    }
+
+    .icon-btn{
+      width:46px;height:46px;min-width:46px;
+      border:none;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);color:#fff;
+      box-shadow:var(--shadow);cursor:pointer;
+    }
+
+    .brand{
+      display:flex;align-items:center;gap:10px;min-width:0;
+    }
+    .brand-logo{
+      width:42px;height:42px;min-width:42px;border-radius:14px;overflow:hidden;
+      background:linear-gradient(135deg,var(--blue),var(--red));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+    }
+    .brand-logo img{width:100%;height:100%;object-fit:cover}
+    .brand-copy{min-width:0}
+    .brand-title{font-size:16px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .brand-title .ceetify{color:var(--red)}
+    .brand-sub{font-size:11px;color:var(--muted)}
+
+    .shell{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:14px;
+    }
+
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+      overflow:hidden;
+    }
+
+    .card-body{padding:14px}
+    .section-title{
+      font-size:14px;font-weight:900;margin-bottom:10px;
+      display:flex;align-items:center;justify-content:space-between;gap:8px;
+    }
+    .section-sub{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5}
+
+    .form-grid{display:grid;gap:12px}
+    .label{
+      display:block;font-size:11px;font-weight:800;color:#dce8ff;
+      margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;
+    }
+
+    .input,.textarea,.select{
+      width:100%;
+      background:rgba(255,255,255,.05);
+      color:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      outline:none;
+    }
+    .input,.select{min-height:50px;padding:0 14px}
+    .textarea{
+      min-height:130px;padding:14px;resize:vertical;
+      line-height:1.55;
+    }
+    .input::placeholder,.textarea::placeholder{color:#9fb5df}
+    .input:focus,.textarea:focus,.select:focus{
+      border-color:rgba(91,160,255,.45);
+      box-shadow:0 0 0 4px rgba(47,123,255,.10);
+    }
+
+    .segmented{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+    }
+    .seg-btn{
+      min-height:42px;border-radius:14px;border:1px solid var(--line);
+      background:rgba(255,255,255,.05);color:#fff;font-size:12px;font-weight:800;
+      cursor:pointer;
+    }
+    .seg-btn.active{
+      background:linear-gradient(135deg,var(--blue),var(--red));
+      border-color:transparent;
+    }
+
+    .media-drop{
+      border:1.5px dashed rgba(255,255,255,.18);
+      border-radius:18px;
+      padding:18px;
+      background:rgba(255,255,255,.04);
+      display:grid;
+      gap:10px;
+      text-align:center;
+    }
+
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .switch{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:10px;padding:12px 14px;border-radius:16px;
+      border:1px solid var(--line);background:rgba(255,255,255,.04)
+    }
+    .switch span{font-size:13px;font-weight:700}
+    .switch input{accent-color:var(--blue);width:18px;height:18px}
+
+    .chip-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:8px;
+    }
+    .bg-chip{
+      height:54px;border-radius:16px;border:2px solid transparent;
+      cursor:pointer;position:relative;overflow:hidden;
+      box-shadow:0 8px 18px rgba(0,0,0,.18);
+    }
+    .bg-chip.active{border-color:#fff}
+    .bg-chip span{
+      position:absolute;right:8px;bottom:6px;font-size:11px;font-weight:900;
+      background:rgba(0,0,0,.22);padding:2px 6px;border-radius:999px
+    }
+
+    .preview-wrap{
+      display:grid;gap:12px;
+    }
+
+    .viewer-preview{
+      min-height:520px;
+      border-radius:28px;
+      overflow:hidden;
+      position:relative;
+      background:linear-gradient(135deg,var(--blue),var(--red));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 24px 54px rgba(0,0,0,.30);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+
+    .preview-top{
+      padding:12px 12px 0;
+      display:grid;gap:10px;
+    }
+    .progress-row{
+      display:grid;grid-template-columns:repeat(5,1fr);gap:6px;
+    }
+    .progress-row span{
+      display:block;height:4px;border-radius:999px;background:rgba(255,255,255,.24);
+    }
+    .progress-row span.active{background:#fff}
+    .viewer-head{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    }
+    .viewer-user{
+      display:flex;align-items:center;gap:10px;min-width:0;
+    }
+    .viewer-avatar{
+      width:42px;height:42px;border-radius:50%;
+      background:linear-gradient(135deg,var(--blue2),var(--red2));
+      border:2px solid rgba(255,255,255,.9);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;
+    }
+    .viewer-name{font-size:15px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .viewer-time{font-size:11px;color:#eef4ff}
+    .viewer-actions{display:flex;gap:8px}
+    .viewer-actions button{
+      width:38px;height:38px;border-radius:12px;border:none;
+      background:rgba(0,0,0,.20);color:#fff;cursor:pointer
+    }
+
+    .preview-media{
+      flex:1;
+      min-height:220px;
+      display:flex;align-items:center;justify-content:center;
+      position:relative;
+      overflow:hidden;
+      padding:18px;
+      text-align:center;
+    }
+    .preview-media img,.preview-media video{
+      width:100%;height:100%;object-fit:cover;border-radius:0
+    }
+    .text-status{
+      width:100%;height:100%;
+      display:flex;align-items:center;justify-content:center;
+      text-align:center;padding:22px;font-size:28px;font-weight:900;line-height:1.3;
+      text-shadow:0 8px 24px rgba(0,0,0,.24);
+      white-space:pre-wrap;word-break:break-word;
+    }
+
+    .preview-foot{
+      padding:12px;
+      display:grid;gap:10px;
+    }
+    .preview-meta{
+      display:flex;align-items:center;justify-content:flex-start;gap:10px;
+      font-size:12px;font-weight:700;color:#eef4ff;
+    }
+    .reply-bar{
+      display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;
+      background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;padding:8px;
+    }
+    .reply-input{
+      min-height:42px;border:none;outline:none;background:transparent;color:#fff;padding:0 8px
+    }
+    .reply-input::placeholder{color:#dce8ff}
+    .reply-icon,.send-btn{
+      min-width:42px;height:42px;border:none;border-radius:12px;cursor:pointer
+    }
+    .reply-icon{background:rgba(255,255,255,.10);color:#fff}
+    .send-btn{background:linear-gradient(135deg,var(--blue),var(--red));color:#fff;padding:0 14px;font-weight:800}
+
+    .media-preview-box{
+      display:none;
+      border:1px solid var(--line);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.04)
+    }
+    .media-preview-box.show{display:block}
+    .media-preview-box img,.media-preview-box video{width:100%;max-height:280px;object-fit:cover}
+
+    .media-preview-actions{
+      display:flex;gap:8px;justify-content:flex-end;padding:10px
+    }
+
+    .action-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+    }
+    .btn{
+      min-height:48px;border:none;border-radius:16px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      gap:8px;font-weight:900;color:#fff;padding:0 14px;
+      box-shadow:0 12px 26px rgba(0,0,0,.22)
+    }
+    .btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2))}
+    .btn.red{background:linear-gradient(135deg,var(--red),var(--red2))}
+    .btn.soft{
+      background:rgba(255,255,255,.07);border:1px solid var(--line)
+    }
+
+    .helper-list{display:grid;gap:8px}
+    .helper-item{
+      padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.04)
+    }
+    .helper-item strong{display:block;font-size:12px;margin-bottom:4px}
+    .helper-item span{font-size:12px;color:var(--muted);line-height:1.5}
+
+    .bottom-nav{
+      position:fixed;left:50%;bottom:10px;transform:translateX(-50%);
+      width:min(720px,calc(100% - 12px));
+      display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:2px;padding:8px 4px calc(8px + var(--safe-bottom));
+      border-radius:18px;background:rgba(7,14,54,.95);border:1px solid var(--line);
+      box-shadow:0 18px 42px rgba(0,0,0,.35);backdrop-filter:blur(14px);z-index:40;
+    }
+    .nav-link{
+      min-height:54px;display:flex;align-items:center;justify-content:center;flex-direction:column;
+      gap:4px;font-size:10px;color:#d6e0ff;border-radius:14px
+    }
+    .nav-link.active{color:var(--red)}
+    .hidden{display:none!important}
+
+    @media (max-width:860px){
+      .shell{grid-template-columns:1fr}
+      .viewer-preview{min-height:560px}
+    }
+    @media (max-width:560px){
+      .chip-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .action-grid{grid-template-columns:1fr}
+      .segmented{grid-template-columns:1fr}
+      .reply-bar{grid-template-columns:1fr auto auto}
+      .send-btn{grid-column:1/-1}
+      .viewer-preview{min-height:500px}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <button class="icon-btn" onclick="window.location.href='status.html'" aria-label="Back">←</button>
+
+      <div class="brand">
+        <a href="home.html" class="brand-logo" aria-label="View home">
+          <img src="icons/view-logo.png" alt="View logo" onerror="this.style.display='none';this.parentNode.innerHTML='V';this.parentNode.style.display='flex';this.parentNode.style.alignItems='center';this.parentNode.style.justifyContent='center';this.parentNode.style.fontWeight='900';this.parentNode.style.color='#fff';" />
+        </a>
+        <div class="brand-copy">
+          <div class="brand-title">Create Status <span class="ceetify">| VIEW by Ceetify</span></div>
+          <div class="brand-sub">Text, photo, and video status with premium styling</div>
+        </div>
+      </div>
+
+      <a href="status.html" class="icon-btn" aria-label="Open status page">⌕</a>
+    </header>
+
+    <div class="shell">
+      <section class="card">
+        <div class="card-body">
+          <div class="section-title">Status Composer</div>
+          <div class="section-sub">Create a 24-hour story with text, image, or video. Every button below works and is fully linked to your status flow.</div>
+
+          <div class="form-grid">
+            <div>
+              <label class="label">Status Type</label>
+              <div class="segmented">
+                <button class="seg-btn active" type="button" data-type="text">Text Status</button>
+                <button class="seg-btn" type="button" data-type="image">Image Status</button>
+                <button class="seg-btn" type="button" data-type="video">Video Status</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="label" for="textContent">Text / Caption</label>
+              <textarea id="textContent" class="textarea" placeholder="Share what’s happening..."></textarea>
+            </div>
+
+            <div id="backgroundSection">
+              <label class="label">Background Style</label>
+              <div class="chip-grid" id="bgGrid">
+                <button class="bg-chip active" type="button" data-bg="sunset" style="background:linear-gradient(135deg,#2f7bff,#ff2f57)"><span>1</span></button>
+                <button class="bg-chip" type="button" data-bg="royal" style="background:linear-gradient(135deg,#081a8f,#5ba0ff)"><span>2</span></button>
+                <button class="bg-chip" type="button" data-bg="flare" style="background:linear-gradient(135deg,#ff2f57,#ff8a00)"><span>3</span></button>
+                <button class="bg-chip" type="button" data-bg="deep" style="background:linear-gradient(135deg,#091127,#7c3aed)"><span>4</span></button>
+                <button class="bg-chip" type="button" data-bg="ocean" style="background:linear-gradient(135deg,#00bcd4,#2f7bff)"><span>5</span></button>
+                <button class="bg-chip" type="button" data-bg="berry" style="background:linear-gradient(135deg,#7f1d1d,#ff2f57)"><span>6</span></button>
+                <button class="bg-chip" type="button" data-bg="night" style="background:linear-gradient(135deg,#05093c,#1d4ed8)"><span>7</span></button>
+                <button class="bg-chip" type="button" data-bg="mix" style="background:linear-gradient(135deg,#5ba0ff,#ff5a74,#2f7bff)"><span>8</span></button>
+              </div>
+            </div>
+
+            <div id="mediaSection" class="hidden">
+              <label class="label">Media Upload</label>
+              <div class="media-drop">
+                <div style="font-size:14px;font-weight:800">Select image or video</div>
+                <div style="font-size:12px;color:var(--muted)">Upload one premium status media file</div>
+                <div class="row" style="justify-content:center">
+                  <button class="btn blue" type="button" id="pickMediaBtn">Choose Media</button>
+                  <input id="mediaInput" type="file" accept="image/*,video/*" class="hidden" />
+                </div>
+              </div>
+
+              <div id="mediaPreviewBox" class="media-preview-box">
+                <img id="mediaPreviewImage" class="hidden" alt="Status media preview" />
+                <video id="mediaPreviewVideo" class="hidden" controls playsinline></video>
+                <div class="media-preview-actions">
+                  <button class="btn soft" type="button" id="changeMediaBtn">Change</button>
+                  <button class="btn red" type="button" id="removeMediaBtn">Remove</button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="label" for="privacySelect">Privacy</label>
+              <select id="privacySelect" class="select">
+                <option value="public">Public</option>
+                <option value="followers">Followers only</option>
+                <option value="friends">Friends only</option>
+                <option value="private">Only me</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="label" for="durationHours">Duration</label>
+              <select id="durationHours" class="select">
+                <option value="24">24 hours</option>
+                <option value="12">12 hours</option>
+                <option value="6">6 hours</option>
+                <option value="3">3 hours</option>
+              </select>
+            </div>
+
+            <div class="switch">
+              <span>Allow replies</span>
+              <input id="allowReplies" type="checkbox" checked />
+            </div>
+
+            <div class="switch">
+              <span>Notify followers</span>
+              <input id="notifyFollowers" type="checkbox" checked />
+            </div>
+
+            <div class="action-grid">
+              <button class="btn blue" id="postStatusBtn" type="button">Post Status</button>
+              <button class="btn soft" id="saveDraftBtn" type="button">Save Draft</button>
+              <button class="btn soft" id="openStatusPageBtn" type="button">Open Status Page</button>
+              <button class="btn red" id="clearFormBtn" type="button">Clear Form</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="preview-wrap">
+        <div class="card">
+          <div class="card-body">
+            <div class="section-title">Live Preview</div>
+            <div class="section-sub">This preview matches the premium blue-red status viewer style.</div>
+
+            <div class="viewer-preview" id="viewerPreview">
+              <div class="preview-top">
+                <div class="progress-row">
+                  <span class="active"></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+
+                <div class="viewer-head">
+                  <div class="viewer-user">
+                    <div class="viewer-avatar" id="previewAvatar">V</div>
+                    <div>
+                      <div class="viewer-name" id="previewName">You</div>
+                      <div class="viewer-time">Now</div>
+                    </div>
+                  </div>
+
+                  <div class="viewer-actions">
+                    <button type="button">🔇</button>
+                    <button type="button">⋯</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="preview-media" id="previewMediaArea">
+                <div class="text-status" id="previewTextStatus">Your premium status preview will appear here.</div>
+                <img id="previewMediaImage" class="hidden" alt="Preview image" />
+                <video id="previewMediaVideo" class="hidden" muted playsinline loop></video>
+              </div>
+
+              <div class="preview-foot">
+                <div class="preview-meta">
+                  <span>👁 0 views</span>
+                  <span>•</span>
+                  <span id="previewPrivacy">Public</span>
+                </div>
+
+                <div class="reply-bar">
+                  <input class="reply-input" type="text" placeholder="Reply to status..." readonly />
+                  <button class="reply-icon" type="button">📷</button>
+                  <button class="reply-icon" type="button">🎤</button>
+                  <button class="send-btn" type="button">Send</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="section-title">Quick Actions</div>
+            <div class="helper-list">
+              <div class="helper-item">
+                <strong>Status page</strong>
+                <span>Open the main status rings page to browse all active statuses.</span>
+              </div>
+              <div class="helper-item">
+                <strong>Status viewer</strong>
+                <span>Open full-screen story viewing with progress bars, replies, and views.</span>
+              </div>
+              <div class="helper-item">
+                <strong>Draft support</strong>
+                <span>Drafts are stored locally on your device and can be restored instantly.</span>
+              </div>
+            </div>
+
+            <div class="action-grid" style="margin-top:12px">
+              <button class="btn blue" type="button" onclick="window.location.href='status.html'">Status Rings</button>
+              <button class="btn red" type="button" onclick="window.location.href='status-viewer.html'">Viewer Screen</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="home.html" class="nav-link"><span>🏠</span><span>Home</span></a>
+    <a href="status.html" class="nav-link active"><span>⭕</span><span>Status</span></a>
+    <a href="create-status.html" class="nav-link"><span>➕</span><span>Create</span></a>
+    <a href="status-viewer.html" class="nav-link"><span>▶</span><span>Viewer</span></a>
+    <a href="settings.html" class="nav-link"><span>⚙</span><span>Settings</span></a>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
+
+    const notice = document.getElementById("notice");
+    const segButtons = [...document.querySelectorAll(".seg-btn")];
+    const bgChips = [...document.querySelectorAll(".bg-chip")];
+    const backgroundSection = document.getElementById("backgroundSection");
+    const mediaSection = document.getElementById("mediaSection");
+    const textContent = document.getElementById("textContent");
+    const mediaInput = document.getElementById("mediaInput");
+    const pickMediaBtn = document.getElementById("pickMediaBtn");
+    const changeMediaBtn = document.getElementById("changeMediaBtn");
+    const removeMediaBtn = document.getElementById("removeMediaBtn");
+    const mediaPreviewBox = document.getElementById("mediaPreviewBox");
+    const mediaPreviewImage = document.getElementById("mediaPreviewImage");
+    const mediaPreviewVideo = document.getElementById("mediaPreviewVideo");
+    const privacySelect = document.getElementById("privacySelect");
+    const durationHours = document.getElementById("durationHours");
+    const allowReplies = document.getElementById("allowReplies");
+    const notifyFollowers = document.getElementById("notifyFollowers");
+    const postStatusBtn = document.getElementById("postStatusBtn");
+    const saveDraftBtn = document.getElementById("saveDraftBtn");
+    const clearFormBtn = document.getElementById("clearFormBtn");
+    const openStatusPageBtn = document.getElementById("openStatusPageBtn");
+
+    const previewTextStatus = document.getElementById("previewTextStatus");
+    const previewMediaImage = document.getElementById("previewMediaImage");
+    const previewMediaVideo = document.getElementById("previewMediaVideo");
+    const previewMediaArea = document.getElementById("previewMediaArea");
+    const previewPrivacy = document.getElementById("previewPrivacy");
+    const previewName = document.getElementById("previewName");
+    const previewAvatar = document.getElementById("previewAvatar");
+
+    let currentUser = null;
+    let currentStatusType = "text";
+    let selectedBg = "sunset";
+    let selectedFile = null;
+    let draftKey = "view_status_draft_v1";
+
+    const bgStyles = {
+      sunset: "linear-gradient(135deg,#2f7bff,#ff2f57)",
+      royal: "linear-gradient(135deg,#081a8f,#5ba0ff)",
+      flare: "linear-gradient(135deg,#ff2f57,#ff8a00)",
+      deep: "linear-gradient(135deg,#091127,#7c3aed)",
+      ocean: "linear-gradient(135deg,#00bcd4,#2f7bff)",
+      berry: "linear-gradient(135deg,#7f1d1d,#ff2f57)",
+      night: "linear-gradient(135deg,#05093c,#1d4ed8)",
+      mix: "linear-gradient(135deg,#5ba0ff,#ff5a74,#2f7bff)"
+    };
+
+    function showNotice(message, type = "info") {
+      notice.className = `notice show ${type}`;
+      notice.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        notice.className = "notice";
+        notice.textContent = "";
+      }, 3000);
+    }
+
+    function escapeHtml(v) {
+      return String(v || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function initials(name) {
+      const parts = String(name || "V").trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return "V";
+      if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+
+    async function requireUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      if (!data?.user) {
+        window.location.href = "login.html?next=create-status.html";
+        return null;
+      }
+      currentUser = data.user;
+      previewName.textContent =
+        currentUser.user_metadata?.full_name ||
+        currentUser.user_metadata?.name ||
+        currentUser.email ||
+        "You";
+      previewAvatar.textContent = initials(previewName.textContent);
+      return currentUser;
+    }
+
+    function setType(type) {
+      currentStatusType = type;
+      segButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.type === type));
+      backgroundSection.classList.toggle("hidden", type !== "text");
+      mediaSection.classList.toggle("hidden", type === "text");
+      updatePreview();
+    }
+
+    function setBg(bg) {
+      selectedBg = bg;
+      bgChips.forEach(btn => btn.classList.toggle("active", btn.dataset.bg === bg));
+      updatePreview();
+    }
+
+    function resetMediaPreview() {
+      mediaPreviewImage.classList.add("hidden");
+      mediaPreviewVideo.classList.add("hidden");
+      mediaPreviewImage.removeAttribute("src");
+      mediaPreviewVideo.removeAttribute("src");
+      previewMediaImage.classList.add("hidden");
+      previewMediaVideo.classList.add("hidden");
+      previewMediaImage.removeAttribute("src");
+      previewMediaVideo.removeAttribute("src");
+      mediaPreviewBox.classList.remove("show");
+    }
+
+    function updatePreview() {
+      previewPrivacy.textContent = privacySelect.options[privacySelect.selectedIndex].text;
+      previewMediaArea.style.background = bgStyles[selectedBg] || bgStyles.sunset;
+      previewTextStatus.classList.toggle("hidden", currentStatusType !== "text");
+      previewMediaImage.classList.add("hidden");
+      previewMediaVideo.classList.add("hidden");
+
+      if (currentStatusType === "text") {
+        previewTextStatus.textContent = textContent.value.trim() || "Your premium status preview will appear here.";
+        previewTextStatus.style.background = "transparent";
+      } else if (currentStatusType === "image" && selectedFile) {
+        previewTextStatus.classList.add("hidden");
+        previewMediaImage.classList.remove("hidden");
+      } else if (currentStatusType === "video" && selectedFile) {
+        previewTextStatus.classList.add("hidden");
+        previewMediaVideo.classList.remove("hidden");
+      } else {
+        previewTextStatus.classList.remove("hidden");
+        previewTextStatus.textContent = currentStatusType === "image"
+          ? "Select an image to preview your status."
+          : "Select a video to preview your status.";
+      }
+    }
+
+    function saveDraft() {
+      const draft = {
+        currentStatusType,
+        selectedBg,
+        textContent: textContent.value,
+        privacy: privacySelect.value,
+        durationHours: durationHours.value,
+        allowReplies: allowReplies.checked,
+        notifyFollowers: notifyFollowers.checked
+      };
+      localStorage.setItem(draftKey, JSON.stringify(draft));
+      showNotice("Draft saved on this device.", "success");
+    }
+
+    function restoreDraft() {
+      try {
+        const raw = localStorage.getItem(draftKey);
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+        if (draft.currentStatusType) setType(draft.currentStatusType);
+        if (draft.selectedBg) setBg(draft.selectedBg);
+        textContent.value = draft.textContent || "";
+        privacySelect.value = draft.privacy || "public";
+        durationHours.value = draft.durationHours || "24";
+        allowReplies.checked = draft.allowReplies !== false;
+        notifyFollowers.checked = draft.notifyFollowers !== false;
+        updatePreview();
+      } catch {}
+    }
+
+    function clearForm() {
+      textContent.value = "";
+      privacySelect.value = "public";
+      durationHours.value = "24";
+      allowReplies.checked = true;
+      notifyFollowers.checked = true;
+      selectedFile = null;
+      setType("text");
+      setBg("sunset");
+      resetMediaPreview();
+      updatePreview();
+      showNotice("Form cleared.", "info");
+    }
+
+    async function uploadMedia(userId, file) {
+      const ext = file.name.split(".").pop();
+      const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `${userId}/${safeName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("status-media")
+        .upload(path, file, { upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from("status-media").getPublicUrl(path);
+
+      return {
+        media_url: data.publicUrl,
+        media_path: path
+      };
+    }
+
+    async function postStatus() {
+      try {
+        postStatusBtn.disabled = true;
+        postStatusBtn.textContent = "Posting...";
+
+        const user = currentUser || await requireUser();
+        if (!user) return;
+
+        const text = textContent.value.trim();
+        if (currentStatusType === "text" && !text) {
+          showNotice("Enter a text status first.", "error");
+          return;
+        }
+        if ((currentStatusType === "image" || currentStatusType === "video") && !selectedFile) {
+          showNotice(`Choose a ${currentStatusType} first.`, "error");
+          return;
+        }
+
+        let media = { media_url: null, media_path: null };
+        if (selectedFile) {
+          media = await uploadMedia(user.id, selectedFile);
+        }
+
+        const expiresAt = new Date(Date.now() + Number(durationHours.value) * 60 * 60 * 1000).toISOString();
+
+        const payload = {
+          user_id: user.id,
+          status_type: currentStatusType,
+          text_content: currentStatusType === "text" ? text : "",
+          content: text,
+          media_url: media.media_url,
+          media_path: media.media_path,
+          thumbnail_url: currentStatusType === "image" ? media.media_url : null,
+          bg_style: selectedBg,
+          privacy: privacySelect.value,
+          allow_replies: allowReplies.checked,
+          duration_hours: Number(durationHours.value),
+          expires_at: expiresAt
+        };
+
+        const { error } = await supabase.from("statuses").insert(payload);
+        if (error) throw error;
+
+        localStorage.removeItem(draftKey);
+        showNotice("Status posted successfully.", "success");
+
+        setTimeout(() => {
+          window.location.href = "status.html";
+        }, 700);
+      } catch (error) {
+        showNotice(error.message || "Could not post status.", "error");
+      } finally {
+        postStatusBtn.disabled = false;
+        postStatusBtn.textContent = "Post Status";
+      }
+    }
+
+    function handleFile(file) {
+      if (!file) return;
+      selectedFile = file;
+
+      const fileUrl = URL.createObjectURL(file);
+      mediaPreviewBox.classList.add("show");
+
+      if (file.type.startsWith("image/")) {
+        mediaPreviewImage.classList.remove("hidden");
+        mediaPreviewVideo.classList.add("hidden");
+        mediaPreviewImage.src = fileUrl;
+
+        previewMediaImage.classList.remove("hidden");
+        previewMediaVideo.classList.add("hidden");
+        previewMediaImage.src = fileUrl;
+        setType("image");
+      } else if (file.type.startsWith("video/")) {
+        mediaPreviewVideo.classList.remove("hidden");
+        mediaPreviewImage.classList.add("hidden");
+        mediaPreviewVideo.src = fileUrl;
+
+        previewMediaVideo.classList.remove("hidden");
+        previewMediaImage.classList.add("hidden");
+        previewMediaVideo.src = fileUrl;
+        previewMediaVideo.play().catch(() => {});
+        setType("video");
+      }
+
+      updatePreview();
+    }
+
+    pickMediaBtn.addEventListener("click", () => mediaInput.click());
+    changeMediaBtn.addEventListener("click", () => mediaInput.click());
+    removeMediaBtn.addEventListener("click", () => {
+      selectedFile = null;
+      mediaInput.value = "";
+      resetMediaPreview();
+      updatePreview();
+      showNotice("Media removed.", "info");
+    });
+
+    mediaInput.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (file) handleFile(file);
+    });
+
+    segButtons.forEach(btn => btn.addEventListener("click", () => setType(btn.dataset.type)));
+    bgChips.forEach(btn => btn.addEventListener("click", () => setBg(btn.dataset.bg)));
+    textContent.addEventListener("input", updatePreview);
+    privacySelect.addEventListener("change", updatePreview);
+    saveDraftBtn.addEventListener("click", saveDraft);
+    clearFormBtn.addEventListener("click", clearForm);
+    postStatusBtn.addEventListener("click", postStatus);
+    openStatusPageBtn.addEventListener("click", () => window.location.href = "status.html");
+
+    (async function init() {
+      try {
+        await requireUser();
+        restoreDraft();
+        updatePreview();
+      } catch (error) {
+        showNotice(error.message || "Could not load create status page.", "error");
+      }
+    })();
+  </script>
+</body>
+</html>

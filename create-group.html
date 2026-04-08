@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Create Group | View</title>
+  <meta name="theme-color" content="#0a1028" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg1:#081a8f; --bg2:#07115f; --bg3:#05093c;
+      --blue:#2f7bff; --blue2:#5ba0ff; --red:#ff2f57; --red2:#ff5a74;
+      --text:#fff; --muted:#d4dcff; --line:rgba(255,255,255,.10); --shadow:0 18px 42px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(47,123,255,.22), transparent 18%),
+        radial-gradient(circle at 88% 10%, rgba(255,47,87,.18), transparent 14%),
+        linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
+      color:var(--text);
+    }
+    body{overflow-x:hidden}
+    a{text-decoration:none;color:inherit}
+    button,input,textarea,select{font:inherit}
+    img{display:block;max-width:100%}
+    .page{width:min(100%,920px);margin:0 auto;padding:calc(12px + var(--safe-top)) 14px calc(20px + var(--safe-bottom))}
+    .notice{display:none;margin-bottom:12px;padding:12px 14px;border-radius:14px;font-size:12px;line-height:1.5;border:1px solid transparent;background:rgba(255,255,255,.05)}
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.22);color:#ffd7df}
+    .notice.success{background:rgba(25,195,125,.10);border-color:rgba(25,195,125,.22);color:#dcffe7}
+    .notice.info{background:rgba(47,123,255,.10);border-color:rgba(47,123,255,.22);color:#dcebff}
+
+    .topbar{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;margin-bottom:14px}
+    .icon-btn{
+      width:46px;height:46px;min-width:46px;border:none;border-radius:14px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;color:#fff;
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));border:1px solid var(--line);box-shadow:var(--shadow)
+    }
+    .title{font-size:19px;font-weight:900}
+    .subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+    .actions{display:flex;gap:8px}
+
+    .shell{
+      display:grid;grid-template-columns:1.05fr .95fr;gap:14px
+    }
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:14px
+    }
+    .section-title{font-size:15px;font-weight:900;margin-bottom:10px}
+    .section-sub{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px}
+    .grid{display:grid;gap:12px}
+    .label{display:block;font-size:11px;font-weight:800;margin-bottom:8px;color:#dce8ff;text-transform:uppercase;letter-spacing:.04em}
+    .input,.textarea,.select{
+      width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#fff;
+      border-radius:16px;outline:none
+    }
+    .input,.select{min-height:50px;padding:0 14px}
+    .textarea{min-height:120px;padding:14px;resize:vertical;line-height:1.5}
+    .input::placeholder,.textarea::placeholder{color:#a6b9de}
+    .input:focus,.textarea:focus,.select:focus{box-shadow:0 0 0 4px rgba(47,123,255,.10);border-color:rgba(91,160,255,.45)}
+
+    .preview{
+      min-height:520px;border:1px solid var(--line);border-radius:24px;overflow:hidden;
+      background:rgba(255,255,255,.04);display:grid;grid-template-rows:180px auto
+    }
+    .preview-cover{background:linear-gradient(135deg,var(--blue),var(--red));position:relative}
+    .preview-cover img{width:100%;height:100%;object-fit:cover}
+    .preview-avatar{
+      position:absolute;left:18px;bottom:-38px;width:84px;height:84px;border-radius:24px;overflow:hidden;
+      border:4px solid rgba(8,17,95,1);background:linear-gradient(135deg,var(--blue2),var(--red2));
+      display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900
+    }
+    .preview-avatar img{width:100%;height:100%;object-fit:cover}
+    .preview-body{padding:52px 16px 16px;display:grid;gap:10px}
+    .preview-name{font-size:20px;font-weight:900}
+    .preview-desc{font-size:13px;color:var(--muted);line-height:1.5}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{
+      min-height:28px;padding:0 12px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
+      font-size:11px;font-weight:800;background:rgba(255,255,255,.08);border:1px solid var(--line)
+    }
+    .btn-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .btn{
+      min-height:46px;border:none;border-radius:16px;color:#fff;font-weight:900;cursor:pointer
+    }
+    .btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2))}
+    .btn.red{background:linear-gradient(135deg,var(--red),var(--red2))}
+    .btn.soft{background:rgba(255,255,255,.08);border:1px solid var(--line)}
+
+    @media (max-width:860px){
+      .shell{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <button class="icon-btn" onclick="window.location.href='groups.html'">←</button>
+      <div>
+        <div class="title">Create Group</div>
+        <div class="subtitle">Set up a premium community with cover, image, category, and privacy.</div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" onclick="window.location.href='groups.html?tab=your'">👥</button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <section class="card">
+        <div class="section-title">Group Details</div>
+        <div class="section-sub">All fields below are functional and link into your group flow.</div>
+
+        <div class="grid">
+          <div>
+            <label class="label" for="groupName">Group Name</label>
+            <input id="groupName" class="input" type="text" placeholder="Enter group name" />
+          </div>
+
+          <div>
+            <label class="label" for="groupDescription">Description</label>
+            <textarea id="groupDescription" class="textarea" placeholder="Describe the purpose of this group"></textarea>
+          </div>
+
+          <div>
+            <label class="label" for="groupCategory">Category</label>
+            <select id="groupCategory" class="select">
+              <option value="Business">Business</option>
+              <option value="Technology">Technology</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Community">Community</option>
+              <option value="Education">Education</option>
+              <option value="Sports">Sports</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label" for="groupPrivacy">Privacy</label>
+            <select id="groupPrivacy" class="select">
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label" for="groupImage">Group Image URL</label>
+            <input id="groupImage" class="input" type="url" placeholder="https://example.com/group-image.jpg" />
+          </div>
+
+          <div>
+            <label class="label" for="groupCover">Cover Image URL</label>
+            <input id="groupCover" class="input" type="url" placeholder="https://example.com/cover-image.jpg" />
+          </div>
+
+          <div class="btn-row">
+            <button id="createGroupBtn" class="btn blue" type="button">Create Group</button>
+            <button id="clearBtn" class="btn soft" type="button">Clear</button>
+            <button class="btn red" type="button" onclick="window.location.href='groups.html?tab=your'">My Groups</button>
+            <button class="btn soft" type="button" onclick="window.location.href='groups.html?tab=suggested'">Suggested</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Live Preview</div>
+        <div class="preview">
+          <div class="preview-cover" id="previewCover">
+            <div class="preview-avatar" id="previewAvatar">G</div>
+          </div>
+          <div class="preview-body">
+            <div class="preview-name" id="previewName">Your Group Name</div>
+            <div class="preview-desc" id="previewDesc">Your group description preview will appear here.</div>
+            <div class="chips">
+              <span class="chip" id="previewCategory">Business</span>
+              <span class="chip" id="previewPrivacy">public</span>
+              <span class="chip">0 members</span>
+            </div>
+            <div class="btn-row">
+              <button class="btn blue" type="button" onclick="window.location.href='groups.html'">Groups Hub</button>
+              <button class="btn red" type="button" onclick="window.location.href='group-view.html'">View Layout</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+    });
+
+    const notice = document.getElementById("notice");
+    const groupName = document.getElementById("groupName");
+    const groupDescription = document.getElementById("groupDescription");
+    const groupCategory = document.getElementById("groupCategory");
+    const groupPrivacy = document.getElementById("groupPrivacy");
+    const groupImage = document.getElementById("groupImage");
+    const groupCover = document.getElementById("groupCover");
+
+    const previewName = document.getElementById("previewName");
+    const previewDesc = document.getElementById("previewDesc");
+    const previewCategory = document.getElementById("previewCategory");
+    const previewPrivacy = document.getElementById("previewPrivacy");
+    const previewCover = document.getElementById("previewCover");
+    const previewAvatar = document.getElementById("previewAvatar");
+
+    let currentUser = null;
+
+    function showNotice(message, type="info"){
+      notice.className = `notice show ${type}`;
+      notice.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        notice.className = "notice";
+        notice.textContent = "";
+      }, 3000);
+    }
+
+    function initials(name){
+      const parts = String(name || "G").trim().split(/\s+/).filter(Boolean);
+      if(!parts.length) return "G";
+      if(parts.length === 1) return parts[0][0].toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+
+    async function requireUser(){
+      const { data, error } = await supabase.auth.getUser();
+      if(error) throw error;
+      if(!data?.user){
+        location.href = "login.html?next=create-group.html";
+        return null;
+      }
+      currentUser = data.user;
+      return currentUser;
+    }
+
+    function updatePreview(){
+      previewName.textContent = groupName.value.trim() || "Your Group Name";
+      previewDesc.textContent = groupDescription.value.trim() || "Your group description preview will appear here.";
+      previewCategory.textContent = groupCategory.value;
+      previewPrivacy.textContent = groupPrivacy.value;
+
+      const cover = groupCover.value.trim();
+      const avatar = groupImage.value.trim();
+
+      previewCover.style.background = "linear-gradient(135deg,#2f7bff,#ff2f57)";
+      previewCover.querySelector("img")?.remove();
+      previewAvatar.querySelector("img")?.remove();
+
+      if(cover){
+        const img = document.createElement("img");
+        img.src = cover;
+        img.alt = "Group cover";
+        previewCover.prepend(img);
+      }
+
+      if(avatar){
+        const img = document.createElement("img");
+        img.src = avatar;
+        img.alt = "Group avatar";
+        previewAvatar.innerHTML = "";
+        previewAvatar.appendChild(img);
+      } else {
+        previewAvatar.innerHTML = initials(groupName.value.trim() || "Group");
+      }
+    }
+
+    async function createGroup(){
+      try{
+        const user = currentUser || await requireUser();
+        if(!user) return;
+
+        const name = groupName.value.trim();
+        const description = groupDescription.value.trim();
+        if(!name){
+          showNotice("Enter group name.", "error");
+          return;
+        }
+
+        const payload = {
+          name,
+          description,
+          category: groupCategory.value,
+          privacy: groupPrivacy.value,
+          group_image: groupImage.value.trim() || null,
+          cover_url: groupCover.value.trim() || null,
+          created_by: user.id
+        };
+
+        const { data, error } = await supabase
+          .from("groups")
+          .insert(payload)
+          .select("id")
+          .single();
+
+        if(error) throw error;
+
+        const { error: memberError } = await supabase
+          .from("group_members")
+          .insert({
+            group_id: data.id,
+            user_id: user.id,
+            role: "owner"
+          });
+
+        if(memberError) throw memberError;
+
+        showNotice("Group created successfully.", "success");
+        setTimeout(() => {
+          location.href = `group-view.html?id=${data.id}`;
+        }, 600);
+      }catch(error){
+        showNotice(error.message || "Could not create group.", "error");
+      }
+    }
+
+    function clearForm(){
+      groupName.value = "";
+      groupDescription.value = "";
+      groupCategory.value = "Business";
+      groupPrivacy.value = "public";
+      groupImage.value = "";
+      groupCover.value = "";
+      updatePreview();
+    }
+
+    [groupName, groupDescription, groupCategory, groupPrivacy, groupImage, groupCover].forEach(el => {
+      el.addEventListener("input", updatePreview);
+      el.addEventListener("change", updatePreview);
+    });
+
+    document.getElementById("createGroupBtn").addEventListener("click", createGroup);
+    document.getElementById("clearBtn").addEventListener("click", clearForm);
+
+    (async function init(){
+      try{
+        await requireUser();
+        updatePreview();
+      }catch(error){
+        showNotice(error.message || "Could not load create group page.", "error");
+      }
+    })();
+  </script>
+</body>
+</html>

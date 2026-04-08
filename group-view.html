@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Group View | View</title>
+  <meta name="theme-color" content="#0a1028" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg1:#081a8f; --bg2:#07115f; --bg3:#05093c;
+      --blue:#2f7bff; --blue2:#5ba0ff; --red:#ff2f57; --red2:#ff5a74;
+      --text:#fff; --muted:#d4dcff; --line:rgba(255,255,255,.10); --shadow:0 18px 42px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(47,123,255,.22), transparent 18%),
+        radial-gradient(circle at 88% 10%, rgba(255,47,87,.18), transparent 14%),
+        linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
+      color:var(--text);
+    }
+    body{overflow-x:hidden}
+    a{text-decoration:none;color:inherit}
+    button,textarea{font:inherit}
+    img{display:block;max-width:100%}
+    .page{width:min(100%,980px);margin:0 auto;padding:calc(12px + var(--safe-top)) 14px calc(20px + var(--safe-bottom))}
+    .notice{display:none;margin-bottom:12px;padding:12px 14px;border-radius:14px;font-size:12px;line-height:1.5;border:1px solid transparent;background:rgba(255,255,255,.05)}
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.22);color:#ffd7df}
+    .notice.success{background:rgba(25,195,125,.10);border-color:rgba(25,195,125,.22);color:#dcffe7}
+    .notice.info{background:rgba(47,123,255,.10);border-color:rgba(47,123,255,.22);color:#dcebff}
+    .topbar{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;margin-bottom:14px}
+    .icon-btn{
+      width:46px;height:46px;min-width:46px;border:none;border-radius:14px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;color:#fff;
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));border:1px solid var(--line);box-shadow:var(--shadow)
+    }
+    .title{font-size:18px;font-weight:900}
+    .subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+    .top-actions{display:flex;gap:8px}
+    .hero,.panel{
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px
+    }
+    .cover{
+      height:220px;background:linear-gradient(135deg,var(--blue),var(--red));position:relative
+    }
+    .cover img{width:100%;height:100%;object-fit:cover}
+    .avatar{
+      position:absolute;left:18px;bottom:-40px;width:90px;height:90px;border-radius:26px;overflow:hidden;
+      border:4px solid rgba(7,17,95,1);background:linear-gradient(135deg,var(--blue2),var(--red2));
+      display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover}
+    .hero-body{padding:54px 16px 16px;display:grid;gap:12px}
+    .group-name{font-size:24px;font-weight:900}
+    .group-desc{font-size:13px;color:var(--muted);line-height:1.6}
+    .meta-row{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{
+      min-height:28px;padding:0 12px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
+      font-size:11px;font-weight:800;background:rgba(255,255,255,.08);border:1px solid var(--line)
+    }
+    .hero-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .btn{
+      min-height:44px;border:none;border-radius:14px;cursor:pointer;color:#fff;font-weight:900
+    }
+    .btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2))}
+    .btn.red{background:linear-gradient(135deg,var(--red),var(--red2))}
+    .btn.soft{background:rgba(255,255,255,.08);border:1px solid var(--line)}
+    .panel{padding:14px}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+    .section-head h3{font-size:15px;font-weight:900}
+    .section-head span{font-size:12px;color:var(--muted)}
+    .composer{display:grid;gap:10px;margin-bottom:14px}
+    .composer textarea{
+      min-height:120px;padding:14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#fff;outline:none;resize:vertical
+    }
+    .composer textarea::placeholder{color:#a6b9de}
+    .composer textarea:focus{box-shadow:0 0 0 4px rgba(47,123,255,.10);border-color:rgba(91,160,255,.45)}
+    .post-list{display:grid;gap:12px}
+    .post-card{border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.05);padding:14px}
+    .post-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+    .post-title{font-size:13px;font-weight:900}
+    .post-time{font-size:11px;color:var(--muted)}
+    .post-text{font-size:13px;line-height:1.6;color:#edf3ff;white-space:pre-wrap}
+    .empty{
+      padding:26px 14px;text-align:center;font-size:13px;color:var(--muted);
+      border:1px dashed rgba(255,255,255,.18);border-radius:18px;background:rgba(255,255,255,.03)
+    }
+    @media (max-width:760px){
+      .hero-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .cover{height:190px}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <button class="icon-btn" onclick="window.location.href='groups.html'">←</button>
+      <div>
+        <div class="title">Group View</div>
+        <div class="subtitle">Main group page, posts, members, and settings</div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="refreshBtn">↻</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="cover" id="coverBox">
+        <div class="avatar" id="avatarBox">G</div>
+      </div>
+      <div class="hero-body">
+        <div class="group-name" id="groupName">Loading...</div>
+        <div class="group-desc" id="groupDesc">Please wait...</div>
+        <div class="meta-row">
+          <span class="chip" id="groupCategory">General</span>
+          <span class="chip" id="groupPrivacy">public</span>
+          <span class="chip" id="groupMembers">0 members</span>
+        </div>
+        <div class="hero-actions">
+          <button class="btn blue" id="joinLeaveBtn" type="button">Join</button>
+          <button class="btn soft" id="membersBtn" type="button">Members</button>
+          <button class="btn soft" id="myGroupsBtn" type="button">My Groups</button>
+          <button class="btn red" id="settingsBtn" type="button">Settings</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h3>Group Posts</h3>
+        <span id="postCountText">0 posts</span>
+      </div>
+
+      <div class="composer">
+        <textarea id="postContent" placeholder="Write something to the group..."></textarea>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+          <button class="btn blue" id="publishPostBtn" type="button">Post</button>
+          <button class="btn soft" type="button" onclick="window.location.href='group-members.html'">Open Members</button>
+          <button class="btn red" type="button" onclick="window.location.href='group-settings.html'">Open Settings</button>
+        </div>
+      </div>
+
+      <div class="post-list" id="postList"></div>
+    </section>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+    });
+
+    const groupId = new URLSearchParams(location.search).get("id");
+    const notice = document.getElementById("notice");
+    const groupName = document.getElementById("groupName");
+    const groupDesc = document.getElementById("groupDesc");
+    const groupCategory = document.getElementById("groupCategory");
+    const groupPrivacy = document.getElementById("groupPrivacy");
+    const groupMembers = document.getElementById("groupMembers");
+    const coverBox = document.getElementById("coverBox");
+    const avatarBox = document.getElementById("avatarBox");
+    const joinLeaveBtn = document.getElementById("joinLeaveBtn");
+    const membersBtn = document.getElementById("membersBtn");
+    const settingsBtn = document.getElementById("settingsBtn");
+    const myGroupsBtn = document.getElementById("myGroupsBtn");
+    const postContent = document.getElementById("postContent");
+    const publishPostBtn = document.getElementById("publishPostBtn");
+    const postList = document.getElementById("postList");
+    const postCountText = document.getElementById("postCountText");
+
+    let currentUser = null;
+    let currentGroup = null;
+    let isMember = false;
+    let myRole = null;
+
+    function showNotice(message, type="info"){
+      notice.className = `notice show ${type}`;
+      notice.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        notice.className = "notice";
+        notice.textContent = "";
+      }, 2800);
+    }
+
+    function initials(name){
+      const parts = String(name || "G").trim().split(/\s+/).filter(Boolean);
+      if(!parts.length) return "G";
+      if(parts.length === 1) return parts[0][0].toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+
+    function timeAgo(value){
+      if(!value) return "Just now";
+      const date = new Date(value);
+      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+      if(diff < 60) return "Just now";
+      if(diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if(diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      return `${Math.floor(diff / 86400)}d ago`;
+    }
+
+    async function requireUser(){
+      const { data, error } = await supabase.auth.getUser();
+      if(error) throw error;
+      if(!data?.user){
+        location.href = `login.html?next=group-view.html?id=${groupId || ""}`;
+        return null;
+      }
+      currentUser = data.user;
+      return currentUser;
+    }
+
+    async function loadGroup(){
+      if(!groupId){
+        showNotice("Group id missing.", "error");
+        return;
+      }
+
+      const user = currentUser || await requireUser();
+      if(!user) return;
+
+      const [
+        { data: group, error: groupError },
+        { data: members, error: membersError },
+        { data: posts, error: postsError }
+      ] = await Promise.all([
+        supabase.from("groups").select("*").eq("id", groupId).single(),
+        supabase.from("group_members").select("*").eq("group_id", groupId),
+        supabase.from("group_posts").select("*").eq("group_id", groupId).order("created_at", { ascending:false })
+      ]);
+
+      if(groupError) throw groupError;
+      if(membersError) throw membersError;
+      if(postsError && postsError.code !== "42P01") throw postsError;
+
+      currentGroup = group;
+      const allMembers = members || [];
+      const allPosts = posts || [];
+
+      const myMembership = allMembers.find(m => m.user_id === user.id);
+      isMember = !!myMembership;
+      myRole = myMembership?.role || null;
+
+      groupName.textContent = group.name || "Untitled Group";
+      groupDesc.textContent = group.description || "No description yet.";
+      groupCategory.textContent = group.category || "General";
+      groupPrivacy.textContent = group.privacy || "public";
+      groupMembers.textContent = `${allMembers.length} members`;
+
+      coverBox.querySelector("img")?.remove();
+      avatarBox.querySelector("img")?.remove();
+      coverBox.style.background = "linear-gradient(135deg,#2f7bff,#ff2f57)";
+
+      if(group.cover_url){
+        const coverImg = document.createElement("img");
+        coverImg.src = group.cover_url;
+        coverImg.alt = group.name || "Group cover";
+        coverBox.prepend(coverImg);
+      }
+
+      if(group.group_image){
+        const avatarImg = document.createElement("img");
+        avatarImg.src = group.group_image;
+        avatarImg.alt = group.name || "Group avatar";
+        avatarBox.innerHTML = "";
+        avatarBox.appendChild(avatarImg);
+      } else {
+        avatarBox.innerHTML = initials(group.name || "Group");
+      }
+
+      joinLeaveBtn.textContent = isMember ? "Leave" : "Join";
+      joinLeaveBtn.className = isMember ? "btn red" : "btn blue";
+
+      settingsBtn.style.display = (group.created_by === user.id || myRole === "owner" || myRole === "admin") ? "inline-flex" : "none";
+
+      postCountText.textContent = `${allPosts.length} posts`;
+
+      if(!allPosts.length){
+        postList.innerHTML = `<div class="empty">No posts yet in this group.</div>`;
+      } else {
+        postList.innerHTML = allPosts.map(p => `
+          <div class="post-card">
+            <div class="post-head">
+              <div class="post-title">Group Post</div>
+              <div class="post-time">${timeAgo(p.created_at)}</div>
+            </div>
+            <div class="post-text">${p.content || "No content."}</div>
+          </div>
+        `).join("");
+      }
+    }
+
+    async function joinLeaveGroup(){
+      try{
+        const user = currentUser || await requireUser();
+        if(!user) return;
+
+        if(isMember){
+          const { error } = await supabase.from("group_members").delete().eq("group_id", groupId).eq("user_id", user.id);
+          if(error) throw error;
+          showNotice("You left the group.", "success");
+        } else {
+          const { error } = await supabase.from("group_members").insert({
+            group_id: groupId,
+            user_id: user.id,
+            role: "member"
+          });
+          if(error) throw error;
+          showNotice("Joined group successfully.", "success");
+        }
+
+        await loadGroup();
+      }catch(error){
+        showNotice(error.message || "Could not update membership.", "error");
+      }
+    }
+
+    async function publishPost(){
+      try{
+        const user = currentUser || await requireUser();
+        if(!user) return;
+
+        const content = postContent.value.trim();
+        if(!content){
+          showNotice("Write a post first.", "error");
+          return;
+        }
+        if(!isMember){
+          showNotice("Join the group before posting.", "error");
+          return;
+        }
+
+        const { error } = await supabase.from("group_posts").insert({
+          group_id: groupId,
+          user_id: user.id,
+          content
+        });
+        if(error) throw error;
+
+        postContent.value = "";
+        showNotice("Post published.", "success");
+        await loadGroup();
+      }catch(error){
+        showNotice(error.message || "Could not publish post.", "error");
+      }
+    }
+
+    joinLeaveBtn.addEventListener("click", joinLeaveGroup);
+    publishPostBtn.addEventListener("click", publishPost);
+    membersBtn.addEventListener("click", () => location.href = `group-members.html?id=${groupId}`);
+    settingsBtn.addEventListener("click", () => location.href = `group-settings.html?id=${groupId}`);
+    myGroupsBtn.addEventListener("click", () => location.href = "groups.html?tab=your");
+    document.getElementById("refreshBtn").addEventListener("click", async () => {
+      try{
+        await loadGroup();
+        showNotice("Group refreshed.", "success");
+      }catch(error){
+        showNotice(error.message || "Could not refresh group.", "error");
+      }
+    });
+
+    (async function init(){
+      try{
+        await requireUser();
+        await loadGroup();
+      }catch(error){
+        showNotice(error.message || "Could not load group page.", "error");
+      }
+    })();
+  </script>
+</body>
+</html>

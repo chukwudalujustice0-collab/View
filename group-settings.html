@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Group Settings | View</title>
+  <meta name="theme-color" content="#0a1028" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg1:#081a8f; --bg2:#07115f; --bg3:#05093c;
+      --blue:#2f7bff; --blue2:#5ba0ff; --red:#ff2f57; --red2:#ff5a74;
+      --text:#fff; --muted:#d4dcff; --line:rgba(255,255,255,.10); --shadow:0 18px 42px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(47,123,255,.22), transparent 18%),
+        radial-gradient(circle at 88% 10%, rgba(255,47,87,.18), transparent 14%),
+        linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
+      color:var(--text);
+    }
+    body{overflow-x:hidden}
+    a{text-decoration:none;color:inherit}
+    button,input,textarea,select{font:inherit}
+    img{display:block;max-width:100%}
+    .page{width:min(100%,920px);margin:0 auto;padding:calc(12px + var(--safe-top)) 14px calc(20px + var(--safe-bottom))}
+    .notice{display:none;margin-bottom:12px;padding:12px 14px;border-radius:14px;font-size:12px;line-height:1.5;border:1px solid transparent;background:rgba(255,255,255,.05)}
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.22);color:#ffd7df}
+    .notice.success{background:rgba(25,195,125,.10);border-color:rgba(25,195,125,.22);color:#dcffe7}
+    .notice.info{background:rgba(47,123,255,.10);border-color:rgba(47,123,255,.22);color:#dcebff}
+    .topbar{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;margin-bottom:14px}
+    .icon-btn{
+      width:46px;height:46px;min-width:46px;border:none;border-radius:14px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;color:#fff;
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));border:1px solid var(--line);box-shadow:var(--shadow)
+    }
+    .title{font-size:18px;font-weight:900}
+    .subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:14px
+    }
+    .grid{display:grid;gap:12px}
+    .label{display:block;font-size:11px;font-weight:800;margin-bottom:8px;color:#dce8ff;text-transform:uppercase;letter-spacing:.04em}
+    .input,.textarea,.select{
+      width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#fff;
+      border-radius:16px;outline:none
+    }
+    .input,.select{min-height:50px;padding:0 14px}
+    .textarea{min-height:120px;padding:14px;resize:vertical;line-height:1.5}
+    .input::placeholder,.textarea::placeholder{color:#a6b9de}
+    .input:focus,.textarea:focus,.select:focus{box-shadow:0 0 0 4px rgba(47,123,255,.10);border-color:rgba(91,160,255,.45)}
+    .btn-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .btn{
+      min-height:46px;border:none;border-radius:16px;color:#fff;font-weight:900;cursor:pointer
+    }
+    .btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2))}
+    .btn.red{background:linear-gradient(135deg,var(--red),var(--red2))}
+    .btn.soft{background:rgba(255,255,255,.08);border:1px solid var(--line)}
+    @media (max-width:640px){
+      .btn-row{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <button class="icon-btn" onclick="history.back()">←</button>
+      <div>
+        <div class="title">Group Settings</div>
+        <div class="subtitle">Only owners and admins should manage this page</div>
+      </div>
+      <button class="icon-btn" onclick="window.location.href='groups.html?tab=your'">👥</button>
+    </header>
+
+    <section class="card">
+      <div class="grid">
+        <div>
+          <label class="label" for="groupName">Group Name</label>
+          <input id="groupName" class="input" type="text" placeholder="Group name" />
+        </div>
+
+        <div>
+          <label class="label" for="groupDescription">Description</label>
+          <textarea id="groupDescription" class="textarea" placeholder="Group description"></textarea>
+        </div>
+
+        <div>
+          <label class="label" for="groupCategory">Category</label>
+          <select id="groupCategory" class="select">
+            <option value="Business">Business</option>
+            <option value="Technology">Technology</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Community">Community</option>
+            <option value="Education">Education</option>
+            <option value="Sports">Sports</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="label" for="groupPrivacy">Privacy</label>
+          <select id="groupPrivacy" class="select">
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="label" for="groupImage">Group Image URL</label>
+          <input id="groupImage" class="input" type="url" placeholder="https://example.com/group.jpg" />
+        </div>
+
+        <div>
+          <label class="label" for="groupCover">Cover URL</label>
+          <input id="groupCover" class="input" type="url" placeholder="https://example.com/cover.jpg" />
+        </div>
+
+        <div class="btn-row">
+          <button id="saveBtn" class="btn blue" type="button">Save Changes</button>
+          <button id="openGroupBtn" class="btn soft" type="button">Open Group</button>
+          <button id="membersBtn" class="btn soft" type="button">Members</button>
+          <button id="deleteBtn" class="btn red" type="button">Delete Group</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+    });
+
+    const groupId = new URLSearchParams(location.search).get("id");
+    const notice = document.getElementById("notice");
+    const groupName = document.getElementById("groupName");
+    const groupDescription = document.getElementById("groupDescription");
+    const groupCategory = document.getElementById("groupCategory");
+    const groupPrivacy = document.getElementById("groupPrivacy");
+    const groupImage = document.getElementById("groupImage");
+    const groupCover = document.getElementById("groupCover");
+
+    let currentUser = null;
+    let groupData = null;
+    let myRole = null;
+
+    function showNotice(message, type="info"){
+      notice.className = `notice show ${type}`;
+      notice.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        notice.className = "notice";
+        notice.textContent = "";
+      }, 2800);
+    }
+
+    async function requireUser(){
+      const { data, error } = await supabase.auth.getUser();
+      if(error) throw error;
+      if(!data?.user){
+        location.href = `login.html?next=group-settings.html?id=${groupId || ""}`;
+        return null;
+      }
+      currentUser = data.user;
+      return currentUser;
+    }
+
+    async function loadSettings(){
+      const user = currentUser || await requireUser();
+      if(!user) return;
+
+      const [{ data: group, error: groupError }, { data: membership, error: memberError }] = await Promise.all([
+        supabase.from("groups").select("*").eq("id", groupId).single(),
+        supabase.from("group_members").select("*").eq("group_id", groupId).eq("user_id", user.id).maybeSingle()
+      ]);
+
+      if(groupError) throw groupError;
+      if(memberError && memberError.code !== "PGRST116") throw memberError;
+
+      groupData = group;
+      myRole = membership?.role || null;
+
+      const canManage = group.created_by === user.id || myRole === "owner" || myRole === "admin";
+      if(!canManage){
+        showNotice("You do not have permission to manage this group.", "error");
+        document.getElementById("saveBtn").disabled = true;
+        document.getElementById("deleteBtn").disabled = true;
+      }
+
+      groupName.value = group.name || "";
+      groupDescription.value = group.description || "";
+      groupCategory.value = group.category || "Business";
+      groupPrivacy.value = group.privacy || "public";
+      groupImage.value = group.group_image || "";
+      groupCover.value = group.cover_url || "";
+    }
+
+    async function saveChanges(){
+      try{
+        const payload = {
+          name: groupName.value.trim(),
+          description: groupDescription.value.trim(),
+          category: groupCategory.value,
+          privacy: groupPrivacy.value,
+          group_image: groupImage.value.trim() || null,
+          cover_url: groupCover.value.trim() || null
+        };
+
+        const { error } = await supabase.from("groups").update(payload).eq("id", groupId);
+        if(error) throw error;
+
+        showNotice("Group settings updated.", "success");
+      }catch(error){
+        showNotice(error.message || "Could not save changes.", "error");
+      }
+    }
+
+    async function deleteGroup(){
+      try{
+        const ok = confirm("Delete this group permanently?");
+        if(!ok) return;
+
+        const { error } = await supabase.from("groups").delete().eq("id", groupId);
+        if(error) throw error;
+
+        showNotice("Group deleted.", "success");
+        setTimeout(() => {
+          location.href = "groups.html?tab=your";
+        }, 600);
+      }catch(error){
+        showNotice(error.message || "Could not delete group.", "error");
+      }
+    }
+
+    document.getElementById("saveBtn").addEventListener("click", saveChanges);
+    document.getElementById("deleteBtn").addEventListener("click", deleteGroup);
+    document.getElementById("openGroupBtn").addEventListener("click", () => location.href = `group-view.html?id=${groupId}`);
+    document.getElementById("membersBtn").addEventListener("click", () => location.href = `group-members.html?id=${groupId}`);
+
+    (async function init(){
+      try{
+        await requireUser();
+        await loadSettings();
+      }catch(error){
+        showNotice(error.message || "Could not load group settings.", "error");
+      }
+    })();
+  </script>
+</body>
+</html>

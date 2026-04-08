@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Group Invites | View</title>
+  <meta name="theme-color" content="#0a1028" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg1:#081a8f;
+      --bg2:#07115f;
+      --bg3:#05093c;
+      --blue:#2f7bff;
+      --blue2:#5ba0ff;
+      --red:#ff2f57;
+      --red2:#ff5a74;
+      --text:#fff;
+      --muted:#d4dcff;
+      --line:rgba(255,255,255,.10);
+      --shadow:0 18px 42px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top,0px);
+      --safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Inter,Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(47,123,255,.22), transparent 18%),
+        radial-gradient(circle at 88% 10%, rgba(255,47,87,.18), transparent 14%),
+        linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
+      color:var(--text);
+    }
+
+    body{overflow-x:hidden}
+    button,input{font:inherit}
+    a{text-decoration:none;color:inherit}
+
+    .page{
+      width:min(100%,960px);
+      margin:0 auto;
+      padding:calc(12px + var(--safe-top)) 14px calc(20px + var(--safe-bottom));
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:12px;
+      line-height:1.5;
+      border:1px solid transparent;
+      background:rgba(255,255,255,.05);
+    }
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.22);color:#ffd7df}
+    .notice.success{background:rgba(25,195,125,.10);border-color:rgba(25,195,125,.22);color:#dcffe7}
+    .notice.info{background:rgba(47,123,255,.10);border-color:rgba(47,123,255,.22);color:#dcebff}
+
+    .topbar{
+      display:grid;
+      grid-template-columns:48px 1fr auto;
+      gap:10px;
+      align-items:center;
+      margin-bottom:14px;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border:none;
+      border-radius:14px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+    }
+
+    .title{
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .subtitle{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:4px;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+
+    .card-title{
+      font-size:15px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .invite-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .invite-card{
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:rgba(255,255,255,.05);
+      padding:12px;
+      display:grid;
+      gap:10px;
+    }
+
+    .invite-name{
+      font-size:14px;
+      font-weight:900;
+    }
+
+    .invite-meta{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .btn-row{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+
+    .btn{
+      min-height:40px;
+      border:none;
+      border-radius:14px;
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2))}
+    .btn.red{background:linear-gradient(135deg,var(--red),var(--red2))}
+    .btn.soft{background:rgba(255,255,255,.08);border:1px solid var(--line)}
+
+    .empty{
+      padding:26px 14px;
+      text-align:center;
+      font-size:13px;
+      color:var(--muted);
+      border:1px dashed rgba(255,255,255,.18);
+      border-radius:18px;
+      background:rgba(255,255,255,.03);
+    }
+
+    @media (max-width:760px){
+      .layout{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <button class="icon-btn" onclick="window.location.href='groups.html'">←</button>
+      <div>
+        <div class="title">Group Invites</div>
+        <div class="subtitle">Accept, decline, and manage group invitations</div>
+      </div>
+      <button class="icon-btn" id="refreshBtn">↻</button>
+    </header>
+
+    <div class="layout">
+      <section class="card">
+        <div class="card-title">Incoming Invites</div>
+        <div id="incomingList" class="invite-list"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">Sent Invites</div>
+        <div id="sentList" class="invite-list"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:true,
+        flowType:"pkce"
+      }
+    });
+
+    const notice = document.getElementById("notice");
+    const incomingList = document.getElementById("incomingList");
+    const sentList = document.getElementById("sentList");
+
+    let currentUser = null;
+    let groupMap = {};
+
+    function showNotice(message, type="info"){
+      notice.className = `notice show ${type}`;
+      notice.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        notice.className = "notice";
+        notice.textContent = "";
+      }, 2500);
+    }
+
+    async function requireUser(){
+      const { data, error } = await supabase.auth.getUser();
+      if(error) throw error;
+      if(!data?.user){
+        location.href = "login.html?next=group-invites.html";
+        return null;
+      }
+      currentUser = data.user;
+      return currentUser;
+    }
+
+    async function loadGroups(){
+      const { data, error } = await supabase.from("groups").select("id,name");
+      if(error) throw error;
+      groupMap = Object.fromEntries((data || []).map(g => [g.id, g]));
+    }
+
+    async function loadInvites(){
+      const [{ data: incoming, error: incomingError }, { data: sent, error: sentError }] = await Promise.all([
+        supabase.from("group_invites").select("*").eq("invitee_user_id", currentUser.id).order("created_at", { ascending:false }),
+        supabase.from("group_invites").select("*").eq("inviter_user_id", currentUser.id).order("created_at", { ascending:false })
+      ]);
+
+      if(incomingError && incomingError.code !== "42P01") throw incomingError;
+      if(sentError && sentError.code !== "42P01") throw sentError;
+
+      const incomingData = incoming || [];
+      const sentData = sent || [];
+
+      if(!incomingData.length){
+        incomingList.innerHTML = `<div class="empty">No incoming invites.</div>`;
+      } else {
+        incomingList.innerHTML = incomingData.map(inv => `
+          <div class="invite-card">
+            <div class="invite-name">${groupMap[inv.group_id]?.name || "Group Invite"}</div>
+            <div class="invite-meta">Status: ${inv.status || "pending"}</div>
+            <div class="btn-row">
+              <button class="btn blue" onclick="acceptInvite('${inv.id}','${inv.group_id}')">Accept</button>
+              <button class="btn red" onclick="declineInvite('${inv.id}')">Decline</button>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      if(!sentData.length){
+        sentList.innerHTML = `<div class="empty">No sent invites.</div>`;
+      } else {
+        sentList.innerHTML = sentData.map(inv => `
+          <div class="invite-card">
+            <div class="invite-name">${groupMap[inv.group_id]?.name || "Group Invite"}</div>
+            <div class="invite-meta">Status: ${inv.status || "pending"}</div>
+            <div class="btn-row">
+              <button class="btn soft" onclick="openGroup('${inv.group_id}')">Open Group</button>
+              <button class="btn red" onclick="cancelInvite('${inv.id}')">Cancel</button>
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
+    async function acceptInvite(inviteId, groupId){
+      try{
+        const { error: updateError } = await supabase
+          .from("group_invites")
+          .update({ status:"accepted" })
+          .eq("id", inviteId);
+
+        if(updateError) throw updateError;
+
+        const { error: memberError } = await supabase.from("group_members").insert({
+          group_id: groupId,
+          user_id: currentUser.id,
+          role: "member"
+        });
+
+        if(memberError) throw memberError;
+
+        showNotice("Invite accepted.", "success");
+        await loadInvites();
+      }catch(error){
+        showNotice(error.message || "Could not accept invite.", "error");
+      }
+    }
+
+    async function declineInvite(inviteId){
+      try{
+        const { error } = await supabase
+          .from("group_invites")
+          .update({ status:"declined" })
+          .eq("id", inviteId);
+
+        if(error) throw error;
+        showNotice("Invite declined.", "success");
+        await loadInvites();
+      }catch(error){
+        showNotice(error.message || "Could not decline invite.", "error");
+      }
+    }
+
+    async function cancelInvite(inviteId){
+      try{
+        const { error } = await supabase
+          .from("group_invites")
+          .delete()
+          .eq("id", inviteId);
+
+        if(error) throw error;
+        showNotice("Invite cancelled.", "success");
+        await loadInvites();
+      }catch(error){
+        showNotice(error.message || "Could not cancel invite.", "error");
+      }
+    }
+
+    function openGroup(groupId){
+      location.href = `group-view.html?id=${groupId}`;
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", async () => {
+      try{
+        await loadInvites();
+        showNotice("Invites refreshed.", "success");
+      }catch(error){
+        showNotice(error.message || "Could not refresh invites.", "error");
+      }
+    });
+
+    window.acceptInvite = acceptInvite;
+    window.declineInvite = declineInvite;
+    window.cancelInvite = cancelInvite;
+    window.openGroup = openGroup;
+
+    (async function init(){
+      try{
+        await requireUser();
+        await loadGroups();
+        await loadInvites();
+      }catch(error){
+        showNotice(error.message || "Could not load invites page.", "error");
+      }
+    })();
+  </script>
+</body>
+</html>

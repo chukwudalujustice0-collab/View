@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Call History | View</title>
+  <meta name="theme-color" content="#120a2f" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --text:#f7f4ff;
+      --muted:#c9bde9;
+      --blue:#4e88ff;
+      --blue2:#7da2ff;
+      --red:#ff3c63;
+      --green:#22c55e;
+      --amber:#f59e0b;
+      --safe-top:env(safe-area-inset-top, 0px);
+      --safe-bottom:env(safe-area-inset-bottom, 0px);
+      --shadow:0 20px 40px rgba(0,0,0,.28);
+      --line:rgba(255,255,255,.08);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Inter,Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at 20% 12%, rgba(255,85,120,.14), transparent 12%),
+        radial-gradient(circle at 72% 18%, rgba(90,140,255,.14), transparent 14%),
+        radial-gradient(circle at 40% 60%, rgba(120,90,255,.08), transparent 18%),
+        linear-gradient(180deg, #14092e 0%, #190a3d 42%, #110820 100%);
+      color:var(--text);
+    }
+
+    body{
+      padding-bottom:24px;
+      overflow-x:hidden;
+    }
+
+    .wrap{
+      width:min(100%, 860px);
+      margin:0 auto;
+      padding:calc(10px + var(--safe-top)) 12px calc(14px + var(--safe-bottom));
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:10px;
+      padding:12px 13px;
+      border-radius:16px;
+      border:1px solid transparent;
+      font-size:12px;
+      line-height:1.45;
+      backdrop-filter:blur(10px);
+    }
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.24);color:#ffd9df}
+    .notice.info{background:rgba(78,136,255,.14);border-color:rgba(78,136,255,.24);color:#dcebff}
+    .notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffea}
+
+    .topbar{
+      display:grid;
+      grid-template-columns:42px 1fr 42px;
+      align-items:center;
+      gap:8px;
+      margin-bottom:12px;
+    }
+
+    .icon-btn{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      font-size:18px;
+      cursor:pointer;
+      text-decoration:none;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+    }
+
+    .title{
+      text-align:center;
+      font-size:22px;
+      font-weight:900;
+      text-transform:lowercase;
+      letter-spacing:-.02em;
+    }
+
+    .hero{
+      border-radius:24px;
+      padding:16px;
+      background:
+        radial-gradient(circle at top right, rgba(78,136,255,.14), transparent 22%),
+        radial-gradient(circle at bottom left, rgba(255,60,99,.12), transparent 26%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:var(--shadow);
+      margin-bottom:12px;
+      backdrop-filter:blur(14px);
+    }
+
+    .hero h1{
+      font-size:20px;
+      font-weight:900;
+      margin-bottom:4px;
+    }
+
+    .hero p{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .stats{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .chip{
+      min-height:32px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:800;
+      box-shadow:0 8px 18px rgba(0,0,0,.12);
+    }
+
+    .toolbar{
+      display:flex;
+      gap:8px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+
+    .search{
+      flex:1;
+      min-width:180px;
+      height:46px;
+      border:none;
+      outline:none;
+      border-radius:18px;
+      padding:0 14px;
+      color:#fff;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 10px 22px rgba(0,0,0,.14);
+    }
+
+    .search::placeholder{color:#c9bde9}
+
+    .filter{
+      height:46px;
+      min-width:120px;
+      border:none;
+      outline:none;
+      border-radius:18px;
+      padding:0 14px;
+      color:#fff;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 10px 22px rgba(0,0,0,.14);
+    }
+
+    .list{
+      display:grid;
+      gap:10px;
+    }
+
+    .item{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px;
+      border-radius:18px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 12px 24px rgba(0,0,0,.14);
+    }
+
+    .avatar{
+      width:54px;
+      height:54px;
+      border-radius:50%;
+      overflow:hidden;
+      background:linear-gradient(135deg,var(--blue),var(--blue2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      font-weight:900;
+      color:#fff;
+      flex-shrink:0;
+      border:2px solid rgba(255,255,255,.10);
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .meta{
+      min-width:0;
+      flex:1;
+    }
+
+    .name{
+      font-size:15px;
+      font-weight:900;
+      margin-bottom:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .right{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:7px;
+      flex-shrink:0;
+    }
+
+    .status{
+      min-height:24px;
+      padding:0 9px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:900;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,.08);
+      text-transform:capitalize;
+    }
+
+    .status.ended{background:rgba(34,197,94,.12);color:#d8ffe4}
+    .status.missed{background:rgba(239,68,68,.12);color:#ffd9df}
+    .status.rejected{background:rgba(239,68,68,.12);color:#ffd9df}
+    .status.cancelled{background:rgba(245,158,11,.12);color:#ffe7b4}
+    .status.accepted{background:rgba(78,136,255,.12);color:#dcebff}
+    .status.ringing{background:rgba(78,136,255,.12);color:#dcebff}
+
+    .type-badge{
+      min-height:22px;
+      padding:0 8px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:900;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      margin-left:6px;
+    }
+
+    .redo{
+      border:none;
+      border-radius:12px;
+      padding:10px 12px;
+      color:#fff;
+      cursor:pointer;
+      font-size:11px;
+      font-weight:800;
+      background:linear-gradient(135deg, var(--blue), #7da2ff);
+      box-shadow:0 10px 18px rgba(78,136,255,.22);
+    }
+
+    .empty{
+      text-align:center;
+      padding:38px 18px;
+      color:#d8cdf2;
+      font-size:13px;
+      line-height:1.7;
+      border-radius:20px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .empty strong{
+      display:block;
+      font-size:17px;
+      color:#fff;
+      margin-bottom:6px;
+    }
+
+    @media (max-width:640px){
+      .item{
+        align-items:flex-start;
+      }
+      .right{
+        min-width:72px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <div class="topbar">
+      <a class="icon-btn" href="explore.html" aria-label="Back">←</a>
+      <div class="title">call history</div>
+      <a class="icon-btn" href="chats.html" aria-label="Chats">💬</a>
+    </div>
+
+    <div class="hero">
+      <h1>Your private calls</h1>
+      <p>Completed, missed, rejected, cancelled, audio, and video private calls.</p>
+      <div class="stats">
+        <span id="totalChip" class="chip">Total: 0</span>
+        <span id="missedChip" class="chip">Missed: 0</span>
+        <span id="videoChip" class="chip">Video: 0</span>
+        <span id="audioChip" class="chip">Audio: 0</span>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input id="searchInput" class="search" type="text" placeholder="Search people or call type..." />
+      <select id="filterSelect" class="filter">
+        <option value="all">All calls</option>
+        <option value="missed">Missed</option>
+        <option value="ended">Ended</option>
+        <option value="rejected">Rejected</option>
+        <option value="cancelled">Cancelled</option>
+        <option value="video">Video</option>
+        <option value="audio">Audio</option>
+      </select>
+    </div>
+
+    <div id="historyList" class="list"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    const notice = document.getElementById("notice");
+    const historyList = document.getElementById("historyList");
+    const totalChip = document.getElementById("totalChip");
+    const missedChip = document.getElementById("missedChip");
+    const videoChip = document.getElementById("videoChip");
+    const audioChip = document.getElementById("audioChip");
+    const searchInput = document.getElementById("searchInput");
+    const filterSelect = document.getElementById("filterSelect");
+
+    let currentUserId = "";
+    let allRows = [];
+    let profileMap = new Map();
+
+    function showNotice(text, type = "error") {
+      notice.className = `notice show ${type}`;
+      notice.textContent = text || "";
+    }
+
+    function clearNotice() {
+      notice.className = "notice";
+      notice.textContent = "";
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatDuration(seconds) {
+      const safe = Math.max(0, Math.floor(seconds || 0));
+      const m = String(Math.floor(safe / 60)).padStart(2, "0");
+      const s = String(safe % 60).padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    function formatDate(value) {
+      if (!value) return "";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "";
+      return d.toLocaleString([], {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function getProfileName(profile) {
+      return profile?.full_name || profile?.username || profile?.email || "User";
+    }
+
+    function getProfileAvatar(profile) {
+      return profile?.avatar_url || "";
+    }
+
+    function getOtherUserId(row) {
+      return row.caller_id === currentUserId ? row.receiver_id : row.caller_id;
+    }
+
+    function getDirection(row) {
+      return row.caller_id === currentUserId ? "Outgoing" : "Incoming";
+    }
+
+    async function requireSession() {
+      const { data, error } = await client.auth.getSession();
+      if (error) throw error;
+      if (!data.session?.user) {
+        location.href = "login.html?next=call-history.html";
+        throw new Error("Not authenticated");
+      }
+      currentUserId = data.session.user.id;
+    }
+
+    async function loadProfiles(rows) {
+      const ids = [...new Set(
+        rows.flatMap(row => [row.caller_id, row.receiver_id]).filter(Boolean)
+      )];
+
+      if (!ids.length) {
+        profileMap = new Map();
+        return;
+      }
+
+      const { data, error } = await client
+        .from("profiles")
+        .select("id, full_name, username, avatar_url, email")
+        .in("id", ids);
+
+      if (error) {
+        profileMap = new Map();
+        return;
+      }
+
+      profileMap = new Map((data || []).map(row => [row.id, row]));
+    }
+
+    function updateStats(rows) {
+      totalChip.textContent = `Total: ${rows.length}`;
+      missedChip.textContent = `Missed: ${rows.filter(row => row.status === "missed").length}`;
+      videoChip.textContent = `Video: ${rows.filter(row => row.type === "video").length}`;
+      audioChip.textContent = `Audio: ${rows.filter(row => row.type === "audio").length}`;
+    }
+
+    function getFilteredRows() {
+      const term = searchInput.value.trim().toLowerCase();
+      const filter = filterSelect.value;
+
+      return allRows.filter(row => {
+        const other = profileMap.get(getOtherUserId(row)) || {};
+        const name = getProfileName(other).toLowerCase();
+        const type = String(row.type || "").toLowerCase();
+        const status = String(row.status || "").toLowerCase();
+        const direction = getDirection(row).toLowerCase();
+
+        const matchesSearch =
+          !term ||
+          name.includes(term) ||
+          type.includes(term) ||
+          status.includes(term) ||
+          direction.includes(term);
+
+        if (!matchesSearch) return false;
+
+        if (filter === "all") return true;
+        if (filter === "video" || filter === "audio") return type === filter;
+        return status === filter;
+      });
+    }
+
+    function renderHistory() {
+      const rows = getFilteredRows();
+
+      if (!rows.length) {
+        historyList.innerHTML = `
+          <div class="empty">
+            <strong>No call history found</strong>
+            Calls that match your current filter will appear here.
+          </div>
+        `;
+        return;
+      }
+
+      historyList.innerHTML = rows.map(row => {
+        const isCaller = row.caller_id === currentUserId;
+        const otherId = isCaller ? row.receiver_id : row.caller_id;
+        const other = profileMap.get(otherId) || {};
+        const name = getProfileName(other);
+        const avatarUrl = getProfileAvatar(other);
+        const avatar = avatarUrl
+          ? `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(name)}">`
+          : escapeHtml(name.charAt(0).toUpperCase() || "U");
+
+        const statusClass = escapeHtml((row.status || "ended").toLowerCase());
+        const callType = escapeHtml((row.type || "audio").toLowerCase());
+        const direction = escapeHtml(getDirection(row));
+
+        return `
+          <div class="item">
+            <div class="avatar">${avatar}</div>
+
+            <div class="meta">
+              <div class="name">
+                ${escapeHtml(name)}
+                <span class="type-badge">${callType}</span>
+              </div>
+              <div class="sub">
+                ${direction} • ${escapeHtml(formatDate(row.created_at || row.started_at))}<br>
+                Duration: ${escapeHtml(formatDuration(row.duration || 0))}
+              </div>
+            </div>
+
+            <div class="right">
+              <span class="status ${statusClass}">${escapeHtml(row.status || "ended")}</span>
+              <button
+                class="redo"
+                onclick="redial('${escapeHtml(otherId || "")}','${callType}')"
+              >
+                Call
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadHistory() {
+      const { data, error } = await client
+        .from("call_history")
+        .select("*")
+        .or(`caller_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
+        .eq("is_group", false)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      allRows = data || [];
+      await loadProfiles(allRows);
+      updateStats(allRows);
+      renderHistory();
+    }
+
+    function redial(userId, type) {
+      const params = new URLSearchParams();
+      if (userId) params.set("user_id", userId);
+      params.set("type", type || "audio");
+      location.href = `call-room.html?${params.toString()}`;
+    }
+
+    window.redial = redial;
+
+    searchInput.addEventListener("input", renderHistory);
+    filterSelect.addEventListener("change", renderHistory);
+
+    async function init() {
+      try {
+        clearNotice();
+        await requireSession();
+        await loadHistory();
+      } catch (error) {
+        showNotice(error.message || "Could not load call history.");
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Groups | View</title>
+  <meta name="theme-color" content="#0a1028" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg1:#081a8f; --bg2:#07115f; --bg3:#05093c;
+      --blue:#2f7bff; --blue2:#5ba0ff; --red:#ff2f57; --red2:#ff5a74;
+      --text:#fff; --muted:#d4dcff; --line:rgba(255,255,255,.10);
+      --card:rgba(255,255,255,.07); --shadow:0 18px 42px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(47,123,255,.22), transparent 18%),
+        radial-gradient(circle at 88% 10%, rgba(255,47,87,.18), transparent 14%),
+        linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
+      color:var(--text);
+    }
+    body{overflow-x:hidden;padding-bottom:108px}
+    a{text-decoration:none;color:inherit}
+    button,input{font:inherit}
+    img{display:block;max-width:100%}
+
+    .page{width:min(100%,980px);margin:0 auto;padding:calc(12px + var(--safe-top)) 14px calc(20px + var(--safe-bottom))}
+    .notice{display:none;margin-bottom:12px;padding:12px 14px;border-radius:14px;font-size:12px;line-height:1.5;border:1px solid transparent;background:rgba(255,255,255,.05)}
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.22);color:#ffd7df}
+    .notice.success{background:rgba(25,195,125,.10);border-color:rgba(25,195,125,.22);color:#dcffe7}
+    .notice.info{background:rgba(47,123,255,.10);border-color:rgba(47,123,255,.22);color:#dcebff}
+
+    .topbar{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;margin-bottom:14px}
+    .icon-btn{
+      width:46px;height:46px;min-width:46px;border:none;border-radius:14px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;color:#fff;
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);box-shadow:var(--shadow)
+    }
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .brand-logo{
+      width:42px;height:42px;min-width:42px;border-radius:14px;overflow:hidden;
+      background:linear-gradient(135deg,var(--blue),var(--red));border:1px solid rgba(255,255,255,.12)
+    }
+    .brand-logo img{width:100%;height:100%;object-fit:cover}
+    .brand-copy{min-width:0}
+    .brand-title{font-size:16px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .brand-title span{color:var(--red)}
+    .brand-sub{font-size:11px;color:var(--muted)}
+    .top-actions{display:flex;gap:8px}
+
+    .hero,.panel{
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:14px;margin-bottom:14px
+    }
+    .hero-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .hero-copy h2{font-size:20px;font-weight:900;margin-bottom:6px}
+    .hero-copy p{font-size:12px;color:var(--muted);line-height:1.55}
+    .hero-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+    .btn{
+      min-height:42px;padding:0 14px;border:none;border-radius:14px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:8px;font-weight:900;color:#fff
+    }
+    .btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2))}
+    .btn.red{background:linear-gradient(135deg,var(--red),var(--red2))}
+    .btn.soft{background:rgba(255,255,255,.07);border:1px solid var(--line)}
+
+    .search-box{
+      min-height:52px;display:flex;align-items:center;gap:10px;padding:0 14px;
+      border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--line)
+    }
+    .search-box input{flex:1;min-width:0;border:none;outline:none;background:transparent;color:#fff}
+    .search-box input::placeholder{color:#a9bce0}
+
+    .tabs{display:flex;gap:8px;overflow:auto hidden;scrollbar-width:none;margin-top:12px}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{
+      min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);
+      background:rgba(255,255,255,.05);color:#fff;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap
+    }
+    .tab.active{background:linear-gradient(135deg,var(--blue),var(--red));border-color:transparent}
+
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+    .section-head h3{font-size:15px;font-weight:900}
+    .section-head span{font-size:12px;color:var(--muted)}
+
+    .group-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .group-card{
+      border:1px solid var(--line);border-radius:22px;overflow:hidden;background:rgba(255,255,255,.05);
+      cursor:pointer
+    }
+    .group-cover{
+      height:120px;background:linear-gradient(135deg,var(--blue),var(--red));position:relative
+    }
+    .group-cover img{width:100%;height:100%;object-fit:cover}
+    .group-badge{
+      position:absolute;top:10px;right:10px;padding:6px 10px;border-radius:999px;
+      background:rgba(0,0,0,.28);font-size:10px;font-weight:900
+    }
+    .group-body{padding:12px;display:grid;gap:8px}
+    .group-title{font-size:14px;font-weight:900}
+    .group-desc{font-size:12px;color:var(--muted);line-height:1.5;min-height:36px}
+    .group-meta{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{
+      min-height:26px;padding:0 10px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
+      font-size:11px;font-weight:800;background:rgba(255,255,255,.09);border:1px solid var(--line)
+    }
+    .group-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .mini-btn{
+      min-height:36px;border:none;border-radius:12px;cursor:pointer;font-size:11px;font-weight:900;color:#fff
+    }
+    .mini-btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2))}
+    .mini-btn.red{background:linear-gradient(135deg,var(--red),var(--red2))}
+    .mini-btn.soft{background:rgba(255,255,255,.08);border:1px solid var(--line)}
+
+    .empty{
+      padding:26px 14px;text-align:center;font-size:13px;color:var(--muted);
+      border:1px dashed rgba(255,255,255,.18);border-radius:18px;background:rgba(255,255,255,.03)
+    }
+
+    .bottom-nav{
+      position:fixed;left:50%;bottom:10px;transform:translateX(-50%);
+      width:min(760px,calc(100% - 12px));
+      display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;
+      padding:8px 4px calc(8px + var(--safe-bottom));
+      border-radius:18px;background:rgba(7,14,54,.95);border:1px solid var(--line);
+      box-shadow:0 18px 42px rgba(0,0,0,.35);backdrop-filter:blur(14px);z-index:50
+    }
+    .nav-link{
+      min-height:54px;display:flex;align-items:center;justify-content:center;flex-direction:column;
+      gap:4px;font-size:10px;color:#d6e0ff;border-radius:14px
+    }
+    .nav-link.active{color:var(--red)}
+
+    @media (max-width:720px){
+      .group-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <button class="icon-btn" onclick="window.location.href='home.html'">←</button>
+
+      <div class="brand">
+        <a href="home.html" class="brand-logo">
+          <img src="icons/view-logo.png" alt="View logo" onerror="this.style.display='none';this.parentNode.innerHTML='V';this.parentNode.style.display='flex';this.parentNode.style.alignItems='center';this.parentNode.style.justifyContent='center';this.parentNode.style.fontWeight='900';" />
+        </a>
+        <div class="brand-copy">
+          <div class="brand-title">Groups <span>| VIEW by Ceetify</span></div>
+          <div class="brand-sub">Your groups, joined groups, and suggested communities</div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button class="icon-btn" id="refreshBtn">↻</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-row">
+        <div class="hero-copy">
+          <h2>Community Hub</h2>
+          <p>Create, manage, and discover premium groups across the View ecosystem.</p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn blue" id="createGroupBtn">Create Group</button>
+          <button class="btn red" id="discoverBtn">Suggested</button>
+        </div>
+      </div>
+
+      <div class="search-box" style="margin-top:12px">
+        <span>⌕</span>
+        <input id="searchInput" type="text" placeholder="Search group name, category, or description..." />
+      </div>
+
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-tab="all">All</button>
+        <button class="tab" data-tab="your">My Groups</button>
+        <button class="tab" data-tab="joined">Joined</button>
+        <button class="tab" data-tab="suggested">Suggested</button>
+        <button class="tab" data-tab="private">Private</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h3 id="sectionTitle">All Groups</h3>
+        <span id="groupCountText">0 groups</span>
+      </div>
+      <div class="group-grid" id="groupGrid"></div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-link" href="home.html"><span>🏠</span><span>Home</span></a>
+    <a class="nav-link active" href="groups.html"><span>👥</span><span>Groups</span></a>
+    <a class="nav-link" href="create-group.html"><span>➕</span><span>Create</span></a>
+    <a class="nav-link" href="explore.html"><span>🔎</span><span>Explore</span></a>
+    <a class="nav-link" href="settings.html"><span>⚙</span><span>Settings</span></a>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+    });
+
+    const notice = document.getElementById("notice");
+    const groupGrid = document.getElementById("groupGrid");
+    const groupCountText = document.getElementById("groupCountText");
+    const sectionTitle = document.getElementById("sectionTitle");
+    const searchInput = document.getElementById("searchInput");
+    const tabs = [...document.querySelectorAll(".tab")];
+
+    let currentUser = null;
+    let allGroups = [];
+    let memberships = [];
+    let activeTab = new URLSearchParams(location.search).get("tab") || "all";
+
+    function showNotice(message, type="info"){
+      notice.className = `notice show ${type}`;
+      notice.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        notice.className = "notice";
+        notice.textContent = "";
+      }, 2800);
+    }
+
+    function initials(name){
+      const parts = String(name || "G").trim().split(/\s+/).filter(Boolean);
+      if(!parts.length) return "G";
+      if(parts.length === 1) return parts[0][0].toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+
+    async function requireUser(){
+      const { data, error } = await supabase.auth.getUser();
+      if(error) throw error;
+      if(!data?.user){
+        location.href = "login.html?next=groups.html";
+        return null;
+      }
+      currentUser = data.user;
+      return currentUser;
+    }
+
+    function getFilteredGroups(){
+      const search = searchInput.value.trim().toLowerCase();
+      const memberGroupIds = new Set(memberships.map(m => m.group_id));
+
+      let filtered = [...allGroups];
+
+      if(activeTab === "your"){
+        filtered = filtered.filter(g => g.created_by === currentUser.id);
+      } else if(activeTab === "joined"){
+        filtered = filtered.filter(g => memberGroupIds.has(g.id) && g.created_by !== currentUser.id);
+      } else if(activeTab === "suggested"){
+        filtered = filtered.filter(g => !memberGroupIds.has(g.id));
+      } else if(activeTab === "private"){
+        filtered = filtered.filter(g => (g.privacy || "").toLowerCase() === "private");
+      }
+
+      if(search){
+        filtered = filtered.filter(g =>
+          (g.name || "").toLowerCase().includes(search) ||
+          (g.description || "").toLowerCase().includes(search) ||
+          (g.category || "").toLowerCase().includes(search)
+        );
+      }
+
+      return filtered;
+    }
+
+    function renderGroups(){
+      tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === activeTab));
+
+      const titleMap = {
+        all:"All Groups",
+        your:"My Groups",
+        joined:"Joined Groups",
+        suggested:"Suggested Groups",
+        private:"Private Groups"
+      };
+      sectionTitle.textContent = titleMap[activeTab] || "All Groups";
+
+      const memberMap = {};
+      memberships.forEach(m => {
+        memberMap[m.group_id] = (memberMap[m.group_id] || 0) + 1;
+      });
+
+      const filtered = getFilteredGroups();
+      groupCountText.textContent = `${filtered.length} group${filtered.length === 1 ? "" : "s"}`;
+
+      if(!filtered.length){
+        groupGrid.innerHTML = `<div class="empty">No groups found for this section.</div>`;
+        return;
+      }
+
+      const membershipSet = new Set(memberships.map(m => m.group_id));
+
+      groupGrid.innerHTML = filtered.map(g => {
+        const isMember = membershipSet.has(g.id);
+        const isOwner = g.created_by === currentUser.id;
+        const memberCount = memberMap[g.id] || 0;
+        const cover = g.cover_url || "";
+        const privacy = g.privacy || "public";
+        const category = g.category || "General";
+
+        return `
+          <div class="group-card">
+            <div class="group-cover" onclick="openGroup('${g.id}')">
+              ${cover ? `<img src="${cover}" alt="${g.name}">` : ""}
+              <div class="group-badge">${privacy}</div>
+            </div>
+            <div class="group-body">
+              <div class="group-title">${g.name || "Untitled Group"}</div>
+              <div class="group-desc">${g.description || "No description yet."}</div>
+              <div class="group-meta">
+                <span class="chip">${category}</span>
+                <span class="chip">${memberCount} members</span>
+                <span class="chip">${isOwner ? "Owner" : isMember ? "Joined" : "Suggested"}</span>
+              </div>
+              <div class="group-actions">
+                <button class="mini-btn blue" onclick="openGroup('${g.id}')">Open</button>
+                ${
+                  isOwner
+                  ? `<button class="mini-btn red" onclick="openSettings('${g.id}')">Settings</button>`
+                  : isMember
+                    ? `<button class="mini-btn soft" onclick="viewMembers('${g.id}')">Members</button>`
+                    : `<button class="mini-btn red" onclick="joinGroup('${g.id}')">Join</button>`
+                }
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadGroups(){
+      const user = currentUser || await requireUser();
+      if(!user) return;
+
+      const [{ data: groups, error: groupsError }, { data: members, error: membersError }] = await Promise.all([
+        supabase
+          .from("groups")
+          .select("id,name,description,category,privacy,group_image,cover_url,created_by,created_at")
+          .order("created_at", { ascending:false }),
+        supabase
+          .from("group_members")
+          .select("id,group_id,user_id,role,created_at")
+      ]);
+
+      if(groupsError) throw groupsError;
+      if(membersError) throw membersError;
+
+      allGroups = (groups || []).map(g => ({
+        ...g,
+        cover_url: g.cover_url || g.group_image || ""
+      }));
+      memberships = (members || []).filter(m => m.user_id === user.id || true);
+      renderGroups();
+    }
+
+    async function joinGroup(groupId){
+      try{
+        const user = currentUser || await requireUser();
+        if(!user) return;
+
+        const { data: existing } = await supabase
+          .from("group_members")
+          .select("id")
+          .eq("group_id", groupId)
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if(existing){
+          showNotice("You are already in this group.", "info");
+          return;
+        }
+
+        const { error } = await supabase.from("group_members").insert({
+          group_id: groupId,
+          user_id: user.id,
+          role: "member"
+        });
+        if(error) throw error;
+
+        showNotice("Joined group successfully.", "success");
+        await loadGroups();
+      }catch(error){
+        showNotice(error.message || "Could not join group.", "error");
+      }
+    }
+
+    function openGroup(id){ location.href = `group-view.html?id=${id}`; }
+    function viewMembers(id){ location.href = `group-members.html?id=${id}`; }
+    function openSettings(id){ location.href = `group-settings.html?id=${id}`; }
+
+    document.getElementById("createGroupBtn").addEventListener("click", () => location.href = "create-group.html");
+    document.getElementById("discoverBtn").addEventListener("click", () => {
+      activeTab = "suggested";
+      history.replaceState({}, "", "groups.html?tab=suggested");
+      renderGroups();
+    });
+    document.getElementById("refreshBtn").addEventListener("click", async () => {
+      try{
+        await loadGroups();
+        showNotice("Groups refreshed.", "success");
+      }catch(error){
+        showNotice(error.message || "Could not refresh groups.", "error");
+      }
+    });
+
+    searchInput.addEventListener("input", renderGroups);
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        activeTab = tab.dataset.tab;
+        history.replaceState({}, "", `groups.html?tab=${activeTab}`);
+        renderGroups();
+      });
+    });
+
+    window.openGroup = openGroup;
+    window.viewMembers = viewMembers;
+    window.openSettings = openSettings;
+    window.joinGroup = joinGroup;
+
+    (async function init(){
+      try{
+        await requireUser();
+        await loadGroups();
+      }catch(error){
+        showNotice(error.message || "Could not load groups page.", "error");
+      }
+    })();
+  </script>
+</body>
+</html>

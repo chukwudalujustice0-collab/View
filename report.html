@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Contact Us | View</title>
-  <meta name="description" content="Contact View by Ceetify for support, account help, reports, partnerships, and general enquiries." />
+  <title>Report a Problem | View</title>
+  <meta name="description" content="Report abuse, scams, fake accounts, copyright complaints, technical issues, and other problems on View by Ceetify." />
   <meta name="theme-color" content="#0f172a" />
   <link rel="icon" href="/favicon.ico" />
 
@@ -20,11 +20,11 @@
       --blue:#3b82f6;
       --cyan:#22d3ee;
       --red:#ef4444;
+      --red2:#dc2626;
       --green:#22c55e;
       --amber:#f59e0b;
       --shadow:0 20px 50px rgba(0,0,0,0.35);
       --radius:24px;
-      --radius-sm:18px;
       --max:1120px;
     }
 
@@ -37,7 +37,7 @@
       line-height:1.65;
       min-height:100vh;
       background:
-        radial-gradient(circle at top left, rgba(34,211,238,.10), transparent 28%),
+        radial-gradient(circle at top left, rgba(239,68,68,.10), transparent 28%),
         radial-gradient(circle at top right, rgba(59,130,246,.12), transparent 25%),
         linear-gradient(180deg,#07111f 0%,#081322 38%,#0b1628 100%);
       overflow-x:hidden;
@@ -142,11 +142,11 @@
       width:min(100% - 24px, var(--max));
       margin:34px auto 22px;
       display:grid;
-      grid-template-columns:1.15fr .85fr;
+      grid-template-columns:1.14fr .86fr;
       gap:22px;
     }
 
-    .hero-card,.summary-card,.card,.faq-card,.form-card,.contact-card{
+    .hero-card,.summary-card,.form-card,.info-card,.contact-card{
       background:linear-gradient(180deg,var(--card),var(--card2));
       border:1px solid var(--line);
       border-radius:var(--radius);
@@ -168,7 +168,7 @@
       right:-85px;
       top:-85px;
       border-radius:50%;
-      background:radial-gradient(circle, rgba(34,197,94,.14), transparent 70%);
+      background:radial-gradient(circle, rgba(245,158,11,.16), transparent 70%);
       pointer-events:none;
     }
 
@@ -178,15 +178,15 @@
       gap:8px;
       padding:8px 12px;
       border-radius:999px;
-      border:1px solid rgba(34,197,94,.22);
-      background:rgba(34,197,94,.08);
-      color:#d9ffe7;
+      border:1px solid rgba(245,158,11,.22);
+      background:rgba(245,158,11,.08);
+      color:#ffe6b8;
       font-size:.86rem;
       margin-bottom:14px;
     }
 
     .hero h2{
-      font-size:clamp(2rem, 4vw, 3.1rem);
+      font-size:clamp(2rem, 4vw, 3rem);
       line-height:1.02;
       margin-bottom:14px;
       letter-spacing:-.03em;
@@ -245,55 +245,6 @@
       font-size:.92rem;
     }
 
-    .section-wrap{
-      width:min(100% - 24px, var(--max));
-      margin:0 auto 20px;
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0,1fr));
-      gap:18px;
-    }
-
-    .card{
-      padding:22px;
-    }
-
-    .card h3{
-      font-size:1.08rem;
-      margin-bottom:8px;
-    }
-
-    .card p{
-      color:var(--muted);
-      font-size:.95rem;
-    }
-
-    .badge{
-      display:inline-flex;
-      padding:7px 10px;
-      border-radius:999px;
-      font-size:.8rem;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.05);
-      margin-bottom:10px;
-    }
-
-    .action{
-      display:inline-flex;
-      margin-top:16px;
-      padding:11px 15px;
-      border-radius:14px;
-      background:rgba(59,130,246,.12);
-      border:1px solid rgba(59,130,246,.18);
-      color:#dceeff;
-      text-decoration:none;
-      font-weight:700;
-    }
-
-    .action:hover{
-      text-decoration:none;
-      transform:translateY(-1px);
-    }
-
     .main{
       width:min(100% - 24px, var(--max));
       margin:0 auto 42px;
@@ -303,11 +254,11 @@
       align-items:start;
     }
 
-    .form-card,.faq-card{
+    .form-card,.info-card{
       padding:24px;
     }
 
-    .form-card h3,.faq-card h3{
+    .form-card h3,.info-card h3{
       font-size:1.3rem;
       margin-bottom:8px;
     }
@@ -315,6 +266,27 @@
     .subtext{
       color:var(--muted);
       margin-bottom:18px;
+    }
+
+    .notice{
+      padding:16px 18px;
+      border-radius:18px;
+      margin-bottom:18px;
+      font-size:.94rem;
+    }
+
+    .notice.warn{
+      background:rgba(245,158,11,.08);
+      border:1px solid rgba(245,158,11,.18);
+      color:#ffe6b8;
+    }
+
+    .notice.good{
+      background:rgba(34,197,94,.08);
+      border:1px solid rgba(34,197,94,.18);
+      color:#dafce7;
+      display:none;
+      margin-top:18px;
     }
 
     .grid-2{
@@ -357,8 +329,8 @@
     .field input:focus,
     .field select:focus,
     .field textarea:focus{
-      border-color:rgba(34,211,238,.45);
-      box-shadow:0 0 0 4px rgba(34,211,238,.10);
+      border-color:rgba(59,130,246,.45);
+      box-shadow:0 0 0 4px rgba(59,130,246,.10);
     }
 
     .field textarea{
@@ -370,9 +342,13 @@
       display:flex;
       gap:10px;
       align-items:flex-start;
-      margin:6px 0 18px;
       color:var(--muted);
-      font-size:.92rem;
+      font-size:.93rem;
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.07);
+      margin:8px 0 18px;
     }
 
     .check input{
@@ -415,25 +391,25 @@
       opacity:.97;
     }
 
-    .faq-list{
+    .list{
       display:grid;
       gap:12px;
-      margin-top:10px;
+      margin-top:12px;
     }
 
-    .faq-item{
+    .list-item{
       padding:16px;
       border-radius:18px;
       background:rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.08);
     }
 
-    .faq-item h4{
+    .list-item h4{
       font-size:1rem;
       margin-bottom:6px;
     }
 
-    .faq-item p{
+    .list-item p{
       color:var(--muted);
       font-size:.93rem;
     }
@@ -464,28 +440,6 @@
       justify-content:flex-end;
     }
 
-    .notice{
-      margin-top:16px;
-      padding:14px 16px;
-      border-radius:16px;
-      font-size:.92rem;
-      display:none;
-    }
-
-    .notice.success{
-      display:block;
-      color:#dafce7;
-      background:rgba(34,197,94,.08);
-      border:1px solid rgba(34,197,94,.18);
-    }
-
-    .notice.error{
-      display:block;
-      color:#ffd7d7;
-      background:rgba(239,68,68,.08);
-      border:1px solid rgba(239,68,68,.18);
-    }
-
     footer{
       width:min(100% - 24px, var(--max));
       margin:0 auto 40px;
@@ -499,11 +453,6 @@
       .hero,.main,.contact-card{
         grid-template-columns:1fr;
       }
-
-      .section-wrap{
-        grid-template-columns:1fr 1fr;
-      }
-
       .contact-actions{
         justify-content:flex-start;
       }
@@ -520,19 +469,15 @@
         justify-content:flex-start;
       }
 
-      .section-wrap{
-        grid-template-columns:1fr;
-      }
-
       .grid-2{
         grid-template-columns:1fr;
       }
 
-      .hero-card,.summary-card,.card,.faq-card,.form-card,.contact-card{
+      .hero-card,.summary-card,.form-card,.info-card,.contact-card{
         border-radius:20px;
       }
 
-      .hero-card,.summary-card,.card,.faq-card,.form-card{
+      .hero-card,.summary-card,.form-card,.info-card{
         padding:20px;
       }
 
@@ -551,220 +496,192 @@
         <div class="brand">
           <div class="brand-badge">V</div>
           <div class="brand-text">
-            <h1>Contact View</h1>
-            <p>View by Ceetify — Support, reports, feedback, and partnerships</p>
+            <h1>Report on View</h1>
+            <p>View by Ceetify — Report abuse, scams, fake accounts, and other issues</p>
           </div>
         </div>
 
         <nav class="nav">
           <a href="/index.html">Home</a>
-          <a href="/about.html">About</a>
+          <a href="/community-guidelines.html">Guidelines</a>
           <a href="/privacy.html">Privacy</a>
-          <a href="/terms.html">Terms</a>
+          <a href="/contact.html">Contact</a>
         </nav>
       </div>
     </header>
 
     <section class="hero">
       <div class="hero-card">
-        <div class="eyebrow">Support • Reports • Business Enquiries</div>
-        <h2>We’re here to help you with View.</h2>
+        <div class="eyebrow">Safety • Reports • Platform Integrity</div>
+        <h2>Report harmful content, accounts, or technical problems on View.</h2>
         <p class="lead">
-          Contact us for account support, login issues, abuse reports, content
-          complaints, feedback, technical problems, partnerships, or general
-          questions about the View platform.
+          Use this page to report abuse, harassment, impersonation, scams, spam,
+          copyright concerns, privacy violations, fake accounts, or technical issues.
+          Clear reports help the View team review faster and act more accurately.
         </p>
 
         <div class="meta">
-          <span><strong>Email:</strong> info.ceeticegroup@gmail.com</span>
+          <span><strong>Report types:</strong> Safety, scams, copyright, bugs</span>
+          <span><strong>Support:</strong> info.ceeticegroup@gmail.com</span>
           <span><strong>Platform:</strong> View by Ceetify</span>
-          <span><strong>Support type:</strong> User, business, safety</span>
         </div>
       </div>
 
       <aside class="summary-card">
-        <h3>Contact reasons</h3>
+        <h3>What you can report</h3>
 
         <div class="summary-item">
-          <strong>Account support</strong>
-          <span>Login issues, password reset, account access, profile problems.</span>
+          <strong>Abuse and harassment</strong>
+          <span>Bullying, threats, targeted abuse, stalking, or repeated harmful behavior.</span>
         </div>
 
         <div class="summary-item">
-          <strong>Safety reports</strong>
-          <span>Harassment, impersonation, scams, abuse, or harmful content.</span>
+          <strong>Scams and fake accounts</strong>
+          <span>Impersonation, fake giveaways, phishing, fraud, suspicious links, or deceptive activity.</span>
         </div>
 
         <div class="summary-item">
-          <strong>Technical help</strong>
-          <span>Bugs, upload errors, connection issues, or broken features.</span>
+          <strong>Content concerns</strong>
+          <span>Privacy violations, stolen content, misleading identity, or inappropriate uploads.</span>
         </div>
 
         <div class="summary-item">
-          <strong>Business enquiries</strong>
-          <span>Brand partnerships, integrations, creator tools, and collaboration.</span>
+          <strong>Technical problems</strong>
+          <span>Broken pages, upload errors, login issues, or malfunctioning features.</span>
         </div>
       </aside>
     </section>
 
-    <section class="section-wrap">
-      <div class="card">
-        <div class="badge">General Support</div>
-        <h3>Need help with your account?</h3>
-        <p>
-          Contact us for login help, profile issues, app errors, password problems,
-          or general questions about using View.
-        </p>
-        <a class="action" href="mailto:info.ceeticegroup@gmail.com?subject=View%20Support%20Request">Email support</a>
-      </div>
-
-      <div class="card">
-        <div class="badge">Safety & Reports</div>
-        <h3>Report abuse or harmful behavior</h3>
-        <p>
-          Report harassment, fake accounts, impersonation, fraud, dangerous content,
-          privacy violations, or repeated spam.
-        </p>
-        <a class="action" href="mailto:info.ceeticegroup@gmail.com?subject=View%20Safety%20Report">Send safety report</a>
-      </div>
-
-      <div class="card">
-        <div class="badge">Business</div>
-        <h3>Discuss partnerships or integrations</h3>
-        <p>
-          Reach out for business partnerships, creator collaborations, media
-          opportunities, or platform integration requests.
-        </p>
-        <a class="action" href="mailto:info.ceeticegroup@gmail.com?subject=View%20Business%20Enquiry">Contact business team</a>
-      </div>
-    </section>
-
     <section class="main">
       <div class="form-card">
-        <h3>Send us a message</h3>
+        <h3>Submit a report</h3>
         <p class="subtext">
-          This form opens the user’s mail app with the message details already arranged.
+          This form prepares an email draft so you can send a structured report to the View support team.
         </p>
 
-        <form id="contactForm">
+        <div class="notice warn">
+          Give specific details such as usernames, profile links, post links, dates, or screenshots where possible.
+        </div>
+
+        <form id="reportForm">
           <div class="grid-2">
             <div class="field">
-              <label for="fullName">Full name</label>
-              <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" />
+              <label for="fullName">Your full name</label>
+              <input type="text" id="fullName" placeholder="Enter your full name" />
             </div>
 
             <div class="field">
-              <label for="email">Email address</label>
-              <input type="email" id="email" name="email" placeholder="Enter your email address" />
+              <label for="email">Your email address</label>
+              <input type="email" id="email" placeholder="Enter your email address" />
             </div>
           </div>
 
           <div class="grid-2">
             <div class="field">
-              <label for="username">View username</label>
-              <input type="text" id="username" name="username" placeholder="@yourusername" />
+              <label for="username">Your View username</label>
+              <input type="text" id="username" placeholder="@yourusername" />
             </div>
 
             <div class="field">
-              <label for="category">Category</label>
-              <select id="category" name="category">
-                <option value="General Support">General Support</option>
-                <option value="Account Access">Account Access</option>
-                <option value="Technical Issue">Technical Issue</option>
-                <option value="Safety Report">Safety Report</option>
-                <option value="Copyright Complaint">Copyright Complaint</option>
-                <option value="Business Enquiry">Business Enquiry</option>
-                <option value="Feedback">Feedback</option>
+              <label for="reportType">Report type</label>
+              <select id="reportType">
+                <option value="Harassment or bullying">Harassment or bullying</option>
+                <option value="Fake account or impersonation">Fake account or impersonation</option>
+                <option value="Scam or fraud">Scam or fraud</option>
+                <option value="Spam or misleading content">Spam or misleading content</option>
+                <option value="Privacy violation">Privacy violation</option>
+                <option value="Copyright complaint">Copyright complaint</option>
+                <option value="Technical problem">Technical problem</option>
+                <option value="Other">Other</option>
               </select>
             </div>
           </div>
 
-          <div class="field">
-            <label for="subject">Subject</label>
-            <input type="text" id="subject" name="subject" placeholder="Briefly describe your issue" />
+          <div class="grid-2">
+            <div class="field">
+              <label for="targetUsername">Reported account or username</label>
+              <input type="text" id="targetUsername" placeholder="@reporteduser or page/account name" />
+            </div>
+
+            <div class="field">
+              <label for="contentLink">Content or profile link</label>
+              <input type="text" id="contentLink" placeholder="Paste the post, profile, or page link if available" />
+            </div>
           </div>
 
           <div class="field">
-            <label for="message">Message</label>
-            <textarea id="message" name="message" placeholder="Write your message clearly. Include usernames, links, dates, or issue details where useful."></textarea>
+            <label for="subject">Report subject</label>
+            <input type="text" id="subject" placeholder="Brief summary of the issue" />
+          </div>
+
+          <div class="field">
+            <label for="details">Full report details</label>
+            <textarea id="details" placeholder="Describe what happened clearly. Include when it happened, who was involved, what content is affected, and what action you want reviewed."></textarea>
           </div>
 
           <label class="check">
             <input type="checkbox" id="consent" />
-            <span>I understand that this form prepares an email draft in my mail app and that I should review it before sending.</span>
+            <span>I confirm that the information in this report is accurate to the best of my knowledge and that I understand false or abusive reports may affect review priority.</span>
           </label>
 
           <div class="btn-row">
-            <button type="submit" class="btn primary">Open Email Draft</button>
-            <a href="mailto:info.ceeticegroup@gmail.com" class="btn secondary">Direct Email</a>
+            <button type="submit" class="btn primary">Open Report Email</button>
+            <a href="mailto:info.ceeticegroup@gmail.com?subject=View%20Report" class="btn secondary">Direct Email</a>
           </div>
 
-          <div id="formNotice" class="notice"></div>
+          <div id="successBox" class="notice good">
+            Opening your email app with a prepared report...
+          </div>
         </form>
       </div>
 
-      <div class="faq-card">
-        <h3>Frequently asked questions</h3>
+      <aside class="info-card">
+        <h3>Tips for a stronger report</h3>
         <p class="subtext">
-          Common support topics for users, creators, and partners.
+          Clear and complete reports are easier to review.
         </p>
 
-        <div class="faq-list">
-          <div class="faq-item">
-            <h4>I cannot log in to my account. What should I do?</h4>
-            <p>
-              Use the forgot password option on the login page first. If the issue
-              continues, contact support and include your username and account email.
-            </p>
+        <div class="list">
+          <div class="list-item">
+            <h4>Include usernames or links</h4>
+            <p>If you know the exact account, profile, or post involved, include it.</p>
           </div>
 
-          <div class="faq-item">
-            <h4>How do I report a fake account or scam?</h4>
-            <p>
-              Send a safety report with the username, profile link, screenshots,
-              and a short explanation of what happened.
-            </p>
+          <div class="list-item">
+            <h4>State what happened clearly</h4>
+            <p>Explain the issue in simple words, including dates or repeated behavior if relevant.</p>
           </div>
 
-          <div class="faq-item">
-            <h4>Can I request removal of content that affects me?</h4>
-            <p>
-              Yes. Contact support with the exact content link, account details,
-              and why the content should be reviewed.
-            </p>
+          <div class="list-item">
+            <h4>Describe the harm or concern</h4>
+            <p>Say whether the issue involves abuse, fraud, impersonation, privacy, or a broken feature.</p>
           </div>
 
-          <div class="faq-item">
-            <h4>How do I ask about partnerships or integration?</h4>
-            <p>
-              Choose Business Enquiry in the form and provide your brand, goal,
-              and the type of partnership you want to discuss.
-            </p>
+          <div class="list-item">
+            <h4>Use one report per issue when possible</h4>
+            <p>Separate unrelated issues so they can be handled more accurately.</p>
           </div>
 
-          <div class="faq-item">
-            <h4>How fast will support respond?</h4>
-            <p>
-              Response time may vary depending on message volume and the type of
-              issue, especially for safety or legal matters.
-            </p>
+          <div class="list-item">
+            <h4>For technical issues</h4>
+            <p>Include device type, browser, page name, and what happened before the issue appeared.</p>
           </div>
         </div>
-      </div>
+      </aside>
     </section>
 
     <section class="contact-card">
       <div>
-        <h3>Prefer direct contact?</h3>
+        <h3>Need another safety or support option?</h3>
         <p>
-          You can email us directly for support, moderation, reports, or business
-          communication regarding the View platform.
+          You can also contact the View team directly for moderation concerns,
+          account problems, legal notices, or other platform issues.
         </p>
       </div>
 
       <div class="contact-actions">
-        <a class="btn primary" href="mailto:info.ceeticegroup@gmail.com">Email Support</a>
-        <a class="btn secondary" href="/community-guidelines.html">Community Guidelines</a>
+        <a class="btn secondary" href="/contact.html">Contact Support</a>
+        <a class="btn secondary" href="/community-guidelines.html">Read Guidelines</a>
       </div>
     </section>
 
@@ -775,62 +692,65 @@
 
   <script>
     (function () {
-      const form = document.getElementById('contactForm');
-      const notice = document.getElementById('formNotice');
+      const form = document.getElementById('reportForm');
+      const successBox = document.getElementById('successBox');
 
-      function showNotice(type, text) {
-        notice.className = 'notice ' + type;
-        notice.textContent = text;
-      }
-
-      function clean(value) {
-        return (value || '').trim();
+      function val(id) {
+        return (document.getElementById(id).value || '').trim();
       }
 
       form.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const fullName = clean(document.getElementById('fullName').value);
-        const email = clean(document.getElementById('email').value);
-        const username = clean(document.getElementById('username').value);
-        const category = clean(document.getElementById('category').value);
-        const subject = clean(document.getElementById('subject').value);
-        const message = clean(document.getElementById('message').value);
+        const fullName = val('fullName');
+        const email = val('email');
+        const username = val('username');
+        const reportType = val('reportType');
+        const targetUsername = val('targetUsername');
+        const contentLink = val('contentLink');
+        const subject = val('subject');
+        const details = val('details');
         const consent = document.getElementById('consent').checked;
 
+        if (!subject || !details) {
+          alert('Please enter both a report subject and full report details.');
+          return;
+        }
+
         if (!consent) {
-          showNotice('error', 'Please confirm the email draft checkbox before continuing.');
+          alert('Please confirm the report accuracy checkbox before continuing.');
           return;
         }
 
-        if (!subject || !message) {
-          showNotice('error', 'Please enter at least a subject and message.');
-          return;
-        }
+        const finalSubject = '[View Report] ' + (reportType || 'Issue') + ' - ' + subject;
 
-        const finalSubject = `[View] ${category} - ${subject}`;
-
-        const bodyLines = [
+        const body = [
           'Hello View Support,',
           '',
-          'I need help with the following:',
+          'I want to report an issue on View.',
           '',
-          message,
+          'Report details:',
+          'Report type: ' + (reportType || 'Not provided'),
+          'Reported account/username: ' + (targetUsername || 'Not provided'),
+          'Content/profile link: ' + (contentLink || 'Not provided'),
           '',
-          '----- Sender Details -----',
+          'Description:',
+          details || 'No description provided.',
+          '',
+          'Reporter details:',
           'Full name: ' + (fullName || 'Not provided'),
           'Email: ' + (email || 'Not provided'),
           'View username: ' + (username || 'Not provided'),
-          'Category: ' + (category || 'Not provided'),
           '',
-          'Sent from: view.ceetice.com/contact.html'
-        ];
+          'Sent from: view.ceetice.com/report.html'
+        ].join('\n');
+
+        successBox.style.display = 'block';
 
         const mailto = 'mailto:info.ceeticegroup@gmail.com'
           + '?subject=' + encodeURIComponent(finalSubject)
-          + '&body=' + encodeURIComponent(bodyLines.join('\n'));
+          + '&body=' + encodeURIComponent(body);
 
-        showNotice('success', 'Opening your email app with a prepared draft...');
         window.location.href = mailto;
       });
     })();
