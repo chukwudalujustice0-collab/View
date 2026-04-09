@@ -1,297 +1,933 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="auth-loading">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Wallet | View</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0b5ed7" />
+  <meta name="theme-color" content="#0b1454" />
 
   <style>
+    html.auth-loading, html.auth-loading body{
+      visibility:hidden;
+    }
+
     :root{
-      --primary:#0b5ed7;
-      --primary-dark:#083b8a;
-      --bg:#f5f8ff;
-      --card:#ffffff;
-      --text:#1f1f1f;
-      --soft:#6b7280;
-      --border:#e5e7eb;
-      --shadow:0 10px 30px rgba(0,0,0,.06);
-      --radius:18px;
-      --success:#16a34a;
-      --danger:#dc2626;
+      --bg:#08114c;
+      --bg2:#0b1454;
+      --bg3:#0a1b6f;
+      --panel:#ffffff;
+      --panel2:#f8fbff;
+      --text:#111827;
+      --muted:#667085;
+      --line:#dbe4ff;
+      --white:#ffffff;
+      --primary:#2563eb;
+      --primary2:#4f46e5;
+      --red:#ef4444;
+      --red2:#ff5f7a;
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --shadow:0 16px 40px rgba(8,17,76,.14);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
     }
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
-    a{text-decoration:none;color:inherit}
-    button,input{font:inherit}
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+      color:var(--text);
+    }
+
+    body{
+      padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,input,select{
+      font:inherit;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      background:none;
+      cursor:pointer;
+    }
+
+    .wrap{
+      width:min(100%, 860px);
+      margin:0 auto;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.55;
+      box-shadow:var(--shadow-soft);
+    }
+    .notice.show{display:block}
+    .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+
     .topbar{
-      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
-      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;
-      align-items:center;gap:12px;flex-wrap:wrap
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
     }
-    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
-    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
-    .page-title p{font-size:12px;color:var(--soft)}
-    .icon-btn,.primary-btn,.outline-btn,.mini-btn,.amount-btn{
-      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;
-      justify-content:center;cursor:pointer;transition:.2s ease
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
     }
-    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
-    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
-    .primary-btn:hover{background:var(--primary-dark)}
-    .outline-btn,.mini-btn,.amount-btn{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
-    .mini-btn{min-height:36px;border-radius:999px;font-size:12px;padding:0 12px}
-    .amount-btn{min-height:38px;border-radius:999px;font-size:13px}
-    .container{
-      max-width:1120px;margin:0 auto;padding:18px 16px 0;display:grid;grid-template-columns:1.05fr .85fr;gap:20px
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+      box-shadow:var(--shadow-soft);
+      font-size:18px;
+      color:#111827;
     }
-    .left-column,.right-column{display:grid;gap:18px;align-content:start}
-    .card{
-      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px
+
+    .brand-box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
     }
-    .section-head{
-      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap
+
+    .brand-logo{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      object-fit:cover;
+      box-shadow:0 8px 20px rgba(37,99,235,.15);
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
     }
-    .section-head h2,.section-head h3{font-size:20px;margin-bottom:4px}
-    .section-head p{font-size:13px;color:var(--soft);line-height:1.5}
-    .balance-card{
-      background:linear-gradient(135deg,#0b5ed7,#083b8a);
-      color:#fff;border:none;
+
+    .title-box{
+      min-width:0;
+      flex:1;
     }
-    .balance-card .section-head h2,.balance-card .section-head p{color:#fff}
-    .balance-big{font-size:38px;font-weight:700;margin-bottom:6px}
-    .balance-sub{font-size:13px;opacity:.86;margin-bottom:18px}
-    .wallet-actions{display:flex;gap:10px;flex-wrap:wrap}
-    .wallet-actions .outline-btn{
-      background:rgba(255,255,255,.12);
-      color:#fff;border:1px solid rgba(255,255,255,.16)
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#0b1454;
     }
-    .amount-input{
-      width:100%;height:48px;border:1px solid var(--border);border-radius:14px;padding:0 14px;font-size:14px
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
-    .amount-input:focus{outline:none;border-color:var(--primary)}
-    .amount-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .transaction-list{display:grid;gap:12px}
-    .transaction-card{
-      border:1px solid var(--border);border-radius:16px;background:#fff;padding:14px;
-      display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap
+
+    .section{
+      background:rgba(255,255,255,.95);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:14px;
     }
-    .transaction-left{display:flex;align-items:center;gap:12px;min-width:0}
-    .icon-box{
-      width:46px;height:46px;border-radius:14px;background:rgba(11,94,215,.08);color:var(--primary);
-      display:grid;place-items:center;font-weight:700;flex-shrink:0
+
+    .section-body{
+      padding:14px;
+      display:grid;
+      gap:14px;
     }
-    .transaction-info h4{font-size:15px;margin-bottom:3px}
-    .transaction-info p{font-size:12px;color:var(--soft)}
-    .amount{font-weight:700}
-    .credit{color:var(--success)}
-    .debit{color:var(--danger)}
-    .summary-grid{display:grid;gap:12px}
-    .summary-item{
-      display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border);font-size:14px
+
+    .hero{
+      display:grid;
+      gap:12px;
+      padding:18px;
+      border-radius:18px;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.16), transparent 30%),
+        linear-gradient(135deg,#0b1454,#2563eb,#4f46e5,#ef4444);
+      color:#fff;
+      box-shadow:0 14px 34px rgba(37,99,235,.18);
     }
-    .summary-item:first-child{border-top:none;padding-top:0}
-    .summary-item span{color:var(--soft)}
-    .tip-box{
-      border:1px dashed rgba(11,94,215,.18);border-radius:16px;background:#f8fbff;padding:16px
+
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
     }
-    .tip-box h4{font-size:15px;margin-bottom:6px}
-    .tip-box p{font-size:13px;color:var(--soft);line-height:1.6;margin-bottom:12px}
-    .bottom-nav{
-      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
-      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
+
+    .hero-title{
+      font-size:15px;
+      font-weight:700;
+      opacity:.9;
     }
-    .bottom-link{
-      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:4px;font-size:11px;color:var(--soft)
+
+    .hero-balance{
+      font-size:32px;
+      font-weight:800;
+      line-height:1;
+      margin-top:4px;
     }
-    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
-    @media(max-width:960px){.container{grid-template-columns:1fr}}
-    @media(max-width:760px){.bottom-nav{display:grid}}
-    @media(max-width:640px){
-      .container{padding:14px 12px 0}
-      .topbar-right .outline-btn{display:none}
-      .wallet-actions{flex-direction:column}
-      .wallet-actions button{width:100%}
+
+    .hero-sub{
+      font-size:12px;
+      opacity:.88;
+      line-height:1.5;
+    }
+
+    .hero-pills{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .hero-pill{
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.2);
+      color:#fff;
+      font-size:11px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      backdrop-filter:blur(10px);
+    }
+
+    .mini-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .mini-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:8px;
+    }
+
+    .mini-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .mini-value{
+      font-size:22px;
+      font-weight:800;
+      color:#0b1454;
+      line-height:1.1;
+    }
+
+    .mini-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .section-title{
+      font-size:15px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .section-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      flex:1;
+      min-height:48px;
+      padding:0 16px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111827;
+      font-size:14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.success{
+      background:linear-gradient(135deg,#059669,#10b981);
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.warning{
+      background:linear-gradient(135deg,#f59e0b,#f97316);
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.ghost{
+      background:#fff;
+      border:1px solid var(--line);
+      color:#111827;
+    }
+
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    .label{
+      font-size:13px;
+      font-weight:700;
+      color:#374151;
+    }
+
+    .select{
+      width:100%;
+      min-height:46px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:0 14px;
+      outline:none;
+    }
+
+    .select:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 3px rgba(37,99,235,.08);
+    }
+
+    .quick-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+    }
+
+    .quick-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .quick-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .quick-icon{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,#eff6ff,#eef2ff);
+      font-size:20px;
+    }
+
+    .quick-title{
+      font-size:15px;
+      font-weight:800;
+      color:#0b1454;
+      margin-bottom:4px;
+    }
+
+    .quick-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .tx-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .tx-item{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .tx-left{
+      min-width:0;
+      flex:1;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .tx-icon{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      background:#f8fbff;
+      border:1px solid var(--line);
+    }
+
+    .tx-title{
+      font-size:13px;
+      font-weight:800;
+      color:#111827;
+      margin-bottom:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .tx-meta{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.4;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .tx-amount{
+      font-size:14px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .tx-amount.credit{color:#059669}
+    .tx-amount.debit{color:#dc2626}
+
+    .empty{
+      border:1px dashed var(--line);
+      border-radius:18px;
+      padding:18px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+      background:#fff;
+    }
+
+    @media (min-width:760px){
+      .quick-grid{
+        grid-template-columns:repeat(4,1fr);
+      }
     }
   </style>
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
+
+    async function protectPage(nextPage) {
+      try {
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if (!user) {
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      } catch (e) {
+        document.documentElement.classList.remove("auth-loading");
+        location.replace("login.html");
+        return null;
+      }
+    }
+  </script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="icon-btn" onclick="window.location.href='dashboard.html'">←</button>
-      <div class="page-title">
-        <h1>Wallet</h1>
-        <p>Manage funding, publishing charges, and transaction history</p>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="dashboard.html" aria-label="Back">←</a>
+
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+          <div class="title-box">
+            <div class="title">Wallet</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="topbar-right">
-      <button class="outline-btn" onclick="window.location.href='subscriptions.html'">Subscriptions</button>
-    </div>
-  </header>
+    </header>
 
-  <main class="container">
-    <div class="left-column">
-      <section class="card balance-card">
-        <div class="section-head">
-          <div>
-            <h2>Available Balance</h2>
-            <p>Ready for cross-posting and premium tools</p>
+    <section class="section">
+      <div class="section-body">
+        <div class="hero">
+          <div class="hero-top">
+            <div>
+              <div class="hero-title">Available Wallet Balance</div>
+              <div class="hero-balance" id="walletBalanceMain">₦0.00</div>
+            </div>
+            <div class="hero-pills">
+              <div class="hero-pill" id="currentPlanPill">Plan: --</div>
+              <div class="hero-pill" id="currentCreditPill">AI Credits: --</div>
+            </div>
+          </div>
+          <div class="hero-sub">Use your wallet to pay for AI credit top-ups and subscriptions inside View.</div>
+        </div>
+
+        <div class="mini-grid">
+          <div class="mini-card">
+            <div class="mini-label">Current Plan</div>
+            <div class="mini-value" id="planValue">Free</div>
+            <div class="mini-sub">Your active subscription package.</div>
+          </div>
+
+          <div class="mini-card">
+            <div class="mini-label">AI Credits</div>
+            <div class="mini-value" id="creditValue">0</div>
+            <div class="mini-sub">Credits available for AI text, image, and other premium actions.</div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div class="balance-big" data-wallet-balance>₦12,450</div>
-        <div class="balance-sub">Current available wallet balance</div>
-
-        <div class="wallet-actions">
-          <button class="primary-btn" data-fund-wallet>Fund Wallet</button>
-          <button class="outline-btn" data-withdraw-wallet>Withdraw</button>
+    <section class="section">
+      <div class="section-body">
+        <div>
+          <div class="section-title">Quick actions</div>
+          <div class="section-sub">Move quickly between wallet, AI, funding and subscription tools.</div>
         </div>
-      </section>
 
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <h2>Quick Amount</h2>
-            <p>Choose or enter the amount you want to use.</p>
+        <div class="quick-grid">
+          <div class="quick-card">
+            <div class="quick-top">
+              <div class="quick-icon">💰</div>
+            </div>
+            <div class="quick-title">Fund Wallet</div>
+            <div class="quick-sub">Add money to your wallet using Paystack or Flutterwave.</div>
+            <a class="btn primary" href="fund-wallet.html">Fund Wallet</a>
+          </div>
+
+          <div class="quick-card">
+            <div class="quick-top">
+              <div class="quick-icon">✨</div>
+            </div>
+            <div class="quick-title">Buy AI Credits</div>
+            <div class="quick-sub">Top up your AI credits instantly from wallet balance.</div>
+            <a class="btn success" href="ai-upgrade.html?from=wallet">Top Up Credits</a>
+          </div>
+
+          <div class="quick-card">
+            <div class="quick-top">
+              <div class="quick-icon">👑</div>
+            </div>
+            <div class="quick-title">Upgrade Plan</div>
+            <div class="quick-sub">Move from Free to Plus, Pro, or Enterprise.</div>
+            <a class="btn ghost" href="subscription.html?from=wallet">Upgrade Subscription</a>
+          </div>
+
+          <div class="quick-card">
+            <div class="quick-top">
+              <div class="quick-icon">📜</div>
+            </div>
+            <div class="quick-title">Wallet History</div>
+            <div class="quick-sub">View full wallet transactions and funding history.</div>
+            <a class="btn ghost" href="wallet-history.html">Open History</a>
           </div>
         </div>
+      </div>
+    </section>
 
-        <input type="number" id="walletAmountInput" class="amount-input" placeholder="Enter amount" />
-
-        <div class="amount-row">
-          <button class="amount-btn" data-quick-amount="1000">₦1,000</button>
-          <button class="amount-btn" data-quick-amount="2500">₦2,500</button>
-          <button class="amount-btn" data-quick-amount="5000">₦5,000</button>
-          <button class="amount-btn" data-quick-amount="10000">₦10,000</button>
-          <button class="amount-btn" data-quick-amount="20000">₦20,000</button>
+    <section class="section">
+      <div class="section-body">
+        <div>
+          <div class="section-title">Pay for AI credits from wallet</div>
+          <div class="section-sub">Choose a pack and complete payment directly from your wallet balance.</div>
         </div>
-      </section>
 
-      <section class="card">
-        <div class="section-head">
+        <div class="field">
+          <label class="label" for="creditPackSelect">AI credit pack</label>
+          <select id="creditPackSelect" class="select">
+            <option value="">Select a pack</option>
+            <option value="50|1">50 Credits - ₦1</option>
+            <option value="200|3">200 Credits - ₦3</option>
+            <option value="1000|10">1000 Credits - ₦10</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button id="buyCreditsBtn" class="btn primary" type="button">Pay from Wallet</button>
+          <a class="btn ghost" href="ai-upgrade.html?from=wallet">More Options</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
           <div>
-            <h2>Recent Transactions</h2>
-            <p>Track wallet movement and publishing charges.</p>
+            <div class="section-title">Recent wallet transactions</div>
+            <div class="section-sub">Latest credits and debits from your View wallet.</div>
           </div>
+          <a class="btn ghost" href="wallet-history.html" style="flex:unset;min-width:150px">Wallet History</a>
         </div>
 
-        <div class="transaction-list">
-          <article class="transaction-card">
-            <div class="transaction-left">
-              <div class="icon-box">📥</div>
-              <div class="transaction-info">
-                <h4>Wallet Funding</h4>
-                <p>Today • 10:15 AM</p>
+        <div id="transactionList" class="tx-list">
+          <div class="empty">Loading transactions...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const walletBalanceMain = document.getElementById("walletBalanceMain");
+    const currentPlanPill = document.getElementById("currentPlanPill");
+    const currentCreditPill = document.getElementById("currentCreditPill");
+    const planValue = document.getElementById("planValue");
+    const creditValue = document.getElementById("creditValue");
+    const creditPackSelect = document.getElementById("creditPackSelect");
+    const buyCreditsBtn = document.getElementById("buyCreditsBtn");
+    const transactionList = document.getElementById("transactionList");
+
+    let currentUser = null;
+    let walletId = null;
+    let walletBalance = 0;
+    let currentPlan = "Free";
+    let currentCredits = 0;
+
+    function showNotice(message, type = "info", duration = 3200) {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      if (duration > 0) {
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, duration);
+      }
+    }
+
+    function formatNaira(value) {
+      return `₦${Number(value || 0).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`;
+    }
+
+    function updateWalletUi() {
+      walletBalanceMain.textContent = formatNaira(walletBalance);
+      currentPlanPill.textContent = `Plan: ${currentPlan}`;
+      currentCreditPill.textContent = `AI Credits: ${currentCredits}`;
+      planValue.textContent = currentPlan;
+      creditValue.textContent = currentCredits;
+    }
+
+    async function ensureWallet() {
+      const { data: row, error } = await supabaseClient
+        .from("wallets")
+        .select("id,balance")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (row) {
+        walletId = row.id;
+        walletBalance = Number(row.balance || 0);
+        return;
+      }
+
+      const { data: created, error: createErr } = await supabaseClient
+        .from("wallets")
+        .insert({
+          user_id: currentUser.id,
+          balance: 0,
+          currency: "NGN"
+        })
+        .select("id,balance")
+        .single();
+
+      if (createErr) throw createErr;
+
+      walletId = created.id;
+      walletBalance = Number(created.balance || 0);
+    }
+
+    async function ensureAiCredits() {
+      const { data: row, error } = await supabaseClient
+        .from("ai_credits")
+        .select("id,balance")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+
+      if (error) return;
+
+      if (row) {
+        currentCredits = Number(row.balance || 0);
+        return;
+      }
+
+      await supabaseClient
+        .from("ai_credits")
+        .insert({
+          user_id: currentUser.id,
+          balance: 0
+        });
+
+      currentCredits = 0;
+    }
+
+    async function loadPlan() {
+      currentPlan = "Free";
+
+      try {
+        const { data: sub } = await supabaseClient
+          .from("user_subscriptions")
+          .select("plan_name,status")
+          .eq("user_id", currentUser.id)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (sub?.plan_name) currentPlan = sub.plan_name;
+      } catch (_) {}
+    }
+
+    async function renderTransactions() {
+      try {
+        const { data, error } = await supabaseClient
+          .from("wallet_transactions")
+          .select("type,amount,status,description,reference,created_at")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: false })
+          .limit(8);
+
+        if (error) throw error;
+
+        if (!data || !data.length) {
+          transactionList.innerHTML = `<div class="empty">No wallet transaction yet.</div>`;
+          return;
+        }
+
+        transactionList.innerHTML = data.map(item => {
+          const isCredit = item.type === "credit";
+          const amountClass = isCredit ? "credit" : "debit";
+          const icon = isCredit ? "↗" : "↘";
+          const amountPrefix = isCredit ? "+" : "-";
+          const dateText = new Date(item.created_at).toLocaleString();
+
+          return `
+            <div class="tx-item">
+              <div class="tx-left">
+                <div class="tx-icon">${icon}</div>
+                <div style="min-width:0;flex:1">
+                  <div class="tx-title">${item.description || "Wallet transaction"}</div>
+                  <div class="tx-meta">${item.status || "success"} • ${dateText}${item.reference ? ` • ${item.reference}` : ""}</div>
+                </div>
               </div>
+              <div class="tx-amount ${amountClass}">${amountPrefix}${formatNaira(item.amount || 0)}</div>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-              <strong class="amount credit">+₦5,000</strong>
-              <button class="mini-btn" data-wallet-transaction-action="receipt">Receipt</button>
-            </div>
-          </article>
+          `;
+        }).join("");
+      } catch (error) {
+        transactionList.innerHTML = `<div class="empty">Could not load wallet transactions.</div>`;
+      }
+    }
 
-          <article class="transaction-card">
-            <div class="transaction-left">
-              <div class="icon-box">📤</div>
-              <div class="transaction-info">
-                <h4>Cross-post Charge</h4>
-                <p>Instagram + Facebook + View</p>
-              </div>
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-              <strong class="amount debit">-₦45</strong>
-              <button class="mini-btn" data-wallet-transaction-action="details">Details</button>
-            </div>
-          </article>
+    async function buyCreditsFromWallet() {
+      const value = creditPackSelect.value;
+      if (!value) {
+        showNotice("Select a credit pack first.", "error");
+        return;
+      }
 
-          <article class="transaction-card">
-            <div class="transaction-left">
-              <div class="icon-box">💎</div>
-              <div class="transaction-info">
-                <h4>Subscription Renewal</h4>
-                <p>Pro Monthly Plan</p>
-              </div>
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-              <strong class="amount debit">-₦2,500</strong>
-              <button class="mini-btn" data-wallet-transaction-action="details">Details</button>
-            </div>
-          </article>
-        </div>
-      </section>
-    </div>
+      const [creditsStr, priceStr] = value.split("|");
+      const credits = Number(creditsStr || 0);
+      const price = Number(priceStr || 0);
 
-    <aside class="right-column">
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <h3>Wallet Summary</h3>
-            <p>Important wallet numbers at a glance.</p>
-          </div>
-        </div>
+      if (!credits || !price) {
+        showNotice("Invalid credit pack selected.", "error");
+        return;
+      }
 
-        <div class="summary-grid">
-          <div class="summary-item">
-            <span>Current Balance</span>
-            <strong data-wallet-balance>₦12,450</strong>
-          </div>
-          <div class="summary-item">
-            <span>Total Funded</span>
-            <strong>₦57,000</strong>
-          </div>
-          <div class="summary-item">
-            <span>Total Publish Charges</span>
-            <strong>₦8,640</strong>
-          </div>
-          <div class="summary-item">
-            <span>Current Plan</span>
-            <strong>Pro Monthly</strong>
-          </div>
-        </div>
-      </section>
+      if (walletBalance < price) {
+        showNotice("Insufficient wallet balance. Fund your wallet or use another option.", "error");
+        return;
+      }
 
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <h3>Quick Links</h3>
-            <p>Open related money and publishing pages.</p>
-          </div>
-        </div>
+      buyCreditsBtn.disabled = true;
 
-        <div class="wallet-actions">
-          <button class="outline-btn" onclick="window.location.href='subscriptions.html'">Subscriptions</button>
-          <button class="outline-btn" onclick="window.location.href='publish-history.html'">Publish History</button>
-          <button class="outline-btn" onclick="window.location.href='analytics.html'">Analytics</button>
-        </div>
-      </section>
+      try {
+        const newWalletBalance = walletBalance - price;
 
-      <section class="card">
-        <div class="tip-box">
-          <h4>Wallet tip</h4>
-          <p>
-            Keep enough balance for faster posting. This helps you publish immediately
-            without stopping to fund your account every time.
-          </p>
-          <button class="primary-btn" onclick="window.location.href='create-post.html'">Create Post</button>
-        </div>
-      </section>
-    </aside>
-  </main>
+        const { error: walletErr } = await supabaseClient
+          .from("wallets")
+          .update({
+            balance: newWalletBalance,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", walletId);
 
-  <nav class="bottom-nav">
-    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
-    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
-    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
-    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
-    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
-  </nav>
+        if (walletErr) throw walletErr;
 
-  <script src="config.js"></script>
-  <script src="utils.js"></script>
-  <script src="app.js"></script>
-  <script src="auth.js"></script>
-  <script src="wallet.js"></script>
+        const { data: creditRow, error: creditGetErr } = await supabaseClient
+          .from("ai_credits")
+          .select("id,balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (creditGetErr || !creditRow) {
+          throw new Error("AI credit record not found.");
+        }
+
+        const newCreditBalance = Number(creditRow.balance || 0) + credits;
+
+        const { error: creditUpdateErr } = await supabaseClient
+          .from("ai_credits")
+          .update({
+            balance: newCreditBalance,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", creditRow.id);
+
+        if (creditUpdateErr) throw creditUpdateErr;
+
+        const { error: txErr } = await supabaseClient
+          .from("wallet_transactions")
+          .insert({
+            wallet_id: walletId,
+            user_id: currentUser.id,
+            type: "debit",
+            amount: price,
+            status: "success",
+            description: `AI credit top up (${credits} credits)`,
+            reference: `ai_credit_${credits}_${Date.now()}`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (txErr) throw txErr;
+
+        walletBalance = newWalletBalance;
+        currentCredits = newCreditBalance;
+        updateWalletUi();
+        await renderTransactions();
+
+        showNotice(`${credits} AI credits added successfully.`, "success");
+      } catch (error) {
+        showNotice(error.message || "Could not complete wallet payment.", "error", 4200);
+      } finally {
+        buyCreditsBtn.disabled = false;
+      }
+    }
+
+    async function init() {
+      currentUser = await protectPage("home.html");
+      if (!currentUser) return;
+
+      try {
+        await ensureWallet();
+        await ensureAiCredits();
+        await loadPlan();
+        updateWalletUi();
+        await renderTransactions();
+
+        buyCreditsBtn.addEventListener("click", buyCreditsFromWallet);
+      } catch (error) {
+        showNotice(error.message || "Could not load wallet page.", "error", 4200);
+      }
+    }
+
+    init();
+  </script>
 </body>
 </html>
