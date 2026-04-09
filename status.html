@@ -1,262 +1,612 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="auth-loading">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Status | View</title>
-  <meta name="theme-color" content="#0a1028" />
+  <meta name="theme-color" content="#0b141a" />
   <link rel="manifest" href="/manifest.json" />
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
+    html.auth-loading,
+    html.auth-loading body{
+      visibility:hidden;
+      opacity:0;
+    }
+
     :root{
-      --bg1:#081a8f;
-      --bg2:#07115f;
-      --bg3:#05093c;
-      --line:rgba(255,255,255,.10);
-      --text:#fff;
-      --muted:#d4dcff;
-      --blue:#2f7bff;
-      --blue2:#5ba0ff;
-      --red:#ff2f57;
-      --red2:#ff5a74;
-      --shadow:0 18px 44px rgba(0,0,0,.30);
+      --bg:#0b141a;
+      --bg2:#111b21;
+      --panel:#202c33;
+      --panel-2:#1f2c34;
+      --panel-3:#182229;
+      --line:#2a3942;
+      --text:#e9edef;
+      --muted:#8696a0;
+      --accent:#00a884;
+      --accent-2:#25d366;
+      --danger:#ff5c5c;
       --safe-top:env(safe-area-inset-top,0px);
       --safe-bottom:env(safe-area-inset-bottom,0px);
+      --shadow:0 10px 30px rgba(0,0,0,.22);
     }
-    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
     html,body{
       min-height:100%;
-      background:
-        radial-gradient(circle at top left, rgba(91,160,255,.22), transparent 20%),
-        radial-gradient(circle at top right, rgba(255,47,87,.18), transparent 16%),
-        linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
+      background:var(--bg);
       color:var(--text);
     }
-    body{overflow-x:hidden;padding-bottom:108px}
-    a{text-decoration:none;color:inherit}
-    img{display:block;max-width:100%}
-    button,input{font:inherit}
 
-    .page{
-      width:min(100%,960px);
+    body{
+      padding:calc(var(--safe-top) + 10px) 0 calc(var(--safe-bottom) + 84px);
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,input{
+      font:inherit;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      background:none;
+      cursor:pointer;
+    }
+
+    .app{
+      width:min(100%, 740px);
       margin:0 auto;
-      padding:calc(12px + var(--safe-top)) 14px calc(20px + var(--safe-bottom));
+      padding:0 12px;
     }
 
     .notice{
-      display:none;margin-bottom:12px;padding:12px 14px;border-radius:14px;
-      font-size:12px;line-height:1.5;border:1px solid transparent;background:rgba(255,255,255,.05)
+      display:none;
+      margin-bottom:12px;
+      padding:11px 13px;
+      border-radius:12px;
+      font-size:13px;
+      line-height:1.5;
+      border:1px solid transparent;
     }
     .notice.show{display:block}
-    .notice.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.22);color:#ffd7df}
-    .notice.info{background:rgba(47,123,255,.10);border-color:rgba(47,123,255,.22);color:#dcebff}
-    .notice.success{background:rgba(25,195,125,.10);border-color:rgba(25,195,125,.22);color:#dcffe7}
+    .notice.error{background:rgba(255,92,92,.12);border-color:rgba(255,92,92,.18);color:#ffd4d4}
+    .notice.success{background:rgba(37,211,102,.12);border-color:rgba(37,211,102,.18);color:#d9ffe6}
+    .notice.info{background:rgba(0,168,132,.12);border-color:rgba(0,168,132,.18);color:#d9fff7}
 
     .topbar{
-      display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-bottom:14px
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 0 14px;
     }
-    .icon-btn{
-      width:46px;height:46px;min-width:46px;border:none;border-radius:14px;
-      display:flex;align-items:center;justify-content:center;
-      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
-      border:1px solid var(--line);color:#fff;box-shadow:var(--shadow);cursor:pointer
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
     }
+
+    .back-btn,
+    .top-btn{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--panel);
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    .title-wrap{
+      min-width:0;
+      flex:1;
+    }
+
     .title{
-      font-size:20px;font-weight:900;line-height:1.1
+      font-size:20px;
+      font-weight:800;
+      line-height:1.1;
     }
+
     .subtitle{
-      font-size:12px;color:var(--muted);margin-top:4px
-    }
-    .top-actions{display:flex;gap:8px}
-
-    .hero{
-      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
-      border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);
-      padding:14px;margin-bottom:14px
+      margin-top:3px;
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .hero-row{
-      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap
+    .top-right{
+      display:flex;
+      gap:8px;
+      align-items:center;
     }
-    .hero-copy h2{font-size:18px;font-weight:900;margin-bottom:6px}
-    .hero-copy p{font-size:12px;color:var(--muted);line-height:1.5}
-    .hero-actions{display:flex;gap:8px;flex-wrap:wrap}
-    .btn{
-      min-height:42px;padding:0 14px;border:none;border-radius:14px;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;gap:8px;color:#fff;font-weight:900
-    }
-    .btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2))}
-    .btn.red{background:linear-gradient(135deg,var(--red),var(--red2))}
-    .btn.soft{background:rgba(255,255,255,.07);border:1px solid var(--line)}
 
-    .ring-section,.feed-section,.reply-section{
-      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
-      border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);
-      padding:14px;margin-bottom:14px
+    .card{
+      background:var(--panel-2);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:12px;
+    }
+
+    .my-status{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:12px;
+      align-items:center;
+      padding:14px;
+    }
+
+    .avatar-ring{
+      width:64px;
+      height:64px;
+      border-radius:50%;
+      padding:3px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      position:relative;
+      flex-shrink:0;
+    }
+
+    .avatar-ring.viewed{
+      background:#54656f;
+    }
+
+    .avatar-inner{
+      width:100%;
+      height:100%;
+      border-radius:50%;
+      background:var(--panel-3);
+      border:2px solid var(--panel-2);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      font-weight:800;
+      color:var(--text);
+    }
+
+    .avatar-inner img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .add-badge{
+      position:absolute;
+      right:-1px;
+      bottom:-1px;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      background:var(--accent);
+      color:#fff;
+      border:2px solid var(--panel-2);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .my-copy{
+      min-width:0;
+    }
+
+    .my-title{
+      font-size:16px;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+
+    .my-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .ghost-btn{
+      min-height:38px;
+      padding:0 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      color:var(--text);
+      font-size:13px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      white-space:nowrap;
     }
 
     .section-head{
-      display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:14px 14px 10px;
     }
-    .section-head h3{font-size:15px;font-weight:900}
-    .section-head span{font-size:12px;color:var(--muted)}
+
+    .section-title{
+      font-size:15px;
+      font-weight:800;
+    }
+
+    .section-meta{
+      color:var(--muted);
+      font-size:12px;
+    }
 
     .rings{
-      display:flex;gap:12px;overflow:auto hidden;scrollbar-width:none;padding-bottom:4px
+      display:flex;
+      gap:14px;
+      overflow:auto hidden;
+      padding:0 14px 14px;
+      scrollbar-width:none;
     }
-    .rings::-webkit-scrollbar{display:none}
-    .ring-card{
-      flex:0 0 auto;width:88px;text-align:center;cursor:pointer
+
+    .rings::-webkit-scrollbar{
+      display:none;
     }
-    .ring-wrap{
-      width:76px;height:76px;margin:0 auto 8px;border-radius:50%;padding:3px;
-      background:linear-gradient(135deg,var(--blue),var(--red));
-      box-shadow:0 10px 24px rgba(0,0,0,.22)
+
+    .ring-item{
+      flex:0 0 auto;
+      width:74px;
+      text-align:center;
+      cursor:pointer;
     }
-    .ring-wrap.viewed{background:linear-gradient(135deg,#7c879b,#9ea8bb)}
-    .ring-inner{
-      width:100%;height:100%;border-radius:50%;overflow:hidden;background:#0f1e66;
-      border:2px solid rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center
-    }
-    .ring-inner img{width:100%;height:100%;object-fit:cover}
-    .ring-fallback{font-weight:900;font-size:20px}
+
     .ring-name{
-      font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+      margin-top:8px;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
+
     .ring-sub{
-      font-size:10px;color:var(--muted);margin-top:3px
+      margin-top:3px;
+      color:var(--muted);
+      font-size:10px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .status-grid{
-      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px
+    .list{
+      display:grid;
     }
 
-    .status-card{
-      border:1px solid var(--line);border-radius:22px;overflow:hidden;background:rgba(255,255,255,.05)
-    }
-    .status-media{
-      aspect-ratio:9/12;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--blue),var(--red))
-    }
-    .status-media img,.status-media video{
-      width:100%;height:100%;object-fit:cover
-    }
-    .status-text{
-      width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;
-      padding:18px;font-size:22px;font-weight:900;line-height:1.35;white-space:pre-wrap;word-break:break-word
-    }
-    .status-overlay{
-      position:absolute;left:0;right:0;bottom:0;padding:14px;
-      background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.72));
-      display:grid;gap:8px
-    }
-    .status-user{
-      display:flex;align-items:center;gap:10px
-    }
-    .status-avatar{
-      width:38px;height:38px;border-radius:50%;overflow:hidden;
-      border:2px solid rgba(255,255,255,.95);background:linear-gradient(135deg,var(--blue2),var(--red2));
-      display:flex;align-items:center;justify-content:center;font-weight:900
-    }
-    .status-avatar img{width:100%;height:100%;object-fit:cover}
-    .status-name{font-size:13px;font-weight:900}
-    .status-time{font-size:11px;color:#dfe7ff}
-    .status-chip-row{display:flex;gap:8px;flex-wrap:wrap}
-    .chip{
-      min-height:26px;padding:0 10px;border-radius:999px;
-      display:inline-flex;align-items:center;justify-content:center;
-      font-size:11px;font-weight:800;
-      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)
+    .status-row{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:12px;
+      align-items:center;
+      padding:14px;
+      border-top:1px solid var(--line);
+      cursor:pointer;
     }
 
-    .reply-list{display:grid;gap:10px}
-    .reply-card{
-      border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:18px;padding:12px
+    .status-row:first-child{
+      border-top:none;
     }
-    .reply-card strong{display:block;font-size:12px;margin-bottom:4px}
-    .reply-card p{font-size:12px;color:var(--muted);line-height:1.5}
+
+    .status-row:hover{
+      background:rgba(255,255,255,.02);
+    }
+
+    .thumb{
+      width:56px;
+      height:56px;
+      border-radius:14px;
+      overflow:hidden;
+      background:var(--panel);
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      font-weight:800;
+      color:#fff;
+      flex-shrink:0;
+    }
+
+    .thumb img,
+    .thumb video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .thumb.text{
+      padding:8px;
+      text-align:center;
+      font-size:12px;
+      line-height:1.2;
+      font-weight:800;
+      word-break:break-word;
+      background:linear-gradient(135deg,#0b6e5d,#00a884);
+    }
+
+    .row-copy{
+      min-width:0;
+    }
+
+    .row-title{
+      font-size:14px;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      margin-bottom:4px;
+    }
+
+    .row-sub{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.45;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      word-break:break-word;
+    }
+
+    .row-meta{
+      text-align:right;
+      display:grid;
+      gap:4px;
+      justify-items:end;
+    }
+
+    .time{
+      font-size:11px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .badge{
+      min-height:24px;
+      padding:0 8px;
+      border-radius:999px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:10px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .reply-row{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:12px;
+      align-items:flex-start;
+      padding:14px;
+      border-top:1px solid var(--line);
+    }
+
+    .reply-row:first-child{
+      border-top:none;
+    }
+
+    .reply-avatar{
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      overflow:hidden;
+      background:var(--panel-3);
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:15px;
+      font-weight:800;
+      flex-shrink:0;
+    }
+
+    .reply-avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .reply-name{
+      font-size:13px;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+
+    .reply-text{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+      word-break:break-word;
+    }
+
+    .reply-open{
+      min-height:34px;
+      padding:0 10px;
+      border-radius:10px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+    }
 
     .empty{
-      padding:26px 14px;text-align:center;font-size:13px;color:var(--muted);
-      border:1px dashed rgba(255,255,255,.18);border-radius:18px;background:rgba(255,255,255,.03)
+      padding:26px 14px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
     }
 
     .bottom-nav{
-      position:fixed;left:50%;bottom:10px;transform:translateX(-50%);
+      position:fixed;
+      left:50%;
+      bottom:10px;
+      transform:translateX(-50%);
       width:min(720px,calc(100% - 12px));
-      display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;
-      padding:8px 4px calc(8px + var(--safe-bottom));border-radius:18px;
-      background:rgba(7,14,54,.95);border:1px solid var(--line);box-shadow:0 18px 42px rgba(0,0,0,.35);
-      backdrop-filter:blur(14px);z-index:40
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:2px;
+      padding:8px 4px calc(8px + var(--safe-bottom));
+      border-radius:18px;
+      background:#111b21f2;
+      border:1px solid var(--line);
+      box-shadow:0 18px 42px rgba(0,0,0,.35);
+      backdrop-filter:blur(14px);
+      z-index:40;
     }
-    .nav-link{
-      min-height:54px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;
-      font-size:10px;color:#d6e0ff;border-radius:14px
-    }
-    .nav-link.active{color:var(--red)}
 
-    @media (max-width:760px){
-      .status-grid{grid-template-columns:1fr}
+    .nav-link{
+      min-height:54px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:4px;
+      font-size:10px;
+      color:var(--muted);
+      border-radius:14px;
+    }
+
+    .nav-link.active{
+      color:var(--accent-2);
+    }
+
+    @media (max-width:560px){
+      .my-status{
+        grid-template-columns:auto 1fr;
+      }
+      .my-status .ghost-btn{
+        grid-column:1 / -1;
+      }
+      .topbar{
+        grid-template-columns:1fr;
+      }
+      .top-right{
+        justify-content:flex-end;
+      }
+      .status-row{
+        grid-template-columns:auto 1fr;
+      }
+      .row-meta{
+        grid-column:2;
+        justify-items:start;
+        text-align:left;
+      }
+      .reply-row{
+        grid-template-columns:auto 1fr;
+      }
+      .reply-open{
+        grid-column:2;
+        justify-self:start;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="page">
+  <div class="app">
     <div id="notice" class="notice"></div>
 
     <header class="topbar">
-      <button class="icon-btn" onclick="window.location.href='home.html'" aria-label="Back">←</button>
-      <div>
-        <div class="title">Status</div>
-        <div class="subtitle">Browse rings, open stories, reply, and track your own views</div>
+      <div class="top-left">
+        <button class="back-btn" id="backBtn" type="button" aria-label="Back">←</button>
+        <div class="title-wrap">
+          <div class="title">Status</div>
+          <div class="subtitle">My status, recent updates, and replies</div>
+        </div>
       </div>
-      <div class="top-actions">
-        <button class="icon-btn" id="refreshBtn" aria-label="Refresh">↻</button>
+
+      <div class="top-right">
+        <button class="top-btn" id="searchBtn" type="button" aria-label="Open my status">◎</button>
+        <button class="top-btn" id="refreshBtn" type="button" aria-label="Refresh">↻</button>
       </div>
     </header>
 
-    <section class="hero">
-      <div class="hero-row">
-        <div class="hero-copy">
-          <h2>Status Hub</h2>
-          <p>Open your status viewer, create a new story, and manage replies and views in one premium page.</p>
+    <section class="card">
+      <div class="my-status">
+        <div class="avatar-ring" id="myAvatarRing">
+          <div class="avatar-inner" id="myAvatar">V</div>
+          <div class="add-badge">+</div>
         </div>
-        <div class="hero-actions">
-          <button class="btn blue" id="createStatusBtn" type="button">Create Status</button>
-          <button class="btn red" id="myViewerBtn" type="button">My Viewer</button>
+
+        <div class="my-copy">
+          <div class="my-title">My status</div>
+          <div class="my-sub" id="myStatusSub">Tap to add text, image, video, or caption status.</div>
         </div>
+
+        <button class="ghost-btn" id="createStatusBtn" type="button">Add Status</button>
       </div>
     </section>
 
-    <section class="ring-section">
+    <section class="card">
       <div class="section-head">
-        <h3>Active Status Rings</h3>
-        <span id="ringCountText">0 active users</span>
+        <div class="section-title">Recent updates</div>
+        <div class="section-meta" id="ringCountText">0 active users</div>
       </div>
       <div class="rings" id="ringsWrap"></div>
     </section>
 
-    <section class="feed-section">
+    <section class="card">
       <div class="section-head">
-        <h3>Latest Active Statuses</h3>
-        <span>Click any card to open full-screen viewer</span>
+        <div class="section-title">All active statuses</div>
+        <div class="section-meta" id="statusCountText">0 statuses</div>
       </div>
-      <div class="status-grid" id="statusGrid"></div>
+      <div class="list" id="statusList"></div>
     </section>
 
-    <section class="reply-section">
+    <section class="card">
       <div class="section-head">
-        <h3>Recent Replies To Your Status</h3>
-        <span id="replyCountText">0 replies</span>
+        <div class="section-title">Replies to my statuses</div>
+        <div class="section-meta" id="replyCountText">0 replies</div>
       </div>
-      <div class="reply-list" id="replyList"></div>
+      <div class="list" id="replyList"></div>
     </section>
   </div>
 
   <nav class="bottom-nav">
     <a href="home.html" class="nav-link"><span>🏠</span><span>Home</span></a>
     <a href="status.html" class="nav-link active"><span>⭕</span><span>Status</span></a>
-    <a href="create-status.html" class="nav-link"><span>➕</span><span>Create</span></a>
-    <a href="status-viewer.html" class="nav-link"><span>▶</span><span>Viewer</span></a>
+    <a href="create-status.html" class="nav-link"><span>✚</span><span>Create</span></a>
+    <a href="chats.html" class="nav-link"><span>💬</span><span>Chats</span></a>
     <a href="settings.html" class="nav-link"><span>⚙</span><span>Settings</span></a>
   </nav>
 
@@ -265,54 +615,114 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: "pkce"
+      auth:{
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:true,
+        flowType:"pkce"
       }
     });
 
     const notice = document.getElementById("notice");
     const ringsWrap = document.getElementById("ringsWrap");
-    const statusGrid = document.getElementById("statusGrid");
+    const statusList = document.getElementById("statusList");
     const replyList = document.getElementById("replyList");
     const ringCountText = document.getElementById("ringCountText");
+    const statusCountText = document.getElementById("statusCountText");
     const replyCountText = document.getElementById("replyCountText");
+    const myAvatar = document.getElementById("myAvatar");
+    const myStatusSub = document.getElementById("myStatusSub");
 
     let currentUser = null;
+    let profilesMap = {};
+    let allStatuses = [];
+    let myStatuses = [];
+    let allViews = [];
+    let allReplies = [];
 
-    function showNotice(message, type = "info") {
+    function showNotice(message, type = "info"){
       notice.className = `notice show ${type}`;
       notice.textContent = message || "";
       clearTimeout(showNotice._timer);
       showNotice._timer = setTimeout(() => {
         notice.className = "notice";
         notice.textContent = "";
-      }, 3000);
+      }, 2800);
     }
 
-    function initials(name) {
+    function initials(name){
       const parts = String(name || "V").trim().split(/\s+/).filter(Boolean);
-      if (!parts.length) return "V";
-      if (parts.length === 1) return parts[0][0].toUpperCase();
+      if(!parts.length) return "V";
+      if(parts.length === 1) return parts[0][0].toUpperCase();
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
 
-    function timeAgo(value) {
-      if (!value) return "Just now";
+    function timeAgo(value){
+      if(!value) return "Just now";
       const date = new Date(value);
       const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-      if (diff < 60) return "Just now";
-      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      if(diff < 60) return "Just now";
+      if(diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if(diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
       return `${Math.floor(diff / 86400)}d ago`;
     }
 
-    async function requireUser() {
+    function escapeHtml(value){
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function openViewer(userId, statusId = ""){
+      const url = new URL("status-viewer.html", window.location.href);
+      url.searchParams.set("user_id", userId);
+      if(statusId) url.searchParams.set("status_id", statusId);
+      window.location.href = url.toString();
+    }
+
+    function getProfile(userId){
+      return profilesMap[userId] || {};
+    }
+
+    function getDisplayName(userId){
+      const p = getProfile(userId);
+      return p.full_name || p.username || (userId === currentUser.id ? "You" : "User");
+    }
+
+    function getAvatarHtml(userId, className = ""){
+      const p = getProfile(userId);
+      const avatar = p.avatar_url || p.avatar_path || "";
+      const name = getDisplayName(userId);
+
+      if(avatar){
+        return `<div class="${className}"><img src="${avatar}" alt="${escapeHtml(name)}"></div>`;
+      }
+      return `<div class="${className}">${escapeHtml(initials(name))}</div>`;
+    }
+
+    function statusKind(status){
+      const type = String(status.status_type || status.media_type || "").toLowerCase();
+      const mediaUrl = String(status.media_url || "").toLowerCase();
+      if(type.includes("video") || /\.(mp4|webm|mov|m4v)(\?|$)/.test(mediaUrl)) return "video";
+      if(type.includes("image") || /\.(jpg|jpeg|png|gif|webp)(\?|$)/.test(mediaUrl)) return "image";
+      return "text";
+    }
+
+    function getViewsForStatus(statusId){
+      return allViews.filter(v => v.status_id === statusId);
+    }
+
+    function hasViewedStatus(statusId){
+      return getViewsForStatus(statusId).some(v => v.viewer_id === currentUser.id);
+    }
+
+    async function requireUser(){
       const { data, error } = await supabase.auth.getUser();
-      if (error) throw error;
-      if (!data?.user) {
+      if(error) throw error;
+      if(!data?.user){
         window.location.href = "login.html?next=status.html";
         return null;
       }
@@ -320,30 +730,158 @@
       return currentUser;
     }
 
-    function openViewer(userId, statusId = "") {
-      const url = new URL("status-viewer.html", window.location.href);
-      url.searchParams.set("user_id", userId);
-      if (statusId) url.searchParams.set("status_id", statusId);
-      window.location.href = url.toString();
+    function renderMyHeader(){
+      const myName = getDisplayName(currentUser.id);
+      const p = getProfile(currentUser.id);
+      const avatar = p.avatar_url || p.avatar_path || "";
+
+      if(avatar){
+        myAvatar.innerHTML = `<img src="${avatar}" alt="${escapeHtml(myName)}">`;
+      }else{
+        myAvatar.textContent = initials(myName);
+      }
+
+      if(!myStatuses.length){
+        myStatusSub.textContent = "Tap to add text, image, video, or caption status.";
+      }else{
+        const totalViews = myStatuses.reduce((sum, item) => sum + getViewsForStatus(item.id).length, 0);
+        myStatusSub.textContent = `${myStatuses.length} active ${myStatuses.length === 1 ? "status" : "statuses"} • ${totalViews} views`;
+      }
     }
 
-    async function loadStatusPage() {
-      const user = currentUser || await requireUser();
-      if (!user) return;
+    function renderRings(){
+      const grouped = {};
+      allStatuses.forEach(item => {
+        if(!grouped[item.user_id]) grouped[item.user_id] = [];
+        grouped[item.user_id].push(item);
+      });
 
+      const ringUsers = Object.keys(grouped)
+        .map(userId => ({
+          userId,
+          items: grouped[userId].sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
+        }))
+        .sort((a,b) => {
+          if(a.userId === currentUser.id) return -1;
+          if(b.userId === currentUser.id) return 1;
+          return new Date(b.items[0].created_at) - new Date(a.items[0].created_at);
+        });
+
+      ringCountText.textContent = `${ringUsers.length} active users`;
+
+      if(!ringUsers.length){
+        ringsWrap.innerHTML = `<div class="empty" style="min-width:100%">No active status yet.</div>`;
+        return;
+      }
+
+      ringsWrap.innerHTML = ringUsers.map(group => {
+        const latest = group.items[0];
+        const name = getDisplayName(group.userId);
+        const viewedAll = group.items.every(item => hasViewedStatus(item.id));
+        const subText = group.userId === currentUser.id
+          ? `${group.items.reduce((sum, s) => sum + getViewsForStatus(s.id).length, 0)} views`
+          : timeAgo(latest.created_at);
+
+        const avatar = getProfile(group.userId).avatar_url || getProfile(group.userId).avatar_path || "";
+
+        return `
+          <div class="ring-item" onclick="openViewer('${group.userId}','${latest.id}')">
+            <div class="avatar-ring ${viewedAll ? "viewed" : ""}">
+              <div class="avatar-inner">
+                ${avatar ? `<img src="${avatar}" alt="${escapeHtml(name)}">` : escapeHtml(initials(name))}
+              </div>
+            </div>
+            <div class="ring-name">${escapeHtml(name)}</div>
+            <div class="ring-sub">${escapeHtml(subText)}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderStatuses(){
+      statusCountText.textContent = `${allStatuses.length} statuses`;
+
+      if(!allStatuses.length){
+        statusList.innerHTML = `<div class="empty">No active status found. Tap Add Status to post one.</div>`;
+        return;
+      }
+
+      statusList.innerHTML = allStatuses.map(status => {
+        const kind = statusKind(status);
+        const name = getDisplayName(status.user_id);
+        const viewCount = getViewsForStatus(status.id).length;
+        const mine = status.user_id === currentUser.id;
+        const caption = status.caption || status.content || status.text_content || "";
+        let thumb = "";
+
+        if(kind === "image" && status.media_url){
+          thumb = `<div class="thumb"><img src="${status.media_url}" alt="Status image"></div>`;
+        } else if(kind === "video" && status.media_url){
+          thumb = `<div class="thumb"><video src="${status.media_url}" muted playsinline preload="metadata"></video></div>`;
+        } else {
+          thumb = `<div class="thumb text">${escapeHtml((status.text_content || status.content || "Status").slice(0, 40))}</div>`;
+        }
+
+        return `
+          <div class="status-row" onclick="openViewer('${status.user_id}','${status.id}')">
+            ${thumb}
+            <div class="row-copy">
+              <div class="row-title">${escapeHtml(name)}</div>
+              <div class="row-sub">
+                ${kind === "text"
+                  ? escapeHtml(status.text_content || status.content || "Text status")
+                  : escapeHtml(caption || `${kind} status`)}
+              </div>
+            </div>
+            <div class="row-meta">
+              <div class="time">${escapeHtml(timeAgo(status.created_at))}</div>
+              <div class="badge">${mine ? `👁 ${viewCount}` : kind}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderReplies(){
+      const myIds = new Set(myStatuses.map(s => s.id));
+      const mineReplies = allReplies.filter(r => myIds.has(r.status_id));
+
+      replyCountText.textContent = `${mineReplies.length} replies`;
+
+      if(!mineReplies.length){
+        replyList.innerHTML = `<div class="empty">No replies to your statuses yet.</div>`;
+        return;
+      }
+
+      replyList.innerHTML = mineReplies.map(reply => {
+        const senderName = getDisplayName(reply.sender_id);
+        const senderProfile = getProfile(reply.sender_id);
+        const avatar = senderProfile.avatar_url || senderProfile.avatar_path || "";
+        return `
+          <div class="reply-row">
+            <div class="reply-avatar">
+              ${avatar ? `<img src="${avatar}" alt="${escapeHtml(senderName)}">` : escapeHtml(initials(senderName))}
+            </div>
+            <div>
+              <div class="reply-name">${escapeHtml(senderName)}</div>
+              <div class="reply-text">${escapeHtml(reply.message || "")}</div>
+              <div class="time" style="margin-top:6px">${escapeHtml(timeAgo(reply.created_at))}</div>
+            </div>
+            <button class="reply-open" type="button" onclick="window.location.href='chats.html'">Open Chat</button>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadStatusPage(){
       const nowIso = new Date().toISOString();
 
-      const [
-        statusesRes,
-        profilesRes,
-        repliesRes,
-        viewsRes
-      ] = await Promise.all([
+      const [statusesRes, profilesRes, repliesRes, viewsRes] = await Promise.all([
         supabase
           .from("statuses")
-          .select("id,user_id,status_type,text_content,content,media_url,thumbnail_url,bg_style,privacy,expires_at,created_at")
+          .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,thumbnail_url,bg_style,privacy,expires_at,created_at")
           .gt("expires_at", nowIso)
-          .order("created_at", { ascending: false }),
+          .order("created_at", { ascending:false }),
 
         supabase
           .from("profiles")
@@ -352,175 +890,64 @@
         supabase
           .from("status_replies")
           .select("id,status_id,sender_id,message,created_at")
-          .order("created_at", { ascending: false })
-          .limit(20),
+          .order("created_at", { ascending:false })
+          .limit(30),
 
         supabase
           .from("status_views")
           .select("id,status_id,viewer_id,viewed_at")
       ]);
 
-      if (statusesRes.error) throw statusesRes.error;
-      if (profilesRes.error) throw profilesRes.error;
-      if (repliesRes.error) throw repliesRes.error;
-      if (viewsRes.error) throw viewsRes.error;
+      if(statusesRes.error) throw statusesRes.error;
+      if(profilesRes.error) throw profilesRes.error;
+      if(repliesRes.error) throw repliesRes.error;
+      if(viewsRes.error) throw viewsRes.error;
 
-      const statuses = statusesRes.data || [];
-      const profiles = profilesRes.data || [];
-      const replies = repliesRes.data || [];
-      const views = viewsRes.data || [];
+      profilesMap = Object.fromEntries((profilesRes.data || []).map(p => [p.id, p]));
+      allStatuses = statusesRes.data || [];
+      myStatuses = allStatuses.filter(s => s.user_id === currentUser.id);
+      allReplies = repliesRes.data || [];
+      allViews = viewsRes.data || [];
 
-      const profileMap = Object.fromEntries(profiles.map(p => [p.id, p]));
-      const viewsByStatus = {};
-      views.forEach(v => {
-        if (!viewsByStatus[v.status_id]) viewsByStatus[v.status_id] = [];
-        viewsByStatus[v.status_id].push(v);
-      });
-
-      const statusesByUser = {};
-      statuses.forEach(s => {
-        if (!statusesByUser[s.user_id]) statusesByUser[s.user_id] = [];
-        statusesByUser[s.user_id].push(s);
-      });
-
-      const ringUsers = Object.keys(statusesByUser).map(userId => {
-        const profile = profileMap[userId] || {};
-        const userStatuses = statusesByUser[userId];
-        const viewedAll = userStatuses.every(st => (viewsByStatus[st.id] || []).some(v => v.viewer_id === currentUser.id));
-        return {
-          userId,
-          profile,
-          statuses: userStatuses,
-          viewedAll
-        };
-      });
-
-      ringCountText.textContent = `${ringUsers.length} active users`;
-
-      if (!ringUsers.length) {
-        ringsWrap.innerHTML = `<div class="empty" style="min-width:100%">No active status yet.</div>`;
-      } else {
-        ringsWrap.innerHTML = ringUsers.map(item => {
-          const name = item.profile.full_name || item.profile.username || (item.userId === currentUser.id ? "You" : "User");
-          const avatar = item.profile.avatar_url || item.profile.avatar_path || "";
-          const latest = item.statuses[0];
-          const viewCount = item.userId === currentUser.id ? item.statuses.reduce((n, s) => n + (viewsByStatus[s.id]?.length || 0), 0) : null;
-          return `
-            <div class="ring-card" onclick="openViewer('${item.userId}','${latest.id}')">
-              <div class="ring-wrap ${item.viewedAll ? 'viewed' : ''}">
-                <div class="ring-inner">
-                  ${avatar
-                    ? `<img src="${avatar}" alt="${name}">`
-                    : `<div class="ring-fallback">${initials(name)}</div>`}
-                </div>
-              </div>
-              <div class="ring-name">${name}</div>
-              <div class="ring-sub">${item.userId === currentUser.id ? `${viewCount} views` : timeAgo(latest.created_at)}</div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      if (!statuses.length) {
-        statusGrid.innerHTML = `<div class="empty">No active status found. Click create status to post one.</div>`;
-      } else {
-        statusGrid.innerHTML = statuses.map(s => {
-          const p = profileMap[s.user_id] || {};
-          const name = p.full_name || p.username || (s.user_id === currentUser.id ? "You" : "User");
-          const avatar = p.avatar_url || p.avatar_path || "";
-          const bg = s.bg_style ? {
-            sunset:"linear-gradient(135deg,#2f7bff,#ff2f57)",
-            royal:"linear-gradient(135deg,#081a8f,#5ba0ff)",
-            flare:"linear-gradient(135deg,#ff2f57,#ff8a00)",
-            deep:"linear-gradient(135deg,#091127,#7c3aed)",
-            ocean:"linear-gradient(135deg,#00bcd4,#2f7bff)",
-            berry:"linear-gradient(135deg,#7f1d1d,#ff2f57)",
-            night:"linear-gradient(135deg,#05093c,#1d4ed8)",
-            mix:"linear-gradient(135deg,#5ba0ff,#ff5a74,#2f7bff)"
-          }[s.bg_style] : "linear-gradient(135deg,#2f7bff,#ff2f57)";
-          const viewCount = viewsByStatus[s.id]?.length || 0;
-
-          let mediaBlock = `<div class="status-text" style="background:${bg}">${(s.text_content || s.content || "Status").replace(/</g,"&lt;")}</div>`;
-          if (s.status_type === "image" && s.media_url) {
-            mediaBlock = `<img src="${s.media_url}" alt="Status image">`;
-          } else if (s.status_type === "video" && s.media_url) {
-            mediaBlock = `<video src="${s.media_url}" muted playsinline preload="metadata"></video>`;
-          }
-
-          return `
-            <div class="status-card" onclick="openViewer('${s.user_id}','${s.id}')">
-              <div class="status-media">
-                ${mediaBlock}
-                <div class="status-overlay">
-                  <div class="status-user">
-                    <div class="status-avatar">
-                      ${avatar ? `<img src="${avatar}" alt="${name}">` : initials(name)}
-                    </div>
-                    <div>
-                      <div class="status-name">${name}</div>
-                      <div class="status-time">${timeAgo(s.created_at)}</div>
-                    </div>
-                  </div>
-                  <div class="status-chip-row">
-                    <span class="chip">${s.status_type}</span>
-                    <span class="chip">${s.privacy || "public"}</span>
-                    ${s.user_id === currentUser.id ? `<span class="chip">👁 ${viewCount}</span>` : ``}
-                  </div>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      const myStatusIds = statuses.filter(s => s.user_id === currentUser.id).map(s => s.id);
-      const myReplies = replies.filter(r => myStatusIds.includes(r.status_id));
-
-      replyCountText.textContent = `${myReplies.length} replies`;
-
-      if (!myReplies.length) {
-        replyList.innerHTML = `<div class="empty">No replies to your statuses yet.</div>`;
-      } else {
-        replyList.innerHTML = myReplies.map(r => {
-          const sender = profileMap[r.sender_id] || {};
-          const senderName = sender.full_name || sender.username || "Viewer";
-          return `
-            <div class="reply-card">
-              <strong>${senderName}</strong>
-              <p>${(r.message || "").replace(/</g,"&lt;")} • ${timeAgo(r.created_at)}</p>
-            </div>
-          `;
-        }).join("");
-      }
+      renderMyHeader();
+      renderRings();
+      renderStatuses();
+      renderReplies();
     }
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      window.location.href = "home.html";
+    });
+
+    document.getElementById("searchBtn").addEventListener("click", () => {
+      if(currentUser){
+        openViewer(currentUser.id);
+      }
+    });
 
     document.getElementById("createStatusBtn").addEventListener("click", () => {
       window.location.href = "create-status.html";
     });
 
-    document.getElementById("myViewerBtn").addEventListener("click", async () => {
-      const user = currentUser || await requireUser();
-      if (!user) return;
-      openViewer(user.id);
-    });
-
     document.getElementById("refreshBtn").addEventListener("click", async () => {
-      try {
+      try{
         await loadStatusPage();
         showNotice("Status page refreshed.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not refresh statuses.", "error");
+      }catch(error){
+        showNotice(error.message || "Could not refresh status page.", "error");
       }
     });
 
     window.openViewer = openViewer;
 
-    (async function init() {
-      try {
+    (async function init(){
+      try{
         await requireUser();
         await loadStatusPage();
-      } catch (error) {
+      }catch(error){
         showNotice(error.message || "Could not load status page.", "error");
+      }finally{
+        document.documentElement.classList.remove("auth-loading");
       }
     })();
   </script>
