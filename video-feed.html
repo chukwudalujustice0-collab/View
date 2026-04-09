@@ -1191,7 +1191,7 @@
             avatar_url
           )
         `)
-        .in("status", ["published", "active"])
+        .in("status", ["published", "active", "queued"])
         .order("published_at", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false });
 
