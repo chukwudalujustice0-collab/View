@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Group Members | View</title>
+  <meta name="theme-color" content="#0a1028" />
+  <link rel="manifest" href="/manifest.json" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg1:#081a8f; --bg2:#07115f; --bg3:#05093c;
+      --blue:#2f7bff; --blue2:#5ba0ff; --red:#ff2f57; --red2:#ff5a74;
+      --text:#fff; --muted:#d4dcff; --line:rgba(255,255,255,.10); --shadow:0 18px 42px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(47,123,255,.22), transparent 18%),
+        radial-gradient(circle at 88% 10%, rgba(255,47,87,.18), transparent 14%),
+        linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3));
+      color:var(--text);
+    }
+    body{overflow-x:hidden}
+    a{text-decoration:none;color:inherit}
+    button,input{font:inherit}
+    img{display:block;max-width:100%}
+    .page{width:min(100%,960px);margin:0 auto;padding:calc(12px + var(--safe-top)) 14px calc(20px + var(--safe-bottom))}
+    .notice{display:none;margin-bottom:12px;padding:12px 14px;border-radius:14px;font-size:12px;line-height:1.5;border:1px solid transparent;background:rgba(255,255,255,.05)}
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.22);color:#ffd7df}
+    .notice.success{background:rgba(25,195,125,.10);border-color:rgba(25,195,125,.22);color:#dcffe7}
+    .notice.info{background:rgba(47,123,255,.10);border-color:rgba(47,123,255,.22);color:#dcebff}
+    .topbar{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;margin-bottom:14px}
+    .icon-btn{
+      width:46px;height:46px;min-width:46px;border:none;border-radius:14px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;color:#fff;
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));border:1px solid var(--line);box-shadow:var(--shadow)
+    }
+    .title{font-size:18px;font-weight:900}
+    .subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+    .panel{
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+      border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:14px
+    }
+    .search-box{
+      min-height:50px;display:flex;align-items:center;gap:10px;padding:0 14px;
+      border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line);margin-bottom:14px
+    }
+    .search-box input{flex:1;min-width:0;border:none;outline:none;background:transparent;color:#fff}
+    .search-box input::placeholder{color:#a6b9de}
+    .member-list{display:grid;gap:12px}
+    .member-card{
+      border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.05);
+      padding:12px;display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center
+    }
+    .avatar{
+      width:56px;height:56px;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,var(--blue2),var(--red2));
+      display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover}
+    .name{font-size:14px;font-weight:900;margin-bottom:4px}
+    .meta{font-size:12px;color:var(--muted)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .mini-btn{
+      min-height:36px;padding:0 12px;border:none;border-radius:12px;cursor:pointer;color:#fff;font-size:11px;font-weight:900
+    }
+    .mini-btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2))}
+    .mini-btn.red{background:linear-gradient(135deg,var(--red),var(--red2))}
+    .mini-btn.soft{background:rgba(255,255,255,.08);border:1px solid var(--line)}
+    .empty{
+      padding:26px 14px;text-align:center;font-size:13px;color:var(--muted);
+      border:1px dashed rgba(255,255,255,.18);border-radius:18px;background:rgba(255,255,255,.03)
+    }
+    @media (max-width:700px){
+      .member-card{grid-template-columns:56px 1fr}
+      .actions{grid-column:1/-1;justify-content:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <button class="icon-btn" onclick="history.back()">←</button>
+      <div>
+        <div class="title">Group Members</div>
+        <div class="subtitle">View roles, manage members, and move between linked group pages</div>
+      </div>
+      <button class="icon-btn" id="refreshBtn">↻</button>
+    </header>
+
+    <section class="panel">
+      <div class="search-box">
+        <span>⌕</span>
+        <input id="searchInput" type="text" placeholder="Search members..." />
+      </div>
+      <div class="member-list" id="memberList"></div>
+    </section>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+    });
+
+    const groupId = new URLSearchParams(location.search).get("id");
+    const notice = document.getElementById("notice");
+    const memberList = document.getElementById("memberList");
+    const searchInput = document.getElementById("searchInput");
+
+    let currentUser = null;
+    let myRole = null;
+    let membersData = [];
+
+    function showNotice(message, type="info"){
+      notice.className = `notice show ${type}`;
+      notice.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        notice.className = "notice";
+        notice.textContent = "";
+      }, 2800);
+    }
+
+    function initials(name){
+      const parts = String(name || "U").trim().split(/\s+/).filter(Boolean);
+      if(!parts.length) return "U";
+      if(parts.length === 1) return parts[0][0].toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+
+    async function requireUser(){
+      const { data, error } = await supabase.auth.getUser();
+      if(error) throw error;
+      if(!data?.user){
+        location.href = `login.html?next=group-members.html?id=${groupId || ""}`;
+        return null;
+      }
+      currentUser = data.user;
+      return currentUser;
+    }
+
+    function canManage(){
+      return myRole === "owner" || myRole === "admin";
+    }
+
+    function renderMembers(){
+      const q = searchInput.value.trim().toLowerCase();
+      const filtered = membersData.filter(m => {
+        const name = (m.profile?.full_name || m.profile?.username || "").toLowerCase();
+        const email = (m.profile?.email || "").toLowerCase();
+        return name.includes(q) || email.includes(q);
+      });
+
+      if(!filtered.length){
+        memberList.innerHTML = `<div class="empty">No members found.</div>`;
+        return;
+      }
+
+      memberList.innerHTML = filtered.map(m => {
+        const name = m.profile?.full_name || m.profile?.username || "Member";
+        const avatar = m.profile?.avatar_url || m.profile?.avatar_path || "";
+        const isMe = m.user_id === currentUser.id;
+
+        return `
+          <div class="member-card">
+            <div class="avatar">
+              ${avatar ? `<img src="${avatar}" alt="${name}">` : initials(name)}
+            </div>
+            <div>
+              <div class="name">${name} ${isMe ? "(You)" : ""}</div>
+              <div class="meta">Role: ${m.role || "member"}</div>
+            </div>
+            <div class="actions">
+              <button class="mini-btn soft" onclick="openGroup()">Group</button>
+              ${canManage() && !isMe && m.role !== "owner" ? `<button class="mini-btn blue" onclick="makeAdmin('${m.id}')">Make Admin</button>` : ``}
+              ${canManage() && !isMe && m.role !== "owner" ? `<button class="mini-btn red" onclick="removeMember('${m.id}')">Remove</button>` : ``}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadMembers(){
+      const user = currentUser || await requireUser();
+      if(!user) return;
+
+      const [{ data: members, error: membersError }, { data: profiles, error: profilesError }] = await Promise.all([
+        supabase.from("group_members").select("*").eq("group_id", groupId),
+        supabase.from("profiles").select("id,full_name,username,email,avatar_url,avatar_path")
+      ]);
+
+      if(membersError) throw membersError;
+      if(profilesError) throw profilesError;
+
+      const myMembership = (members || []).find(m => m.user_id === user.id);
+      myRole = myMembership?.role || null;
+
+      const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+      membersData = (members || []).map(m => ({ ...m, profile: profileMap[m.user_id] || null }));
+      renderMembers();
+    }
+
+    async function makeAdmin(memberId){
+      try{
+        const { error } = await supabase.from("group_members").update({ role:"admin" }).eq("id", memberId);
+        if(error) throw error;
+        showNotice("Member promoted to admin.", "success");
+        await loadMembers();
+      }catch(error){
+        showNotice(error.message || "Could not update role.", "error");
+      }
+    }
+
+    async function removeMember(memberId){
+      try{
+        const ok = confirm("Remove this member?");
+        if(!ok) return;
+        const { error } = await supabase.from("group_members").delete().eq("id", memberId);
+        if(error) throw error;
+        showNotice("Member removed.", "success");
+        await loadMembers();
+      }catch(error){
+        showNotice(error.message || "Could not remove member.", "error");
+      }
+    }
+
+    function openGroup(){
+      location.href = `group-view.html?id=${groupId}`;
+    }
+
+    searchInput.addEventListener("input", renderMembers);
+    document.getElementById("refreshBtn").addEventListener("click", async () => {
+      try{
+        await loadMembers();
+        showNotice("Members refreshed.", "success");
+      }catch(error){
+        showNotice(error.message || "Could not refresh members.", "error");
+      }
+    });
+
+    window.makeAdmin = makeAdmin;
+    window.removeMember = removeMember;
+    window.openGroup = openGroup;
+
+    (async function init(){
+      try{
+        await requireUser();
+        await loadMembers();
+      }catch(error){
+        showNotice(error.message || "Could not load members page.", "error");
+      }
+    })();
+  </script>
+</body>
+</html>

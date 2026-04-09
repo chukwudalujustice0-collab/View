@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Upgrade AI | View</title>
+  <meta name="theme-color" content="#0b1454" />
+
+  <style>
+    html.auth-loading, html.auth-loading body{
+      visibility:hidden;
+    }
+
+    :root{
+      --bg:#08114c;
+      --bg2:#0b1454;
+      --bg3:#0a1b6f;
+      --panel:#ffffff;
+      --panel2:#f8fbff;
+      --text:#111827;
+      --muted:#667085;
+      --line:#dbe4ff;
+      --white:#ffffff;
+      --primary:#2563eb;
+      --primary2:#4f46e5;
+      --red:#ef4444;
+      --red2:#ff5f7a;
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --shadow:0 16px 40px rgba(8,17,76,.14);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+      color:var(--text);
+    }
+
+    body{
+      padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,input,select{
+      font:inherit;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      background:none;
+      cursor:pointer;
+    }
+
+    .wrap{
+      width:min(100%, 860px);
+      margin:0 auto;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.55;
+      box-shadow:var(--shadow-soft);
+    }
+    .notice.show{display:block}
+    .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+      box-shadow:var(--shadow-soft);
+      font-size:18px;
+      color:#111827;
+    }
+
+    .brand-box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-logo{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      object-fit:cover;
+      box-shadow:0 8px 20px rgba(37,99,235,.15);
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+    }
+
+    .title-box{
+      min-width:0;
+      flex:1;
+    }
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#0b1454;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .section{
+      background:rgba(255,255,255,.95);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .section-body{
+      padding:14px;
+      display:grid;
+      gap:14px;
+    }
+
+    .hero{
+      display:grid;
+      gap:12px;
+      padding:18px;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(37,99,235,.08), rgba(79,70,229,.08), rgba(239,68,68,.08));
+      border:1px solid #dbeafe;
+    }
+
+    .hero-title{
+      font-size:20px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .hero-sub{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .hero-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .pill{
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#f8fbff;
+      color:#475569;
+      font-size:11px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .warning-box{
+      padding:12px 14px;
+      border-radius:14px;
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      color:#9a3412;
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    .section-title{
+      font-size:15px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .section-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .plan-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+    }
+
+    .plan-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:12px;
+    }
+
+    .plan-card.featured{
+      border-color:#bfdbfe;
+      background:linear-gradient(135deg, rgba(37,99,235,.04), rgba(79,70,229,.04), rgba(239,68,68,.03));
+    }
+
+    .plan-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .plan-name{
+      font-size:16px;
+      font-weight:800;
+      color:#0b1454;
+      margin-bottom:4px;
+    }
+
+    .plan-price{
+      font-size:20px;
+      font-weight:800;
+      color:#111827;
+    }
+
+    .plan-price small{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .plan-badge{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      color:#fff;
+      font-size:11px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      white-space:nowrap;
+    }
+
+    .feature-list{
+      display:grid;
+      gap:8px;
+    }
+
+    .feature-item{
+      font-size:13px;
+      color:#374151;
+      line-height:1.5;
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+    }
+
+    .feature-item span{
+      color:#10b981;
+      font-weight:800;
+      margin-top:1px;
+    }
+
+    .plan-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .credit-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+    }
+
+    .credit-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .credit-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .credit-name{
+      font-size:15px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .credit-price{
+      font-size:18px;
+      font-weight:800;
+      color:#111827;
+    }
+
+    .credit-meta{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .wallet-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .wallet-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .wallet-balance{
+      font-size:24px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .wallet-sub{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    .label{
+      font-size:13px;
+      font-weight:700;
+      color:#374151;
+    }
+
+    .select{
+      width:100%;
+      min-height:46px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:0 14px;
+      outline:none;
+    }
+
+    .select:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 3px rgba(37,99,235,.08);
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      flex:1;
+      min-height:48px;
+      padding:0 16px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111827;
+      font-size:14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.success{
+      background:linear-gradient(135deg,#059669,#10b981);
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.ghost{
+      background:#fff;
+      border:1px solid var(--line);
+      color:#111827;
+    }
+
+    .btn.warning{
+      background:linear-gradient(135deg,#f59e0b,#f97316);
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    @media (min-width:760px){
+      .plan-grid{
+        grid-template-columns:repeat(3,1fr);
+      }
+      .credit-grid{
+        grid-template-columns:repeat(3,1fr);
+      }
+    }
+  </style>
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
+
+    async function protectPage(nextPage) {
+      try {
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if (!user) {
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      } catch (e) {
+        document.documentElement.classList.remove("auth-loading");
+        location.replace("login.html");
+        return null;
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" id="backBtn" href="home.html" aria-label="Back">←</a>
+
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+          <div class="title-box">
+            <div class="title">Upgrade AI</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="hero">
+          <div class="hero-title">Unlock more AI power</div>
+          <div class="hero-sub" id="heroMessage">Upgrade your plan or top up credits to continue using AI features in View.</div>
+          <div class="hero-row">
+            <div class="pill" id="currentPlanPill">Current Plan: --</div>
+            <div class="pill" id="currentCreditPill">AI Credits: --</div>
+            <div class="pill" id="walletBalancePill">Wallet: --</div>
+          </div>
+        </div>
+
+        <div class="warning-box" id="fromMessage">
+          AI access depends on your plan and available credits. Text uses 1 credit, image uses 10 credits, and video is reserved for premium access.
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-body">
+        <div>
+          <div class="section-title">Choose a plan</div>
+          <div class="section-sub">Plans renew your monthly AI credit allocation and unlock premium tools.</div>
+        </div>
+
+        <div class="plan-grid">
+          <div class="plan-card">
+            <div class="plan-head">
+              <div>
+                <div class="plan-name">Plus</div>
+                <div class="section-sub">Starter AI access</div>
+              </div>
+              <div class="plan-price">$1 <small>/ month</small></div>
+            </div>
+
+            <div class="feature-list">
+              <div class="feature-item"><span>✓</span><div>20 Ask AI uses per day</div></div>
+              <div class="feature-item"><span>✓</span><div>50 AI credits per month</div></div>
+              <div class="feature-item"><span>✓</span><div>Text AI enabled</div></div>
+              <div class="feature-item"><span>✓</span><div>Image AI access</div></div>
+            </div>
+
+            <div class="plan-actions">
+              <button class="btn primary" data-plan="Plus" data-price="1" type="button">Upgrade to Plus</button>
+            </div>
+          </div>
+
+          <div class="plan-card featured">
+            <div class="plan-head">
+              <div>
+                <div class="plan-name">Pro</div>
+                <div class="section-sub">Best for creators</div>
+              </div>
+              <div class="plan-badge">POPULAR</div>
+            </div>
+
+            <div class="plan-price">$3 <small>/ month</small></div>
+
+            <div class="feature-list">
+              <div class="feature-item"><span>✓</span><div>100 Ask AI uses per day</div></div>
+              <div class="feature-item"><span>✓</span><div>120 AI credits per month</div></div>
+              <div class="feature-item"><span>✓</span><div>Text AI + Image AI</div></div>
+              <div class="feature-item"><span>✓</span><div>1 premium video slot</div></div>
+            </div>
+
+            <div class="plan-actions">
+              <button class="btn primary" data-plan="Pro" data-price="3" type="button">Upgrade to Pro</button>
+            </div>
+          </div>
+
+          <div class="plan-card">
+            <div class="plan-head">
+              <div>
+                <div class="plan-name">Enterprise</div>
+                <div class="section-sub">Maximum AI access</div>
+              </div>
+              <div class="plan-price">$7 <small>/ month</small></div>
+            </div>
+
+            <div class="feature-list">
+              <div class="feature-item"><span>✓</span><div>High Ask AI usage</div></div>
+              <div class="feature-item"><span>✓</span><div>200 AI credits per month</div></div>
+              <div class="feature-item"><span>✓</span><div>Priority AI access</div></div>
+              <div class="feature-item"><span>✓</span><div>2 premium video slots</div></div>
+            </div>
+
+            <div class="plan-actions">
+              <button class="btn primary" data-plan="Enterprise" data-price="7" type="button">Upgrade to Enterprise</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-body">
+        <div>
+          <div class="section-title">Top up AI credits</div>
+          <div class="section-sub">Buy extra credits directly from your View wallet whenever your monthly credits finish.</div>
+        </div>
+
+        <div class="credit-grid">
+          <div class="credit-card">
+            <div class="credit-top">
+              <div class="credit-name">Small Pack</div>
+              <div class="credit-price">$1</div>
+            </div>
+            <div class="credit-meta">Adds 50 AI credits to your balance.</div>
+            <button class="btn success credit-buy-btn" data-credits="50" data-price="1" type="button">Buy 50 Credits</button>
+          </div>
+
+          <div class="credit-card">
+            <div class="credit-top">
+              <div class="credit-name">Medium Pack</div>
+              <div class="credit-price">$3</div>
+            </div>
+            <div class="credit-meta">Adds 200 AI credits to your balance.</div>
+            <button class="btn success credit-buy-btn" data-credits="200" data-price="3" type="button">Buy 200 Credits</button>
+          </div>
+
+          <div class="credit-card">
+            <div class="credit-top">
+              <div class="credit-name">Large Pack</div>
+              <div class="credit-price">$10</div>
+            </div>
+            <div class="credit-meta">Adds 1000 AI credits to your balance.</div>
+            <button class="btn success credit-buy-btn" data-credits="1000" data-price="10" type="button">Buy 1000 Credits</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="wallet-card">
+          <div class="wallet-top">
+            <div>
+              <div class="section-title">Wallet payment</div>
+              <div class="wallet-sub">Choose a credit pack and pay from your wallet.</div>
+            </div>
+            <div class="wallet-balance" id="walletBalanceText">$0</div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="topUpSelect">Quick top up selection</label>
+            <select id="topUpSelect" class="select">
+              <option value="">Select a pack</option>
+              <option value="50|1">50 Credits - $1</option>
+              <option value="200|3">200 Credits - $3</option>
+              <option value="1000|10">1000 Credits - $10</option>
+            </select>
+          </div>
+
+          <div class="actions">
+            <button id="walletTopUpBtn" class="btn warning" type="button">Pay from Wallet</button>
+            <a href="wallet.html" class="btn ghost">Open Wallet</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const backBtn = document.getElementById("backBtn");
+    const currentPlanPill = document.getElementById("currentPlanPill");
+    const currentCreditPill = document.getElementById("currentCreditPill");
+    const walletBalancePill = document.getElementById("walletBalancePill");
+    const walletBalanceText = document.getElementById("walletBalanceText");
+    const heroMessage = document.getElementById("heroMessage");
+    const fromMessage = document.getElementById("fromMessage");
+    const topUpSelect = document.getElementById("topUpSelect");
+    const walletTopUpBtn = document.getElementById("walletTopUpBtn");
+
+    let currentUser = null;
+    let currentPlan = "Free";
+    let currentCredits = 0;
+    let walletBalance = 0;
+    let fromPage = "home";
+
+    function showNotice(message, type = "info", duration = 3200) {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      if (duration > 0) {
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, duration);
+      }
+    }
+
+    function formatDollar(value) {
+      return `$${Number(value || 0).toFixed(2)}`;
+    }
+
+    function mapBackLink(page) {
+      if (page === "create-post") return "create-post.html";
+      if (page === "ai-image") return "ai-image.html";
+      if (page === "ai-dashboard") return "ai-dashboard.html";
+      return "home.html";
+    }
+
+    function updateUi() {
+      currentPlanPill.textContent = `Current Plan: ${currentPlan}`;
+      currentCreditPill.textContent = `AI Credits: ${currentCredits}`;
+      walletBalancePill.textContent = `Wallet: ${formatDollar(walletBalance)}`;
+      walletBalanceText.textContent = formatDollar(walletBalance);
+      backBtn.href = mapBackLink(fromPage);
+    }
+
+    function setFromMessage() {
+      const params = new URLSearchParams(window.location.search);
+      fromPage = params.get("from") || "home";
+
+      if (fromPage === "create-post") {
+        fromMessage.textContent = "You came from Create Post. Upgrade your plan or top up AI credits to continue posting with AI.";
+        heroMessage.textContent = "Post with AI needs an eligible plan and enough AI credits.";
+      } else if (fromPage === "ai-image") {
+        fromMessage.textContent = "You came from AI Image. Image generation requires an eligible plan and at least 10 AI credits.";
+        heroMessage.textContent = "Top up AI credits or upgrade your plan to continue generating images.";
+      } else if (fromPage === "ai-dashboard") {
+        fromMessage.textContent = "You came from AI Dashboard. Choose a better plan or buy more AI credits.";
+        heroMessage.textContent = "Unlock more AI power and keep creating without interruption.";
+      }
+    }
+
+    async function loadPlan() {
+      currentPlan = "Free";
+      currentCredits = 0;
+      walletBalance = 0;
+
+      try {
+        const { data: sub } = await supabaseClient
+          .from("user_subscriptions")
+          .select("plan_name,status")
+          .eq("user_id", currentUser.id)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (sub?.plan_name) currentPlan = sub.plan_name;
+      } catch (_) {}
+
+      try {
+        const { data: creditRow } = await supabaseClient
+          .from("ai_credits")
+          .select("balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (creditRow && typeof creditRow.balance !== "undefined") {
+          currentCredits = Number(creditRow.balance || 0);
+        }
+      } catch (_) {}
+
+      try {
+        const { data: walletRow } = await supabaseClient
+          .from("wallets")
+          .select("balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (walletRow && typeof walletRow.balance !== "undefined") {
+          walletBalance = Number(walletRow.balance || 0);
+        }
+      } catch (_) {}
+
+      updateUi();
+    }
+
+    async function ensureAiCreditRow() {
+      const { data: row } = await supabaseClient
+        .from("ai_credits")
+        .select("id")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+
+      if (!row) {
+        await supabaseClient
+          .from("ai_credits")
+          .insert({
+            user_id: currentUser.id,
+            balance: 0
+          });
+      }
+    }
+
+    function planCreditValue(plan) {
+      if (plan === "Plus") return 50;
+      if (plan === "Pro") return 120;
+      if (plan === "Enterprise") return 200;
+      return 0;
+    }
+
+    async function updateProfilePlanFields(plan) {
+      try {
+        await supabaseClient
+          .from("profiles")
+          .update({
+            subscription_plan: plan,
+            subscription_status: "active",
+            plan_theme: String(plan).toLowerCase(),
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", currentUser.id);
+      } catch (_) {}
+    }
+
+    async function upgradePlan(plan, price) {
+      try {
+        if (walletBalance < Number(price)) {
+          showNotice("Insufficient wallet balance. Fund your wallet first.", "error");
+          return;
+        }
+
+        const walletNewBalance = walletBalance - Number(price);
+
+        const { data: walletRow, error: walletGetErr } = await supabaseClient
+          .from("wallets")
+          .select("id,balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (walletGetErr || !walletRow) {
+          throw new Error("Wallet record not found.");
+        }
+
+        const { error: walletUpdateErr } = await supabaseClient
+          .from("wallets")
+          .update({
+            balance: walletNewBalance,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", walletRow.id);
+
+        if (walletUpdateErr) throw walletUpdateErr;
+
+        await supabaseClient
+          .from("wallet_transactions")
+          .insert({
+            wallet_id: walletRow.id,
+            user_id: currentUser.id,
+            type: "debit",
+            amount: Number(price),
+            status: "success",
+            description: `${plan} subscription upgrade`,
+            reference: `sub_${plan.toLowerCase()}_${Date.now()}`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        await supabaseClient
+          .from("user_subscriptions")
+          .update({
+            status: "expired",
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", currentUser.id)
+          .eq("status", "active");
+
+        await supabaseClient
+          .from("user_subscriptions")
+          .insert({
+            user_id: currentUser.id,
+            plan_name: plan,
+            amount: Number(price),
+            currency: "NGN",
+            status: "active",
+            start_date: new Date().toISOString(),
+            end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        await ensureAiCreditRow();
+
+        const { data: creditRow, error: creditGetErr } = await supabaseClient
+          .from("ai_credits")
+          .select("id")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (creditGetErr || !creditRow) {
+          throw new Error("AI credit record not found.");
+        }
+
+        const { error: creditUpdateErr } = await supabaseClient
+          .from("ai_credits")
+          .update({
+            balance: planCreditValue(plan),
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", creditRow.id);
+
+        if (creditUpdateErr) throw creditUpdateErr;
+
+        await updateProfilePlanFields(plan);
+
+        walletBalance = walletNewBalance;
+        currentPlan = plan;
+        currentCredits = planCreditValue(plan);
+        updateUi();
+
+        showNotice(`${plan} plan activated successfully.`, "success", 2600);
+      } catch (error) {
+        showNotice(error.message || "Could not upgrade plan.", "error", 4200);
+      }
+    }
+
+    async function buyCredits(credits, price) {
+      try {
+        if (!credits || !price) {
+          showNotice("Select a valid credit pack.", "error");
+          return;
+        }
+
+        if (walletBalance < Number(price)) {
+          showNotice("Insufficient wallet balance. Fund your wallet first.", "error");
+          return;
+        }
+
+        const walletNewBalance = walletBalance - Number(price);
+
+        const { data: walletRow, error: walletGetErr } = await supabaseClient
+          .from("wallets")
+          .select("id,balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (walletGetErr || !walletRow) {
+          throw new Error("Wallet record not found.");
+        }
+
+        const { error: walletUpdateErr } = await supabaseClient
+          .from("wallets")
+          .update({
+            balance: walletNewBalance,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", walletRow.id);
+
+        if (walletUpdateErr) throw walletUpdateErr;
+
+        await supabaseClient
+          .from("wallet_transactions")
+          .insert({
+            wallet_id: walletRow.id,
+            user_id: currentUser.id,
+            type: "debit",
+            amount: Number(price),
+            status: "success",
+            description: `AI credit top up (${credits} credits)`,
+            reference: `ai_credit_${credits}_${Date.now()}`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        await ensureAiCreditRow();
+
+        const { data: creditRow, error: creditGetErr } = await supabaseClient
+          .from("ai_credits")
+          .select("id,balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (creditGetErr || !creditRow) {
+          throw new Error("AI credit record not found.");
+        }
+
+        const newCreditBalance = Number(creditRow.balance || 0) + Number(credits);
+
+        const { error: creditUpdateErr } = await supabaseClient
+          .from("ai_credits")
+          .update({
+            balance: newCreditBalance,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", creditRow.id);
+
+        if (creditUpdateErr) throw creditUpdateErr;
+
+        walletBalance = walletNewBalance;
+        currentCredits = newCreditBalance;
+        updateUi();
+
+        showNotice(`${credits} AI credits added successfully.`, "success", 2600);
+      } catch (error) {
+        showNotice(error.message || "Could not top up credits.", "error", 4200);
+      }
+    }
+
+    function bindActions() {
+      document.querySelectorAll("[data-plan]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const plan = btn.dataset.plan;
+          const price = btn.dataset.price;
+          upgradePlan(plan, price);
+        });
+      });
+
+      document.querySelectorAll(".credit-buy-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const credits = btn.dataset.credits;
+          const price = btn.dataset.price;
+          buyCredits(credits, price);
+        });
+      });
+
+      walletTopUpBtn.addEventListener("click", () => {
+        const value = topUpSelect.value;
+        if (!value) {
+          showNotice("Select a credit pack first.", "error");
+          return;
+        }
+
+        const [credits, price] = value.split("|");
+        buyCredits(credits, price);
+      });
+    }
+
+    async function init() {
+      currentUser = await protectPage("home.html");
+      if (!currentUser) return;
+
+      setFromMessage();
+      await loadPlan();
+      bindActions();
+    }
+
+    init();
+  </script>
+</body>
+</html>

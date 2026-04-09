@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Earnings History | View</title>
+  <meta name="theme-color" content="#0b1454" />
+  <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden;}
+    :root{
+      --bg:#07103a; --bg2:#0b1454; --card:rgba(255,255,255,.08); --card2:rgba(255,255,255,.06);
+      --line:rgba(255,255,255,.09); --text:#f5f7ff; --muted:#b8c3ff; --soft:#8fa1ff;
+      --red:#ff4d67; --blue:#4f7cff; --green:#1bc47d; --shadow:0 16px 40px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{
+      margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(255,77,103,.16), transparent 20%),
+        radial-gradient(circle at top left, rgba(79,124,255,.22), transparent 22%),
+        linear-gradient(180deg,var(--bg2),#060d2f 42%, #040922 100%);
+      min-height:100vh;
+    }
+    a{text-decoration:none;color:inherit}
+    button{font:inherit}
+    .app{width:min(100%,430px);margin:0 auto;min-height:100vh;padding:calc(10px + var(--safe-top)) 14px calc(18px + var(--safe-bottom))}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+    .back-btn,.icon-btn{
+      width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);
+      display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)
+    }
+    .brand{display:flex;align-items:center;gap:10px;flex:1;justify-content:center}
+    .brand img{width:32px;height:32px;border-radius:10px;object-fit:cover}
+    .brand h1{margin:0;font-size:15px}
+    .brand p{margin:2px 0 0;font-size:11px;color:var(--muted)}
+
+    .summary{
+      border:1px solid var(--line);background:linear-gradient(135deg, rgba(255,77,103,.18), rgba(79,124,255,.2));
+      border-radius:22px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px
+    }
+    .summary h2{margin:0;font-size:14px}
+    .summary strong{display:block;margin-top:7px;font-size:28px}
+    .summary p{margin:6px 0 0;font-size:11px;color:var(--muted);line-height:1.5}
+
+    .card{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:12px;box-shadow:var(--shadow);backdrop-filter:blur(10px)}
+    .list{display:flex;flex-direction:column;gap:8px}
+    .item{
+      display:flex;align-items:center;gap:10px;padding:10px;border-radius:16px;background:var(--card2);border:1px solid var(--line)
+    }
+    .ico{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center}
+    .main{min-width:0;flex:1}
+    .main h3{margin:0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .main p{margin:4px 0 0;font-size:10px;color:var(--muted)}
+    .right{text-align:right}
+    .right strong{display:block;font-size:13px;color:#c4ffe3}
+    .right span{display:block;margin-top:4px;font-size:10px;color:var(--muted)}
+    .empty{text-align:center;padding:18px 10px;border:1px dashed var(--line);border-radius:16px;color:var(--muted);font-size:12px;background:rgba(255,255,255,.03)}
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    document.documentElement.classList.add("auth-loading");
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+    });
+    async function protectPage(nextPage) {
+      try {
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if (!user) {
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      } catch {
+        location.replace("login.html");
+        return null;
+      }
+    }
+    const naira = v => new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN"}).format(Number(v||0));
+    const dateFmt = v => new Date(v).toLocaleString("en-NG",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
+    function isEarningTx(tx){
+      const t = `${tx.description || ""} ${tx.reference || ""} ${tx.type || ""}`.toLowerCase();
+      return /earning|referral|reward|commission|creator|bonus/.test(t);
+    }
+  </script>
+</head>
+<body>
+  <main class="app">
+    <div class="topbar">
+      <a class="back-btn" href="earnings.html" aria-label="Back">←</a>
+      <div class="brand">
+        <img src="icons/view-logo.png" alt="View logo" />
+        <div>
+          <h1>Earnings History</h1>
+          <p>All earnings records</p>
+        </div>
+      </div>
+      <a class="icon-btn" href="earnings.html" aria-label="Earnings">⌂</a>
+    </div>
+
+    <section class="summary">
+      <h2>Total Earnings</h2>
+      <strong id="sumValue">₦0.00</strong>
+      <p>Only earning-related records appear here.</p>
+    </section>
+
+    <section class="card">
+      <div id="list" class="list">
+        <div class="empty">Loading earnings history...</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (async () => {
+      const user = await protectPage("home.html");
+      if (!user) return;
+
+      const listEl = document.getElementById("list");
+      const sumValueEl = document.getElementById("sumValue");
+
+      try{
+        const { data, error } = await supabaseClient
+          .from("wallet_transactions")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const rows = (data || []).filter(isEarningTx);
+        const sum = rows.reduce((s, tx) => s + Number(tx.amount || 0), 0);
+        sumValueEl.textContent = naira(sum);
+
+        if (!rows.length) {
+          listEl.innerHTML = `<div class="empty">No earnings records yet.</div>`;
+          return;
+        }
+
+        listEl.innerHTML = rows.map(tx => `
+          <a class="item" href="transaction-details.html?id=${encodeURIComponent(tx.id)}&back=${encodeURIComponent("earnings-history.html")}">
+            <div class="ico">💸</div>
+            <div class="main">
+              <h3>${(tx.description || "Earning").replace(/</g,"&lt;")}</h3>
+              <p>${(tx.reference || "No reference").replace(/</g,"&lt;")} • ${dateFmt(tx.created_at)}</p>
+            </div>
+            <div class="right">
+              <strong>+${naira(tx.amount || 0)}</strong>
+              <span>${(tx.status || "success").replace(/</g,"&lt;")}</span>
+            </div>
+          </a>
+        `).join("");
+      } catch(err){
+        console.error(err);
+        listEl.innerHTML = `<div class="empty">Unable to load earnings history.</div>`;
+      }
+    })();
+  </script>
+</body>
+</html>

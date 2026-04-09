@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Payment Status | View</title>
+  <meta name="theme-color" content="#0b1454" />
+  <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden}
+    :root{
+      --text:#111827;--muted:#667085;--line:#dbe4ff;
+      --primary:#2563eb;--primary2:#4f46e5;--red:#ef4444;
+      --success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+    body{
+      min-height:100vh;padding:20px;display:flex;align-items:center;justify-content:center;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+      color:var(--text);
+    }
+    .card{
+      width:min(100%,460px);background:#fff;border:1px solid var(--line);
+      border-radius:28px;padding:20px;display:grid;gap:16px;
+      box-shadow:0 16px 44px rgba(8,17,76,.16);
+    }
+    .head{
+      padding:18px;border-radius:18px;color:#fff;
+      background:linear-gradient(135deg,#0b1454,#2563eb,#4f46e5,#ef4444);
+    }
+    .title{font-size:22px;font-weight:800;margin-bottom:4px}
+    .sub{font-size:13px;opacity:.9}
+    .status-wrap{display:grid;justify-items:center;text-align:center;gap:12px}
+    .ring{
+      width:84px;height:84px;border-radius:50%;display:grid;place-items:center;
+      border:1px solid var(--line);background:#f8fbff;
+    }
+    .spinner{
+      width:38px;height:38px;border-radius:50%;
+      border:4px solid #dbe4ff;border-top-color:var(--primary);
+      animation:spin 1s linear infinite;
+    }
+    .icon{display:none;font-size:34px;font-weight:800}
+    .icon.success{color:var(--success)}
+    .icon.warning{color:var(--warning)}
+    .icon.failed{color:var(--danger)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .status-title{font-size:22px;font-weight:800;color:#0b1454}
+    .status-text{font-size:14px;color:var(--muted);line-height:1.6}
+    .box{
+      border:1px solid var(--line);border-radius:18px;padding:14px;background:#fff;display:grid;gap:10px;
+    }
+    .row{display:flex;justify-content:space-between;gap:10px}
+    .label{font-size:12px;color:var(--muted);font-weight:700}
+    .value{font-size:13px;color:#111827;font-weight:700;text-align:right;word-break:break-word}
+    .wallet{
+      border:1px solid #dbeafe;border-radius:18px;padding:14px;
+      background:linear-gradient(135deg, rgba(37,99,235,.05), rgba(79,70,229,.05), rgba(239,68,68,.04));
+    }
+    .wallet .b{font-size:28px;font-weight:800;color:#0b1454;margin-top:6px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{
+      flex:1;min-height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+      text-decoration:none;font-size:14px;font-weight:700;padding:0 16px;border:1px solid var(--line);
+      background:#fff;color:#111827;
+    }
+    .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));border-color:transparent;color:#fff}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    document.documentElement.classList.add("auth-loading");
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJ9.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+    });
+    async function protectPage(nextPage){
+      const { data } = await supabaseClient.auth.getSession();
+      const user = data?.session?.user;
+      if(!user){
+        location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+        return null;
+      }
+      document.documentElement.classList.remove("auth-loading");
+      return user;
+    }
+  </script>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <div class="title">Payment Status</div>
+      <div class="sub">VIEW | by Ceetify</div>
+    </div>
+
+    <div class="status-wrap">
+      <div class="ring">
+        <div id="spinner" class="spinner"></div>
+        <div id="successIcon" class="icon success">✓</div>
+        <div id="warningIcon" class="icon warning">!</div>
+        <div id="failedIcon" class="icon failed">×</div>
+      </div>
+      <div id="statusTitle" class="status-title">Processing Payment</div>
+      <div id="statusText" class="status-text">Please wait while we confirm your payment and update your wallet.</div>
+    </div>
+
+    <div class="box">
+      <div class="row"><div class="label">Reference</div><div id="referenceValue" class="value">--</div></div>
+      <div class="row"><div class="label">Provider</div><div id="providerValue" class="value">--</div></div>
+      <div class="row"><div class="label">Funding Status</div><div id="fundingStatusValue" class="value">Checking...</div></div>
+      <div class="row"><div class="label">Amount</div><div id="amountValue" class="value">--</div></div>
+    </div>
+
+    <div class="wallet">
+      <div class="label">Current Wallet Balance</div>
+      <div id="walletBalance" class="b">₦0.00</div>
+    </div>
+
+    <div class="actions">
+      <a class="btn" href="wallet.html">Open Wallet</a>
+      <a class="btn primary" href="home.html">Go Home</a>
+    </div>
+  </div>
+
+  <script>
+    const spinner = document.getElementById("spinner");
+    const successIcon = document.getElementById("successIcon");
+    const warningIcon = document.getElementById("warningIcon");
+    const failedIcon = document.getElementById("failedIcon");
+    const statusTitle = document.getElementById("statusTitle");
+    const statusText = document.getElementById("statusText");
+    const referenceValue = document.getElementById("referenceValue");
+    const providerValue = document.getElementById("providerValue");
+    const fundingStatusValue = document.getElementById("fundingStatusValue");
+    const amountValue = document.getElementById("amountValue");
+    const walletBalanceEl = document.getElementById("walletBalance");
+
+    let currentUser = null;
+
+    function formatNaira(value){
+      return `₦${Number(value || 0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    }
+
+    function getParams(){
+      const url = new URL(window.location.href);
+      return {
+        reference:
+          url.searchParams.get("reference") ||
+          url.searchParams.get("ref") ||
+          url.searchParams.get("trxref") ||
+          url.searchParams.get("tx_ref") ||
+          "",
+        provider: url.searchParams.get("provider") || ""
+      };
+    }
+
+    function setStatus(type, title, text){
+      spinner.style.display = type === "loading" ? "block" : "none";
+      successIcon.style.display = type === "success" ? "block" : "none";
+      warningIcon.style.display = type === "warning" ? "block" : "none";
+      failedIcon.style.display = type === "failed" ? "block" : "none";
+      statusTitle.textContent = title;
+      statusText.textContent = text;
+    }
+
+    async function loadWallet(){
+      const { data: wallet } = await supabaseClient
+        .from("wallets")
+        .select("balance")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+      walletBalanceEl.textContent = formatNaira(wallet?.balance || 0);
+    }
+
+    async function pollFunding(){
+      const params = getParams();
+      referenceValue.textContent = params.reference || "--";
+      providerValue.textContent = params.provider || "--";
+
+      let attempts = 0;
+      const maxAttempts = 24;
+
+      const run = async () => {
+        attempts++;
+
+        let query = supabaseClient
+          .from("wallet_funding_requests")
+          .select("reference,provider,status,amount,created_at")
+          .eq("user_id", currentUser.id);
+
+        if(params.reference){
+          query = query.eq("reference", params.reference);
+        }else{
+          query = query.order("created_at", { ascending:false }).limit(1);
+        }
+
+        const { data: funding } = await query.maybeSingle();
+
+        if(funding){
+          referenceValue.textContent = funding.reference || "--";
+          providerValue.textContent = funding.provider || params.provider || "--";
+          fundingStatusValue.textContent = funding.status || "pending";
+          amountValue.textContent = formatNaira(funding.amount || 0);
+
+          if(funding.status === "success"){
+            await loadWallet();
+            setStatus("success", "Payment Successful", "Your wallet has been credited successfully.");
+            return;
+          }
+
+          if(["failed","cancelled","expired"].includes(String(funding.status || "").toLowerCase())){
+            await loadWallet();
+            setStatus("failed", "Payment Failed", "Your payment was not completed successfully.");
+            return;
+          }
+        }
+
+        if(attempts >= maxAttempts){
+          await loadWallet();
+          setStatus("warning", "Still Processing", "Payment is still being confirmed. Check your wallet shortly.");
+          return;
+        }
+
+        setTimeout(run, 2500);
+      };
+
+      await loadWallet();
+      setStatus("loading", "Processing Payment", "Please wait while we confirm your payment and update your wallet.");
+      await run();
+    }
+
+    async function init(){
+      currentUser = await protectPage("home.html");
+      if(!currentUser) return;
+      await pollFunding();
+    }
+
+    init();
+  </script>
+</body>
+</html>

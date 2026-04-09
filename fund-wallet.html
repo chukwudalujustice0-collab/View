@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Fund Wallet | View</title>
+  <meta name="theme-color" content="#0b1454" />
+  <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden;}
+
+    :root{
+      --bg:#08114c;
+      --bg2:#0b1454;
+      --bg3:#10207a;
+      --panel:#ffffff;
+      --text:#111827;
+      --muted:#667085;
+      --line:#dbe4ff;
+      --primary:#2563eb;
+      --primary2:#4f46e5;
+      --red:#ef4444;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --shadow:0 16px 44px rgba(8,17,76,.16);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+      color:var(--text);
+      padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,input,select{
+      font:inherit;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      background:none;
+      cursor:pointer;
+    }
+
+    .wrap{
+      width:min(100%, 860px);
+      margin:0 auto;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.55;
+      box-shadow:var(--shadow-soft);
+    }
+    .notice.show{display:block}
+    .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+      box-shadow:var(--shadow-soft);
+      font-size:18px;
+      color:#111827;
+    }
+
+    .brand-box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-logo{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      object-fit:cover;
+      box-shadow:0 8px 20px rgba(37,99,235,.15);
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+    }
+
+    .title-box{
+      min-width:0;
+      flex:1;
+    }
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#0b1454;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .section{
+      background:rgba(255,255,255,.95);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .section-body{
+      padding:14px;
+      display:grid;
+      gap:14px;
+    }
+
+    .hero{
+      display:grid;
+      gap:12px;
+      padding:18px;
+      border-radius:18px;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.16), transparent 30%),
+        linear-gradient(135deg,#0b1454,#2563eb,#4f46e5,#ef4444);
+      color:#fff;
+      box-shadow:0 14px 34px rgba(37,99,235,.18);
+    }
+
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .hero-title{
+      font-size:14px;
+      font-weight:700;
+      opacity:.92;
+    }
+
+    .hero-balance{
+      font-size:32px;
+      font-weight:800;
+      line-height:1;
+      margin-top:4px;
+    }
+
+    .hero-sub{
+      font-size:12px;
+      opacity:.9;
+      line-height:1.55;
+    }
+
+    .hero-pills{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .hero-pill{
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.2);
+      color:#fff;
+      font-size:11px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    .label{
+      font-size:13px;
+      font-weight:700;
+      color:#374151;
+    }
+
+    .input,
+    .select{
+      width:100%;
+      min-height:50px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:0 14px;
+      outline:none;
+    }
+
+    .input:focus,
+    .select:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 3px rgba(37,99,235,.08);
+    }
+
+    .quick-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+
+    .quick-btn{
+      min-height:48px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-size:14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:0 12px;
+      cursor:pointer;
+    }
+
+    .quick-btn.active{
+      background:#eef4ff;
+      border-color:#93c5fd;
+      color:#1d4ed8;
+    }
+
+    .provider-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .provider-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:8px;
+      cursor:pointer;
+    }
+
+    .provider-card.active{
+      background:#eef4ff;
+      border-color:#93c5fd;
+    }
+
+    .provider-name{
+      font-size:15px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .provider-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .summary-card{
+      border:1px solid #dbeafe;
+      background:linear-gradient(135deg, rgba(37,99,235,.05), rgba(79,70,229,.05), rgba(239,68,68,.04));
+      border-radius:18px;
+      padding:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .summary-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .summary-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .summary-value{
+      font-size:14px;
+      color:#111827;
+      font-weight:800;
+      text-align:right;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      flex:1;
+      min-height:50px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-size:14px;
+      font-weight:700;
+      text-decoration:none;
+      padding:0 16px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111827;
+      cursor:pointer;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.ghost{
+      background:#fff;
+      border:1px solid var(--line);
+      color:#111827;
+    }
+
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    @media (max-width:720px){
+      .quick-grid,
+      .provider-grid{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    document.documentElement.classList.add("auth-loading");
+
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const INIT_FUNDING_FUNCTION_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/init-wallet-funding";
+
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:true,
+        flowType:"pkce"
+      }
+    });
+
+    async function protectPage(nextPage){
+      try{
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if(!user){
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      }catch(e){
+        document.documentElement.classList.remove("auth-loading");
+        location.replace("login.html");
+        return null;
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="wallet.html" aria-label="Back">←</a>
+
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+          <div class="title-box">
+            <div class="title">Fund Wallet</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="hero">
+          <div class="hero-top">
+            <div>
+              <div class="hero-title">Current Wallet Balance</div>
+              <div id="walletBalance" class="hero-balance">$0.00</div>
+            </div>
+            <div class="hero-pills">
+              <div id="planPill" class="hero-pill">Plan: --</div>
+              <div id="creditPill" class="hero-pill">AI Credits: --</div>
+            </div>
+          </div>
+          <div class="hero-sub">
+            Add money to your wallet using Paystack or Flutterwave. Your wallet will update automatically after provider confirmation.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="field">
+          <label class="label" for="amountInput">Amount</label>
+          <input id="amountInput" class="input" type="number" min="1" step="1" placeholder="Enter amount" />
+        </div>
+
+        <div class="field">
+          <div class="label">Quick amounts</div>
+          <div class="quick-grid">
+            <button class="quick-btn" type="button" data-amount="1000">₦1,000</button>
+            <button class="quick-btn" type="button" data-amount="2000">₦2,000</button>
+            <button class="quick-btn" type="button" data-amount="5000">₦5,000</button>
+            <button class="quick-btn" type="button" data-amount="10000">₦10,000</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="label">Choose provider</div>
+          <div class="provider-grid">
+            <button id="paystackCard" class="provider-card active" type="button" data-provider="paystack">
+              <div class="provider-name">Paystack</div>
+              <div class="provider-sub">Fast and simple checkout for NGN payments.</div>
+            </button>
+
+            <button id="flutterwaveCard" class="provider-card" type="button" data-provider="flutterwave">
+              <div class="provider-name">Flutterwave</div>
+              <div class="provider-sub">Alternative payment option for wallet funding.</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-row">
+            <div class="summary-label">Amount to fund</div>
+            <div id="summaryAmount" class="summary-value">$0.00</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">Selected provider</div>
+            <div id="summaryProvider" class="summary-value">Paystack</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">Currency</div>
+            <div class="summary-value">NGN</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="fundBtn" class="btn primary" type="button">Continue to Payment</button>
+          <a class="btn ghost" href="wallet.html">Back to Wallet</a>
+        </div>
+
+        <div class="hint">
+          After payment, you will be redirected back to the app and your wallet balance will refresh after successful webhook confirmation.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const walletBalanceEl = document.getElementById("walletBalance");
+    const planPill = document.getElementById("planPill");
+    const creditPill = document.getElementById("creditPill");
+    const amountInput = document.getElementById("amountInput");
+    const summaryAmount = document.getElementById("summaryAmount");
+    const summaryProvider = document.getElementById("summaryProvider");
+    const fundBtn = document.getElementById("fundBtn");
+    const quickButtons = Array.from(document.querySelectorAll(".quick-btn"));
+    const providerCards = Array.from(document.querySelectorAll(".provider-card"));
+
+    let currentUser = null;
+    let walletBalance = 0;
+    let currentPlan = "Free";
+    let currentCredits = 0;
+    let selectedProvider = "paystack";
+
+    function showNotice(message, type = "info", duration = 3200){
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      if(duration > 0){
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, duration);
+      }
+    }
+
+    function formatNaira(value){
+      return `₦${Number(value || 0).toLocaleString()}`;
+    }
+
+    function formatDollar(value){
+      return `$${Number(value || 0).toFixed(2)}`;
+    }
+
+    function updateSummary(){
+      const amount = Number(amountInput.value || 0);
+      summaryAmount.textContent = formatNaira(amount);
+      summaryProvider.textContent = selectedProvider === "paystack" ? "Paystack" : "Flutterwave";
+    }
+
+    function updateProviderUi(){
+      providerCards.forEach(card => {
+        card.classList.toggle("active", card.dataset.provider === selectedProvider);
+      });
+      updateSummary();
+    }
+
+    async function loadWalletAndPlan(){
+      try{
+        const { data: wallet } = await supabaseClient
+          .from("wallets")
+          .select("balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        walletBalance = Number(wallet?.balance || 0);
+        walletBalanceEl.textContent = formatDollar(walletBalance);
+      }catch(_){
+        walletBalanceEl.textContent = "$0.00";
+      }
+
+      try{
+        const { data: sub } = await supabaseClient
+          .from("user_subscriptions")
+          .select("plan_name,status")
+          .eq("user_id", currentUser.id)
+          .eq("status", "active")
+          .order("created_at", { ascending:false })
+          .limit(1)
+          .maybeSingle();
+
+        currentPlan = sub?.plan_name || "Free";
+      }catch(_){
+        currentPlan = "Free";
+      }
+
+      try{
+        const { data: credits } = await supabaseClient
+          .from("ai_credits")
+          .select("balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        currentCredits = Number(credits?.balance || 0);
+      }catch(_){
+        currentCredits = 0;
+      }
+
+      planPill.textContent = `Plan: ${currentPlan}`;
+      creditPill.textContent = `AI Credits: ${currentCredits}`;
+    }
+
+    function bindQuickAmounts(){
+      quickButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          quickButtons.forEach(x => x.classList.remove("active"));
+          btn.classList.add("active");
+          amountInput.value = btn.dataset.amount || "";
+          updateSummary();
+        });
+      });
+    }
+
+    function bindProviders(){
+      providerCards.forEach(card => {
+        card.addEventListener("click", () => {
+          selectedProvider = card.dataset.provider || "paystack";
+          updateProviderUi();
+        });
+      });
+    }
+
+    async function startFunding(){
+      const amount = Number(amountInput.value || 0);
+
+      if(!amount || amount < 1){
+        showNotice("Enter a valid amount to fund.", "error");
+        return;
+      }
+
+      fundBtn.disabled = true;
+      fundBtn.textContent = "Preparing Payment...";
+
+      try{
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        const token = sessionData?.session?.access_token;
+
+        if(!token){
+          throw new Error("Session expired. Please login again.");
+        }
+
+        const res = await fetch(INIT_FUNDING_FUNCTION_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            amount,
+            provider: selectedProvider
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if(!res.ok){
+          throw new Error(data?.error || "Could not initialize payment.");
+        }
+
+        if(!data?.payment_link){
+          throw new Error("Payment link was not returned.");
+        }
+
+        showNotice("Redirecting to payment page...", "success", 1500);
+
+        setTimeout(() => {
+          window.location.href = data.payment_link;
+        }, 500);
+      }catch(error){
+        showNotice(error.message || "Could not start funding.", "error", 4200);
+      }finally{
+        fundBtn.disabled = false;
+        fundBtn.textContent = "Continue to Payment";
+      }
+    }
+
+    async function init(){
+      currentUser = await protectPage("wallet.html");
+      if(!currentUser) return;
+
+      bindQuickAmounts();
+      bindProviders();
+
+      amountInput.addEventListener("input", () => {
+        quickButtons.forEach(x => x.classList.remove("active"));
+        updateSummary();
+      });
+
+      fundBtn.addEventListener("click", startFunding);
+
+      updateProviderUi();
+      await loadWalletAndPlan();
+      updateSummary();
+    }
+
+    init();
+  </script>
+</body>
+</html>

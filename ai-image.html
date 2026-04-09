@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>AI Image Generator | View</title>
+  <meta name="theme-color" content="#0b1454" />
+
+  <style>
+    html.auth-loading, html.auth-loading body{
+      visibility:hidden;
+    }
+
+    :root{
+      --bg:#08114c;
+      --bg2:#0b1454;
+      --bg3:#0a1b6f;
+      --panel:#ffffff;
+      --panel2:#f8fbff;
+      --text:#111827;
+      --muted:#667085;
+      --line:#dbe4ff;
+      --primary:#2563eb;
+      --primary2:#4f46e5;
+      --red:#ef4444;
+      --red2:#ff5f7a;
+      --success:#10b981;
+      --danger:#ef4444;
+      --shadow:0 16px 40px rgba(8,17,76,.14);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+      color:var(--text);
+    }
+
+    body{
+      padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,input,textarea,select{
+      font:inherit;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      background:none;
+      cursor:pointer;
+    }
+
+    .wrap{
+      width:min(100%, 860px);
+      margin:0 auto;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.55;
+      box-shadow:var(--shadow-soft);
+    }
+    .notice.show{display:block}
+    .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+      box-shadow:var(--shadow-soft);
+      font-size:18px;
+      color:#111827;
+    }
+
+    .brand-box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-logo{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      object-fit:cover;
+      box-shadow:0 8px 20px rgba(37,99,235,.15);
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+    }
+
+    .title-box{
+      min-width:0;
+      flex:1;
+    }
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#0b1454;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .section{
+      background:rgba(255,255,255,.95);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .section-body{
+      padding:14px;
+      display:grid;
+      gap:14px;
+    }
+
+    .status-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .status-left{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .status-title{
+      font-size:14px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .status-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .pills{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .pill{
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#f8fbff;
+      color:#475569;
+      font-size:11px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    .label{
+      font-size:13px;
+      font-weight:700;
+      color:#374151;
+    }
+
+    .input,
+    .textarea,
+    .select{
+      width:100%;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:14px;
+      outline:none;
+    }
+
+    .input:focus,
+    .textarea:focus,
+    .select:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 3px rgba(37,99,235,.08);
+    }
+
+    .textarea{
+      min-height:120px;
+      resize:vertical;
+      line-height:1.6;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .hint{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      flex:1;
+      min-height:48px;
+      padding:0 16px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111827;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.ghost{
+      background:#fff;
+      border:1px solid var(--line);
+      color:#111827;
+    }
+
+    .btn.success{
+      background:linear-gradient(135deg,#059669,#10b981);
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .preview-wrap{
+      display:grid;
+      gap:10px;
+    }
+
+    .preview-box{
+      min-height:280px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:linear-gradient(135deg,#eff6ff,#f8fbff);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+
+    .preview-placeholder{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:10px;
+      color:#1d4ed8;
+      text-align:center;
+      padding:18px;
+    }
+
+    .preview-placeholder span{
+      font-size:44px;
+      line-height:1;
+    }
+
+    .preview-placeholder small{
+      font-size:12px;
+      color:#475569;
+      line-height:1.5;
+      max-width:260px;
+    }
+
+    .generated-image{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:none;
+    }
+
+    .generated-image.show{
+      display:block;
+    }
+
+    .preview-meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .preview-title{
+      font-size:13px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .preview-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    @media (max-width:720px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
+
+    async function protectPage(nextPage) {
+      try {
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if (!user) {
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      } catch (e) {
+        document.documentElement.classList.remove("auth-loading");
+        location.replace("login.html");
+        return null;
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="ai-dashboard.html" aria-label="Back">←</a>
+
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+          <div class="title-box">
+            <div class="title">AI Image</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-right">
+        <a class="icon-btn" href="ai-upgrade.html?from=ai-image" aria-label="Top Up">+</a>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="status-row">
+          <div class="status-left">
+            <div class="status-title">Image Generation Status</div>
+            <div class="status-sub" id="statusText">Checking your plan and AI credits...</div>
+          </div>
+          <div class="pills">
+            <div class="pill" id="planPill">Plan: --</div>
+            <div class="pill" id="creditPill">Credits: --</div>
+            <div class="pill">Cost: 10 credits</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="field">
+          <label class="label" for="promptInput">Describe the image you want</label>
+          <textarea id="promptInput" class="textarea" placeholder="Example: Create a premium social media flyer image for a bridal and catering business with luxury flowers, elegant lighting, and a modern professional feel."></textarea>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label class="label" for="styleSelect">Style</label>
+            <select id="styleSelect" class="select">
+              <option value="realistic">Realistic</option>
+              <option value="luxury">Luxury</option>
+              <option value="minimal">Minimal</option>
+              <option value="cinematic">Cinematic</option>
+              <option value="poster">Poster</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="label" for="sizeSelect">Size</label>
+            <select id="sizeSelect" class="select">
+              <option value="square">Square</option>
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="hint">Image generation is a premium AI feature. Each successful generation deducts 10 credits.</div>
+
+        <div class="actions">
+          <button id="generateBtn" class="btn primary" type="button">Generate Image</button>
+          <a href="ai-upgrade.html?from=ai-image" class="btn ghost" style="display:flex;align-items:center;justify-content:center;flex:1">Upgrade / Top Up</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-body preview-wrap">
+        <div class="preview-meta">
+          <div>
+            <div class="preview-title">Generated Preview</div>
+            <div class="preview-sub" id="previewSub">Your AI image will appear here after generation.</div>
+          </div>
+        </div>
+
+        <div class="preview-box">
+          <div id="previewPlaceholder" class="preview-placeholder">
+            <span>🖼️</span>
+            <small>No image generated yet</small>
+          </div>
+          <img id="generatedImage" class="generated-image" alt="Generated AI image" />
+        </div>
+
+        <div class="actions">
+          <button id="useInPostBtn" class="btn success" type="button" disabled>Use in Post</button>
+          <button id="downloadBtn" class="btn ghost" type="button" disabled>Download</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const GENERATE_IMAGE_FUNCTION_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/generate-image";
+
+    const noticeBox = document.getElementById("notice");
+    const statusText = document.getElementById("statusText");
+    const planPill = document.getElementById("planPill");
+    const creditPill = document.getElementById("creditPill");
+    const promptInput = document.getElementById("promptInput");
+    const styleSelect = document.getElementById("styleSelect");
+    const sizeSelect = document.getElementById("sizeSelect");
+    const generateBtn = document.getElementById("generateBtn");
+    const previewSub = document.getElementById("previewSub");
+    const previewPlaceholder = document.getElementById("previewPlaceholder");
+    const generatedImage = document.getElementById("generatedImage");
+    const useInPostBtn = document.getElementById("useInPostBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    let currentUser = null;
+    let currentPlan = "Free";
+    let currentCredits = 0;
+    let generatedImageUrl = "";
+
+    function showNotice(message, type = "info", duration = 3200) {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      if (duration > 0) {
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, duration);
+      }
+    }
+
+    function updateStatusUI() {
+      planPill.textContent = `Plan: ${currentPlan || "Free"}`;
+      creditPill.textContent = `Credits: ${currentCredits}`;
+      statusText.textContent = `${currentPlan || "Free"} plan • ${currentCredits} credits available`;
+    }
+
+    async function loadAccess() {
+      currentPlan = "Free";
+      currentCredits = 0;
+
+      try {
+        const { data: sub } = await supabaseClient
+          .from("user_subscriptions")
+          .select("plan_name,status")
+          .eq("user_id", currentUser.id)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (sub?.plan_name) currentPlan = sub.plan_name;
+      } catch (_) {}
+
+      try {
+        const { data: creditRow } = await supabaseClient
+          .from("ai_credits")
+          .select("balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (creditRow && typeof creditRow.balance !== "undefined") {
+          currentCredits = Number(creditRow.balance || 0);
+        }
+      } catch (_) {}
+
+      updateStatusUI();
+    }
+
+    function planSupportsImage() {
+      return ["Plus", "Pro", "Enterprise"].includes(String(currentPlan || "").trim());
+    }
+
+    function goUpgrade(message) {
+      if (message) showNotice(message, "error", 2400);
+      setTimeout(() => {
+        window.location.href = "ai-upgrade.html?from=ai-image";
+      }, 700);
+    }
+
+    function setGeneratedImage(url) {
+      generatedImageUrl = url || "";
+      if (!generatedImageUrl) return;
+
+      generatedImage.src = generatedImageUrl;
+      generatedImage.classList.add("show");
+      previewPlaceholder.style.display = "none";
+      previewSub.textContent = "Your generated image is ready.";
+      useInPostBtn.disabled = false;
+      downloadBtn.disabled = false;
+    }
+
+    async function generateImage() {
+      const prompt = promptInput.value.trim();
+      const style = styleSelect.value;
+      const size = sizeSelect.value;
+
+      if (!prompt) {
+        showNotice("Describe the image you want to generate.", "error");
+        return;
+      }
+
+      if (!planSupportsImage()) {
+        goUpgrade("Your current plan does not support AI image generation.");
+        return;
+      }
+
+      if (currentCredits < 10) {
+        goUpgrade("You do not have enough AI credits for image generation.");
+        return;
+      }
+
+      generateBtn.disabled = true;
+      statusText.textContent = "Generating image...";
+
+      try {
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        const token = sessionData?.session?.access_token;
+
+        if (!token) {
+          throw new Error("Session expired. Please login again.");
+        }
+
+        const res = await fetch(GENERATE_IMAGE_FUNCTION_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            prompt,
+            style,
+            size,
+            mode: "image"
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          if (data?.code === "PLAN_NOT_SUPPORTED") {
+            goUpgrade("Upgrade your plan to use AI image generation.");
+            return;
+          }
+
+          if (data?.code === "NO_AI_CREDIT") {
+            goUpgrade("You do not have enough AI credits. Top up now.");
+            return;
+          }
+
+          throw new Error(data?.error || "Image generation failed.");
+        }
+
+        const imageUrl = data?.image_url || data?.url || "";
+        if (!imageUrl) {
+          throw new Error("No image was returned.");
+        }
+
+        currentCredits = Number(data?.remaining_credits ?? currentCredits);
+        updateStatusUI();
+        setGeneratedImage(imageUrl);
+        statusText.textContent = `Image generated successfully • 10 credits used • ${currentCredits} left`;
+        showNotice("Image generated successfully.", "success");
+      } catch (error) {
+        statusText.textContent = "Image generation failed.";
+        showNotice(error.message || "Could not generate image.", "error", 4200);
+      } finally {
+        generateBtn.disabled = false;
+      }
+    }
+
+    function useInPost() {
+      if (!generatedImageUrl) {
+        showNotice("No generated image to use yet.", "error");
+        return;
+      }
+
+      sessionStorage.setItem("view_ai_generated_image_url", generatedImageUrl);
+      sessionStorage.setItem("view_ai_generated_image_prompt", promptInput.value.trim());
+      window.location.href = "create-post.html?from=ai-image";
+    }
+
+    function downloadImage() {
+      if (!generatedImageUrl) {
+        showNotice("No generated image available.", "error");
+        return;
+      }
+
+      const a = document.createElement("a");
+      a.href = generatedImageUrl;
+      a.download = `view-ai-image-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    async function init() {
+      currentUser = await protectPage("home.html");
+      if (!currentUser) return;
+      await loadAccess();
+
+      generateBtn.addEventListener("click", generateImage);
+      useInPostBtn.addEventListener("click", useInPost);
+      downloadBtn.addEventListener("click", downloadImage);
+    }
+
+    init();
+  </script>
+</body>
+</html>

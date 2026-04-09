@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Earnings | View</title>
+  <meta name="theme-color" content="#0b1454" />
+  <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden;}
+    :root{
+      --bg:#07103a; --bg2:#0b1454; --card:rgba(255,255,255,.08); --card2:rgba(255,255,255,.06);
+      --line:rgba(255,255,255,.09); --text:#f5f7ff; --muted:#b8c3ff; --soft:#8fa1ff;
+      --red:#ff4d67; --blue:#4f7cff; --green:#1bc47d; --shadow:0 16px 40px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{
+      margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(255,77,103,.16), transparent 20%),
+        radial-gradient(circle at top left, rgba(79,124,255,.22), transparent 22%),
+        linear-gradient(180deg,var(--bg2),#060d2f 42%, #040922 100%);
+      min-height:100vh;
+    }
+    a{text-decoration:none;color:inherit}
+    button{font:inherit}
+    .app{width:min(100%,430px);margin:0 auto;min-height:100vh;padding:calc(10px + var(--safe-top)) 14px calc(18px + var(--safe-bottom))}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+    .back-btn,.icon-btn{
+      width:40px;height:40px;border-radius:12px;border:1px solid var(--line);
+      background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;
+      box-shadow:var(--shadow)
+    }
+    .brand{display:flex;align-items:center;gap:10px;flex:1;justify-content:center}
+    .brand img{width:32px;height:32px;border-radius:10px;object-fit:cover}
+    .brand h1{margin:0;font-size:15px;line-height:1.1}
+    .brand p{margin:2px 0 0;font-size:11px;color:var(--muted)}
+
+    .hero{
+      border-radius:24px;padding:16px;
+      background:linear-gradient(135deg, rgba(255,77,103,.92), rgba(108,84,255,.86) 55%, rgba(79,124,255,.92));
+      box-shadow:var(--shadow);position:relative;overflow:hidden;margin-bottom:12px;
+    }
+    .hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.14)}
+    .eyebrow{font-size:11px;opacity:.9}
+    .hero h2{margin:7px 0 0;font-size:30px;line-height:1.05}
+    .hero p{margin:8px 0 0;font-size:12px;color:#eef3ff}
+    .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .mini{
+      padding:10px;border-radius:16px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);
+      backdrop-filter:blur(8px)
+    }
+    .mini span{display:block;font-size:10px;opacity:.92}
+    .mini strong{display:block;margin-top:4px;font-size:15px}
+
+    .section{
+      margin-top:12px;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:12px;
+      box-shadow:var(--shadow);backdrop-filter:blur(10px)
+    }
+    .section-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+    .section-title h2{margin:0;font-size:14px}
+    .section-title a{font-size:11px;color:var(--soft)}
+    .action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .action{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+      min-height:76px;border-radius:16px;background:var(--card2);border:1px solid var(--line);padding:10px 6px
+    }
+    .action .icon{
+      width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg, rgba(255,77,103,.18), rgba(79,124,255,.2));font-size:16px
+    }
+    .action span{font-size:11px;font-weight:600;text-align:center;line-height:1.1}
+
+    .list{display:flex;flex-direction:column;gap:8px}
+    .item{
+      display:flex;align-items:center;gap:10px;padding:10px;border-radius:16px;background:var(--card2);border:1px solid var(--line)
+    }
+    .item .ico{
+      width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center
+    }
+    .item-main{min-width:0;flex:1}
+    .item-main h3{margin:0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .item-main p{margin:4px 0 0;font-size:10px;color:var(--muted)}
+    .item-right{text-align:right}
+    .item-right strong{display:block;font-size:13px;color:#c4ffe3}
+    .item-right span{display:block;margin-top:4px;font-size:10px;color:var(--muted)}
+    .empty{text-align:center;padding:18px 10px;border:1px dashed var(--line);border-radius:16px;color:var(--muted);font-size:12px;background:rgba(255,255,255,.03)}
+    .note{font-size:11px;color:var(--muted);line-height:1.5}
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    document.documentElement.classList.add("auth-loading");
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+    });
+
+    async function protectPage(nextPage) {
+      try {
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if (!user) {
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      } catch {
+        location.replace("login.html");
+        return null;
+      }
+    }
+
+    const naira = v => new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN"}).format(Number(v||0));
+    const dateFmt = v => new Date(v).toLocaleString("en-NG",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
+
+    function isEarningTx(tx){
+      const t = `${tx.description || ""} ${tx.reference || ""} ${tx.type || ""}`.toLowerCase();
+      return /earning|referral|reward|commission|creator|bonus/.test(t);
+    }
+  </script>
+</head>
+<body>
+  <main class="app">
+    <div class="topbar">
+      <a class="back-btn" href="wallet.html" aria-label="Back">←</a>
+      <div class="brand">
+        <img src="icons/view-logo.png" alt="View logo" />
+        <div>
+          <h1>Earnings</h1>
+          <p>Inside wallet flow</p>
+        </div>
+      </div>
+      <a class="icon-btn" href="earnings-history.html" aria-label="History">⏱</a>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">Withdrawable or move to wallet</div>
+      <h2 id="earningsTotal">₦0.00</h2>
+      <p>Only earned funds can be withdrawn. Deposited wallet funds stay for View payments.</p>
+      <div class="mini-grid">
+        <div class="mini">
+          <span>Withdrawable</span>
+          <strong id="withdrawableValue">₦0.00</strong>
+        </div>
+        <div class="mini">
+          <span>Moved To Wallet</span>
+          <strong id="movedValue">₦0.00</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Actions</h2>
+      </div>
+      <div class="action-grid">
+        <a class="action" href="withdraw.html">
+          <div class="icon">🏦</div>
+          <span>Withdraw</span>
+        </a>
+        <a class="action" href="withdrawal-account.html">
+          <div class="icon">💳</div>
+          <span>Account</span>
+        </a>
+        <button class="action" id="moveBtn" type="button">
+          <div class="icon">🔁</div>
+          <span>Move to Wallet</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Recent Earnings</h2>
+        <a href="earnings-history.html">View all</a>
+      </div>
+      <div id="earningsList" class="list">
+        <div class="empty">Loading earnings...</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Rule</h2>
+      </div>
+      <div class="note">
+        Earnings are kept separate from your spending wallet. You can withdraw earned money to your saved account or move it into your wallet for subscriptions and PAYU services.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (async () => {
+      const user = await protectPage("home.html");
+      if (!user) return;
+
+      const earningsTotalEl = document.getElementById("earningsTotal");
+      const withdrawableValueEl = document.getElementById("withdrawableValue");
+      const movedValueEl = document.getElementById("movedValue");
+      const earningsListEl = document.getElementById("earningsList");
+      const moveBtn = document.getElementById("moveBtn");
+
+      let earningTxs = [];
+      let wallet = null;
+
+      async function ensureWallet() {
+        let { data } = await supabaseClient.from("wallets").select("*").eq("user_id", user.id).maybeSingle();
+        if (!data) {
+          const { data: created, error } = await supabaseClient
+            .from("wallets")
+            .insert({ user_id: user.id, balance: 0, currency: "NGN" })
+            .select()
+            .single();
+          if (error) throw error;
+          data = created;
+        }
+        return data;
+      }
+
+      async function loadData(){
+        try{
+          wallet = await ensureWallet();
+          const { data: txs, error } = await supabaseClient
+            .from("wallet_transactions")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false });
+
+          if (error) throw error;
+
+          const all = txs || [];
+          earningTxs = all.filter(isEarningTx);
+          const totalEarnings = earningTxs.reduce((s,tx)=>s + Number(tx.amount || 0), 0);
+          const movedToWallet = all
+            .filter(tx => /move to wallet|earnings to wallet|wallet from earnings/i.test(tx.description || ""))
+            .reduce((s,tx)=>s + Math.abs(Number(tx.amount || 0)), 0);
+
+          const withdrawable = Math.max(totalEarnings - movedToWallet, 0);
+
+          earningsTotalEl.textContent = naira(totalEarnings);
+          withdrawableValueEl.textContent = naira(withdrawable);
+          movedValueEl.textContent = naira(movedToWallet);
+
+          if(!earningTxs.length){
+            earningsListEl.innerHTML = `<div class="empty">No earnings yet.</div>`;
+          } else {
+            earningsListEl.innerHTML = earningTxs.slice(0,6).map(tx => `
+              <a class="item" href="transaction-details.html?id=${encodeURIComponent(tx.id)}&back=${encodeURIComponent("earnings-history.html")}">
+                <div class="ico">💸</div>
+                <div class="item-main">
+                  <h3>${(tx.description || "Earning").replace(/</g,"&lt;")}</h3>
+                  <p>${(tx.reference || "No reference").replace(/</g,"&lt;")} • ${dateFmt(tx.created_at)}</p>
+                </div>
+                <div class="item-right">
+                  <strong>+${naira(tx.amount || 0)}</strong>
+                  <span>${(tx.status || "success").replace(/</g,"&lt;")}</span>
+                </div>
+              </a>
+            `).join("");
+          }
+
+          moveBtn.onclick = async () => {
+            if (!earningTxs.length) {
+              alert("No earnings available to move.");
+              return;
+            }
+            const raw = prompt("Enter amount to move to wallet");
+            if (!raw) return;
+            const amount = Number(String(raw).replace(/[^\d.]/g,""));
+            if (!amount || amount <= 0) {
+              alert("Enter a valid amount.");
+              return;
+            }
+            if (amount > withdrawable) {
+              alert("Amount is greater than your available earnings.");
+              return;
+            }
+
+            const newBal = Number(wallet.balance || 0) + amount;
+            const { error: updateErr } = await supabaseClient
+              .from("wallets")
+              .update({ balance: newBal, updated_at: new Date().toISOString() })
+              .eq("id", wallet.id);
+
+            if (updateErr) {
+              alert("Could not move funds.");
+              return;
+            }
+
+            await supabaseClient.from("wallet_transactions").insert({
+              wallet_id: wallet.id,
+              user_id: user.id,
+              type: "credit",
+              amount,
+              status: "success",
+              description: "Move to wallet from earnings",
+              reference: `MOVE-${Date.now()}`
+            });
+
+            alert("Earnings moved to wallet.");
+            loadData();
+          };
+        }catch(err){
+          console.error(err);
+          earningsListEl.innerHTML = `<div class="empty">Unable to load earnings.</div>`;
+        }
+      }
+
+      loadData();
+    })();
+  </script>
+</body>
+</html>

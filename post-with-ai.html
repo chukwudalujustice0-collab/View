@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post With AI | View</title>
+  <meta name="theme-color" content="#08111f" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --bg:#08111f;
+      --card:#101b31;
+      --card-2:#14213d;
+      --line:rgba(255,255,255,.08);
+      --text:#f4f7ff;
+      --muted:#9fb1d7;
+      --primary:#2563eb;
+      --purple:#8b5cf6;
+      --success:#10b981;
+      --danger:#ef4444;
+      --shadow:0 14px 40px rgba(0,0,0,.28);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+    html,body{background:var(--bg);color:var(--text);min-height:100%}
+    body{padding-bottom:95px}
+
+    .wrap{
+      max-width:760px;
+      margin:0 auto;
+      padding:16px 14px 20px;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.5;
+    }
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.12);color:#fecaca}
+    .notice.success{background:rgba(16,185,129,.12);color:#d1fae5}
+    .notice.info{background:rgba(37,99,235,.12);color:#dbeafe}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:16px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border:none;
+      border-radius:14px;
+      cursor:pointer;
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+    }
+
+    .title-box{min-width:0}
+    .title{
+      font-size:21px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .hero,
+    .tabs-card,
+    .editor-card,
+    .preview-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .hero{
+      padding:18px 16px;
+      margin-bottom:16px;
+    }
+
+    .hero h2{
+      font-size:22px;
+      margin-bottom:8px;
+    }
+
+    .hero p{
+      color:var(--muted);
+      line-height:1.6;
+      font-size:14px;
+      margin-bottom:14px;
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      min-height:44px;
+      padding:0 14px;
+      border:none;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:14px;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--purple));
+      color:#fff;
+    }
+
+    .btn.soft{
+      background:rgba(255,255,255,.07);
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    .btn.success{
+      background:var(--success);
+      color:#fff;
+    }
+
+    .tabs-card{
+      padding:10px;
+      margin-bottom:16px;
+    }
+
+    .tabs{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+    }
+
+    .tab-btn{
+      min-height:48px;
+      border:none;
+      border-radius:14px;
+      cursor:pointer;
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+      border:1px solid var(--line);
+      font-weight:700;
+      font-size:14px;
+    }
+
+    .tab-btn.active{
+      background:rgba(37,99,235,.16);
+      color:#fff;
+      border-color:rgba(37,99,235,.32);
+    }
+
+    .editor-card,
+    .preview-card{
+      overflow:hidden;
+      margin-bottom:16px;
+    }
+
+    .card-head{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .card-head h3{
+      font-size:17px;
+    }
+
+    .card-head p{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:3px;
+    }
+
+    .card-body{
+      padding:14px;
+      display:grid;
+      gap:12px;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    .field label{
+      font-size:13px;
+      font-weight:700;
+      color:#dbeafe;
+    }
+
+    .field input,
+    .field textarea,
+    .field select{
+      width:100%;
+      border:none;
+      outline:none;
+      border-radius:14px;
+      padding:14px;
+      font-size:14px;
+      color:var(--text);
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+    }
+
+    .field textarea{
+      min-height:110px;
+      resize:vertical;
+      line-height:1.6;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .tool-row,
+    .action-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .tool-btn{
+      min-height:38px;
+      padding:0 12px;
+      border:none;
+      border-radius:999px;
+      cursor:pointer;
+      background:rgba(255,255,255,.07);
+      color:var(--text);
+      border:1px solid var(--line);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .preview-box{
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      padding:14px;
+      min-height:180px;
+    }
+
+    .preview-placeholder{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+      text-align:center;
+      padding:30px 10px;
+    }
+
+    .preview-title{
+      font-size:16px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .preview-media{
+      width:100%;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      margin-bottom:12px;
+      max-height:320px;
+      object-fit:cover;
+      display:none;
+    }
+
+    .preview-text{
+      white-space:pre-wrap;
+      font-size:14px;
+      line-height:1.7;
+      color:var(--text);
+    }
+
+    .preview-meta{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+
+    .hidden{display:none !important}
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:12px;
+      width:min(760px, calc(100% - 20px));
+      background:rgba(12,20,36,.95);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:8px 6px;
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
+      box-shadow:var(--shadow);
+      z-index:40;
+    }
+
+    .nav-btn{
+      min-height:56px;
+      border:none;
+      border-radius:14px;
+      background:transparent;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+    }
+
+    .nav-btn.active{
+      background:rgba(37,99,235,.16);
+      color:#fff;
+    }
+
+    @media (max-width:640px){
+      .row,
+      .tabs{
+        grid-template-columns:1fr;
+      }
+      .hero-actions,
+      .tool-row,
+      .action-row{
+        flex-direction:column;
+      }
+      .btn,
+      .tool-btn{
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <button id="backBtn" class="icon-btn" title="Back">←</button>
+        <div class="title-box">
+          <div class="title">Post With AI</div>
+          <div class="sub">Prepare and post to View</div>
+        </div>
+      </div>
+
+      <button id="profileBtn" class="icon-btn" title="Profile">👤</button>
+    </header>
+
+    <section class="hero">
+      <h2>Create a smarter post</h2>
+      <p>Choose a post type, generate content with AI, preview it, then post to View.</p>
+      <div class="hero-actions">
+        <button id="generateMainBtn" class="btn primary">Generate With AI</button>
+        <button id="saveDraftBtn" class="btn soft">Save Draft</button>
+        <button id="postNowBtn" class="btn success">Post To View</button>
+      </div>
+    </section>
+
+    <section class="tabs-card">
+      <div class="tabs">
+        <button class="tab-btn active" data-type="text">Text Post</button>
+        <button class="tab-btn" data-type="photo">Photo Post</button>
+        <button class="tab-btn" data-type="video">Video Post</button>
+      </div>
+    </section>
+
+    <section class="editor-card">
+      <div class="card-head">
+        <div>
+          <h3>Post Editor</h3>
+          <p id="editorSub">Write and improve your text post</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="field">
+          <label for="postTitle">Title</label>
+          <input id="postTitle" type="text" placeholder="Optional post title" />
+        </div>
+
+        <div class="field">
+          <label for="postPrompt">Describe what you want</label>
+          <textarea id="postPrompt" placeholder="Example: Write a catchy post announcing new arrivals for my fashion business."></textarea>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="toneSelect">Tone</label>
+            <select id="toneSelect">
+              <option>Professional</option>
+              <option>Catchy</option>
+              <option>Friendly</option>
+              <option>Luxury</option>
+              <option>Simple</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="lengthSelect">Length</label>
+            <select id="lengthSelect">
+              <option>Short</option>
+              <option>Medium</option>
+              <option>Long</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="mediaFields" class="row hidden">
+          <div class="field">
+            <label for="mediaUrl">Media URL</label>
+            <input id="mediaUrl" type="text" placeholder="Paste image or video URL" />
+          </div>
+
+          <div class="field">
+            <label for="mediaFile">Upload Media</label>
+            <input id="mediaFile" type="file" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="captionBox">Caption / Content</label>
+          <textarea id="captionBox" placeholder="Generated content will appear here or type your own."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="hashtagsBox">Hashtags</label>
+          <input id="hashtagsBox" type="text" placeholder="#view #business #content" />
+        </div>
+
+        <div class="tool-row">
+          <button id="generateCaptionBtn" class="tool-btn">Generate Caption</button>
+          <button id="improveCaptionBtn" class="tool-btn">Improve Caption</button>
+          <button id="addHashtagsBtn" class="tool-btn">Add Hashtags</button>
+          <button id="shortenBtn" class="tool-btn">Shorten</button>
+        </div>
+
+        <div class="action-row">
+          <button id="previewBtn" class="btn soft">Preview</button>
+          <button id="sendDraftBtn" class="btn soft">Send From AI Draft</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview-card">
+      <div class="card-head">
+        <div>
+          <h3>Post Preview</h3>
+          <p>See how your content is shaping up</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div id="previewBox" class="preview-box">
+          <div class="preview-placeholder">Your post preview will appear here.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn" onclick="location.href='home.html'">🏠<span>Home</span></button>
+    <button class="nav-btn" onclick="location.href='explore.html'">🔎<span>Explore</span></button>
+    <button class="nav-btn" onclick="location.href='create-post.html'">➕<span>Create</span></button>
+    <button class="nav-btn active">📝<span>Post AI</span></button>
+    <button class="nav-btn" onclick="location.href='profile.html'">👤<span>Profile</span></button>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const SMART_ACTION_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/smart-action";
+
+    const ROUTES = {
+      back: "create-with-ai.html",
+      profile: "profile.html",
+      login: "login.html"
+    };
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const noticeBox = document.getElementById("notice");
+    const postTitle = document.getElementById("postTitle");
+    const postPrompt = document.getElementById("postPrompt");
+    const toneSelect = document.getElementById("toneSelect");
+    const lengthSelect = document.getElementById("lengthSelect");
+    const captionBox = document.getElementById("captionBox");
+    const hashtagsBox = document.getElementById("hashtagsBox");
+    const mediaFields = document.getElementById("mediaFields");
+    const mediaUrl = document.getElementById("mediaUrl");
+    const mediaFile = document.getElementById("mediaFile");
+    const previewBox = document.getElementById("previewBox");
+    const editorSub = document.getElementById("editorSub");
+
+    let activeType = "text";
+    let uploadedDataUrl = "";
+
+    function showNotice(message, type = "error") {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message;
+      clearTimeout(showNotice._timer);
+      showNotice._timer = setTimeout(() => {
+        noticeBox.className = "notice";
+        noticeBox.textContent = "";
+      }, 2500);
+    }
+
+    function escapeHtml(text = "") {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function setType(type) {
+      activeType = type;
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.type === type);
+      });
+
+      mediaFields.classList.toggle("hidden", type === "text");
+
+      if (type === "text") {
+        editorSub.textContent = "Write and improve your text post";
+        postPrompt.placeholder = "Example: Write a catchy post announcing new arrivals for my fashion business.";
+      } else if (type === "photo") {
+        editorSub.textContent = "Prepare a photo post with caption";
+        postPrompt.placeholder = "Example: Write a caption for a product photo of my new fashion collection.";
+      } else {
+        editorSub.textContent = "Prepare a video post with caption";
+        postPrompt.placeholder = "Example: Write a strong caption and hook for my promo video.";
+      }
+
+      renderPreview();
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result || "");
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleMediaUpload() {
+      const file = mediaFile.files?.[0];
+      if (!file) {
+        uploadedDataUrl = "";
+        renderPreview();
+        return;
+      }
+
+      try {
+        uploadedDataUrl = await readFileAsDataURL(file);
+        renderPreview();
+      } catch {
+        showNotice("Could not read selected file.");
+      }
+    }
+
+    function getMediaSource() {
+      return mediaUrl.value.trim() || uploadedDataUrl || "";
+    }
+
+    function isVideoUrl(url) {
+      return /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url || "");
+    }
+
+    function renderPreview() {
+      const title = postTitle.value.trim();
+      const caption = captionBox.value.trim();
+      const hashtags = hashtagsBox.value.trim();
+      const source = getMediaSource();
+
+      if (!title && !caption && !hashtags && !source) {
+        previewBox.innerHTML = `<div class="preview-placeholder">Your post preview will appear here.</div>`;
+        return;
+      }
+
+      let mediaHtml = "";
+      if (activeType !== "text" && source) {
+        if (isVideoUrl(source) || (source.startsWith("data:video"))) {
+          mediaHtml = `<video class="preview-media" style="display:block;" src="${escapeHtml(source)}" controls playsinline></video>`;
+        } else {
+          mediaHtml = `<img class="preview-media" style="display:block;" src="${escapeHtml(source)}" alt="Preview media" />`;
+        }
+      }
+
+      previewBox.innerHTML = `
+        ${mediaHtml}
+        ${title ? `<div class="preview-title">${escapeHtml(title)}</div>` : ""}
+        <div class="preview-text">${escapeHtml(caption || "")}</div>
+        ${hashtags ? `<div class="preview-meta">${escapeHtml(hashtags)}</div>` : ""}
+      `;
+    }
+
+    async function generateWithAI(customInstruction = "") {
+      const prompt = postPrompt.value.trim();
+      if (!prompt && !captionBox.value.trim()) {
+        showNotice("Enter a prompt first.", "info");
+        return;
+      }
+
+      previewBox.innerHTML = `<div class="preview-placeholder">Generating...</div>`;
+
+      try {
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        const accessToken = sessionData?.session?.access_token || "";
+
+        const composedPrompt = `
+Post type: ${activeType}
+Tone: ${toneSelect.value}
+Length: ${lengthSelect.value}
+${customInstruction ? `Instruction: ${customInstruction}` : ""}
+User prompt: ${prompt || captionBox.value.trim()}
+Return a strong post-ready caption/content.
+        `.trim();
+
+        const res = await fetch(SMART_ACTION_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": accessToken ? `Bearer ${accessToken}` : ""
+          },
+          body: JSON.stringify({
+            tool: "script",
+            prompt: composedPrompt
+          })
+        });
+
+        const rawText = await res.text();
+
+        let parsed;
+        try {
+          parsed = rawText ? JSON.parse(rawText) : {};
+        } catch {
+          parsed = { output: rawText };
+        }
+
+        if (!res.ok) {
+          throw new Error(parsed?.error || parsed?.message || `Error ${res.status}`);
+        }
+
+        const reply =
+          parsed?.output ||
+          parsed?.text ||
+          parsed?.result ||
+          "No output returned.";
+
+        if (customInstruction.toLowerCase().includes("hashtag")) {
+          hashtagsBox.value = reply.replace(/\n/g, " ").trim();
+        } else {
+          captionBox.value = reply;
+        }
+
+        renderPreview();
+        showNotice("Generated successfully.", "success");
+
+      } catch (error) {
+        renderPreview();
+        showNotice(error.message || "Generation failed.");
+      }
+    }
+
+    function saveDraft() {
+      const payload = {
+        type: activeType,
+        title: postTitle.value.trim(),
+        prompt: postPrompt.value.trim(),
+        content: captionBox.value.trim(),
+        hashtags: hashtagsBox.value.trim(),
+        mediaUrl: mediaUrl.value.trim(),
+        uploadedDataUrl,
+        tone: toneSelect.value,
+        length: lengthSelect.value,
+        created_at: new Date().toISOString()
+      };
+
+      const drafts = JSON.parse(localStorage.getItem("view_ai_post_drafts") || "[]");
+      drafts.unshift(payload);
+      localStorage.setItem("view_ai_post_drafts", JSON.stringify(drafts.slice(0, 20)));
+      showNotice("Post draft saved.", "success");
+    }
+
+    function postToView() {
+      const payload = {
+        type: activeType,
+        title: postTitle.value.trim(),
+        prompt: postPrompt.value.trim(),
+        content: captionBox.value.trim(),
+        hashtags: hashtagsBox.value.trim(),
+        mediaUrls: [getMediaSource()].filter(Boolean),
+        tone: toneSelect.value,
+        length: lengthSelect.value,
+        source: "post-with-ai",
+        created_at: new Date().toISOString()
+      };
+
+      localStorage.setItem("view_ai_post_ready", JSON.stringify(payload));
+      showNotice("Post prepared for View.", "success");
+    }
+
+    function loadAIDraft() {
+      const draft = JSON.parse(localStorage.getItem("view_ai_post_draft") || "null");
+      if (!draft) {
+        showNotice("No AI draft found.", "info");
+        return;
+      }
+
+      if (draft.type) setType(draft.type);
+      postTitle.value = draft.title || "";
+      postPrompt.value = draft.prompt || "";
+      captionBox.value = draft.content || draft.output || "";
+      hashtagsBox.value = draft.hashtags || "";
+      renderPreview();
+      showNotice("AI draft loaded.", "success");
+    }
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      location.href = ROUTES.back;
+    });
+
+    document.getElementById("profileBtn").addEventListener("click", async () => {
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        location.href = session?.user
+          ? ROUTES.profile
+          : `${ROUTES.login}?next=${encodeURIComponent(ROUTES.profile)}`;
+      } catch {
+        location.href = ROUTES.profile;
+      }
+    });
+
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => setType(btn.dataset.type));
+    });
+
+    mediaFile.addEventListener("change", handleMediaUpload);
+    mediaUrl.addEventListener("input", renderPreview);
+    postTitle.addEventListener("input", renderPreview);
+    captionBox.addEventListener("input", renderPreview);
+    hashtagsBox.addEventListener("input", renderPreview);
+
+    document.getElementById("generateMainBtn").addEventListener("click", () => generateWithAI(""));
+    document.getElementById("generateCaptionBtn").addEventListener("click", () => generateWithAI("Generate a strong caption for this post."));
+    document.getElementById("improveCaptionBtn").addEventListener("click", () => {
+      if (!captionBox.value.trim()) {
+        showNotice("Write or generate a caption first.", "info");
+        return;
+      }
+      postPrompt.value = captionBox.value.trim();
+      generateWithAI("Improve this caption and make it more polished.");
+    });
+    document.getElementById("addHashtagsBtn").addEventListener("click", () => {
+      const source = captionBox.value.trim() || postPrompt.value.trim();
+      if (!source) {
+        showNotice("Generate or write content first.", "info");
+        return;
+      }
+      postPrompt.value = source;
+      generateWithAI("Generate only relevant hashtags for this post.");
+    });
+    document.getElementById("shortenBtn").addEventListener("click", () => {
+      if (!captionBox.value.trim()) {
+        showNotice("Write or generate a caption first.", "info");
+        return;
+      }
+      postPrompt.value = captionBox.value.trim();
+      generateWithAI("Shorten this caption while keeping it catchy.");
+    });
+
+    document.getElementById("previewBtn").addEventListener("click", renderPreview);
+    document.getElementById("saveDraftBtn").addEventListener("click", saveDraft);
+    document.getElementById("sendDraftBtn").addEventListener("click", loadAIDraft);
+    document.getElementById("postNowBtn").addEventListener("click", postToView);
+
+    const params = new URLSearchParams(location.search);
+    const typeParam = params.get("type");
+    if (typeParam && ["text","photo","video"].includes(typeParam)) {
+      setType(typeParam);
+    } else {
+      setType("text");
+    }
+
+    const savedReady = JSON.parse(localStorage.getItem("view_ai_post_draft") || "null");
+    if (savedReady) {
+      if (savedReady.type) setType(savedReady.type);
+      postTitle.value = savedReady.title || "";
+      postPrompt.value = savedReady.prompt || "";
+      captionBox.value = savedReady.content || savedReady.output || "";
+      hashtagsBox.value = savedReady.hashtags || "";
+      renderPreview();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Subscription History | View</title>
+  <meta name="theme-color" content="#0b1454" />
+
+  <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden;}
+    :root{
+      --bg:#07103a;
+      --bg2:#0b1454;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.06);
+      --line:rgba(255,255,255,.09);
+      --text:#f5f7ff;
+      --muted:#b8c3ff;
+      --red:#ff4d67;
+      --blue:#4f7cff;
+      --green:#1bc47d;
+      --amber:#ffb84d;
+      --shadow:0 16px 40px rgba(0,0,0,.28);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(255,77,103,.16), transparent 20%),
+        radial-gradient(circle at top left, rgba(79,124,255,.22), transparent 22%),
+        linear-gradient(180deg,var(--bg2),#060d2f 42%, #040922 100%);
+      min-height:100vh;
+    }
+    a{text-decoration:none;color:inherit}
+    .app{
+      width:min(100%,430px);
+      margin:0 auto;
+      min-height:100vh;
+      padding:calc(10px + var(--safe-top)) 14px calc(18px + var(--safe-bottom));
+    }
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;
+    }
+    .back-btn,.icon-btn{
+      width:40px;height:40px;border-radius:12px;border:1px solid var(--line);
+      background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;
+      box-shadow:var(--shadow)
+    }
+    .brand{
+      display:flex;align-items:center;gap:10px;flex:1;justify-content:center;min-width:0;
+    }
+    .brand img{width:32px;height:32px;border-radius:10px;object-fit:cover}
+    .brand h1{margin:0;font-size:15px;line-height:1.1}
+    .brand p{margin:2px 0 0;font-size:11px;color:var(--muted)}
+    .summary{
+      border:1px solid var(--line);
+      background:linear-gradient(135deg, rgba(79,124,255,.20), rgba(255,77,103,.16));
+      border-radius:22px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px
+    }
+    .summary h2{margin:0;font-size:13px;color:var(--muted);font-weight:600}
+    .summary strong{display:block;margin-top:6px;font-size:24px}
+    .summary span{display:block;margin-top:5px;font-size:11px;color:var(--muted)}
+    .list{display:flex;flex-direction:column;gap:8px}
+    .item{
+      display:flex;align-items:center;gap:10px;padding:11px;border-radius:18px;
+      background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)
+    }
+    .icon{
+      width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,.08);
+      display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto
+    }
+    .main{min-width:0;flex:1}
+    .main h3{
+      margin:0;font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .meta{
+      margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:10px;color:var(--muted);
+    }
+    .badge{
+      padding:3px 7px;border-radius:999px;font-size:9px;font-weight:800;text-transform:uppercase;
+      border:1px solid transparent
+    }
+    .badge.active{background:rgba(27,196,125,.12);color:#c8ffe5;border-color:rgba(27,196,125,.24)}
+    .badge.expired{background:rgba(255,184,77,.12);color:#ffe7ae;border-color:rgba(255,184,77,.22)}
+    .badge.pending{background:rgba(255,77,103,.12);color:#ffd5db;border-color:rgba(255,77,103,.22)}
+    .right{text-align:right;flex:0 0 auto}
+    .right strong{display:block;font-size:13px}
+    .right span{display:block;margin-top:4px;font-size:10px;color:var(--muted)}
+    .empty{
+      text-align:center;padding:18px 10px;border:1px dashed var(--line);border-radius:16px;
+      color:var(--muted);font-size:12px;background:rgba(255,255,255,.03)
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    document.documentElement.classList.add("auth-loading");
+
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_REAL_ANON_KEY";
+
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
+
+    async function protectPage(nextPage) {
+      try {
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if (!user) {
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      } catch {
+        location.replace("login.html");
+        return null;
+      }
+    }
+
+    function getFrom() {
+      const from = new URLSearchParams(location.search).get("from");
+      if (from === "wallet") return "wallet";
+      if (from === "profile") return "profile";
+      return "settings";
+    }
+
+    function getBackHref() {
+      const from = getFrom();
+      if (from === "wallet") return "wallet.html";
+      if (from === "profile") return "profile.html";
+      return "settings.html";
+    }
+
+    const USD_RATE = 1500;
+
+    function ngnToUsd(ngn){
+      return (Number(ngn || 0) / USD_RATE).toFixed(2);
+    }
+
+    function ngn(v){
+      return new Intl.NumberFormat("en-NG", { style:"currency", currency:"NGN" }).format(Number(v || 0));
+    }
+
+    function fmtDate(v){
+      if(!v) return "—";
+      return new Date(v).toLocaleString("en-NG", {
+        day:"numeric", month:"short", year:"numeric"
+      });
+    }
+
+    function statusClass(status){
+      const s = String(status || "").toLowerCase();
+      if (s === "active" || s === "success") return "active";
+      if (s === "expired") return "expired";
+      return "pending";
+    }
+  </script>
+</head>
+<body>
+  <main class="app">
+    <div class="topbar">
+      <a id="backBtn" class="back-btn" href="settings.html" aria-label="Back">←</a>
+      <div class="brand">
+        <img src="icons/view-logo.png" alt="View logo" />
+        <div>
+          <h1>Subscription History</h1>
+          <p>Payments and plan records</p>
+        </div>
+      </div>
+      <a id="plansBtn" class="icon-btn" href="subscription.html?from=settings" aria-label="Plans">★</a>
+    </div>
+
+    <section class="summary">
+      <h2>Total Subscription Spend</h2>
+      <strong id="totalSpend">$0.00</strong>
+      <span id="totalSpendNgn">₦0.00</span>
+    </section>
+
+    <section id="historyList" class="list">
+      <div class="empty">Loading history...</div>
+    </section>
+  </main>
+
+  <script>
+    (async () => {
+      const user = await protectPage("home.html");
+      if (!user) return;
+
+      const from = getFrom();
+      document.getElementById("backBtn").href = getBackHref();
+      document.getElementById("plansBtn").href = `subscription.html?from=${encodeURIComponent(from)}`;
+
+      const totalSpendEl = document.getElementById("totalSpend");
+      const totalSpendNgnEl = document.getElementById("totalSpendNgn");
+      const historyListEl = document.getElementById("historyList");
+
+      try {
+        const { data: rows, error } = await supabaseClient
+          .from("user_subscriptions")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const items = rows || [];
+        const totalNgn = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+        totalSpendEl.textContent = `$${ngnToUsd(totalNgn)}`;
+        totalSpendNgnEl.textContent = ngn(totalNgn);
+
+        if (!items.length) {
+          historyListEl.innerHTML = `<div class="empty">No subscription history yet.</div>`;
+          return;
+        }
+
+        historyListEl.innerHTML = items.map(item => {
+          const planName = item.plan_name || item.name || "Subscription";
+          const amount = Number(item.amount || 0);
+          const status = item.status || "active";
+          const badgeClass = statusClass(status);
+
+          return `
+            <div class="item">
+              <div class="icon">★</div>
+              <div class="main">
+                <h3>${String(planName).replace(/</g,"&lt;")}</h3>
+                <div class="meta">
+                  <span class="badge ${badgeClass}">${String(status).replace(/</g,"&lt;")}</span>
+                  <span>Started ${fmtDate(item.start_date || item.created_at)}</span>
+                  <span>Ends ${fmtDate(item.end_date)}</span>
+                </div>
+              </div>
+              <div class="right">
+                <strong>$${ngnToUsd(amount)}</strong>
+                <span>${ngn(amount)}</span>
+              </div>
+            </div>
+          `;
+        }).join("");
+      } catch (err) {
+        console.error(err);
+        historyListEl.innerHTML = `<div class="empty">Unable to load subscription history.</div>`;
+      }
+    })();
+  </script>
+</body>
+</html>

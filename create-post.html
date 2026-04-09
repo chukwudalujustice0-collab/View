@@ -1023,7 +1023,7 @@
           <div class="file-wrap">
             <input id="postMedia" type="file" accept="image/*,video/*" />
           </div>
-          <div class="hint">Media is uploaded only when you publish. The preview below is local and safe.</div>
+          <div class="hint">Media is uploaded only when you publish. AI images can also be inserted automatically.</div>
         </div>
       </div>
     </section>
@@ -1174,6 +1174,41 @@
       cachedMedia = file;
       mediaNote.textContent = `${file.name} ready to upload.`;
       showMediaPreview(file);
+    }
+
+    async function loadAiGeneratedImageFromSession() {
+      try {
+        const imageUrl = sessionStorage.getItem("view_ai_generated_image_url");
+        const imagePrompt = sessionStorage.getItem("view_ai_generated_image_prompt") || "";
+
+        if (!imageUrl) return;
+
+        showNotice("Loading AI generated image...", "info", 1800);
+
+        const response = await fetch(imageUrl, { cache: "no-store" });
+        if (!response.ok) throw new Error("Could not fetch generated image.");
+
+        const blob = await response.blob();
+        const ext = blob.type && blob.type.includes("/") ? blob.type.split("/")[1] : "png";
+        const fileName = `view-ai-${Date.now()}.${ext}`;
+        const file = new File([blob], fileName, {
+          type: blob.type || "image/png"
+        });
+
+        await cacheMedia(file);
+
+        if (!postBody.value.trim() && imagePrompt.trim()) {
+          postBody.value = imagePrompt.trim();
+        }
+
+        sessionStorage.removeItem("view_ai_generated_image_url");
+        sessionStorage.removeItem("view_ai_generated_image_prompt");
+
+        showNotice("AI generated image inserted into your post.", "success");
+      } catch (error) {
+        console.error(error);
+        showNotice(error.message || "Could not load AI generated image.", "error");
+      }
     }
 
     function isPlatformConnected(platformKey) {
@@ -1509,123 +1544,86 @@
       }, 700);
     }
 
-    async function deductAiCreditSafe() {
-      try {
-        const { data: row, error } = await supabaseClient
-          .from("ai_credits")
-          .select("id,balance")
-          .eq("user_id", currentUser.id)
-          .maybeSingle();
-
-        if (error || !row) return false;
-        if (Number(row.balance || 0) < 1) return false;
-
-        const { error: updateErr } = await supabaseClient
-          .from("ai_credits")
-          .update({
-            balance: Number(row.balance) - 1,
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", row.id);
-
-        if (updateErr) return false;
-
-        currentCredits = Number(row.balance) - 1;
-        updateAiDisplay();
-        return true;
-      } catch (_) {
-        return false;
-      }
-    }
-
     async function generateAiPost() {
-  const prompt = aiPromptInput.value.trim();
-  const tone = aiToneSelect.value;
+      const prompt = aiPromptInput.value.trim();
+      const tone = aiToneSelect.value;
 
-  if (!prompt) {
-    showNotice("Tell AI what you want to post.", "error");
-    return;
-  }
-
-  generateAiBtn.disabled = true;
-  regenerateAiBtn.disabled = true;
-  useAiBtn.disabled = true;
-  aiStatusText.textContent = "Generating post...";
-
-  try {
-    // 🔐 Get logged-in user token
-    const { data: sessionData } = await supabaseClient.auth.getSession();
-    const token = sessionData?.session?.access_token;
-
-    if (!token) {
-      throw new Error("Session expired. Please login again.");
-    }
-
-    // 🚀 Call your edge function
-    const res = await fetch(GENERATE_POST_FUNCTION_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        prompt,
-        tone,
-        mode: "post"
-      })
-    });
-
-    const data = await res.json().catch(() => ({}));
-
-    // ❌ HANDLE ALL ERROR TYPES CLEANLY
-    if (!res.ok) {
-
-      // Plan restriction
-      if (data?.code === "PLAN_NOT_SUPPORTED") {
-        showNotice("Upgrade your plan to use AI.", "error");
-        return setTimeout(() => {
-          window.location.href = "ai-upgrade.html";
-        }, 800);
+      if (!prompt) {
+        showNotice("Tell AI what you want to post.", "error");
+        return;
       }
 
-      // No credit
-      if (data?.code === "NO_AI_CREDIT") {
-        showNotice("No AI credit left. Top up now.", "error");
-        return setTimeout(() => {
-          window.location.href = "ai-upgrade.html";
-        }, 800);
+      generateAiBtn.disabled = true;
+      regenerateAiBtn.disabled = true;
+      useAiBtn.disabled = true;
+      aiStatusText.textContent = "Generating post...";
+
+      try {
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        const token = sessionData?.session?.access_token;
+
+        if (!token) {
+          throw new Error("Session expired. Please login again.");
+        }
+
+        const res = await fetch(GENERATE_POST_FUNCTION_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            prompt,
+            tone,
+            mode: "post"
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          if (data?.code === "PLAN_NOT_SUPPORTED") {
+            showNotice("Upgrade your plan to use AI.", "error");
+            setTimeout(() => {
+              window.location.href = "ai-upgrade.html?from=create-post";
+            }, 800);
+            return;
+          }
+
+          if (data?.code === "NO_AI_CREDIT") {
+            showNotice("No AI credit left. Top up now.", "error");
+            setTimeout(() => {
+              window.location.href = "ai-upgrade.html?from=create-post";
+            }, 800);
+            return;
+          }
+
+          throw new Error(data?.error || "AI failed.");
+        }
+
+        const generatedText = data.text || "";
+        if (!generatedText) {
+          throw new Error("Empty AI response.");
+        }
+
+        aiResultText = generatedText;
+        aiResultBox.textContent = generatedText;
+        aiResultBox.classList.add("show");
+
+        currentCredits = data.remaining_credits ?? currentCredits;
+        updateAiDisplay();
+
+        useAiBtn.disabled = false;
+        aiStatusText.textContent = `Generated successfully • 1 credit used • ${currentCredits} left`;
+
+      } catch (error) {
+        showNotice(error.message || "AI generation failed.", "error");
+        aiStatusText.textContent = "AI failed. Try again.";
+      } finally {
+        generateAiBtn.disabled = false;
+        regenerateAiBtn.disabled = false;
       }
-
-      throw new Error(data?.error || "AI failed.");
     }
-
-    // ✅ SUCCESS
-    const generatedText = data.text || "";
-
-    if (!generatedText) {
-      throw new Error("Empty AI response.");
-    }
-
-    aiResultText = generatedText;
-    aiResultBox.textContent = generatedText;
-    aiResultBox.classList.add("show");
-
-    // update UI
-    currentCredits = data.remaining_credits ?? currentCredits;
-    updateAiDisplay();
-
-    useAiBtn.disabled = false;
-
-    aiStatusText.textContent = `Generated successfully • 1 credit used • ${currentCredits} left`;
-
-  } catch (error) {
-    showNotice(error.message || "AI generation failed.", "error");
-    aiStatusText.textContent = "AI failed. Try again.";
-  } finally {
-    generateAiBtn.disabled = false;
-    regenerateAiBtn.disabled = false;
-  }
-}
 
     function useAiResult() {
       if (!aiResultText) {
@@ -1673,6 +1671,7 @@
         try {
           await loadConnections();
           await loadAiAccess();
+          await loadAiGeneratedImageFromSession();
           showNotice("Page data refreshed.", "success");
         } catch (error) {
           showNotice(error.message || "Could not refresh.", "error");
@@ -1717,6 +1716,7 @@
         renderPlatforms();
         await loadConnections();
         await loadAiAccess();
+        await loadAiGeneratedImageFromSession();
       } catch (error) {
         showNotice(error.message || "Could not load page.", "error");
       }

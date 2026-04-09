@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>AI Dashboard | View</title>
+
+<style>
+html.auth-loading, html.auth-loading body{visibility:hidden;}
+
+:root{
+--bg:#08114c;
+--bg2:#0b1454;
+--panel:#ffffff;
+--text:#111827;
+--muted:#667085;
+--line:#dbe4ff;
+--primary:#2563eb;
+--primary2:#4f46e5;
+--red:#ef4444;
+--shadow:0 16px 40px rgba(8,17,76,.14);
+--safe-top:env(safe-area-inset-top);
+--safe-bottom:env(safe-area-inset-bottom);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial;}
+
+body{
+padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
+background:linear-gradient(180deg,#eef4ff,#f8fbff);
+color:var(--text);
+}
+
+.wrap{max-width:760px;margin:auto;}
+
+.topbar{
+display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;
+}
+
+.icon-btn{
+width:44px;height:44px;border-radius:12px;
+display:flex;align-items:center;justify-content:center;
+background:#fff;border:1px solid var(--line);
+}
+
+.title{font-weight:800;font-size:20px;color:#0b1454;}
+.sub{font-size:12px;color:var(--muted);}
+
+.card{
+background:#fff;border-radius:18px;padding:16px;
+box-shadow:var(--shadow);margin-bottom:14px;
+border:1px solid var(--line);
+}
+
+.plan{
+display:flex;justify-content:space-between;align-items:center;
+}
+
+.badge{
+padding:6px 10px;border-radius:999px;
+background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+color:#fff;font-size:12px;
+}
+
+.credit{
+font-size:22px;font-weight:800;margin-top:6px;
+}
+
+.grid{
+display:grid;grid-template-columns:1fr 1fr;gap:12px;
+}
+
+.feature{
+border:1px solid var(--line);
+border-radius:16px;padding:14px;
+display:flex;flex-direction:column;gap:10px;
+}
+
+.feature-title{font-weight:800;}
+.feature-sub{font-size:12px;color:var(--muted);}
+
+.btn{
+height:44px;border-radius:12px;border:none;
+font-weight:700;
+}
+
+.btn.primary{
+background:linear-gradient(135deg,var(--primary),var(--primary2));
+color:#fff;
+}
+
+.btn.red{
+background:linear-gradient(135deg,#ef4444,#ff5f7a);
+color:#fff;
+}
+
+.btn.ghost{
+border:1px solid var(--line);
+background:#fff;
+}
+
+.notice{
+display:none;margin-bottom:10px;padding:10px;border-radius:12px;
+font-size:13px;
+}
+.notice.show{display:block}
+.notice.error{background:#fee2e2;color:#991b1b;}
+.notice.success{background:#dcfce7;color:#065f46;}
+
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+document.documentElement.classList.add("auth-loading");
+
+const supabaseClient = supabase.createClient(
+"https://ezarjrxzkqqsbyirxttg.supabase.co",
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+);
+
+async function protectPage(){
+const { data } = await supabaseClient.auth.getSession();
+if(!data.session){
+location.href="login.html";
+return null;
+}
+document.documentElement.classList.remove("auth-loading");
+return data.session.user;
+}
+</script>
+</head>
+
+<body>
+<div class="wrap">
+
+<div id="notice" class="notice"></div>
+
+<div class="topbar">
+<a href="home.html" class="icon-btn">←</a>
+<div>
+<div class="title">AI Dashboard</div>
+<div class="sub">Create with AI</div>
+</div>
+<a href="ai-upgrade.html" class="icon-btn">+</a>
+</div>
+
+<div class="card">
+<div class="plan">
+<div>
+<div class="sub">Current Plan</div>
+<div id="planName" class="title">--</div>
+</div>
+<div class="badge" id="planBadge">AI</div>
+</div>
+
+<div class="credit" id="creditBalance">-- credits</div>
+</div>
+
+<div class="card">
+<div class="grid">
+
+<div class="feature">
+<div class="feature-title">Text Generator</div>
+<div class="feature-sub">Create captions, posts, scripts</div>
+<button class="btn primary" onclick="goText()">Generate</button>
+</div>
+
+<div class="feature">
+<div class="feature-title">Image Generator</div>
+<div class="feature-sub">Create AI images</div>
+<button class="btn primary" onclick="goImage()">Generate</button>
+</div>
+
+<div class="feature">
+<div class="feature-title">Video Generator</div>
+<div class="feature-sub">Premium feature</div>
+<button class="btn ghost" onclick="locked()">Locked</button>
+</div>
+
+<div class="feature">
+<div class="feature-title">Auto Reply AI</div>
+<div class="feature-sub">Reply to chats automatically</div>
+<button class="btn primary" onclick="coming()">Setup</button>
+</div>
+
+</div>
+</div>
+
+<div class="card">
+<button class="btn red" style="width:100%" onclick="topUp()">Top Up Credits</button>
+</div>
+
+</div>
+
+<script>
+const notice = document.getElementById("notice");
+const planName = document.getElementById("planName");
+const creditBalance = document.getElementById("creditBalance");
+
+let user;
+
+function showNotice(msg,type="error"){
+notice.className=`notice show ${type}`;
+notice.textContent=msg;
+setTimeout(()=>notice.className="notice",3000);
+}
+
+async function loadData(){
+user = await protectPage();
+if(!user) return;
+
+const { data: sub } = await supabaseClient
+.from("user_subscriptions")
+.select("plan_name")
+.eq("user_id", user.id)
+.eq("status","active")
+.single();
+
+planName.textContent = sub?.plan_name || "Free";
+
+const { data: credit } = await supabaseClient
+.from("ai_credits")
+.select("balance")
+.eq("user_id", user.id)
+.single();
+
+creditBalance.textContent = (credit?.balance || 0) + " credits";
+}
+
+function goText(){
+location.href="create-post.html";
+}
+
+function goImage(){
+location.href="ai-image.html";
+}
+
+function locked(){
+showNotice("Upgrade to use video AI");
+}
+
+function coming(){
+showNotice("Coming soon");
+}
+
+function topUp(){
+location.href="ai-upgrade.html";
+}
+
+loadData();
+</script>
+
+</body>
+</html>

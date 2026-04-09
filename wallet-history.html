@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Wallet History | View</title>
+  <meta name="theme-color" content="#0b1454" />
+
+  <style>
+    html.auth-loading, html.auth-loading body{
+      visibility:hidden;
+    }
+
+    :root{
+      --bg:#08114c;
+      --bg2:#0b1454;
+      --bg3:#10207a;
+      --panel:#ffffff;
+      --panel2:#f8fbff;
+      --text:#111827;
+      --muted:#667085;
+      --line:#dbe4ff;
+      --primary:#2563eb;
+      --primary2:#4f46e5;
+      --red:#ef4444;
+      --red2:#ff5f7a;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 16px 44px rgba(8,17,76,.16);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+      color:var(--text);
+    }
+
+    body{
+      padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,select{
+      font:inherit;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      background:none;
+      cursor:pointer;
+    }
+
+    .wrap{
+      width:min(100%, 860px);
+      margin:0 auto;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:13px;
+      line-height:1.55;
+      box-shadow:var(--shadow-soft);
+    }
+    .notice.show{display:block}
+    .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+      box-shadow:var(--shadow-soft);
+      font-size:18px;
+      color:#111827;
+    }
+
+    .brand-box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-logo{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      object-fit:cover;
+      box-shadow:0 8px 20px rgba(37,99,235,.15);
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+    }
+
+    .title-box{
+      min-width:0;
+      flex:1;
+    }
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#0b1454;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .section{
+      background:rgba(255,255,255,.95);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .section-body{
+      padding:14px;
+      display:grid;
+      gap:14px;
+    }
+
+    .hero{
+      display:grid;
+      gap:12px;
+      padding:18px;
+      border-radius:18px;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.16), transparent 30%),
+        linear-gradient(135deg,#0b1454,#2563eb,#4f46e5,#ef4444);
+      color:#fff;
+      box-shadow:0 14px 34px rgba(37,99,235,.18);
+    }
+
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .hero-title{
+      font-size:15px;
+      font-weight:700;
+      opacity:.9;
+    }
+
+    .hero-balance{
+      font-size:30px;
+      font-weight:800;
+      line-height:1;
+      margin-top:4px;
+    }
+
+    .hero-sub{
+      font-size:12px;
+      opacity:.88;
+      line-height:1.5;
+    }
+
+    .hero-pills{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .hero-pill{
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.2);
+      color:#fff;
+      font-size:11px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      backdrop-filter:blur(10px);
+    }
+
+    .toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .toolbar-left{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .filter-btn{
+      min-height:36px;
+      padding:0 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#475569;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .filter-btn.active{
+      background:#eef4ff;
+      border-color:#93c5fd;
+      color:#1d4ed8;
+    }
+
+    .sort-select{
+      min-height:40px;
+      padding:0 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111827;
+      outline:none;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+    }
+
+    .summary-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:8px;
+    }
+
+    .summary-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .summary-value{
+      font-size:20px;
+      font-weight:800;
+      color:#0b1454;
+      line-height:1.1;
+    }
+
+    .summary-value.credit{color:#059669}
+    .summary-value.debit{color:#dc2626}
+
+    .tx-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .tx-item{
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .tx-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .tx-left{
+      display:flex;
+      gap:10px;
+      min-width:0;
+      flex:1;
+    }
+
+    .tx-icon{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      background:#f8fbff;
+      border:1px solid var(--line);
+    }
+
+    .tx-main{
+      min-width:0;
+      flex:1;
+      display:grid;
+      gap:4px;
+    }
+
+    .tx-title{
+      font-size:14px;
+      font-weight:800;
+      color:#111827;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .tx-date{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .tx-status-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:2px;
+    }
+
+    .tx-pill{
+      min-height:26px;
+      padding:0 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#f8fbff;
+      font-size:11px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:max-content;
+    }
+
+    .tx-pill.success{
+      background:#ecfdf5;
+      color:#065f46;
+      border-color:#a7f3d0;
+    }
+
+    .tx-pill.pending{
+      background:#fffbeb;
+      color:#92400e;
+      border-color:#fde68a;
+    }
+
+    .tx-pill.failed{
+      background:#fef2f2;
+      color:#991b1b;
+      border-color:#fecaca;
+    }
+
+    .tx-amount{
+      font-size:16px;
+      font-weight:800;
+      white-space:nowrap;
+      text-align:right;
+    }
+
+    .tx-amount.credit{color:#059669}
+    .tx-amount.debit{color:#dc2626}
+
+    .tx-bottom{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      border-top:1px dashed #e5e7eb;
+      padding-top:10px;
+    }
+
+    .tx-ref{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.5;
+      word-break:break-all;
+    }
+
+    .tx-type{
+      font-size:12px;
+      font-weight:700;
+      color:#374151;
+    }
+
+    .empty{
+      border:1px dashed var(--line);
+      border-radius:18px;
+      padding:22px 18px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+      background:#fff;
+    }
+
+    @media (max-width:720px){
+      .summary-grid{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:true,
+        flowType:"pkce"
+      }
+    });
+
+    async function protectPage(nextPage){
+      try{
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if(!user){
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      }catch(e){
+        document.documentElement.classList.remove("auth-loading");
+        location.replace("login.html");
+        return null;
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="wallet.html" aria-label="Back">←</a>
+
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+          <div class="title-box">
+            <div class="title">Wallet History</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-right">
+        <button id="refreshBtn" class="icon-btn" type="button" aria-label="Refresh">↻</button>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="hero">
+          <div class="hero-top">
+            <div>
+              <div class="hero-title">Current Wallet Balance</div>
+              <div id="walletBalanceMain" class="hero-balance">₦0.00</div>
+            </div>
+            <div class="hero-pills">
+              <div id="countPill" class="hero-pill">Transactions: 0</div>
+              <div id="filterPill" class="hero-pill">Filter: All</div>
+            </div>
+          </div>
+          <div class="hero-sub">Review your latest credits, debits, references and transaction status from your View wallet.</div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-label">Total Credits</div>
+            <div id="totalCredits" class="summary-value credit">₦0.00</div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-label">Total Debits</div>
+            <div id="totalDebits" class="summary-value debit">₦0.00</div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-label">Transactions</div>
+            <div id="totalCount" class="summary-value">0</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button class="filter-btn active" data-filter="all" type="button">All</button>
+            <button class="filter-btn" data-filter="credit" type="button">Credits</button>
+            <button class="filter-btn" data-filter="debit" type="button">Debits</button>
+          </div>
+
+          <select id="sortSelect" class="sort-select">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
+        </div>
+
+        <div id="txList" class="tx-list">
+          <div class="empty">Loading wallet history...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const walletBalanceMain = document.getElementById("walletBalanceMain");
+    const countPill = document.getElementById("countPill");
+    const filterPill = document.getElementById("filterPill");
+    const totalCreditsEl = document.getElementById("totalCredits");
+    const totalDebitsEl = document.getElementById("totalDebits");
+    const totalCountEl = document.getElementById("totalCount");
+    const txList = document.getElementById("txList");
+    const sortSelect = document.getElementById("sortSelect");
+    const filterButtons = Array.from(document.querySelectorAll(".filter-btn"));
+
+    let currentUser = null;
+    let currentFilter = "all";
+    let allTransactions = [];
+
+    function showNotice(message, type = "info", duration = 3200){
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      if(duration > 0){
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, duration);
+      }
+    }
+
+    function formatNaira(value){
+      return `₦${Number(value || 0).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`;
+    }
+
+    function formatDate(value){
+      try{
+        return new Date(value).toLocaleString();
+      }catch(_){
+        return value || "--";
+      }
+    }
+
+    function getStatusClass(status){
+      const s = String(status || "").toLowerCase();
+      if(s === "success") return "success";
+      if(s === "pending") return "pending";
+      return "failed";
+    }
+
+    function getIcon(type, description){
+      const text = `${type || ""} ${description || ""}`.toLowerCase();
+      if(type === "credit") return "↗";
+      if(text.includes("subscription")) return "👑";
+      if(text.includes("ai")) return "✨";
+      if(text.includes("fund")) return "💰";
+      return "↘";
+    }
+
+    async function loadWalletBalance(){
+      try{
+        const { data: wallet } = await supabaseClient
+          .from("wallets")
+          .select("balance")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        walletBalanceMain.textContent = formatNaira(wallet?.balance || 0);
+      }catch(_){
+        walletBalanceMain.textContent = formatNaira(0);
+      }
+    }
+
+    function updateSummary(transactions){
+      const credits = transactions
+        .filter(tx => tx.type === "credit")
+        .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+
+      const debits = transactions
+        .filter(tx => tx.type === "debit")
+        .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+
+      totalCreditsEl.textContent = formatNaira(credits);
+      totalDebitsEl.textContent = formatNaira(debits);
+      totalCountEl.textContent = String(transactions.length);
+      countPill.textContent = `Transactions: ${transactions.length}`;
+      filterPill.textContent = `Filter: ${currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1)}`;
+    }
+
+    function getDisplayedTransactions(){
+      let txs = [...allTransactions];
+
+      if(currentFilter !== "all"){
+        txs = txs.filter(tx => tx.type === currentFilter);
+      }
+
+      if(sortSelect.value === "oldest"){
+        txs.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+      }else{
+        txs.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      return txs;
+    }
+
+    function renderTransactions(){
+      const transactions = getDisplayedTransactions();
+      updateSummary(transactions);
+
+      if(!transactions.length){
+        txList.innerHTML = `<div class="empty">No ${currentFilter === "all" ? "" : currentFilter + " "}transactions found.</div>`;
+        return;
+      }
+
+      txList.innerHTML = transactions.map(tx => {
+        const isCredit = tx.type === "credit";
+        const amountClass = isCredit ? "credit" : "debit";
+        const amountPrefix = isCredit ? "+" : "-";
+        const statusClass = getStatusClass(tx.status);
+        const icon = getIcon(tx.type, tx.description);
+
+        return `
+          <div class="tx-item">
+            <div class="tx-top">
+              <div class="tx-left">
+                <div class="tx-icon">${icon}</div>
+                <div class="tx-main">
+                  <div class="tx-title">${tx.description || "Wallet transaction"}</div>
+                  <div class="tx-date">${formatDate(tx.created_at)}</div>
+                  <div class="tx-status-row">
+                    <div class="tx-pill ${statusClass}">${tx.status || "success"}</div>
+                    <div class="tx-pill">${tx.type || "--"}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tx-amount ${amountClass}">
+                ${amountPrefix}${formatNaira(tx.amount || 0)}
+              </div>
+            </div>
+
+            <div class="tx-bottom">
+              <div class="tx-ref">${tx.reference ? `Reference: ${tx.reference}` : "No reference"}</div>
+              <div class="tx-type">${isCredit ? "Money In" : "Money Out"}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadTransactions(){
+      txList.innerHTML = `<div class="empty">Loading wallet history...</div>`;
+
+      try{
+        const { data, error } = await supabaseClient
+          .from("wallet_transactions")
+          .select("type,amount,status,description,reference,created_at")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending:false });
+
+        if(error) throw error;
+
+        allTransactions = data || [];
+        renderTransactions();
+      }catch(error){
+        txList.innerHTML = `<div class="empty">Could not load wallet history.</div>`;
+        showNotice(error.message || "Could not load wallet history.", "error", 4200);
+      }
+    }
+
+    function bindFilters(){
+      filterButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          filterButtons.forEach(x => x.classList.remove("active"));
+          btn.classList.add("active");
+          currentFilter = btn.dataset.filter || "all";
+          renderTransactions();
+        });
+      });
+    }
+
+    async function refreshAll(){
+      await loadWalletBalance();
+      await loadTransactions();
+      showNotice("Wallet history updated.", "success", 1800);
+    }
+
+    async function init(){
+      currentUser = await protectPage("wallet.html");
+      if(!currentUser) return;
+
+      bindFilters();
+      sortSelect.addEventListener("change", renderTransactions);
+      refreshBtn.addEventListener("click", refreshAll);
+
+      await loadWalletBalance();
+      await loadTransactions();
+    }
+
+    init();
+  </script>
+</body>
+</html>
