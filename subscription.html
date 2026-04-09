@@ -7,28 +7,21 @@
   <meta name="theme-color" content="#0b1454" />
 
   <style>
-    html.auth-loading, html.auth-loading body{
-      visibility:hidden;
-    }
+    html.auth-loading, html.auth-loading body{visibility:hidden}
 
     :root{
       --bg:#08114c;
       --bg2:#0b1454;
-      --bg3:#0a1b6f;
       --panel:#ffffff;
-      --panel2:#f8fbff;
       --text:#111827;
       --muted:#667085;
       --line:#dbe4ff;
-      --white:#ffffff;
       --primary:#2563eb;
       --primary2:#4f46e5;
       --red:#ef4444;
-      --red2:#ff5f7a;
       --success:#10b981;
       --danger:#ef4444;
-      --warning:#f59e0b;
-      --shadow:0 16px 40px rgba(8,17,76,.14);
+      --shadow:0 16px 44px rgba(8,17,76,.16);
       --shadow-soft:0 10px 24px rgba(15,23,42,.08);
       --safe-top:env(safe-area-inset-top);
       --safe-bottom:env(safe-area-inset-bottom);
@@ -47,7 +40,6 @@
       background:
         radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
         radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
-        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
         linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
       color:var(--text);
     }
@@ -56,32 +48,13 @@
       padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
     }
 
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
+    a{color:inherit;text-decoration:none}
+    button{border:none;background:none;cursor:pointer;font:inherit;color:inherit}
 
-    button{
-      border:none;
-      background:none;
-      cursor:pointer;
-      font:inherit;
-      color:inherit;
-    }
-
-    .wrap{
-      width:min(100%, 900px);
-      margin:0 auto;
-    }
-
+    .wrap{width:min(100%,980px);margin:0 auto}
     .notice{
-      display:none;
-      margin-bottom:14px;
-      padding:12px 14px;
-      border-radius:14px;
-      font-size:14px;
-      line-height:1.55;
-      box-shadow:var(--shadow-soft);
+      display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;
+      font-size:13px;line-height:1.55;box-shadow:var(--shadow-soft)
     }
     .notice.show{display:block}
     .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
@@ -89,227 +62,86 @@
     .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
 
     .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px
     }
-
-    .top-left{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-      flex:1;
-    }
+    .top-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+    .top-right{display:flex;align-items:center;gap:10px}
 
     .icon-btn{
-      width:46px;
-      height:46px;
-      min-width:46px;
-      border-radius:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#fff;
-      border:1px solid rgba(219,228,255,.95);
-      box-shadow:var(--shadow-soft);
-      font-size:18px;
-      color:#111827;
+      width:46px;height:46px;min-width:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+      background:#fff;border:1px solid rgba(219,228,255,.95);box-shadow:var(--shadow-soft);font-size:18px;color:#111827
     }
 
-    .brand-box{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-      flex:1;
-    }
-
+    .brand-box{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
     .brand-logo{
-      width:42px;
-      height:42px;
-      min-width:42px;
-      border-radius:14px;
-      object-fit:cover;
-      box-shadow:0 8px 20px rgba(37,99,235,.15);
-      background:#fff;
-      border:1px solid rgba(219,228,255,.95);
+      width:42px;height:42px;min-width:42px;border-radius:14px;object-fit:cover;background:#fff;border:1px solid rgba(219,228,255,.95)
     }
-
-    .title-box{
-      min-width:0;
-      flex:1;
-    }
-
-    .title{
-      font-size:22px;
-      font-weight:800;
-      margin-bottom:3px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      color:#0b1454;
-    }
-
-    .sub{
-      color:var(--muted);
-      font-size:13px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
+    .title{font-size:22px;font-weight:800;color:#0b1454}
+    .sub{color:var(--muted);font-size:13px}
 
     .section{
-      background:rgba(255,255,255,.95);
-      backdrop-filter:blur(10px);
-      border:1px solid rgba(219,228,255,.9);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      margin-bottom:14px;
+      background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border:1px solid rgba(219,228,255,.9);
+      border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px
     }
-
-    .section-body{
-      padding:14px;
-      display:grid;
-      gap:14px;
-    }
+    .section-body{padding:14px;display:grid;gap:14px}
 
     .hero{
-      display:grid;
-      gap:12px;
-      padding:18px;
-      border-radius:18px;
-      background:linear-gradient(135deg, rgba(37,99,235,.08), rgba(79,70,229,.08), rgba(239,68,68,.08));
-      border:1px solid #dbeafe;
+      display:grid;gap:12px;padding:18px;border-radius:18px;
+      background:linear-gradient(135deg,#0b1454,#2563eb,#4f46e5,#ef4444);color:#fff
     }
-
-    .hero-title{
-      font-size:20px;
-      font-weight:800;
-      color:#0b1454;
-    }
-
-    .hero-sub{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.6;
-    }
-
-    .hero-row{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .pill{
-      min-height:30px;
-      padding:0 12px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:#f8fbff;
-      color:#475569;
-      font-size:11px;
-      display:flex;
-      align-items:center;
-      gap:6px;
-    }
-
-    .current-card{
-      border:1px solid var(--line);
-      border-radius:18px;
-      background:#fff;
-      padding:14px;
-      display:grid;
-      gap:8px;
-    }
-
-    .current-label{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:700;
-    }
-
-    .current-value{
-      font-size:24px;
-      font-weight:800;
-      color:#0b1454;
-      line-height:1.1;
-    }
-
-    .current-meta{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.5;
+    .hero-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .hero-title{font-size:15px;font-weight:700;opacity:.9}
+    .hero-value{font-size:30px;font-weight:800;line-height:1}
+    .hero-pills{display:flex;gap:8px;flex-wrap:wrap}
+    .hero-pill{
+      min-height:30px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.2);color:#fff;font-size:11px;display:flex;align-items:center
     }
 
     .plans{
       display:grid;
-      gap:12px;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
     }
 
-    .plan-card{
+    .plan{
       border:1px solid var(--line);
-      border-radius:18px;
+      border-radius:22px;
       background:#fff;
       padding:16px;
       display:grid;
       gap:12px;
+      box-shadow:var(--shadow-soft);
     }
 
-    .plan-card.featured{
-      border-color:#bfdbfe;
-      background:linear-gradient(135deg, rgba(37,99,235,.04), rgba(79,70,229,.04), rgba(239,68,68,.03));
+    .plan.recommended{
+      border-color:#93c5fd;
+      background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
     }
 
-    .plan-head{
+    .plan-top{
       display:flex;
-      justify-content:space-between;
       align-items:flex-start;
+      justify-content:space-between;
       gap:10px;
-      flex-wrap:wrap;
     }
 
     .plan-name{
-      font-size:17px;
+      font-size:18px;
       font-weight:800;
       color:#0b1454;
-      margin-bottom:4px;
     }
 
     .plan-price{
-      font-size:22px;
+      font-size:26px;
       font-weight:800;
       color:#111827;
     }
 
-    .plan-price small{
-      font-size:11px;
+    .plan-meta{
       color:var(--muted);
-      font-weight:700;
-    }
-
-    .plan-badge{
-      min-height:28px;
-      padding:0 10px;
-      border-radius:999px;
-      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
-      color:#fff;
-      font-size:11px;
-      font-weight:700;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      white-space:nowrap;
-    }
-
-    .plan-desc{
       font-size:12px;
-      color:var(--muted);
-      line-height:1.5;
+      line-height:1.55;
     }
 
     .feature-list{
@@ -317,32 +149,44 @@
       gap:8px;
     }
 
-    .feature-item{
+    .feature{
       display:flex;
-      gap:8px;
       align-items:flex-start;
+      gap:8px;
       font-size:13px;
       color:#374151;
       line-height:1.5;
     }
 
-    .feature-item span{
-      color:#10b981;
+    .feature span:first-child{
+      color:var(--success);
       font-weight:800;
-      margin-top:1px;
     }
 
-    .actions{
-      display:flex;
+    .plan-foot{
+      display:grid;
       gap:10px;
-      flex-wrap:wrap;
+    }
+
+    .pill{
+      width:max-content;
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      background:#eef4ff;
+      border:1px solid #bfdbfe;
+      color:#1d4ed8;
+      font-size:11px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
 
     .btn{
-      flex:1;
       min-height:48px;
-      padding:0 16px;
       border-radius:14px;
+      padding:0 16px;
       border:1px solid var(--line);
       background:#fff;
       color:#111827;
@@ -366,55 +210,13 @@
       color:#fff;
     }
 
-    .btn.ghost{
-      background:#fff;
-      border:1px solid var(--line);
-      color:#111827;
-    }
-
     .btn:disabled{
-      opacity:.6;
+      opacity:.55;
       cursor:not-allowed;
     }
 
-    .mini-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
-
-    .mini-card{
-      border:1px solid var(--line);
-      border-radius:18px;
-      background:#fff;
-      padding:14px;
-      display:grid;
-      gap:8px;
-    }
-
-    .mini-label{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:700;
-    }
-
-    .mini-value{
-      font-size:22px;
-      font-weight:800;
-      color:#0b1454;
-      line-height:1.1;
-    }
-
-    .mini-sub{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.45;
-    }
-
-    @media (min-width:760px){
-      .plans{
-        grid-template-columns:repeat(3,1fr);
-      }
+    @media (max-width:760px){
+      .plans{grid-template-columns:1fr}
     }
   </style>
 
@@ -422,36 +224,7 @@
     document.documentElement.classList.add("auth-loading");
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-
-    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: "pkce"
-      }
-    });
-
-    async function protectPage(nextPage) {
-      try {
-        const { data } = await supabaseClient.auth.getSession();
-        const user = data?.session?.user;
-        if (!user) {
-          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
-          return null;
-        }
-        document.documentElement.classList.remove("auth-loading");
-        return user;
-      } catch (e) {
-        document.documentElement.classList.remove("auth-loading");
-        location.replace("login.html");
-        return null;
-      }
-    }
-  </script>
+  <script src="/js/auth-guard.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -459,48 +232,34 @@
 
     <header class="topbar">
       <div class="top-left">
-        <a class="icon-btn" id="backBtn" href="settings.html" aria-label="Back">←</a>
-
+        <button class="icon-btn" type="button" onclick="history.back()">←</button>
         <div class="brand-box">
           <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
-          <div class="title-box">
+          <div>
             <div class="title">Subscription</div>
             <div class="sub">VIEW | by Ceetify</div>
           </div>
         </div>
+      </div>
+      <div class="top-right">
+        <button id="refreshBtn" class="icon-btn" type="button">↻</button>
       </div>
     </header>
 
     <section class="section">
       <div class="section-body">
         <div class="hero">
-          <div class="hero-title">Upgrade your View plan</div>
-          <div class="hero-sub">Get more AI access, cross-posting support, and premium tools through your monthly subscription.</div>
           <div class="hero-row">
-            <div class="pill" id="walletPill">Wallet: --</div>
-            <div class="pill" id="creditPill">AI Credits: --</div>
-            <div class="pill" id="statusPill">Status: --</div>
+            <div>
+              <div class="hero-title">Current Plan</div>
+              <div id="currentPlanText" class="hero-value">Free</div>
+            </div>
+            <div class="hero-pills">
+              <div id="walletBalancePill" class="hero-pill">Wallet: ₦0.00</div>
+              <div id="aiCreditsPill" class="hero-pill">AI Credits: 0</div>
+            </div>
           </div>
-        </div>
-
-        <div class="current-card">
-          <div class="current-label">Current Plan</div>
-          <div class="current-value" id="currentPlanValue">Free</div>
-          <div class="current-meta" id="currentPlanMeta">Your current active subscription and monthly AI credit access.</div>
-        </div>
-
-        <div class="mini-grid">
-          <div class="mini-card">
-            <div class="mini-label">Wallet Balance</div>
-            <div class="mini-value" id="walletBalanceValue">$0.00</div>
-            <div class="mini-sub">Used to pay for subscription and AI top-ups.</div>
-          </div>
-
-          <div class="mini-card">
-            <div class="mini-label">AI Credits</div>
-            <div class="mini-value" id="creditValue">0</div>
-            <div class="mini-sub">Your current AI credit balance.</div>
-          </div>
+          <div class="sub" style="color:#fff;opacity:.92">Upgrading debits your wallet instantly and updates your dashboard immediately.</div>
         </div>
       </div>
     </section>
@@ -508,104 +267,113 @@
     <section class="section">
       <div class="section-body">
         <div class="plans">
-          <div class="plan-card">
-            <div class="plan-head">
+          <div class="plan">
+            <div class="plan-top">
               <div>
                 <div class="plan-name">Plus</div>
-                <div class="plan-desc">Starter AI access for light creators</div>
+                <div class="plan-meta">Good for regular creators</div>
               </div>
-              <div class="plan-price">$1 <small>/ month</small></div>
+              <div class="plan-price">₦3,500</div>
             </div>
-
             <div class="feature-list">
-              <div class="feature-item"><span>✓</span><div>20 Ask AI uses daily</div></div>
-              <div class="feature-item"><span>✓</span><div>50 AI credits monthly</div></div>
-              <div class="feature-item"><span>✓</span><div>AI post generation</div></div>
-              <div class="feature-item"><span>✓</span><div>Image generation access</div></div>
+              <div class="feature"><span>✓</span><span>50 AI credits monthly</span></div>
+              <div class="feature"><span>✓</span><span>Post with AI</span></div>
+              <div class="feature"><span>✓</span><span>Basic image support</span></div>
             </div>
-
-            <div class="actions">
-              <button class="btn primary subscribe-btn" data-plan="Plus" data-price="1" data-credits="50" type="button">Subscribe to Plus</button>
+            <div class="plan-foot">
+              <div class="pill">Monthly Plan</div>
+              <button class="btn primary upgrade-btn" data-plan="Plus" type="button">Upgrade to Plus</button>
             </div>
           </div>
 
-          <div class="plan-card featured">
-            <div class="plan-head">
+          <div class="plan recommended">
+            <div class="plan-top">
               <div>
                 <div class="plan-name">Pro</div>
-                <div class="plan-desc">Best for growing creators and brands</div>
+                <div class="plan-meta">Best for active creators</div>
               </div>
-              <div class="plan-badge">POPULAR</div>
+              <div class="plan-price">₦7,000</div>
             </div>
-
-            <div class="plan-price">$3 <small>/ month</small></div>
-
             <div class="feature-list">
-              <div class="feature-item"><span>✓</span><div>100 Ask AI uses daily</div></div>
-              <div class="feature-item"><span>✓</span><div>120 AI credits monthly</div></div>
-              <div class="feature-item"><span>✓</span><div>Cross-posting support</div></div>
-              <div class="feature-item"><span>✓</span><div>1 premium video slot</div></div>
+              <div class="feature"><span>✓</span><span>120 AI credits monthly</span></div>
+              <div class="feature"><span>✓</span><span>Image generation</span></div>
+              <div class="feature"><span>✓</span><span>Priority tools</span></div>
             </div>
-
-            <div class="actions">
-              <button class="btn primary subscribe-btn" data-plan="Pro" data-price="3" data-credits="120" type="button">Subscribe to Pro</button>
+            <div class="plan-foot">
+              <div class="pill">Recommended</div>
+              <button class="btn primary upgrade-btn" data-plan="Pro" type="button">Upgrade to Pro</button>
             </div>
           </div>
 
-          <div class="plan-card">
-            <div class="plan-head">
+          <div class="plan">
+            <div class="plan-top">
               <div>
                 <div class="plan-name">Enterprise</div>
-                <div class="plan-desc">Maximum access for power users</div>
+                <div class="plan-meta">For heavy AI and advanced workflow</div>
               </div>
-              <div class="plan-price">$7 <small>/ month</small></div>
+              <div class="plan-price">₦12,000</div>
             </div>
-
             <div class="feature-list">
-              <div class="feature-item"><span>✓</span><div>High Ask AI usage</div></div>
-              <div class="feature-item"><span>✓</span><div>200 AI credits monthly</div></div>
-              <div class="feature-item"><span>✓</span><div>Priority AI generation</div></div>
-              <div class="feature-item"><span>✓</span><div>2 premium video slots</div></div>
+              <div class="feature"><span>✓</span><span>300 AI credits monthly</span></div>
+              <div class="feature"><span>✓</span><span>Full AI tools</span></div>
+              <div class="feature"><span>✓</span><span>Advanced workflow support</span></div>
             </div>
-
-            <div class="actions">
-              <button class="btn primary subscribe-btn" data-plan="Enterprise" data-price="7" data-credits="200" type="button">Subscribe to Enterprise</button>
+            <div class="plan-foot">
+              <div class="pill">Advanced</div>
+              <button class="btn success upgrade-btn" data-plan="Enterprise" type="button">Upgrade to Enterprise</button>
             </div>
           </div>
-        </div>
 
-        <div class="actions">
-          <a class="btn ghost" href="wallet.html">Open Wallet</a>
-          <a class="btn success" href="ai-upgrade.html?from=subscription">Top Up AI Credits</a>
+          <div class="plan">
+            <div class="plan-top">
+              <div>
+                <div class="plan-name">Need Wallet Funding?</div>
+                <div class="plan-meta">Fund wallet before upgrade</div>
+              </div>
+              <div class="plan-price">₦</div>
+            </div>
+            <div class="feature-list">
+              <div class="feature"><span>✓</span><span>Instant wallet top-up</span></div>
+              <div class="feature"><span>✓</span><span>Used for plan and AI credit purchase</span></div>
+              <div class="feature"><span>✓</span><span>Tracks all debits and credits</span></div>
+            </div>
+            <div class="plan-foot">
+              <a class="btn" href="fund-wallet.html">Fund Wallet</a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
   </div>
 
   <script>
+    const supabaseClient = window.supabaseClient || window.supabase.createClient(
+      "https://ezarjrxzkqqsbyirxttg.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI",
+      {
+        auth:{
+          persistSession:true,
+          autoRefreshToken:true,
+          detectSessionInUrl:true,
+          flowType:"pkce"
+        }
+      }
+    );
+
     const noticeBox = document.getElementById("notice");
-    const backBtn = document.getElementById("backBtn");
-    const walletPill = document.getElementById("walletPill");
-    const creditPill = document.getElementById("creditPill");
-    const statusPill = document.getElementById("statusPill");
-    const currentPlanValue = document.getElementById("currentPlanValue");
-    const currentPlanMeta = document.getElementById("currentPlanMeta");
-    const walletBalanceValue = document.getElementById("walletBalanceValue");
-    const creditValue = document.getElementById("creditValue");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const currentPlanText = document.getElementById("currentPlanText");
+    const walletBalancePill = document.getElementById("walletBalancePill");
+    const aiCreditsPill = document.getElementById("aiCreditsPill");
+    const upgradeButtons = Array.from(document.querySelectorAll(".upgrade-btn"));
 
     let currentUser = null;
-    let walletId = null;
-    let walletBalance = 0;
-    let currentPlan = "Free";
-    let currentCredits = 0;
-    let currentStatus = "inactive";
-    let fromPage = "settings";
 
-    function showNotice(message, type = "info", duration = 3200) {
+    function showNotice(message, type = "info", duration = 3200){
       noticeBox.className = `notice show ${type}`;
       noticeBox.textContent = message || "";
       clearTimeout(showNotice._timer);
-      if (duration > 0) {
+      if(duration > 0){
         showNotice._timer = setTimeout(() => {
           noticeBox.className = "notice";
           noticeBox.textContent = "";
@@ -613,249 +381,103 @@
       }
     }
 
-    function formatDollar(value) {
-      return `$${Number(value || 0).toFixed(2)}`;
+    function formatNaira(value){
+      return `₦${Number(value || 0).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`;
     }
 
-    function planTheme(plan) {
-      return String(plan || "free").toLowerCase();
+    async function refreshWalletAndDashboard(){
+      try{
+        const [walletRes, subRes, creditRes, profileRes] = await Promise.all([
+          supabaseClient
+            .from("wallets")
+            .select("balance,currency")
+            .eq("user_id", currentUser.id)
+            .maybeSingle(),
+
+          supabaseClient
+            .from("user_subscriptions")
+            .select("plan_name,status,end_date")
+            .eq("user_id", currentUser.id)
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+
+          supabaseClient
+            .from("ai_credits")
+            .select("balance")
+            .eq("user_id", currentUser.id)
+            .maybeSingle(),
+
+          supabaseClient
+            .from("profiles")
+            .select("subscription_plan,subscription_status,plan_theme")
+            .eq("id", currentUser.id)
+            .maybeSingle()
+        ]);
+
+        const wallet = walletRes.data || {};
+        const sub = subRes.data || {};
+        const credits = creditRes.data || {};
+        const profile = profileRes.data || {};
+
+        walletBalancePill.textContent = `Wallet: ${formatNaira(wallet.balance || 0)}`;
+        aiCreditsPill.textContent = `AI Credits: ${Number(credits.balance || 0).toLocaleString()}`;
+        currentPlanText.textContent = sub.plan_name || profile.subscription_plan || "Free";
+      }catch(error){
+        console.error(error);
+      }
     }
 
-    function mapBackLink(page) {
-      if (page === "wallet") return "wallet.html";
-      if (page === "profile") return "profile.html";
-      return "settings.html";
+    async function upgradePlan(planName, btn){
+      btn.disabled = true;
+      const oldText = btn.textContent;
+      btn.textContent = "Processing...";
+
+      try{
+        const { data, error } = await supabaseClient.rpc("subscribe_with_wallet", {
+          target_plan_name: planName
+        });
+
+        if(error) throw error;
+        if(!data?.success) throw new Error("Upgrade failed.");
+
+        showNotice(`Plan upgraded to ${data.plan_name}. Wallet debited successfully.`, "success", 2600);
+        await refreshWalletAndDashboard();
+
+        if(window.opener && !window.opener.closed){
+          try{ window.opener.location.reload(); }catch(_){}
+        }
+      }catch(error){
+        showNotice(error.message || "Could not upgrade plan.", "error", 4200);
+      }finally{
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
     }
 
-    function setFromPage() {
-      const params = new URLSearchParams(window.location.search);
-      fromPage = params.get("from") || "settings";
-      backBtn.href = mapBackLink(fromPage);
-    }
+    async function init(){
+      await protectPage("home.html");
+      currentUser = window.currentUser || null;
 
-    function updateUi() {
-      walletPill.textContent = `Wallet: ${formatDollar(walletBalance)}`;
-      creditPill.textContent = `AI Credits: ${currentCredits}`;
-      statusPill.textContent = `Status: ${currentStatus}`;
-      currentPlanValue.textContent = currentPlan;
-      currentPlanMeta.textContent = `${currentPlan} plan • ${currentCredits} AI credits currently available.`;
-      walletBalanceValue.textContent = formatDollar(walletBalance);
-      creditValue.textContent = currentCredits;
-    }
-
-    async function ensureWallet() {
-      const { data: row, error } = await supabaseClient
-        .from("wallets")
-        .select("id,balance")
-        .eq("user_id", currentUser.id)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (row) {
-        walletId = row.id;
-        walletBalance = Number(row.balance || 0);
+      if(!currentUser){
+        location.replace("login.html");
         return;
       }
 
-      const { data: created, error: createErr } = await supabaseClient
-        .from("wallets")
-        .insert({
-          user_id: currentUser.id,
-          balance: 0,
-          currency: "NGN"
-        })
-        .select("id,balance")
-        .single();
+      await refreshWalletAndDashboard();
 
-      if (createErr) throw createErr;
-
-      walletId = created.id;
-      walletBalance = Number(created.balance || 0);
-    }
-
-    async function ensureAiCredits() {
-      const { data: row, error } = await supabaseClient
-        .from("ai_credits")
-        .select("id,balance")
-        .eq("user_id", currentUser.id)
-        .maybeSingle();
-
-      if (error) return;
-
-      if (row) {
-        currentCredits = Number(row.balance || 0);
-        return;
-      }
-
-      await supabaseClient
-        .from("ai_credits")
-        .insert({
-          user_id: currentUser.id,
-          balance: 0
-        });
-
-      currentCredits = 0;
-    }
-
-    async function loadPlan() {
-      currentPlan = "Free";
-      currentStatus = "inactive";
-
-      try {
-        const { data: sub } = await supabaseClient
-          .from("user_subscriptions")
-          .select("plan_name,status")
-          .eq("user_id", currentUser.id)
-          .eq("status", "active")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (sub?.plan_name) currentPlan = sub.plan_name;
-        if (sub?.status) currentStatus = sub.status;
-      } catch (_) {}
-    }
-
-    async function updateProfilePlanFields(plan) {
-      try {
-        await supabaseClient
-          .from("profiles")
-          .update({
-            subscription_plan: plan,
-            subscription_status: "active",
-            plan_theme: planTheme(plan),
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", currentUser.id);
-      } catch (_) {}
-    }
-
-    async function subscribeToPlan(plan, price, credits) {
-      try {
-        if (currentPlan === plan && currentStatus === "active") {
-          showNotice(`You are already on ${plan}.`, "info");
-          return;
-        }
-
-        if (walletBalance < Number(price)) {
-          showNotice("Insufficient wallet balance. Fund your wallet first.", "error");
-          return;
-        }
-
-        const newWalletBalance = walletBalance - Number(price);
-
-        const { error: walletUpdateErr } = await supabaseClient
-          .from("wallets")
-          .update({
-            balance: newWalletBalance,
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", walletId);
-
-        if (walletUpdateErr) throw walletUpdateErr;
-
-        await supabaseClient
-          .from("wallet_transactions")
-          .insert({
-            wallet_id: walletId,
-            user_id: currentUser.id,
-            type: "debit",
-            amount: Number(price),
-            status: "success",
-            description: `${plan} subscription payment`,
-            reference: `subscription_${plan.toLowerCase()}_${Date.now()}`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-
-        await supabaseClient
-          .from("user_subscriptions")
-          .update({
-            status: "expired",
-            updated_at: new Date().toISOString()
-          })
-          .eq("user_id", currentUser.id)
-          .eq("status", "active");
-
-        const startDate = new Date();
-        const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-        await supabaseClient
-          .from("user_subscriptions")
-          .insert({
-            user_id: currentUser.id,
-            plan_name: plan,
-            amount: Number(price),
-            currency: "NGN",
-            status: "active",
-            start_date: startDate.toISOString(),
-            end_date: endDate.toISOString(),
-            created_at: startDate.toISOString(),
-            updated_at: startDate.toISOString()
-          });
-
-        const { data: creditRow, error: creditGetErr } = await supabaseClient
-          .from("ai_credits")
-          .select("id")
-          .eq("user_id", currentUser.id)
-          .maybeSingle();
-
-        if (creditGetErr || !creditRow) {
-          throw new Error("AI credit record not found.");
-        }
-
-        const { error: creditUpdateErr } = await supabaseClient
-          .from("ai_credits")
-          .update({
-            balance: Number(credits),
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", creditRow.id);
-
-        if (creditUpdateErr) throw creditUpdateErr;
-
-        await updateProfilePlanFields(plan);
-
-        walletBalance = newWalletBalance;
-        currentPlan = plan;
-        currentCredits = Number(credits);
-        currentStatus = "active";
-        updateUi();
-
-        showNotice(`${plan} activated successfully.`, "success", 2600);
-      } catch (error) {
-        showNotice(error.message || "Could not activate subscription.", "error", 4200);
-      }
-    }
-
-    function bindActions() {
-      document.querySelectorAll(".subscribe-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          subscribeToPlan(
-            btn.dataset.plan,
-            btn.dataset.price,
-            btn.dataset.credits
-          );
-        });
+      refreshBtn.addEventListener("click", async () => {
+        await refreshWalletAndDashboard();
+        showNotice("Subscription page refreshed.", "success", 1500);
       });
-    }
 
-    async function init() {
-      currentUser = await protectPage("home.html");
-      if (!currentUser) return;
-
-      setFromPage();
-
-      try {
-        await ensureWallet();
-        await ensureAiCredits();
-        await loadPlan();
-        updateUi();
-        bindActions();
-      } catch (error) {
-        showNotice(error.message || "Could not load subscription page.", "error", 4200);
-      }
+      upgradeButtons.forEach(btn => {
+        btn.addEventListener("click", () => upgradePlan(btn.dataset.plan, btn));
+      });
     }
 
     init();
