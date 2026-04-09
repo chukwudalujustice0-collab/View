@@ -1,236 +1,864 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="auth-loading">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Subscriptions | View</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0b5ed7" />
+  <title>Subscription | View</title>
+  <meta name="theme-color" content="#0b1454" />
 
   <style>
+    html.auth-loading, html.auth-loading body{
+      visibility:hidden;
+    }
+
     :root{
-      --primary:#0b5ed7;
-      --primary-dark:#083b8a;
-      --bg:#f5f8ff;
-      --card:#ffffff;
-      --text:#1f1f1f;
-      --soft:#6b7280;
-      --border:#e5e7eb;
-      --shadow:0 10px 30px rgba(0,0,0,.06);
-      --radius:18px;
+      --bg:#08114c;
+      --bg2:#0b1454;
+      --bg3:#0a1b6f;
+      --panel:#ffffff;
+      --panel2:#f8fbff;
+      --text:#111827;
+      --muted:#667085;
+      --line:#dbe4ff;
+      --white:#ffffff;
+      --primary:#2563eb;
+      --primary2:#4f46e5;
+      --red:#ef4444;
+      --red2:#ff5f7a;
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --shadow:0 16px 40px rgba(8,17,76,.14);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
     }
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-    body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:92px}
-    a{text-decoration:none;color:inherit}
-    button{font:inherit}
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+      color:var(--text);
+    }
+
+    body{
+      padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button{
+      border:none;
+      background:none;
+      cursor:pointer;
+      font:inherit;
+      color:inherit;
+    }
+
+    .wrap{
+      width:min(100%, 900px);
+      margin:0 auto;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.55;
+      box-shadow:var(--shadow-soft);
+    }
+    .notice.show{display:block}
+    .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+
     .topbar{
-      position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
-      border-bottom:1px solid var(--border);padding:14px 16px;display:flex;justify-content:space-between;
-      align-items:center;gap:12px;flex-wrap:wrap
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
     }
-    .topbar-left,.topbar-right{display:flex;align-items:center;gap:10px}
-    .page-title h1{font-size:22px;color:var(--primary);margin-bottom:2px;line-height:1}
-    .page-title p{font-size:12px;color:var(--soft)}
-    .icon-btn,.primary-btn,.outline-btn,.chip{
-      border:none;border-radius:12px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
     }
-    .icon-btn{width:42px;padding:0;background:#fff;border:1px solid var(--border)}
-    .primary-btn{background:var(--primary);color:#fff;font-weight:700}
-    .primary-btn:hover{background:var(--primary-dark)}
-    .outline-btn,.chip{background:#fff;color:var(--primary);border:1px solid var(--border);font-weight:700}
-    .chip{min-height:38px;border-radius:999px;font-size:13px}
-    .chip.active{background:rgba(11,94,215,.08);border-color:rgba(11,94,215,.18)}
-    .container{
-      max-width:1120px;margin:0 auto;padding:18px 16px 0;display:grid;grid-template-columns:1.1fr .8fr;gap:20px
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+      box-shadow:var(--shadow-soft);
+      font-size:18px;
+      color:#111827;
     }
-    .left-column,.right-column{display:grid;gap:18px;align-content:start}
-    .card{
-      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px
+
+    .brand-box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
     }
-    .section-head{
-      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px;flex-wrap:wrap
+
+    .brand-logo{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      object-fit:cover;
+      box-shadow:0 8px 20px rgba(37,99,235,.15);
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
     }
-    .section-head h2,.section-head h3{font-size:20px;margin-bottom:4px}
-    .section-head p{font-size:13px;color:var(--soft);line-height:1.5}
-    .billing-row,.action-row{display:flex;gap:10px;flex-wrap:wrap}
-    .plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .plan-card{
-      border:1px solid var(--border);border-radius:18px;background:#fff;padding:18px;display:flex;flex-direction:column
+
+    .title-box{
+      min-width:0;
+      flex:1;
     }
-    .plan-card.featured{
-      border-color:rgba(11,94,215,.22);
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#0b1454;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .section{
+      background:rgba(255,255,255,.95);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .section-body{
+      padding:14px;
+      display:grid;
+      gap:14px;
+    }
+
+    .hero{
+      display:grid;
+      gap:12px;
+      padding:18px;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(37,99,235,.08), rgba(79,70,229,.08), rgba(239,68,68,.08));
+      border:1px solid #dbeafe;
+    }
+
+    .hero-title{
+      font-size:20px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .hero-sub{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .hero-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .pill{
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
       background:#f8fbff;
+      color:#475569;
+      font-size:11px;
+      display:flex;
+      align-items:center;
+      gap:6px;
     }
-    .plan-card h4{font-size:18px;margin-bottom:6px}
-    .plan-price{font-size:34px;font-weight:700;margin-bottom:4px}
-    .plan-sub{font-size:12px;color:var(--soft);margin-bottom:14px}
-    .plan-list{display:grid;gap:10px;margin-bottom:18px;flex:1}
-    .plan-list span{font-size:13px;color:var(--soft)}
-    .summary-grid{display:grid;gap:12px}
-    .summary-item{
-      display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border);font-size:14px
+
+    .current-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:8px;
     }
-    .summary-item:first-child{border-top:none;padding-top:0}
-    .summary-item span{color:var(--soft)}
-    .tip-box{
-      border:1px dashed rgba(11,94,215,.18);border-radius:16px;background:#f8fbff;padding:16px
+
+    .current-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
     }
-    .tip-box h4{font-size:15px;margin-bottom:6px}
-    .tip-box p{font-size:13px;color:var(--soft);line-height:1.6;margin-bottom:12px}
-    .bottom-nav{
-      position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--border);
-      display:none;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:30
+
+    .current-value{
+      font-size:24px;
+      font-weight:800;
+      color:#0b1454;
+      line-height:1.1;
     }
-    .bottom-link{
-      min-height:54px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:4px;font-size:11px;color:var(--soft)
+
+    .current-meta{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
     }
-    .bottom-link.active{color:var(--primary);background:rgba(11,94,215,.08);font-weight:700}
-    @media(max-width:980px){.container{grid-template-columns:1fr}.plans-grid{grid-template-columns:1fr}}
-    @media(max-width:760px){.bottom-nav{display:grid}}
-    @media(max-width:640px){
-      .container{padding:14px 12px 0}
-      .topbar-right .outline-btn{display:none}
+
+    .plans{
+      display:grid;
+      gap:12px;
+    }
+
+    .plan-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:16px;
+      display:grid;
+      gap:12px;
+    }
+
+    .plan-card.featured{
+      border-color:#bfdbfe;
+      background:linear-gradient(135deg, rgba(37,99,235,.04), rgba(79,70,229,.04), rgba(239,68,68,.03));
+    }
+
+    .plan-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .plan-name{
+      font-size:17px;
+      font-weight:800;
+      color:#0b1454;
+      margin-bottom:4px;
+    }
+
+    .plan-price{
+      font-size:22px;
+      font-weight:800;
+      color:#111827;
+    }
+
+    .plan-price small{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .plan-badge{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      color:#fff;
+      font-size:11px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      white-space:nowrap;
+    }
+
+    .plan-desc{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .feature-list{
+      display:grid;
+      gap:8px;
+    }
+
+    .feature-item{
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+      font-size:13px;
+      color:#374151;
+      line-height:1.5;
+    }
+
+    .feature-item span{
+      color:#10b981;
+      font-weight:800;
+      margin-top:1px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      flex:1;
+      min-height:48px;
+      padding:0 16px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111827;
+      font-size:14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.success{
+      background:linear-gradient(135deg,#059669,#10b981);
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.ghost{
+      background:#fff;
+      border:1px solid var(--line);
+      color:#111827;
+    }
+
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .mini-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .mini-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:8px;
+    }
+
+    .mini-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .mini-value{
+      font-size:22px;
+      font-weight:800;
+      color:#0b1454;
+      line-height:1.1;
+    }
+
+    .mini-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    @media (min-width:760px){
+      .plans{
+        grid-template-columns:repeat(3,1fr);
+      }
     }
   </style>
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
+
+    async function protectPage(nextPage) {
+      try {
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if (!user) {
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      } catch (e) {
+        document.documentElement.classList.remove("auth-loading");
+        location.replace("login.html");
+        return null;
+      }
+    }
+  </script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="icon-btn" onclick="window.location.href='wallet.html'">←</button>
-      <div class="page-title">
-        <h1>Subscriptions</h1>
-        <p>Manage plans, billing cycle, and premium creator access</p>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" id="backBtn" href="settings.html" aria-label="Back">←</a>
+
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+          <div class="title-box">
+            <div class="title">Subscription</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="topbar-right">
-      <button class="outline-btn" data-cancel-plan>Cancel Plan</button>
-    </div>
-  </header>
+    </header>
 
-  <main class="container">
-    <div class="left-column">
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <h2>Billing Cycle</h2>
-            <p>Choose how you want your plan charged.</p>
+    <section class="section">
+      <div class="section-body">
+        <div class="hero">
+          <div class="hero-title">Upgrade your View plan</div>
+          <div class="hero-sub">Get more AI access, cross-posting support, and premium tools through your monthly subscription.</div>
+          <div class="hero-row">
+            <div class="pill" id="walletPill">Wallet: --</div>
+            <div class="pill" id="creditPill">AI Credits: --</div>
+            <div class="pill" id="statusPill">Status: --</div>
           </div>
         </div>
 
-        <div class="billing-row">
-          <button class="chip active" data-billing-toggle="monthly">Monthly</button>
-          <button class="chip" data-billing-toggle="yearly">Yearly</button>
+        <div class="current-card">
+          <div class="current-label">Current Plan</div>
+          <div class="current-value" id="currentPlanValue">Free</div>
+          <div class="current-meta" id="currentPlanMeta">Your current active subscription and monthly AI credit access.</div>
         </div>
-      </section>
 
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <h2>Choose Your Plan</h2>
-            <p>Select a plan that matches your creator or business workflow.</p>
+        <div class="mini-grid">
+          <div class="mini-card">
+            <div class="mini-label">Wallet Balance</div>
+            <div class="mini-value" id="walletBalanceValue">$0.00</div>
+            <div class="mini-sub">Used to pay for subscription and AI top-ups.</div>
+          </div>
+
+          <div class="mini-card">
+            <div class="mini-label">AI Credits</div>
+            <div class="mini-value" id="creditValue">0</div>
+            <div class="mini-sub">Your current AI credit balance.</div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div class="plans-grid">
-          <article class="plan-card">
-            <h4>Starter</h4>
-            <div class="plan-price">₦0</div>
-            <div class="plan-sub">Basic access</div>
-            <div class="plan-list">
-              <span>• View-only posting</span>
-              <span>• Basic profile tools</span>
-              <span>• Limited drafts</span>
+    <section class="section">
+      <div class="section-body">
+        <div class="plans">
+          <div class="plan-card">
+            <div class="plan-head">
+              <div>
+                <div class="plan-name">Plus</div>
+                <div class="plan-desc">Starter AI access for light creators</div>
+              </div>
+              <div class="plan-price">$1 <small>/ month</small></div>
             </div>
-            <button class="outline-btn" data-select-plan="Starter">Select Starter</button>
-          </article>
 
-          <article class="plan-card featured">
-            <h4>Pro Monthly</h4>
-            <div class="plan-price">₦2,500</div>
-            <div class="plan-sub">Most popular</div>
-            <div class="plan-list">
-              <span>• Cross-posting tools</span>
-              <span>• Better analytics</span>
-              <span>• AI support access</span>
-              <span>• Priority support</span>
+            <div class="feature-list">
+              <div class="feature-item"><span>✓</span><div>20 Ask AI uses daily</div></div>
+              <div class="feature-item"><span>✓</span><div>50 AI credits monthly</div></div>
+              <div class="feature-item"><span>✓</span><div>AI post generation</div></div>
+              <div class="feature-item"><span>✓</span><div>Image generation access</div></div>
             </div>
-            <button class="primary-btn" data-select-plan="Pro Monthly">Select Pro</button>
-          </article>
 
-          <article class="plan-card">
-            <h4>Business</h4>
-            <div class="plan-price">₦5,000</div>
-            <div class="plan-sub">For brands and teams</div>
-            <div class="plan-list">
-              <span>• Full creator toolkit</span>
-              <span>• More publishing capacity</span>
-              <span>• Brand support flow</span>
-              <span>• Better growth tools</span>
+            <div class="actions">
+              <button class="btn primary subscribe-btn" data-plan="Plus" data-price="1" data-credits="50" type="button">Subscribe to Plus</button>
             </div>
-            <button class="outline-btn" data-select-plan="Business">Select Business</button>
-          </article>
-        </div>
-      </section>
-    </div>
+          </div>
 
-    <aside class="right-column">
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <h3>Current Plan</h3>
-            <p>Your active subscription summary.</p>
+          <div class="plan-card featured">
+            <div class="plan-head">
+              <div>
+                <div class="plan-name">Pro</div>
+                <div class="plan-desc">Best for growing creators and brands</div>
+              </div>
+              <div class="plan-badge">POPULAR</div>
+            </div>
+
+            <div class="plan-price">$3 <small>/ month</small></div>
+
+            <div class="feature-list">
+              <div class="feature-item"><span>✓</span><div>100 Ask AI uses daily</div></div>
+              <div class="feature-item"><span>✓</span><div>120 AI credits monthly</div></div>
+              <div class="feature-item"><span>✓</span><div>Cross-posting support</div></div>
+              <div class="feature-item"><span>✓</span><div>1 premium video slot</div></div>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary subscribe-btn" data-plan="Pro" data-price="3" data-credits="120" type="button">Subscribe to Pro</button>
+            </div>
+          </div>
+
+          <div class="plan-card">
+            <div class="plan-head">
+              <div>
+                <div class="plan-name">Enterprise</div>
+                <div class="plan-desc">Maximum access for power users</div>
+              </div>
+              <div class="plan-price">$7 <small>/ month</small></div>
+            </div>
+
+            <div class="feature-list">
+              <div class="feature-item"><span>✓</span><div>High Ask AI usage</div></div>
+              <div class="feature-item"><span>✓</span><div>200 AI credits monthly</div></div>
+              <div class="feature-item"><span>✓</span><div>Priority AI generation</div></div>
+              <div class="feature-item"><span>✓</span><div>2 premium video slots</div></div>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary subscribe-btn" data-plan="Enterprise" data-price="7" data-credits="200" type="button">Subscribe to Enterprise</button>
+            </div>
           </div>
         </div>
 
-        <div class="summary-grid">
-          <div class="summary-item"><span>Plan</span><strong data-current-plan>Pro Monthly</strong></div>
-          <div class="summary-item"><span>Billing</span><strong>Monthly</strong></div>
-          <div class="summary-item"><span>Status</span><strong>Active</strong></div>
-          <div class="summary-item"><span>Renewal</span><strong>Next 30 days</strong></div>
+        <div class="actions">
+          <a class="btn ghost" href="wallet.html">Open Wallet</a>
+          <a class="btn success" href="ai-upgrade.html?from=subscription">Top Up AI Credits</a>
         </div>
-      </section>
+      </div>
+    </section>
+  </div>
 
-      <section class="card">
-        <div class="section-head">
-          <div>
-            <h3>Quick Links</h3>
-            <p>Move to related billing tools.</p>
-          </div>
-        </div>
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const backBtn = document.getElementById("backBtn");
+    const walletPill = document.getElementById("walletPill");
+    const creditPill = document.getElementById("creditPill");
+    const statusPill = document.getElementById("statusPill");
+    const currentPlanValue = document.getElementById("currentPlanValue");
+    const currentPlanMeta = document.getElementById("currentPlanMeta");
+    const walletBalanceValue = document.getElementById("walletBalanceValue");
+    const creditValue = document.getElementById("creditValue");
 
-        <div class="action-row">
-          <button class="outline-btn" onclick="window.location.href='wallet.html'">Wallet</button>
-          <button class="outline-btn" onclick="window.location.href='analytics.html'">Analytics</button>
-          <button class="outline-btn" onclick="window.location.href='create-post.html'">Create Post</button>
-        </div>
-      </section>
+    let currentUser = null;
+    let walletId = null;
+    let walletBalance = 0;
+    let currentPlan = "Free";
+    let currentCredits = 0;
+    let currentStatus = "inactive";
+    let fromPage = "settings";
 
-      <section class="card">
-        <div class="tip-box">
-          <h4>Plan tip</h4>
-          <p>
-            Pro is best if you post often and need analytics plus AI support.
-            Business works better for larger content and brand activity.
-          </p>
-          <button class="primary-btn" onclick="window.location.href='wallet.html'">Open Wallet</button>
-        </div>
-      </section>
-    </aside>
-  </main>
+    function showNotice(message, type = "info", duration = 3200) {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      if (duration > 0) {
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, duration);
+      }
+    }
 
-  <nav class="bottom-nav">
-    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
-    <a href="explore.html" class="bottom-link"><span>🔍</span><span>Explore</span></a>
-    <a href="create-post.html" class="bottom-link"><span>➕</span><span>Create</span></a>
-    <a href="messages.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
-    <a href="profile.html" class="bottom-link active"><span>👤</span><span>Profile</span></a>
-  </nav>
+    function formatDollar(value) {
+      return `$${Number(value || 0).toFixed(2)}`;
+    }
 
-  <script src="config.js"></script>
-  <script src="utils.js"></script>
-  <script src="app.js"></script>
-  <script src="auth.js"></script>
-  <script src="subscriptions.js"></script>
+    function planTheme(plan) {
+      return String(plan || "free").toLowerCase();
+    }
+
+    function mapBackLink(page) {
+      if (page === "wallet") return "wallet.html";
+      if (page === "profile") return "profile.html";
+      return "settings.html";
+    }
+
+    function setFromPage() {
+      const params = new URLSearchParams(window.location.search);
+      fromPage = params.get("from") || "settings";
+      backBtn.href = mapBackLink(fromPage);
+    }
+
+    function updateUi() {
+      walletPill.textContent = `Wallet: ${formatDollar(walletBalance)}`;
+      creditPill.textContent = `AI Credits: ${currentCredits}`;
+      statusPill.textContent = `Status: ${currentStatus}`;
+      currentPlanValue.textContent = currentPlan;
+      currentPlanMeta.textContent = `${currentPlan} plan • ${currentCredits} AI credits currently available.`;
+      walletBalanceValue.textContent = formatDollar(walletBalance);
+      creditValue.textContent = currentCredits;
+    }
+
+    async function ensureWallet() {
+      const { data: row, error } = await supabaseClient
+        .from("wallets")
+        .select("id,balance")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (row) {
+        walletId = row.id;
+        walletBalance = Number(row.balance || 0);
+        return;
+      }
+
+      const { data: created, error: createErr } = await supabaseClient
+        .from("wallets")
+        .insert({
+          user_id: currentUser.id,
+          balance: 0,
+          currency: "NGN"
+        })
+        .select("id,balance")
+        .single();
+
+      if (createErr) throw createErr;
+
+      walletId = created.id;
+      walletBalance = Number(created.balance || 0);
+    }
+
+    async function ensureAiCredits() {
+      const { data: row, error } = await supabaseClient
+        .from("ai_credits")
+        .select("id,balance")
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+
+      if (error) return;
+
+      if (row) {
+        currentCredits = Number(row.balance || 0);
+        return;
+      }
+
+      await supabaseClient
+        .from("ai_credits")
+        .insert({
+          user_id: currentUser.id,
+          balance: 0
+        });
+
+      currentCredits = 0;
+    }
+
+    async function loadPlan() {
+      currentPlan = "Free";
+      currentStatus = "inactive";
+
+      try {
+        const { data: sub } = await supabaseClient
+          .from("user_subscriptions")
+          .select("plan_name,status")
+          .eq("user_id", currentUser.id)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (sub?.plan_name) currentPlan = sub.plan_name;
+        if (sub?.status) currentStatus = sub.status;
+      } catch (_) {}
+    }
+
+    async function updateProfilePlanFields(plan) {
+      try {
+        await supabaseClient
+          .from("profiles")
+          .update({
+            subscription_plan: plan,
+            subscription_status: "active",
+            plan_theme: planTheme(plan),
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", currentUser.id);
+      } catch (_) {}
+    }
+
+    async function subscribeToPlan(plan, price, credits) {
+      try {
+        if (currentPlan === plan && currentStatus === "active") {
+          showNotice(`You are already on ${plan}.`, "info");
+          return;
+        }
+
+        if (walletBalance < Number(price)) {
+          showNotice("Insufficient wallet balance. Fund your wallet first.", "error");
+          return;
+        }
+
+        const newWalletBalance = walletBalance - Number(price);
+
+        const { error: walletUpdateErr } = await supabaseClient
+          .from("wallets")
+          .update({
+            balance: newWalletBalance,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", walletId);
+
+        if (walletUpdateErr) throw walletUpdateErr;
+
+        await supabaseClient
+          .from("wallet_transactions")
+          .insert({
+            wallet_id: walletId,
+            user_id: currentUser.id,
+            type: "debit",
+            amount: Number(price),
+            status: "success",
+            description: `${plan} subscription payment`,
+            reference: `subscription_${plan.toLowerCase()}_${Date.now()}`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        await supabaseClient
+          .from("user_subscriptions")
+          .update({
+            status: "expired",
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", currentUser.id)
+          .eq("status", "active");
+
+        const startDate = new Date();
+        const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+        await supabaseClient
+          .from("user_subscriptions")
+          .insert({
+            user_id: currentUser.id,
+            plan_name: plan,
+            amount: Number(price),
+            currency: "NGN",
+            status: "active",
+            start_date: startDate.toISOString(),
+            end_date: endDate.toISOString(),
+            created_at: startDate.toISOString(),
+            updated_at: startDate.toISOString()
+          });
+
+        const { data: creditRow, error: creditGetErr } = await supabaseClient
+          .from("ai_credits")
+          .select("id")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (creditGetErr || !creditRow) {
+          throw new Error("AI credit record not found.");
+        }
+
+        const { error: creditUpdateErr } = await supabaseClient
+          .from("ai_credits")
+          .update({
+            balance: Number(credits),
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", creditRow.id);
+
+        if (creditUpdateErr) throw creditUpdateErr;
+
+        await updateProfilePlanFields(plan);
+
+        walletBalance = newWalletBalance;
+        currentPlan = plan;
+        currentCredits = Number(credits);
+        currentStatus = "active";
+        updateUi();
+
+        showNotice(`${plan} activated successfully.`, "success", 2600);
+      } catch (error) {
+        showNotice(error.message || "Could not activate subscription.", "error", 4200);
+      }
+    }
+
+    function bindActions() {
+      document.querySelectorAll(".subscribe-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          subscribeToPlan(
+            btn.dataset.plan,
+            btn.dataset.price,
+            btn.dataset.credits
+          );
+        });
+      });
+    }
+
+    async function init() {
+      currentUser = await protectPage("home.html");
+      if (!currentUser) return;
+
+      setFromPage();
+
+      try {
+        await ensureWallet();
+        await ensureAiCredits();
+        await loadPlan();
+        updateUi();
+        bindActions();
+      } catch (error) {
+        showNotice(error.message || "Could not load subscription page.", "error", 4200);
+      }
+    }
+
+    init();
+  </script>
 </body>
 </html>
