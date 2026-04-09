@@ -1,116 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="auth-loading">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Edit Profile | View</title>
-  <meta name="theme-color" content="#07122a" />
+  <meta name="theme-color" content="#0b1454" />
   <link rel="manifest" href="/manifest.json" />
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden}
+
     :root{
-      --bg:#071120;
-      --bg2:#0a1630;
-      --panel:rgba(13,26,52,.88);
-      --panel-2:rgba(255,255,255,.04);
-      --line:rgba(255,255,255,.08);
-      --line-strong:rgba(255,255,255,.14);
-      --text:#f8fbff;
-      --muted:#9db0cf;
-      --soft:#8395b5;
-      --primary:#2d6bff;
-      --primary2:#5b8cff;
-      --success:#22c55e;
-      --danger:#ef4444;
-      --warning:#f59e0b;
-      --shadow:0 14px 40px rgba(0,0,0,.22);
+      --bg:#08114c;
+      --bg2:#0b1454;
+      --bg3:#10207a;
+      --panel:#ffffff;
+      --text:#111827;
+      --muted:#667085;
+      --line:#dbe4ff;
+      --primary:#2563eb;
+      --primary2:#4f46e5;
+      --red:#ef4444;
+      --success:#10b981;
+      --shadow:0 18px 44px rgba(8,17,76,.16);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);
       --safe-bottom:env(safe-area-inset-bottom);
     }
 
     *{
+      box-sizing:border-box;
       margin:0;
       padding:0;
-      box-sizing:border-box;
-      font-family:Inter,Arial,sans-serif;
+      font-family:Arial,sans-serif;
       -webkit-tap-highlight-color:transparent;
     }
 
     html,body{
       min-height:100%;
       background:
-        radial-gradient(circle at top right, rgba(45,107,255,.12), transparent 24%),
-        linear-gradient(180deg,#08142b 0%, #071120 56%, #050d1a 100%);
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
       color:var(--text);
     }
 
     body{
-      padding-bottom:120px;
+      padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom));
     }
 
-    a{
-      text-decoration:none;
-      color:inherit;
-    }
-
+    a{color:inherit;text-decoration:none}
+    button,input,textarea,select{font:inherit;color:inherit}
     button{
       border:none;
-      outline:none;
       background:none;
-      color:inherit;
-      font:inherit;
       cursor:pointer;
     }
 
     .wrap{
       width:min(100%, 980px);
       margin:0 auto;
-      padding:18px 16px 0;
     }
 
     .notice{
       display:none;
-      margin-bottom:16px;
-      padding:14px 16px;
+      margin-bottom:14px;
+      padding:12px 14px;
       border-radius:14px;
       font-size:14px;
-      line-height:1.6;
-      border:1px solid transparent;
+      line-height:1.55;
+      box-shadow:var(--shadow-soft);
     }
-
     .notice.show{display:block}
-    .notice.error{
-      background:rgba(239,68,68,.10);
-      border-color:rgba(239,68,68,.18);
-      color:#ffd7d7;
-    }
-    .notice.success{
-      background:rgba(34,197,94,.10);
-      border-color:rgba(34,197,94,.18);
-      color:#dcffe7;
-    }
-    .notice.info{
-      background:rgba(45,107,255,.10);
-      border-color:rgba(45,107,255,.18);
-      color:#dcebff;
-    }
+    .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
 
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:22px;
-      padding-bottom:14px;
-      border-bottom:1px solid var(--line);
+      margin-bottom:14px;
       flex-wrap:wrap;
     }
 
-    .brand{
+    .top-left{
       display:flex;
       align-items:center;
       gap:12px;
       min-width:0;
+      flex:1;
+    }
+
+    .top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
     .icon-btn{
@@ -118,510 +110,466 @@
       height:46px;
       min-width:46px;
       border-radius:14px;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
       display:flex;
       align-items:center;
       justify-content:center;
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+      box-shadow:var(--shadow-soft);
       font-size:18px;
+      color:#111827;
     }
 
-    .title-group{
+    .brand-box{
+      display:flex;
+      align-items:center;
+      gap:10px;
       min-width:0;
+      flex:1;
+    }
+
+    .brand-logo{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      object-fit:cover;
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+      box-shadow:0 8px 20px rgba(37,99,235,.15);
+    }
+
+    .title-box{
+      min-width:0;
+      flex:1;
     }
 
     .title{
-      font-size:28px;
-      font-weight:900;
-      letter-spacing:-.03em;
-      line-height:1;
-      margin-bottom:6px;
-    }
-
-    .subtitle{
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.6;
-    }
-
-    .top-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .btn,
-    .btn-soft,
-    .btn-danger{
-      min-height:46px;
-      padding:0 16px;
-      border-radius:14px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      font-size:13px;
+      font-size:22px;
       font-weight:800;
-      transition:.2s ease;
-    }
-
-    .btn{
-      color:#fff;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      box-shadow:0 12px 28px rgba(45,107,255,.24);
-    }
-
-    .btn-soft{
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      color:#fff;
-    }
-
-    .btn-danger{
-      color:#fff;
-      background:rgba(239,68,68,.12);
-      border:1px solid rgba(239,68,68,.25);
-    }
-
-    .btn:hover,
-    .btn-soft:hover,
-    .btn-danger:hover{
-      transform:translateY(-1px);
-    }
-
-    .btn[disabled],
-    .btn-soft[disabled],
-    .btn-danger[disabled]{
-      opacity:.6;
-      cursor:not-allowed;
-      transform:none;
-    }
-
-    .hero{
-      display:grid;
-      grid-template-columns:auto 1fr auto;
-      gap:18px;
-      align-items:center;
-      padding:18px;
-      border:1px solid var(--line);
-      border-radius:24px;
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      box-shadow:var(--shadow);
-      margin-bottom:24px;
-    }
-
-    .avatar-wrap{
-      position:relative;
-      width:104px;
-      height:104px;
-    }
-
-    .avatar{
-      width:104px;
-      height:104px;
-      border-radius:50%;
+      margin-bottom:3px;
+      white-space:nowrap;
       overflow:hidden;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#fff;
-      font-size:34px;
-      font-weight:900;
-      border:3px solid rgba(255,255,255,.08);
-      box-shadow:var(--shadow);
+      text-overflow:ellipsis;
+      color:#0b1454;
     }
 
-    .avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .avatar-edit{
-      position:absolute;
-      right:0;
-      bottom:2px;
-      width:36px;
-      height:36px;
-      border-radius:12px;
-      background:#fff;
-      color:#111827;
-      font-size:14px;
-      font-weight:900;
-      box-shadow:0 10px 20px rgba(0,0,0,.22);
-    }
-
-    .hero-copy{
-      min-width:0;
-    }
-
-    .hero-copy h2{
-      font-size:30px;
-      font-weight:900;
-      letter-spacing:-.03em;
-      margin-bottom:6px;
+    .sub{
+      color:var(--muted);
+      font-size:13px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .hero-copy p{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.8;
-      margin-bottom:12px;
-    }
-
-    .chips{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .chip{
-      min-height:32px;
-      padding:0 12px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.05);
-      border:1px solid var(--line);
-      font-size:12px;
-      font-weight:800;
-      color:#dbe8ff;
-    }
-
-    .hero-actions{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      min-width:190px;
-    }
-
-    .section{
-      padding:18px;
-      margin-bottom:24px;
-      border:1px solid var(--line);
-      border-radius:24px;
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      box-shadow:var(--shadow);
-    }
-
-    .section-head{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
-      flex-wrap:wrap;
-    }
-
-    .section-head h3{
-      font-size:21px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      margin-bottom:4px;
-    }
-
-    .section-head p{
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.7;
-      max-width:680px;
-    }
-
-    .section-tag{
-      min-height:30px;
-      padding:0 11px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.04);
-      border:1px solid var(--line);
-      color:#d9e6ff;
-      font-size:11px;
-      font-weight:900;
-      white-space:nowrap;
-    }
-
-    .split{
+    .layout{
       display:grid;
-      grid-template-columns:1.05fr .95fr;
-      gap:24px;
+      grid-template-columns:1.08fr .92fr;
+      gap:14px;
       align-items:start;
     }
 
-    .form-grid{
+    .section{
+      background:rgba(255,255,255,.95);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .section-body{
+      padding:14px;
       display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:16px;
+      gap:14px;
+    }
+
+    .hero{
+      position:relative;
+      min-height:300px;
+      border-radius:24px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.14), transparent 28%),
+        linear-gradient(135deg,#08114c,#2563eb,#4f46e5,#ef4444);
+      box-shadow:var(--shadow);
+    }
+
+    .cover-preview{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:none;
+      pointer-events:none;
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+
+    .hero-overlay{
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.08) 0%, rgba(0,0,0,.14) 44%, rgba(0,0,0,.42) 100%);
+      z-index:1;
+      pointer-events:none;
+    }
+
+    .hero-content{
+      position:relative;
+      z-index:2;
+      min-height:300px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:14px;
+      color:#fff;
+    }
+
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      font-weight:800;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.18);
+      color:#fff;
+      backdrop-filter:blur(10px);
+      white-space:nowrap;
+    }
+
+    .hero-cover-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .cover-btn{
+      min-height:38px;
+      padding:0 14px;
+      border-radius:12px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.18);
+      color:#fff;
+      font-size:12px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      backdrop-filter:blur(10px);
+      cursor:pointer;
+    }
+
+    .profile-row{
+      display:flex;
+      align-items:flex-end;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .avatar-wrap{
+      position:relative;
+      width:108px;
+      height:108px;
+      min-width:108px;
+      border-radius:30px;
+      overflow:hidden;
+      border:4px solid rgba(255,255,255,.96);
+      box-shadow:0 16px 30px rgba(2,6,23,.22);
+      background:rgba(255,255,255,.16);
+      display:grid;
+      place-items:center;
+      font-size:38px;
+      font-weight:800;
+      color:#fff;
+    }
+
+    .avatar-wrap img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:none;
+      pointer-events:none;
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+
+    .avatar-edit{
+      position:absolute;
+      right:6px;
+      bottom:6px;
+      width:36px;
+      height:36px;
+      border-radius:12px;
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:15px;
+      box-shadow:0 10px 20px rgba(37,99,235,.28);
+      border:2px solid rgba(255,255,255,.96);
+      cursor:pointer;
+    }
+
+    .hero-copy{
+      min-width:0;
+      flex:1;
+      display:grid;
+      gap:6px;
+      padding-bottom:6px;
+    }
+
+    .hero-name{
+      font-size:24px;
+      font-weight:800;
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .hero-username{
+      font-size:13px;
+      color:rgba(255,255,255,.94);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .hero-bio{
+      font-size:12px;
+      line-height:1.55;
+      color:rgba(255,255,255,.92);
+      max-width:540px;
+      min-height:18px;
+      word-break:break-word;
+    }
+
+    .card-title{
+      font-size:15px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .fields{
+      display:grid;
+      gap:12px;
     }
 
     .field{
       display:grid;
-      gap:8px;
+      gap:7px;
     }
 
-    .field.full{
-      grid-column:1 / -1;
-    }
-
-    .field label{
-      font-size:12px;
-      font-weight:800;
-      color:#dce8ff;
-      text-transform:uppercase;
-      letter-spacing:.04em;
+    .label{
+      font-size:13px;
+      font-weight:700;
+      color:#374151;
     }
 
     .input,
-    .textarea{
+    .textarea,
+    .select{
       width:100%;
-      min-height:52px;
-      border:none;
-      outline:none;
       border-radius:14px;
-      padding:0 14px;
-      background:rgba(255,255,255,.04);
       border:1px solid var(--line);
-      color:#fff;
-      font-size:14px;
-      transition:.2s ease;
+      background:#fff;
+      color:var(--text);
+      outline:none;
+    }
+
+    .input,
+    .select{
+      min-height:48px;
+      padding:0 14px;
     }
 
     .textarea{
-      min-height:118px;
-      padding:14px;
+      min-height:116px;
+      padding:12px 14px;
       resize:vertical;
-    }
-
-    .input::placeholder,
-    .textarea::placeholder{
-      color:#8fa3c2;
-    }
-
-    .input:focus,
-    .textarea:focus{
-      border-color:rgba(91,140,255,.45);
-      box-shadow:0 0 0 4px rgba(45,107,255,.10);
-      background:rgba(255,255,255,.055);
-    }
-
-    .field-note{
-      color:var(--soft);
-      font-size:12px;
       line-height:1.6;
     }
 
-    .preview{
-      padding:16px;
-      border-radius:20px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
+    .input:focus,
+    .textarea:focus,
+    .select:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 3px rgba(37,99,235,.08);
     }
 
-    .preview-head{
-      display:flex;
-      align-items:center;
+    .input[disabled]{
+      background:#f8fafc;
+      color:#94a3b8;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
       gap:12px;
-      margin-bottom:14px;
     }
 
-    .preview-avatar{
-      width:58px;
-      height:58px;
-      border-radius:50%;
-      overflow:hidden;
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
+    .toggle-row{
       display:flex;
       align-items:center;
-      justify-content:center;
-      font-size:20px;
-      font-weight:900;
-    }
-
-    .preview-avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .preview-head h4{
-      font-size:17px;
-      font-weight:900;
-      margin-bottom:3px;
-    }
-
-    .preview-head p{
-      color:var(--muted);
-      font-size:13px;
-    }
-
-    .preview-row{
-      padding:14px 0;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      align-items:flex-start;
       justify-content:space-between;
       gap:12px;
-      flex-wrap:wrap;
+      min-height:62px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:12px 14px;
     }
 
-    .preview-row:first-of-type{
-      padding-top:0;
+    .toggle-info{
+      min-width:0;
+      flex:1;
+      display:grid;
+      gap:4px;
     }
 
-    .preview-row:last-child{
-      border-bottom:none;
-      padding-bottom:0;
-    }
-
-    .preview-copy h5{
+    .toggle-title{
       font-size:14px;
-      font-weight:900;
-      margin-bottom:4px;
+      font-weight:800;
+      color:#111827;
     }
 
-    .preview-copy p{
-      font-size:13px;
-      color:#bfd0ea;
-      line-height:1.75;
+    .toggle-sub{
+      font-size:12px;
+      line-height:1.45;
+      color:var(--muted);
+    }
+
+    .switch{
+      position:relative;
+      width:56px;
+      height:32px;
+      border-radius:999px;
+      background:#dbe4ff;
+      border:1px solid #c7d2fe;
+      transition:.2s ease;
+      flex-shrink:0;
+    }
+
+    .switch::after{
+      content:"";
+      position:absolute;
+      top:3px;
+      left:3px;
+      width:24px;
+      height:24px;
+      border-radius:50%;
+      background:#fff;
+      box-shadow:0 2px 6px rgba(0,0,0,.12);
+      transition:.2s ease;
+    }
+
+    .switch.active{
+      background:linear-gradient(135deg,#2563eb,#4f46e5);
+      border-color:#4f46e5;
+    }
+
+    .switch.active::after{left:27px}
+
+    .stats{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .stat-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:8px;
+    }
+
+    .stat-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .stat-value{
+      font-size:22px;
+      font-weight:800;
+      color:#0b1454;
+      line-height:1.1;
       word-break:break-word;
     }
 
-    .status{
-      min-height:28px;
-      padding:0 10px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.05);
-      border:1px solid var(--line);
+    .stat-sub{
       font-size:11px;
-      font-weight:900;
-      color:#dce8ff;
-      white-space:nowrap;
+      color:var(--muted);
+      line-height:1.45;
     }
 
-    .status.live{
-      background:rgba(34,197,94,.10);
-      border-color:rgba(34,197,94,.18);
-      color:#dcffe7;
-    }
-
-    .actions-row{
+    .actions{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
-      margin-top:16px;
     }
 
-    .small-note{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.8;
-      margin-top:10px;
-    }
-
-    .footer-nav{
-      position:fixed;
-      left:50%;
-      bottom:14px;
-      transform:translateX(-50%);
-      width:min(100%,820px);
-      max-width:calc(100% - 18px);
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:8px;
-      padding:10px 8px calc(10px + var(--safe-bottom));
-      border-radius:28px;
-      background:rgba(7,18,43,.94);
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:0 22px 56px rgba(0,0,0,.34);
-      backdrop-filter:blur(18px);
-      z-index:55;
-    }
-
-    .nav-btn{
-      min-height:62px;
-      border-radius:18px;
+    .btn{
+      min-height:48px;
+      padding:0 16px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111827;
+      font-size:14px;
+      font-weight:700;
       display:flex;
-      flex-direction:column;
       align-items:center;
       justify-content:center;
-      gap:5px;
-      color:#90a5c7;
-      text-decoration:none;
-      font-size:12px;
-      font-weight:800;
       text-align:center;
     }
 
-    .nav-btn.active{
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      border-color:transparent;
       color:#fff;
-      background:linear-gradient(135deg, rgba(45,107,255,.24), rgba(92,140,255,.10));
-      border:1px solid rgba(45,107,255,.20);
     }
 
-    .nav-icon{
-      font-size:21px;
-      line-height:1;
+    .btn.success{
+      background:linear-gradient(135deg,#059669,#10b981);
+      border-color:transparent;
+      color:#fff;
     }
 
-    @media (max-width:920px){
-      .hero{
-        grid-template-columns:1fr;
-        align-items:start;
-      }
-
-      .hero-actions{
-        flex-direction:row;
-        flex-wrap:wrap;
-        min-width:unset;
-      }
-
-      .split{
-        grid-template-columns:1fr;
-      }
+    .btn:disabled{
+      opacity:.58;
+      cursor:not-allowed;
     }
 
-    @media (max-width:680px){
-      .wrap{
-        padding:14px 12px 0;
-      }
+    input[type="file"]{display:none}
 
-      .title{
-        font-size:24px;
-      }
+    @media (max-width:980px){
+      .layout{grid-template-columns:1fr}
+    }
 
-      .form-grid{
-        grid-template-columns:1fr;
-      }
-
-      .topbar{
-        align-items:flex-start;
-      }
-
-      .top-actions{
-        width:100%;
-      }
-
-      .hero-actions{
-        flex-direction:column;
-        width:100%;
-      }
-
-      .btn,
-      .btn-soft,
-      .btn-danger{
-        width:100%;
-      }
+    @media (max-width:720px){
+      .grid-2,.stats{grid-template-columns:1fr}
+      .hero-name{font-size:20px}
+      .top-right{width:100%}
+      .top-right .btn{flex:1}
     }
   </style>
 </head>
@@ -629,346 +577,492 @@
   <div class="wrap">
     <div id="notice" class="notice"></div>
 
-    <div class="topbar">
-      <div class="brand">
-        <a class="icon-btn" href="profile.html" title="Back to profile">←</a>
-        <div class="title-group">
-          <div class="title">Edit Profile</div>
-          <div class="subtitle">Update your account details and profile picture.</div>
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="profile.html" aria-label="Back to profile">←</a>
+
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+          <div class="title-box">
+            <div class="title">Edit Profile</div>
+            <div class="sub">Update your account details.</div>
+          </div>
         </div>
       </div>
 
-      <div class="top-actions">
-        <a class="btn-soft" href="dashboard.html">Dashboard</a>
-        <a class="btn-soft" href="settings.html">Settings</a>
+      <div class="top-right">
+        <button id="refreshBtn" class="icon-btn" type="button" aria-label="Refresh">↻</button>
+        <button id="saveTopBtn" class="btn primary" type="button">Save</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <div>
+        <section class="section" style="overflow:visible;">
+          <div class="section-body">
+            <div class="hero">
+              <img id="coverPreview" class="cover-preview" alt="Cover preview" />
+              <div class="hero-overlay"></div>
+
+              <div class="hero-content">
+                <div class="hero-top">
+                  <div class="pill">Profile</div>
+                  <div class="hero-cover-actions">
+                    <label class="cover-btn" for="coverInput">Change Cover</label>
+                    <button id="removeCoverBtn" class="cover-btn" type="button">Remove Cover</button>
+                  </div>
+                </div>
+
+                <div class="profile-row">
+                  <div class="avatar-wrap">
+                    <img id="avatarPreview" alt="Avatar preview" />
+                    <div id="avatarFallback">V</div>
+                    <label class="avatar-edit" for="avatarInput">✎</label>
+                  </div>
+
+                  <div class="hero-copy">
+                    <div id="heroName" class="hero-name">Your Name</div>
+                    <div id="heroUsername" class="hero-username">@username</div>
+                    <div id="heroBio" class="hero-bio">Your bio preview will appear here.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <input id="coverInput" type="file" accept="image/*" />
+            <input id="avatarInput" type="file" accept="image/*" />
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-body">
+            <div class="card-title">Basic Information</div>
+
+            <div class="fields">
+              <div class="grid-2">
+                <div class="field">
+                  <label class="label" for="fullNameInput">Full Name</label>
+                  <input id="fullNameInput" class="input" type="text" maxlength="80" placeholder="Your full name" />
+                </div>
+
+                <div class="field">
+                  <label class="label" for="usernameInput">Username</label>
+                  <input id="usernameInput" class="input" type="text" maxlength="30" placeholder="username" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label" for="bioInput">Bio</label>
+                <textarea id="bioInput" class="textarea" maxlength="200" placeholder="Write a short bio..."></textarea>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="label" for="phoneInput">Phone</label>
+                  <input id="phoneInput" class="input" type="text" maxlength="30" placeholder="Phone number" />
+                </div>
+
+                <div class="field">
+                  <label class="label" for="emailInput">Email</label>
+                  <input id="emailInput" class="input" type="email" placeholder="Email address" disabled />
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="label" for="websiteInput">Website</label>
+                  <input id="websiteInput" class="input" type="text" maxlength="150" placeholder="https://yourwebsite.com" />
+                </div>
+
+                <div class="field">
+                  <label class="label" for="locationInput">Location</label>
+                  <input id="locationInput" class="input" type="text" maxlength="100" placeholder="City, State" />
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="label" for="accountTypeInput">Account Type</label>
+                  <select id="accountTypeInput" class="select">
+                    <option value="personal">Personal</option>
+                    <option value="creator">Creator</option>
+                    <option value="business">Business</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label class="label" for="genderInput">Gender / Label</label>
+                  <select id="genderInput" class="select">
+                    <option value="">Prefer not to say</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field">
+                  <label class="label" for="dobInput">Date of Birth</label>
+                  <input id="dobInput" class="input" type="date" />
+                </div>
+
+                <div class="field">
+                  <label class="label" for="xInput">Social Link</label>
+                  <input id="xInput" class="input" type="text" maxlength="150" placeholder="https://x.com/yourhandle" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-body">
+            <div class="card-title">Privacy</div>
+
+            <div class="fields">
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-title">Public Profile</div>
+                  <div class="toggle-sub">Allow people to open your public profile page.</div>
+                </div>
+                <button id="publicProfileToggle" class="switch active" type="button"></button>
+              </div>
+
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-title">Show Email</div>
+                  <div class="toggle-sub">Display email publicly if enabled.</div>
+                </div>
+                <button id="showEmailToggle" class="switch" type="button"></button>
+              </div>
+
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-title">Show Phone</div>
+                  <div class="toggle-sub">Display phone publicly if enabled.</div>
+                </div>
+                <button id="showPhoneToggle" class="switch" type="button"></button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-body">
+            <div class="card-title">Password</div>
+
+            <div class="fields">
+              <div class="field">
+                <label class="label" for="passwordInput">New Password</label>
+                <input id="passwordInput" class="input" type="password" placeholder="Enter new password" />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="saveBtn" class="btn primary" type="button">Save Changes</button>
+              <button id="passwordBtn" class="btn success" type="button">Update Password</button>
+              <a class="btn" href="profile.html">Back to Profile</a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section class="section">
+          <div class="section-body">
+            <div class="card-title">Preview</div>
+
+            <div class="stats">
+              <div class="stat-card">
+                <div class="stat-label">Username</div>
+                <div id="summaryUsername" class="stat-value">@username</div>
+                <div class="stat-sub">Public-facing handle.</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-label">Account Type</div>
+                <div id="summaryAccountType" class="stat-value">Personal</div>
+                <div class="stat-sub">Profile label.</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-label">Visibility</div>
+                <div id="summaryVisibility" class="stat-value">Public</div>
+                <div class="stat-sub">Who can find your profile.</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-label">Bio Length</div>
+                <div id="summaryBioLength" class="stat-value">0</div>
+                <div class="stat-sub">Characters used in bio.</div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
-
-    <section class="hero">
-      <div class="avatar-wrap">
-        <div id="profileAvatar" class="avatar">U</div>
-        <button id="changeAvatarBtn" class="avatar-edit" type="button" title="Change photo">✎</button>
-        <input id="avatarInput" type="file" accept="image/*" hidden />
-      </div>
-
-      <div class="hero-copy">
-        <h2 id="summaryName">Edit Your Profile</h2>
-        <p id="summarySub">Keep your public information accurate and up to date.</p>
-        <div class="chips">
-          <span class="chip">Profile editor</span>
-          <span id="usernameChip" class="chip">@username</span>
-          <span class="chip">Secure update</span>
-        </div>
-      </div>
-
-      <div class="hero-actions">
-        <button id="saveTopBtn" class="btn" type="button">Save Changes</button>
-        <a class="btn-soft" href="profile.html">Preview Profile</a>
-        <button id="passwordTopBtn" class="btn-soft" type="button">Update Password</button>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="split">
-        <div>
-          <div class="section-head">
-            <div>
-              <h3>Main Details</h3>
-              <p>These fields match the profile columns currently available in your database.</p>
-            </div>
-            <span class="section-tag">Primary</span>
-          </div>
-
-          <div class="form-grid">
-            <div class="field">
-              <label for="fullNameInput">Full Name</label>
-              <input id="fullNameInput" class="input" type="text" placeholder="Enter full name" />
-            </div>
-
-            <div class="field">
-              <label for="usernameInput">Username</label>
-              <input id="usernameInput" class="input" type="text" placeholder="Enter username" />
-              <div class="field-note">Use only letters, numbers, underscore, and dot.</div>
-            </div>
-
-            <div class="field">
-              <label for="emailInput">Email</label>
-              <input id="emailInput" class="input" type="email" placeholder="Email address" disabled />
-            </div>
-
-            <div class="field">
-              <label for="phoneInput">Phone</label>
-              <input id="phoneInput" class="input" type="tel" placeholder="Phone number" />
-            </div>
-
-            <div class="field full">
-              <label for="bioInput">Bio</label>
-              <textarea id="bioInput" class="textarea" placeholder="Write a short profile bio..."></textarea>
-            </div>
-          </div>
-        </div>
-
-        <aside class="preview">
-          <div class="preview-head">
-            <div id="previewAvatar" class="preview-avatar">U</div>
-            <div>
-              <h4 id="previewNameTop">Your full name</h4>
-              <p id="previewUsernameTop">@username</p>
-            </div>
-          </div>
-
-          <div class="preview-row">
-            <div class="preview-copy">
-              <h5>Name Preview</h5>
-              <p id="previewName">Your full name</p>
-            </div>
-            <span class="status live">Live</span>
-          </div>
-
-          <div class="preview-row">
-            <div class="preview-copy">
-              <h5>Username Preview</h5>
-              <p id="previewUsername">@username</p>
-            </div>
-            <span class="status">Handle</span>
-          </div>
-
-          <div class="preview-row">
-            <div class="preview-copy">
-              <h5>Bio Preview</h5>
-              <p id="previewBio">Your bio preview appears here.</p>
-            </div>
-          </div>
-
-          <div class="preview-row">
-            <div class="preview-copy">
-              <h5>Phone Preview</h5>
-              <p id="previewPhone">No phone added yet.</p>
-            </div>
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <div>
-          <h3>Password</h3>
-          <p>Change your password separately from your profile details.</p>
-        </div>
-        <span class="section-tag">Security</span>
-      </div>
-
-      <div class="form-grid">
-        <div class="field full">
-          <label for="passwordInput">New Password</label>
-          <input id="passwordInput" class="input" type="password" placeholder="Enter new password" />
-          <div class="field-note">Minimum 6 characters.</div>
-        </div>
-      </div>
-
-      <div class="actions-row">
-        <button id="saveBtn" class="btn" type="button">Save Profile</button>
-        <button id="passwordBtn" class="btn-soft" type="button">Update Password</button>
-        <a class="btn-soft" href="profile.html">Back to Profile</a>
-      </div>
-
-      <div class="small-note">
-        Profile updates save to your <code>profiles</code> row. Profile photo uploads to your Supabase Storage bucket and updates both avatar fields where available.
-      </div>
-    </section>
   </div>
-
-  <nav class="footer-nav">
-    <a href="home.html" class="nav-btn">
-      <span class="nav-icon">⌂</span>
-      <span>Home</span>
-    </a>
-    <a href="explore.html" class="nav-btn">
-      <span class="nav-icon">🔎</span>
-      <span>Explore</span>
-    </a>
-    <a href="dashboard.html" class="nav-btn active">
-      <span class="nav-icon">📊</span>
-      <span>Dashboard</span>
-    </a>
-    <a href="profile.html" class="nav-btn">
-      <span class="nav-icon">👤</span>
-      <span>Profile</span>
-    </a>
-    <a href="settings.html" class="nav-btn">
-      <span class="nav-icon">⚙️</span>
-      <span>Settings</span>
-    </a>
-  </nav>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const AVATAR_BUCKET = "profile_pictures";
+    const STORAGE_BUCKET_CANDIDATES = ["profile_pictures", "avatars", "profile-images"];
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        flowType: "pkce"
       }
     });
 
     const noticeBox = document.getElementById("notice");
-    const profileAvatar = document.getElementById("profileAvatar");
-    const previewAvatar = document.getElementById("previewAvatar");
-    const summaryName = document.getElementById("summaryName");
-    const summarySub = document.getElementById("summarySub");
-    const usernameChip = document.getElementById("usernameChip");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const saveTopBtn = document.getElementById("saveTopBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const passwordBtn = document.getElementById("passwordBtn");
+
+    const coverInput = document.getElementById("coverInput");
+    const avatarInput = document.getElementById("avatarInput");
+    const removeCoverBtn = document.getElementById("removeCoverBtn");
+
+    const coverPreview = document.getElementById("coverPreview");
+    const avatarPreview = document.getElementById("avatarPreview");
+    const avatarFallback = document.getElementById("avatarFallback");
+
+    const heroName = document.getElementById("heroName");
+    const heroUsername = document.getElementById("heroUsername");
+    const heroBio = document.getElementById("heroBio");
 
     const fullNameInput = document.getElementById("fullNameInput");
     const usernameInput = document.getElementById("usernameInput");
-    const emailInput = document.getElementById("emailInput");
-    const phoneInput = document.getElementById("phoneInput");
     const bioInput = document.getElementById("bioInput");
+    const phoneInput = document.getElementById("phoneInput");
+    const emailInput = document.getElementById("emailInput");
+    const websiteInput = document.getElementById("websiteInput");
+    const locationInput = document.getElementById("locationInput");
+    const accountTypeInput = document.getElementById("accountTypeInput");
+    const genderInput = document.getElementById("genderInput");
+    const dobInput = document.getElementById("dobInput");
+    const xInput = document.getElementById("xInput");
     const passwordInput = document.getElementById("passwordInput");
 
-    const previewNameTop = document.getElementById("previewNameTop");
-    const previewUsernameTop = document.getElementById("previewUsernameTop");
-    const previewName = document.getElementById("previewName");
-    const previewUsername = document.getElementById("previewUsername");
-    const previewBio = document.getElementById("previewBio");
-    const previewPhone = document.getElementById("previewPhone");
+    const publicProfileToggle = document.getElementById("publicProfileToggle");
+    const showEmailToggle = document.getElementById("showEmailToggle");
+    const showPhoneToggle = document.getElementById("showPhoneToggle");
 
-    const changeAvatarBtn = document.getElementById("changeAvatarBtn");
-    const avatarInput = document.getElementById("avatarInput");
-    const saveBtn = document.getElementById("saveBtn");
-    const saveTopBtn = document.getElementById("saveTopBtn");
-    const passwordBtn = document.getElementById("passwordBtn");
-    const passwordTopBtn = document.getElementById("passwordTopBtn");
+    const summaryUsername = document.getElementById("summaryUsername");
+    const summaryAccountType = document.getElementById("summaryAccountType");
+    const summaryVisibility = document.getElementById("summaryVisibility");
+    const summaryBioLength = document.getElementById("summaryBioLength");
 
     let currentUser = null;
     let profileRow = {};
+    let availableProfileColumns = new Set();
+    let avatarFile = null;
+    let coverFile = null;
+    let removeCover = false;
     let saving = false;
 
-    function showNotice(message, type = "error") {
+    const privacyState = {
+      is_profile_public: true,
+      show_email: false,
+      show_phone: false
+    };
+
+    function showNotice(message, type = "info", duration = 3200){
       noticeBox.className = `notice show ${type}`;
       noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      if(duration > 0){
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, duration);
+      }
     }
 
-    function clearNotice() {
+    function clearNotice(){
       noticeBox.className = "notice";
       noticeBox.textContent = "";
     }
 
-    function getDisplayName(profile = {}, fallback = "Edit Your Profile") {
-      return profile.full_name || profile.username || fallback;
+    function getInitial(text = "V"){
+      return String(text || "V").trim().charAt(0).toUpperCase() || "V";
     }
 
-    function getAvatarUrl(profile = {}) {
-      return profile.avatar_url || "";
+    function safeTrim(value){
+      return String(value || "").trim();
     }
 
-    function getInitial(name) {
-      const safe = String(name || "U").trim();
-      return safe ? safe.charAt(0).toUpperCase() : "U";
+    function setToggleState(button, active){
+      button.classList.toggle("active", !!active);
     }
 
-    function setAvatarElement(el, url, name) {
-      if (url) {
-        el.innerHTML = `<img src="${url}" alt="${name}">`;
-      } else {
-        el.textContent = getInitial(name);
+    function updateToggleUi(){
+      setToggleState(publicProfileToggle, privacyState.is_profile_public);
+      setToggleState(showEmailToggle, privacyState.show_email);
+      setToggleState(showPhoneToggle, privacyState.show_phone);
+    }
+
+    function readFileAsDataUrl(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Could not read image file."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function setAvatarPreview(url){
+      if(url){
+        avatarPreview.src = url;
+        avatarPreview.style.display = "block";
+        avatarFallback.style.display = "none";
+      }else{
+        avatarPreview.removeAttribute("src");
+        avatarPreview.style.display = "none";
+        avatarFallback.style.display = "grid";
       }
     }
 
-    function setLoadingState(value) {
-      saving = value;
-      saveBtn.disabled = value;
-      saveTopBtn.disabled = value;
-      passwordBtn.disabled = value;
-      passwordTopBtn.disabled = value;
-      changeAvatarBtn.disabled = value;
-
-      saveBtn.textContent = value ? "Saving..." : "Save Profile";
-      saveTopBtn.textContent = value ? "Saving..." : "Save Changes";
+    function setCoverPreview(url){
+      if(url){
+        coverPreview.src = url;
+        coverPreview.style.display = "block";
+      }else{
+        coverPreview.removeAttribute("src");
+        coverPreview.style.display = "none";
+      }
     }
 
-    function sanitizeUsername(value) {
-      return String(value || "")
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "_")
-        .replace(/[^a-z0-9._]/g, "");
+    function updateSummary(){
+      const fullName = safeTrim(fullNameInput.value) || currentUser?.email || "View User";
+      const username = safeTrim(usernameInput.value).replace(/\s+/g, "").toLowerCase();
+      const bio = safeTrim(bioInput.value);
+
+      heroName.textContent = fullName;
+      heroUsername.textContent = username ? `@${username}` : "@username";
+      heroBio.textContent = bio || "Your bio preview will appear here.";
+      avatarFallback.textContent = getInitial(fullName);
+
+      summaryUsername.textContent = username ? `@${username}` : "@username";
+      summaryAccountType.textContent = (safeTrim(accountTypeInput.value || "personal") || "personal").replace(/^\w/, c => c.toUpperCase());
+      summaryVisibility.textContent = privacyState.is_profile_public ? "Public" : "Private";
+      summaryBioLength.textContent = String(bio.length);
     }
 
-    function updatePreview() {
-      const name = fullNameInput.value.trim() || "Your full name";
-      const unameRaw = sanitizeUsername(usernameInput.value);
-      const uname = unameRaw ? `@${unameRaw}` : "@username";
-      const userBio = bioInput.value.trim() || "Your bio preview appears here.";
-      const phone = phoneInput.value.trim() || "No phone added yet.";
+    function setSavingState(state){
+      saving = state;
+      saveBtn.disabled = state;
+      saveTopBtn.disabled = state;
+      passwordBtn.disabled = state;
 
-      previewNameTop.textContent = name;
-      previewUsernameTop.textContent = uname;
-      previewName.textContent = name;
-      previewUsername.textContent = uname;
-      previewBio.textContent = userBio;
-      previewPhone.textContent = phone;
-
-      summaryName.textContent = name;
-      summarySub.textContent = userBio;
-      usernameChip.textContent = uname;
-
-      const avatarUrl = getAvatarUrl(profileRow);
-      setAvatarElement(profileAvatar, avatarUrl, name);
-      setAvatarElement(previewAvatar, avatarUrl, name);
+      saveBtn.textContent = state ? "Saving..." : "Save Changes";
+      saveTopBtn.textContent = state ? "Saving..." : "Save";
     }
 
-    async function getSessionWithRetry(maxWaitMs = 3000) {
+    async function getSessionWithRetry(maxWaitMs = 3000){
       const start = Date.now();
-      while (Date.now() - start < maxWaitMs) {
+      while(Date.now() - start < maxWaitMs){
         const { data, error } = await supabaseClient.auth.getSession();
-        if (error) throw error;
-        if (data.session?.user) return data.session;
-        await new Promise(resolve => setTimeout(resolve, 200));
+        if(error) throw error;
+        if(data.session?.user) return data.session;
+        await new Promise(resolve => setTimeout(resolve, 180));
       }
       return null;
     }
 
-    async function requireSession() {
+    async function requireSession(){
       const session = await getSessionWithRetry();
-      if (!session?.user) {
-        window.location.href = "login.html?next=edit-profile.html";
+      if(!session?.user){
+        window.location.replace("login.html?next=edit-profile.html");
         return null;
       }
-      return session;
+      document.documentElement.classList.remove("auth-loading");
+      return session.user;
     }
 
-    async function loadProfile() {
+    async function loadProfileColumns(){
+      try{
+        const { data, error } = await supabaseClient.from("profiles").select("*").limit(1);
+        if(error) throw error;
+        const sample = Array.isArray(data) && data.length ? data[0] : {};
+        availableProfileColumns = new Set(Object.keys(sample || {}));
+        ["id","full_name","username","avatar_url","bio","phone","email"].forEach(col => availableProfileColumns.add(col));
+      }catch(_){
+        availableProfileColumns = new Set(["id","full_name","username","avatar_url","bio","phone","email"]);
+      }
+    }
+
+    async function loadProfile(){
       const { data, error } = await supabaseClient
         .from("profiles")
-        .select("id, username, full_name, avatar_url, bio, phone, account_type, avatar_path, created_at, updated_at")
+        .select("*")
         .eq("id", currentUser.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if(error) throw error;
 
       profileRow = data || {};
-      const name = getDisplayName(profileRow, "Edit Your Profile");
-      const userName = profileRow.username || "";
-      const avatarUrl = getAvatarUrl(profileRow);
 
       fullNameInput.value = profileRow.full_name || "";
-      usernameInput.value = userName;
-      emailInput.value = currentUser.email || "";
-      phoneInput.value = profileRow.phone || "";
+      usernameInput.value = profileRow.username || "";
       bioInput.value = profileRow.bio || "";
+      phoneInput.value = profileRow.phone || "";
+      emailInput.value = profileRow.email || currentUser.email || "";
+      websiteInput.value = profileRow.website || "";
+      locationInput.value = profileRow.location || "";
+      accountTypeInput.value = ["personal","creator","business"].includes(profileRow.account_type) ? profileRow.account_type : "personal";
+      genderInput.value = profileRow.gender || "";
+      dobInput.value = profileRow.dob || "";
+      xInput.value = profileRow.x_url || profileRow.website_x || "";
 
-      setAvatarElement(profileAvatar, avatarUrl, name);
-      setAvatarElement(previewAvatar, avatarUrl, name);
-      updatePreview();
+      privacyState.is_profile_public = typeof profileRow.is_profile_public === "boolean" ? profileRow.is_profile_public : true;
+      privacyState.show_email = !!profileRow.show_email;
+      privacyState.show_phone = !!profileRow.show_phone;
+
+      updateToggleUi();
+      setAvatarPreview(profileRow.avatar_url || "");
+      setCoverPreview(profileRow.cover_url || "");
+      updateSummary();
     }
 
-    async function checkUsernameAvailability(username) {
-      const clean = sanitizeUsername(username);
-      if (!clean) return { ok: false, message: "Username is required." };
+    async function uploadToWorkingBucket(file, folder){
+      let lastError = null;
+
+      for(const bucket of STORAGE_BUCKET_CANDIDATES){
+        try{
+          const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+          const path = `${currentUser.id}/${folder}/${Date.now()}.${ext}`;
+
+          const { error } = await supabaseClient.storage.from(bucket).upload(path, file, {
+            upsert: true,
+            contentType: file.type || "application/octet-stream"
+          });
+
+          if(error) throw error;
+
+          const { data } = supabaseClient.storage.from(bucket).getPublicUrl(path);
+
+          return {
+            bucket,
+            path,
+            publicUrl: data?.publicUrl || null
+          };
+        }catch(err){
+          lastError = err;
+        }
+      }
+
+      throw lastError || new Error("No working storage bucket found.");
+    }
+
+    async function ensureUniqueUsername(username){
+      const clean = safeTrim(username).toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9._]/g, "");
+      if(!clean) throw new Error("Username is required.");
 
       const { data, error } = await supabaseClient
         .from("profiles")
@@ -977,174 +1071,244 @@
         .neq("id", currentUser.id)
         .limit(1);
 
-      if (error) throw error;
-      if (data && data.length) {
-        return { ok: false, message: "That username is already taken." };
-      }
+      if(error) throw error;
+      if((data || []).length) throw new Error("That username is already taken.");
 
-      return { ok: true, username: clean };
+      return clean;
     }
 
-    async function saveProfileChanges() {
-      if (saving) return;
+    function buildSafePayload(basePayload){
+      const payload = {};
+      Object.entries(basePayload).forEach(([key, value]) => {
+        if(availableProfileColumns.has(key)){
+          payload[key] = value;
+        }
+      });
+      return payload;
+    }
 
-      try {
-        clearNotice();
-        setLoadingState(true);
+    async function saveProfile(){
+      if(saving) return;
 
-        const fullName = fullNameInput.value.trim();
-        const phone = phoneInput.value.trim();
-        const bio = bioInput.value.trim();
+      clearNotice();
+      setSavingState(true);
 
-        if (!fullName) {
-          showNotice("Full name is required.", "info");
-          return;
+      try{
+        const fullName = safeTrim(fullNameInput.value);
+        const username = await ensureUniqueUsername(usernameInput.value);
+        const bio = safeTrim(bioInput.value);
+        const phone = safeTrim(phoneInput.value);
+        const website = safeTrim(websiteInput.value);
+        const location = safeTrim(locationInput.value);
+        const xUrl = safeTrim(xInput.value);
+
+        if(!fullName) throw new Error("Full name is required.");
+
+        let avatarUrl = profileRow.avatar_url || null;
+        let coverUrl = profileRow.cover_url || null;
+        let avatarPath = profileRow.avatar_path || null;
+        let coverPath = profileRow.cover_path || null;
+
+        if(avatarFile){
+          const uploaded = await uploadToWorkingBucket(avatarFile, "avatar");
+          avatarUrl = uploaded.publicUrl;
+          avatarPath = uploaded.path;
         }
 
-        const usernameCheck = await checkUsernameAvailability(usernameInput.value);
-        if (!usernameCheck.ok) {
-          showNotice(usernameCheck.message, "info");
-          return;
+        if(coverFile){
+          const uploaded = await uploadToWorkingBucket(coverFile, "cover");
+          coverUrl = uploaded.publicUrl;
+          coverPath = uploaded.path;
         }
 
-        const payload = {
+        if(removeCover){
+          coverUrl = null;
+          coverPath = null;
+        }
+
+        const basePayload = {
           full_name: fullName,
-          username: usernameCheck.username,
-          phone: phone || null,
+          username,
           bio: bio || null,
+          phone: phone || null,
+          email: safeTrim(emailInput.value) || currentUser.email || null,
+          avatar_url: avatarUrl,
+          avatar_path: avatarPath,
+          cover_url: coverUrl,
+          cover_path: coverPath,
+          website: website || null,
+          location: location || null,
+          account_type: accountTypeInput.value || "personal",
+          gender: genderInput.value || null,
+          dob: dobInput.value || null,
+          x_url: xUrl || null,
+          is_profile_public: privacyState.is_profile_public,
+          show_email: privacyState.show_email,
+          show_phone: privacyState.show_phone,
           updated_at: new Date().toISOString()
         };
+
+        const payload = buildSafePayload(basePayload);
 
         const { error } = await supabaseClient
           .from("profiles")
           .update(payload)
           .eq("id", currentUser.id);
 
-        if (error) throw error;
+        if(error) throw error;
 
         profileRow = { ...profileRow, ...payload };
-        usernameInput.value = payload.username;
-        updatePreview();
-        showNotice("Profile updated successfully.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not save profile changes.");
-      } finally {
-        setLoadingState(false);
+        if(!availableProfileColumns.has("email")){
+          emailInput.value = currentUser.email || "";
+        }
+
+        usernameInput.value = username;
+        avatarFile = null;
+        coverFile = null;
+        removeCover = false;
+        setAvatarPreview(avatarUrl || "");
+        setCoverPreview(coverUrl || "");
+        updateSummary();
+
+        localStorage.setItem("view_profile_refresh", String(Date.now()));
+        showNotice("Profile updated successfully.", "success", 2200);
+
+        setTimeout(() => {
+          window.location.href = "profile.html";
+        }, 700);
+      }catch(error){
+        showNotice(error.message || "Could not save profile.", "error", 4200);
+      }finally{
+        setSavingState(false);
       }
     }
 
-    async function updatePassword() {
-      const password = passwordInput.value.trim();
-
-      if (!password) {
-        showNotice("Enter a new password first.", "info");
+    async function updatePassword(){
+      const password = safeTrim(passwordInput.value);
+      if(!password){
+        showNotice("Enter a new password first.", "info", 2400);
         return;
       }
 
-      if (password.length < 6) {
-        showNotice("Password should be at least 6 characters.", "info");
+      if(password.length < 6){
+        showNotice("Password must be at least 6 characters.", "info", 2400);
         return;
       }
 
-      try {
+      passwordBtn.disabled = true;
+      const oldText = passwordBtn.textContent;
+      passwordBtn.textContent = "Updating...";
+
+      try{
         const { error } = await supabaseClient.auth.updateUser({ password });
-        if (error) throw error;
+        if(error) throw error;
         passwordInput.value = "";
-        showNotice("Password updated successfully.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not update password.");
+        showNotice("Password updated successfully.", "success", 2200);
+      }catch(error){
+        showNotice(error.message || "Could not update password.", "error", 4200);
+      }finally{
+        passwordBtn.disabled = false;
+        passwordBtn.textContent = oldText;
       }
     }
 
-    async function uploadAvatar(file) {
-      if (!file || !currentUser) return;
+    function bindEvents(){
+      [fullNameInput, usernameInput, bioInput, accountTypeInput].forEach(el => {
+        el.addEventListener("input", updateSummary);
+        el.addEventListener("change", updateSummary);
+      });
 
-      try {
-        clearNotice();
-        setLoadingState(true);
-
-        if (!file.type.startsWith("image/")) {
-          showNotice("Please choose a valid image file.", "info");
+      avatarInput.addEventListener("change", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const file = e.target.files?.[0];
+        if(!file) return;
+        if(!file.type.startsWith("image/")){
+          showNotice("Please choose an image file.", "info", 2400);
+          avatarInput.value = "";
           return;
         }
 
-        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-        const path = `${currentUser.id}/avatar-${Date.now()}.${ext}`;
+        try{
+          avatarFile = file;
+          const previewData = await readFileAsDataUrl(file);
+          setAvatarPreview(previewData);
+        }catch(error){
+          showNotice(error.message || "Could not preview profile image.", "error", 2800);
+        }
+      });
 
-        const { error: uploadError } = await supabaseClient
-          .storage
-          .from(AVATAR_BUCKET)
-          .upload(path, file, {
-            cacheControl: "3600",
-            upsert: true
-          });
+      coverInput.addEventListener("change", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const file = e.target.files?.[0];
+        if(!file) return;
+        if(!file.type.startsWith("image/")){
+          showNotice("Please choose an image file.", "info", 2400);
+          coverInput.value = "";
+          return;
+        }
 
-        if (uploadError) throw uploadError;
+        try{
+          coverFile = file;
+          removeCover = false;
+          const previewData = await readFileAsDataUrl(file);
+          setCoverPreview(previewData);
+        }catch(error){
+          showNotice(error.message || "Could not preview cover image.", "error", 2800);
+        }
+      });
 
-        const { data } = supabaseClient
-          .storage
-          .from(AVATAR_BUCKET)
-          .getPublicUrl(path);
+      removeCoverBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        coverFile = null;
+        removeCover = true;
+        coverInput.value = "";
+        setCoverPreview("");
+      });
 
-        const publicUrl = data?.publicUrl || "";
-        if (!publicUrl) throw new Error("Avatar URL could not be generated.");
+      publicProfileToggle.addEventListener("click", () => {
+        privacyState.is_profile_public = !privacyState.is_profile_public;
+        updateToggleUi();
+        updateSummary();
+      });
 
-        const payload = {
-          avatar_url: publicUrl,
-          avatar_path: path,
-          updated_at: new Date().toISOString()
-        };
+      showEmailToggle.addEventListener("click", () => {
+        privacyState.show_email = !privacyState.show_email;
+        updateToggleUi();
+      });
 
-        const { error } = await supabaseClient
-          .from("profiles")
-          .update(payload)
-          .eq("id", currentUser.id);
+      showPhoneToggle.addEventListener("click", () => {
+        privacyState.show_phone = !privacyState.show_phone;
+        updateToggleUi();
+      });
 
-        if (error) throw error;
+      saveBtn.addEventListener("click", saveProfile);
+      saveTopBtn.addEventListener("click", saveProfile);
+      passwordBtn.addEventListener("click", updatePassword);
 
-        profileRow = { ...profileRow, ...payload };
-        const name = fullNameInput.value.trim() || getDisplayName(profileRow, "User");
-        setAvatarElement(profileAvatar, publicUrl, name);
-        setAvatarElement(previewAvatar, publicUrl, name);
-        showNotice("Profile picture updated successfully.", "success");
-      } catch (error) {
-        showNotice(error.message || "Could not upload profile picture.");
-      } finally {
+      refreshBtn.addEventListener("click", async () => {
+        await loadProfileColumns();
+        await loadProfile();
         avatarInput.value = "";
-        setLoadingState(false);
-      }
+        coverInput.value = "";
+        avatarFile = null;
+        coverFile = null;
+        removeCover = false;
+        showNotice("Profile data refreshed.", "success", 1600);
+      });
     }
 
-    changeAvatarBtn.addEventListener("click", () => avatarInput.click());
-
-    avatarInput.addEventListener("change", async () => {
-      const file = avatarInput.files?.[0];
-      if (file) await uploadAvatar(file);
-    });
-
-    [fullNameInput, usernameInput, bioInput, phoneInput].forEach(input => {
-      input.addEventListener("input", updatePreview);
-    });
-
-    usernameInput.addEventListener("blur", () => {
-      usernameInput.value = sanitizeUsername(usernameInput.value);
-      updatePreview();
-    });
-
-    saveBtn.addEventListener("click", saveProfileChanges);
-    saveTopBtn.addEventListener("click", saveProfileChanges);
-    passwordBtn.addEventListener("click", updatePassword);
-    passwordTopBtn.addEventListener("click", updatePassword);
-
-    async function init() {
-      try {
-        const session = await requireSession();
-        if (!session?.user) return;
-
-        currentUser = session.user;
+    async function init(){
+      try{
+        currentUser = await requireSession();
+        if(!currentUser) return;
+        await loadProfileColumns();
+        bindEvents();
         await loadProfile();
-      } catch (error) {
-        showNotice(error.message || "Could not initialize edit profile.");
+      }catch(error){
+        document.documentElement.classList.remove("auth-loading");
+        showNotice(error.message || "Could not load page.", "error", 4200);
       }
     }
 
