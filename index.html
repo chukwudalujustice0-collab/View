@@ -2,1293 +2,919 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
-  <meta
-    name="description"
-    content="View by Ceetify - Your world, your view. Create once, manage smarter, and grow across your social platforms."
-  />
-  <meta name="theme-color" content="#0b5ed7" />
-  <title>View | Your world, your view</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>View | by Ceetify</title>
+  <meta name="theme-color" content="#0b1454" />
+  <meta name="description" content="View by Ceetify lets you connect, share, go live, chat, and create with AI." />
 
   <style>
-    :root {
-      --primary: #0b5ed7;
-      --primary-dark: #083b8a;
-      --accent: #ff3b3b;
-      --bg: #f5f8ff;
-      --bg-soft: #eef4ff;
-      --card: rgba(255, 255, 255, 0.78);
-      --text: #152033;
-      --text-soft: #5f6f8f;
-      --border: rgba(11, 94, 215, 0.12);
-      --shadow: 0 20px 60px rgba(14, 43, 95, 0.12);
-      --radius-lg: 28px;
-      --radius-md: 20px;
-      --radius-sm: 14px;
-      --max-width: 1200px;
+    :root{
+      --bg:#07103f;
+      --bg2:#0b1454;
+      --bg3:#13257d;
+      --card:rgba(255,255,255,.08);
+      --card2:#ffffff;
+      --text:#ffffff;
+      --text-dark:#111827;
+      --muted:#dbe4ff;
+      --muted-dark:#667085;
+      --line:rgba(255,255,255,.12);
+      --line-dark:#e5e7eb;
+      --primary:#2563eb;
+      --primary2:#4f46e5;
+      --red:#ef4444;
+      --red2:#ff5f7a;
+      --shadow:0 20px 60px rgba(2,6,23,.28);
+      --shadow-soft:0 12px 28px rgba(15,23,42,.08);
+      --radius:24px;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
     }
 
-    html {
-      scroll-behavior: smooth;
+    html{
+      scroll-behavior:smooth;
     }
 
-    body {
-      font-family: Arial, Helvetica, sans-serif;
+    body{
+      min-height:100vh;
       background:
-        radial-gradient(circle at top left, rgba(11, 94, 215, 0.18), transparent 28%),
-        radial-gradient(circle at right center, rgba(255, 59, 59, 0.08), transparent 22%),
-        linear-gradient(180deg, #eef5ff 0%, #f8fbff 52%, #ffffff 100%);
-      color: var(--text);
-      min-height: 100vh;
-      line-height: 1.5;
+        radial-gradient(circle at top left, rgba(37,99,235,.20), transparent 25%),
+        radial-gradient(circle at top right, rgba(239,68,68,.16), transparent 24%),
+        radial-gradient(circle at bottom left, rgba(79,70,229,.18), transparent 22%),
+        linear-gradient(135deg,var(--bg),var(--bg2),var(--bg3));
+      color:var(--text);
+      overflow-x:hidden;
     }
 
-    a {
-      text-decoration: none;
-      color: inherit;
+    a{
+      color:inherit;
+      text-decoration:none;
     }
 
-    img {
-      max-width: 100%;
-      display: block;
+    button{
+      border:none;
+      background:none;
+      color:inherit;
+      font:inherit;
+      cursor:pointer;
     }
 
-    button {
-      border: none;
-      outline: none;
-      cursor: pointer;
-      font: inherit;
+    .wrap{
+      width:min(1180px, calc(100% - 28px));
+      margin:0 auto;
     }
 
-    .container {
-      width: min(100% - 32px, var(--max-width));
-      margin: 0 auto;
+    .nav{
+      position:sticky;
+      top:0;
+      z-index:40;
+      backdrop-filter:blur(14px);
+      background:rgba(7,16,63,.55);
+      border-bottom:1px solid rgba(255,255,255,.08);
     }
 
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      backdrop-filter: blur(16px);
-      background: rgba(245, 248, 255, 0.78);
-      border-bottom: 1px solid rgba(11, 94, 215, 0.08);
+    .nav-inner{
+      width:min(1180px, calc(100% - 28px));
+      margin:0 auto;
+      min-height:74px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
     }
 
-    .header-wrap {
-      min-height: 76px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
+    .brand-logo{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      object-fit:cover;
+      background:#fff;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 8px 20px rgba(37,99,235,.18);
     }
 
-    .brand-mark {
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: #fff;
-      display: grid;
-      place-items: center;
-      box-shadow: 0 12px 28px rgba(11, 94, 215, 0.24);
-      font-weight: 700;
-      font-size: 20px;
-      flex-shrink: 0;
+    .brand-text{
+      display:grid;
+      gap:2px;
     }
 
-    .brand-copy {
-      min-width: 0;
+    .brand-name{
+      font-size:20px;
+      font-weight:800;
+      letter-spacing:.4px;
     }
 
-    .brand-title {
-      font-size: 28px;
-      font-weight: 700;
-      line-height: 1;
-      color: var(--text);
+    .brand-sub{
+      font-size:11px;
+      color:rgba(255,255,255,.76);
     }
 
-    .brand-subtitle {
-      font-size: 12px;
-      color: var(--text-soft);
-      margin-top: 4px;
+    .nav-links{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      flex-wrap:wrap;
+      justify-content:center;
     }
 
-    .header-nav {
-      display: none;
-      align-items: center;
-      gap: 24px;
-      color: var(--text-soft);
-      font-weight: 600;
+    .nav-links a{
+      font-size:13px;
+      color:rgba(255,255,255,.88);
     }
 
-    .header-nav a:hover {
-      color: var(--primary);
+    .nav-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
     }
 
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-shrink: 0;
+    .btn{
+      min-height:46px;
+      padding:0 18px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-size:14px;
+      font-weight:700;
+      transition:.18s ease;
     }
 
-    .btn {
-      min-height: 46px;
-      padding: 0 20px;
-      border-radius: 999px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: 0.25s ease;
-      white-space: nowrap;
+    .btn:hover{
+      transform:translateY(-1px);
     }
 
-    .btn-outline {
-      background: rgba(255, 255, 255, 0.8);
-      border: 1px solid rgba(11, 94, 215, 0.15);
-      color: var(--primary);
+    .btn.ghost{
+      background:rgba(255,255,255,.08);
+      color:#fff;
     }
 
-    .btn-outline:hover {
-      background: #ffffff;
-      transform: translateY(-1px);
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      border-color:transparent;
+      color:#fff;
+      box-shadow:0 14px 34px rgba(37,99,235,.22);
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: #ffffff;
-      box-shadow: 0 14px 30px rgba(11, 94, 215, 0.24);
+    .hero{
+      padding:54px 0 34px;
     }
 
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 18px 34px rgba(11, 94, 215, 0.28);
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.06fr .94fr;
+      gap:22px;
+      align-items:center;
     }
 
-    .hero {
-      padding: 42px 0 32px;
+    .hero-copy{
+      display:grid;
+      gap:18px;
     }
 
-    .hero-grid {
-      display: grid;
-      gap: 24px;
-      align-items: center;
+    .eyebrow{
+      width:max-content;
+      min-height:32px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      font-weight:800;
+      color:#fff;
+      backdrop-filter:blur(10px);
     }
 
-    .hero-copy {
-      padding-top: 10px;
+    .hero h1{
+      font-size:clamp(36px, 6vw, 66px);
+      line-height:1.02;
+      font-weight:900;
+      letter-spacing:-1px;
     }
 
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 36px;
-      padding: 0 14px;
-      border-radius: 999px;
-      background: rgba(11, 94, 215, 0.08);
-      color: var(--primary);
-      font-weight: 700;
-      margin-bottom: 18px;
+    .hero p{
+      font-size:15px;
+      line-height:1.75;
+      color:rgba(255,255,255,.88);
+      max-width:620px;
     }
 
-    .hero-title {
-      font-size: clamp(2.35rem, 7vw, 4.5rem);
-      line-height: 1.02;
-      letter-spacing: -0.04em;
-      margin-bottom: 18px;
+    .hero-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
     }
 
-    .hero-title span {
-      color: var(--primary);
+    .hero-meta{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      color:rgba(255,255,255,.82);
+      font-size:13px;
     }
 
-    .hero-text {
-      max-width: 620px;
-      font-size: 1.05rem;
-      color: var(--text-soft);
-      margin-bottom: 24px;
+    .hero-meta span{
+      min-height:32px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
     }
 
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-bottom: 24px;
+    .hero-phone{
+      position:relative;
+      min-height:660px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
 
-    .hero-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      color: var(--text-soft);
-      font-size: 0.95rem;
+    .glow{
+      position:absolute;
+      inset:auto;
+      width:340px;
+      height:340px;
+      border-radius:50%;
+      filter:blur(60px);
+      opacity:.55;
+      background:radial-gradient(circle, rgba(79,70,229,.72), rgba(37,99,235,.25), transparent 70%);
+      pointer-events:none;
     }
 
-    .hero-meta span {
-      background: rgba(255, 255, 255, 0.72);
-      border: 1px solid rgba(11, 94, 215, 0.08);
-      border-radius: 999px;
-      padding: 8px 14px;
+    .phone{
+      width:min(360px, 92%);
+      border-radius:36px;
+      padding:12px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(16px);
+      position:relative;
+      z-index:2;
     }
 
-    .hero-visual {
-      position: relative;
-    }
-
-    .dashboard-card {
-      background: var(--card);
-      border: 1px solid rgba(255, 255, 255, 0.64);
-      backdrop-filter: blur(18px);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .dashboard-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 16px 18px;
-      border-bottom: 1px solid rgba(11, 94, 215, 0.08);
-    }
-
-    .dashboard-topbar strong {
-      font-size: 1.05rem;
-    }
-
-    .topbar-pills {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .topbar-pill {
-      min-height: 34px;
-      padding: 0 12px;
-      border-radius: 999px;
-      background: rgba(11, 94, 215, 0.08);
-      color: var(--primary);
-      font-size: 0.85rem;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .dashboard-body {
-      padding: 18px;
-      display: grid;
-      gap: 16px;
-    }
-
-    .stats-row {
-      display: grid;
-      gap: 14px;
-    }
-
-    .stat-card {
-      background: rgba(255, 255, 255, 0.86);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 18px;
-    }
-
-    .stat-label {
-      color: var(--text-soft);
-      font-size: 0.92rem;
-      margin-bottom: 6px;
-    }
-
-    .stat-value {
-      font-size: 1.6rem;
-      font-weight: 700;
-    }
-
-    .composer-card,
-    .feed-preview,
-    .wallet-preview {
-      background: rgba(255, 255, 255, 0.86);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 18px;
-    }
-
-    .section-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .section-heading h3 {
-      font-size: 1rem;
-    }
-
-    .caption-box {
-      border: 1px dashed rgba(11, 94, 215, 0.22);
-      border-radius: 18px;
-      background: rgba(11, 94, 215, 0.03);
-      min-height: 110px;
-      padding: 14px;
-      color: var(--text-soft);
-      margin-bottom: 14px;
-    }
-
-    .platforms {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    .platform-chip {
-      border-radius: 999px;
-      border: 1px solid rgba(11, 94, 215, 0.14);
-      background: #ffffff;
-      min-height: 38px;
-      padding: 0 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text);
-      font-weight: 700;
-      font-size: 0.92rem;
-    }
-
-    .platform-chip.active {
-      background: rgba(11, 94, 215, 0.1);
-      color: var(--primary);
-    }
-
-    .platform-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #b4c4e7;
-    }
-
-    .platform-chip.active .platform-dot {
-      background: var(--primary);
-    }
-
-    .pay-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .pay-info strong {
-      display: block;
-      font-size: 1.1rem;
-      color: var(--text);
-    }
-
-    .pay-info span {
-      color: var(--text-soft);
-      font-size: 0.92rem;
-    }
-
-    .mini-feed-card {
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid rgba(11, 94, 215, 0.12);
-      background: #ffffff;
-    }
-
-    .mini-feed-head {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px;
-    }
-
-    .avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #dde9ff, #f3f7ff);
-      border: 1px solid rgba(11, 94, 215, 0.16);
-      flex-shrink: 0;
-    }
-
-    .mini-feed-head strong {
-      display: block;
-      font-size: 0.96rem;
-    }
-
-    .mini-feed-head span {
-      color: var(--text-soft);
-      font-size: 0.85rem;
-    }
-
-    .mini-feed-media {
-      aspect-ratio: 16 / 9;
+    .phone-screen{
+      border-radius:28px;
+      overflow:hidden;
       background:
-        linear-gradient(135deg, rgba(11, 94, 215, 0.22), rgba(255, 255, 255, 0.18)),
-        linear-gradient(135deg, #97c0ff, #f5f9ff);
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(239,68,68,.16), transparent 24%),
+        linear-gradient(180deg,#f8fbff 0%, #eef4ff 100%);
+      min-height:640px;
+      padding:16px;
+      display:grid;
+      gap:14px;
     }
 
-    .mini-feed-actions {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 14px;
-      color: var(--text-soft);
-      font-size: 0.9rem;
+    .phone-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
     }
 
-    .wallet-balance {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: 12px;
+    .phone-brand{
+      font-size:18px;
+      font-weight:900;
+      color:#0b1454;
     }
 
-    .wallet-balance strong {
-      display: block;
-      font-size: 1.9rem;
-      line-height: 1;
+    .phone-badge{
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      background:#eef4ff;
+      color:#1d4ed8;
+      border:1px solid #bfdbfe;
+      font-size:11px;
+      font-weight:800;
+      display:flex;
+      align-items:center;
     }
 
-    .wallet-balance span {
-      color: var(--text-soft);
-      font-size: 0.9rem;
+    .showcase-card{
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:22px;
+      box-shadow:var(--shadow-soft);
+      padding:14px;
+      display:grid;
+      gap:12px;
     }
 
-    .wallet-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .floating-badge {
-      position: absolute;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(11, 94, 215, 0.12);
-      box-shadow: 0 18px 36px rgba(11, 94, 215, 0.12);
-      padding: 14px 16px;
-    }
-
-    .badge-one {
-      top: -14px;
-      right: 10px;
-    }
-
-    .badge-two {
-      left: -6px;
-      bottom: 36px;
-    }
-
-    .floating-badge strong {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 0.95rem;
-    }
-
-    .floating-badge span {
-      color: var(--text-soft);
-      font-size: 0.84rem;
-    }
-
-    .features {
-      padding: 56px 0 24px;
-    }
-
-    .section-intro {
-      max-width: 740px;
-      margin: 0 auto 28px;
-      text-align: center;
-    }
-
-    .section-intro h2 {
-      font-size: clamp(2rem, 5vw, 3rem);
-      line-height: 1.08;
-      margin-bottom: 12px;
-    }
-
-    .section-intro p {
-      color: var(--text-soft);
-      font-size: 1rem;
-    }
-
-    .features-grid {
-      display: grid;
-      gap: 18px;
-    }
-
-    .feature-card {
-      background: rgba(255, 255, 255, 0.82);
-      border: 1px solid rgba(11, 94, 215, 0.1);
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 18px 42px rgba(14, 43, 95, 0.08);
-    }
-
-    .feature-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, rgba(11, 94, 215, 0.18), rgba(11, 94, 215, 0.06));
-      color: var(--primary);
-      display: grid;
-      place-items: center;
-      font-size: 1.4rem;
-      margin-bottom: 18px;
-    }
-
-    .feature-card h3 {
-      font-size: 1.15rem;
-      margin-bottom: 10px;
-    }
-
-    .feature-card p {
-      color: var(--text-soft);
-      font-size: 0.96rem;
-      margin-bottom: 14px;
-    }
-
-    .feature-link {
-      color: var(--primary);
-      font-weight: 700;
-      font-size: 0.95rem;
-    }
-
-    .workflow {
-      padding: 40px 0 24px;
-    }
-
-    .workflow-wrap {
-      background: linear-gradient(135deg, #0d4db0, #072f71);
-      border-radius: 34px;
-      padding: 28px;
-      color: #ffffff;
-      box-shadow: 0 24px 58px rgba(9, 47, 112, 0.22);
-    }
-
-    .workflow-wrap h2 {
-      font-size: clamp(1.9rem, 4vw, 2.8rem);
-      margin-bottom: 12px;
-    }
-
-    .workflow-wrap p {
-      color: rgba(255, 255, 255, 0.82);
-      max-width: 760px;
-      margin-bottom: 24px;
-    }
-
-    .workflow-grid {
-      display: grid;
-      gap: 14px;
-    }
-
-    .workflow-card {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 22px;
-      padding: 20px;
-    }
-
-    .workflow-step {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #ffffff;
-      color: var(--primary);
-      font-weight: 700;
-      display: grid;
-      place-items: center;
-      margin-bottom: 14px;
-    }
-
-    .workflow-card h3 {
-      margin-bottom: 8px;
-      font-size: 1.05rem;
-    }
-
-    .workflow-card p {
-      margin: 0;
-      color: rgba(255, 255, 255, 0.78);
-      font-size: 0.94rem;
-    }
-
-    .pricing {
-      padding: 56px 0 24px;
-    }
-
-    .pricing-grid {
-      display: grid;
-      gap: 18px;
-    }
-
-    .pricing-card {
-      background: rgba(255, 255, 255, 0.84);
-      border: 1px solid rgba(11, 94, 215, 0.1);
-      border-radius: 28px;
-      padding: 28px 24px;
-      box-shadow: 0 16px 42px rgba(14, 43, 95, 0.08);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .pricing-card.featured {
-      background: linear-gradient(180deg, rgba(11, 94, 215, 0.08), rgba(255, 255, 255, 0.9));
-      border-color: rgba(11, 94, 215, 0.2);
-      transform: translateY(-2px);
-    }
-
-    .pricing-badge {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      min-height: 34px;
-      padding: 0 12px;
-      border-radius: 999px;
-      background: var(--accent);
-      color: #ffffff;
-      font-size: 0.82rem;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .pricing-card h3 {
-      font-size: 1.2rem;
-      margin-bottom: 10px;
-    }
-
-    .price {
-      display: flex;
-      align-items: end;
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-
-    .price strong {
-      font-size: 2.3rem;
-      line-height: 1;
-    }
-
-    .price span {
-      color: var(--text-soft);
-    }
-
-    .pricing-card p {
-      color: var(--text-soft);
-      margin-bottom: 18px;
-    }
-
-    .pricing-list {
-      list-style: none;
-      display: grid;
-      gap: 12px;
-      margin-bottom: 22px;
-    }
-
-    .pricing-list li {
-      position: relative;
-      padding-left: 22px;
-      color: var(--text);
-    }
-
-    .pricing-list li::before {
-      content: "•";
-      color: var(--primary);
-      position: absolute;
-      left: 0;
-      top: 0;
-      font-weight: 700;
-    }
-
-    .cta {
-      padding: 56px 0 70px;
-    }
-
-    .cta-card {
+    .cover{
+      height:170px;
+      border-radius:18px;
       background:
-        radial-gradient(circle at top right, rgba(255, 255, 255, 0.16), transparent 22%),
-        linear-gradient(135deg, #0b5ed7 0%, #0a3f97 100%);
-      color: #ffffff;
-      border-radius: 34px;
-      padding: 30px 24px;
-      box-shadow: 0 24px 58px rgba(8, 52, 128, 0.24);
+        radial-gradient(circle at top right, rgba(255,255,255,.16), transparent 24%),
+        linear-gradient(135deg,#08114c,#2563eb,#4f46e5,#ef4444);
+      position:relative;
+      overflow:hidden;
     }
 
-    .cta-card h2 {
-      font-size: clamp(2rem, 5vw, 3rem);
-      line-height: 1.08;
-      margin-bottom: 12px;
+    .live-pill{
+      position:absolute;
+      top:12px;
+      left:12px;
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      background:rgba(239,68,68,.96);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      font-size:11px;
+      font-weight:800;
     }
 
-    .cta-card p {
-      max-width: 720px;
-      color: rgba(255, 255, 255, 0.86);
-      margin-bottom: 24px;
+    .card-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
     }
 
-    .cta-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 18px;
+    .avatar{
+      width:42px;
+      height:42px;
+      border-radius:16px;
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      font-size:16px;
+      flex-shrink:0;
     }
 
-    .btn-light {
-      background: #ffffff;
-      color: var(--primary);
-      box-shadow: 0 14px 28px rgba(255, 255, 255, 0.18);
+    .grow{
+      min-width:0;
+      flex:1;
     }
 
-    .btn-light:hover {
-      transform: translateY(-2px);
+    .name{
+      font-size:14px;
+      font-weight:800;
+      color:#111827;
+      margin-bottom:3px;
     }
 
-    .btn-ghost-light {
-      background: rgba(255, 255, 255, 0.1);
-      color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.18);
+    .meta{
+      font-size:12px;
+      color:#6b7280;
     }
 
-    .site-footer {
-      border-top: 1px solid rgba(11, 94, 215, 0.08);
-      background: rgba(255, 255, 255, 0.6);
+    .action-mini{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
     }
 
-    .footer-wrap {
-      padding: 24px 0 34px;
-      display: grid;
-      gap: 16px;
+    .mini{
+      min-height:58px;
+      border-radius:16px;
+      background:#fff;
+      border:1px solid #e5e7eb;
+      display:grid;
+      place-items:center;
+      text-align:center;
+      color:#111827;
+      font-size:12px;
+      font-weight:700;
+      box-shadow:var(--shadow-soft);
     }
 
-    .footer-top {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .section{
+      padding:18px 0;
     }
 
-    .footer-top p {
-      color: var(--text-soft);
-      max-width: 720px;
+    .section-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
     }
 
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px 18px;
-      color: var(--text-soft);
-      font-size: 0.95rem;
+    .section-title{
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:-.5px;
     }
 
-    .footer-links a:hover {
-      color: var(--primary);
+    .section-sub{
+      color:rgba(255,255,255,.82);
+      font-size:14px;
+      line-height:1.65;
+      max-width:700px;
     }
 
-    .footer-bottom {
-      color: var(--text-soft);
-      font-size: 0.92rem;
+    .feature-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
     }
 
-    @media (min-width: 768px) {
-      .header-nav {
-        display: flex;
+    .feature-card{
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:22px;
+      padding:18px;
+      display:grid;
+      gap:12px;
+      box-shadow:var(--shadow-soft);
+      backdrop-filter:blur(12px);
+    }
+
+    .feature-icon{
+      width:52px;
+      height:52px;
+      border-radius:16px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.14);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+    }
+
+    .feature-title{
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .feature-text{
+      font-size:13px;
+      line-height:1.65;
+      color:rgba(255,255,255,.82);
+    }
+
+    .legal-grid{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:14px;
+    }
+
+    .legal-card{
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:22px;
+      padding:18px;
+      box-shadow:var(--shadow-soft);
+      color:var(--text-dark);
+      display:grid;
+      gap:10px;
+      align-content:start;
+    }
+
+    .legal-top{
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      background:linear-gradient(135deg,#eff6ff,#eef2ff,#ffe4e6);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+    }
+
+    .legal-title{
+      font-size:16px;
+      font-weight:800;
+      color:#111827;
+    }
+
+    .legal-text{
+      font-size:13px;
+      line-height:1.65;
+      color:#667085;
+    }
+
+    .legal-link{
+      margin-top:auto;
+      min-height:42px;
+      border-radius:14px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      color:#111827;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .cta{
+      padding:14px 0 30px;
+    }
+
+    .cta-box{
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.14), transparent 28%),
+        linear-gradient(135deg,#0b1454,#2563eb,#4f46e5,#ef4444);
+      border-radius:28px;
+      padding:24px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+      box-shadow:var(--shadow);
+    }
+
+    .cta-title{
+      font-size:28px;
+      font-weight:900;
+      margin-bottom:6px;
+    }
+
+    .cta-sub{
+      font-size:14px;
+      line-height:1.7;
+      color:rgba(255,255,255,.88);
+      max-width:660px;
+    }
+
+    .footer{
+      padding:18px 0 26px;
+    }
+
+    .footer-box{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:24px;
+      padding:18px;
+      backdrop-filter:blur(10px);
+    }
+
+    .footer-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .footer-links{
+      display:flex;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .footer-links a{
+      font-size:13px;
+      color:rgba(255,255,255,.88);
+    }
+
+    .footer-note{
+      font-size:12px;
+      color:rgba(255,255,255,.66);
+      line-height:1.7;
+    }
+
+    @media (max-width:1080px){
+      .feature-grid{
+        grid-template-columns:repeat(2,1fr);
       }
-
-      .hero {
-        padding: 54px 0 42px;
-      }
-
-      .hero-grid {
-        grid-template-columns: 1.05fr 0.95fr;
-        gap: 34px;
-      }
-
-      .stats-row {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .features-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .workflow-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .pricing-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .cta-card {
-        padding: 40px 36px;
-      }
-
-      .footer-top {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
+      .legal-grid{
+        grid-template-columns:repeat(2,1fr);
       }
     }
 
-    @media (min-width: 1024px) {
-      .features-grid {
-        grid-template-columns: repeat(4, 1fr);
+    @media (max-width:900px){
+      .nav-links{
+        display:none;
       }
-
-      .workflow-grid {
-        grid-template-columns: repeat(4, 1fr);
+      .hero-grid{
+        grid-template-columns:1fr;
+      }
+      .hero-phone{
+        min-height:auto;
       }
     }
 
-    @media (max-width: 640px) {
-      .brand-title {
-        font-size: 24px;
+    @media (max-width:640px){
+      .nav-inner{
+        min-height:68px;
       }
-
-      .header-actions {
-        gap: 8px;
+      .brand-name{
+        font-size:18px;
       }
-
-      .header-actions .btn {
-        min-height: 42px;
-        padding: 0 16px;
+      .btn{
+        min-height:44px;
+        padding:0 16px;
       }
-
-      .floating-badge {
-        display: none;
+      .feature-grid,
+      .legal-grid{
+        grid-template-columns:1fr;
+      }
+      .hero{
+        padding-top:30px;
+      }
+      .hero-actions{
+        display:grid;
+        grid-template-columns:1fr;
+      }
+      .cta-box{
+        padding:20px;
+      }
+      .cta-title{
+        font-size:24px;
+      }
+      .phone-screen{
+        min-height:580px;
       }
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabase = window.supabase.createClient(
+      "https://ezarjrxzkqqsbyirxttg.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI",
+      {
+        auth:{
+          persistSession:true,
+          autoRefreshToken:true,
+          detectSessionInUrl:true,
+          flowType:"pkce"
+        }
+      }
+    );
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data?.session) {
+        window.location.replace("home.html");
+      }
+    });
+  </script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container header-wrap">
-      <a href="index.html" class="brand" aria-label="View Home">
-        <div class="brand-mark">V</div>
-        <div class="brand-copy">
-          <div class="brand-title">View</div>
-          <div class="brand-subtitle">Your world, your view</div>
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+        <div class="brand-text">
+          <div class="brand-name">VIEW</div>
+          <div class="brand-sub">by Ceetify</div>
         </div>
-      </a>
+      </div>
 
-      <nav class="header-nav" aria-label="Primary Navigation">
-        <a href="#features">Features</a>
-        <a href="#workflow">How It Works</a>
-        <a href="#pricing">Pricing</a>
+      <div class="nav-links">
+        <a href="#about">About</a>
         <a href="support.html">Support</a>
-      </nav>
+        <a href="cookie-policy.html">Cookies & Policies</a>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
 
-      <div class="header-actions">
-        <a href="login.html" class="btn btn-outline">Sign In</a>
-        <a href="signup.html" class="btn btn-primary">Create Account</a>
+      <div class="nav-actions">
+        <a class="btn ghost" href="login.html">Login</a>
+        <a class="btn primary" href="signup.html">Get Started</a>
       </div>
     </div>
-  </header>
+  </nav>
 
   <main>
     <section class="hero">
-      <div class="container hero-grid">
-        <div class="hero-copy">
-          <div class="eyebrow">Powered by Ceetify</div>
+      <div class="wrap">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow">✨ Social, Live, Chat, AI</div>
 
-          <h1 class="hero-title">
-            Create once.
-            <span>Grow everywhere.</span>
-          </h1>
+            <h1>Share your world, go live, and create with AI.</h1>
 
-          <p class="hero-text">
-            View helps creators, brands, and businesses manage content,
-            cross-post smarter, track performance, and stay connected with
-            their audience from one premium dashboard.
-          </p>
+            <p>
+              View by Ceetify brings social posting, live streaming, real-time chats,
+              creator tools, cross-posting features, and AI creation into one premium platform.
+            </p>
 
-          <div class="hero-actions">
-            <a href="signup.html" class="btn btn-primary">Get Started</a>
-            <a href="login.html" class="btn btn-outline">Sign In</a>
-          </div>
-
-          <div class="hero-meta">
-            <span>Cross-post ready</span>
-            <span>Wallet powered</span>
-            <span>AI support built in</span>
-          </div>
-        </div>
-
-        <div class="hero-visual">
-          <div class="dashboard-card">
-            <div class="dashboard-topbar">
-              <strong>View Dashboard</strong>
-              <div class="topbar-pills">
-                <span class="topbar-pill">Live</span>
-                <span class="topbar-pill">Premium</span>
-              </div>
+            <div class="hero-actions">
+              <a class="btn primary" href="signup.html">Get Started</a>
+              <a class="btn ghost" href="login.html">Sign In</a>
             </div>
 
-            <div class="dashboard-body">
-              <div class="stats-row">
-                <article class="stat-card">
-                  <div class="stat-label">Today’s Reach</div>
-                  <div class="stat-value">12.4K</div>
-                </article>
+            <div class="hero-meta">
+              <span>Secure account flow</span>
+              <span>Live creator tools</span>
+              <span>AI-powered features</span>
+            </div>
+          </div>
 
-                <article class="stat-card">
-                  <div class="stat-label">Cross-post Jobs</div>
-                  <div class="stat-value">18</div>
-                </article>
+          <div class="hero-phone">
+            <div class="glow"></div>
 
-                <article class="stat-card">
-                  <div class="stat-label">Wallet Balance</div>
-                  <div class="stat-value">₦12,450</div>
-                </article>
-              </div>
-
-              <article class="composer-card">
-                <div class="section-heading">
-                  <h3>Create Post</h3>
-                  <span class="topbar-pill">AI Assist</span>
+            <div class="phone">
+              <div class="phone-screen">
+                <div class="phone-top">
+                  <div class="phone-brand">View</div>
+                  <div class="phone-badge"></div>
                 </div>
 
-                <div class="caption-box">
-                  Write your caption once, optimize it for each platform, and
-                  publish with one smooth flow.
-                </div>
-
-                <div class="platforms">
-                  <div class="platform-chip active">
-                    <span class="platform-dot"></span>
-                    View
-                  </div>
-                  <div class="platform-chip active">
-                    <span class="platform-dot"></span>
-                    Facebook
-                  </div>
-                  <div class="platform-chip active">
-                    <span class="platform-dot"></span>
-                    Instagram
-                  </div>
-                  <div class="platform-chip">
-                    <span class="platform-dot"></span>
-                    TikTok
-                  </div>
-                  <div class="platform-chip">
-                    <span class="platform-dot"></span>
-                    YouTube
-                  </div>
-                </div>
-
-                <div class="pay-row">
-                  <div class="pay-info">
-                    <strong>Cross-post cost: ₦45</strong>
-                    <span>Wallet balance available for publishing</span>
+                <div class="showcase-card">
+                  <div class="cover">
+                    <div class="live-pill">LIVE NOW</div>
                   </div>
 
-                  <a href="signup.html" class="btn btn-primary">Pay &amp; Publish</a>
-                </div>
-              </article>
-
-              <article class="feed-preview">
-                <div class="section-heading">
-                  <h3>Feed Preview</h3>
-                  <span class="topbar-pill">Creator Mode</span>
-                </div>
-
-                <div class="mini-feed-card">
-                  <div class="mini-feed-head">
-                    <div class="avatar"></div>
-                    <div>
-                      <strong>Ceetify Brand</strong>
-                      <span>2 mins ago • Sponsored promo</span>
+                  <div class="card-row">
+                    <div class="avatar">V</div>
+                    <div class="grow">
+                      <div class="name">View Creator</div>
+                      <div class="meta">Streaming, posting, chatting and using AI in one place.</div>
                     </div>
                   </div>
-
-                  <div class="mini-feed-media"></div>
-
-                  <div class="mini-feed-actions">
-                    <span>❤ 2.4K likes</span>
-                    <span>💬 182 comments</span>
-                    <span>🔁 94 shares</span>
-                  </div>
-                </div>
-              </article>
-
-              <article class="wallet-preview">
-                <div class="section-heading">
-                  <h3>Wallet</h3>
-                  <span class="topbar-pill">Subscription Active</span>
                 </div>
 
-                <div class="wallet-balance">
-                  <div>
-                    <strong>₦12,450</strong>
-                    <span>Available balance</span>
-                  </div>
-                  <div>
-                    <span>Pro Plan</span>
+                <div class="action-mini">
+                  <div class="mini">Go Live</div>
+                  <div class="mini">Create</div>
+                  <div class="mini">Chat</div>
+                </div>
+
+                <div class="showcase-card">
+                  <div class="card-row">
+                    <div class="avatar">AI</div>
+                    <div class="grow">
+                      <div class="name">Create with AI</div>
+                      <div class="meta">Generate captions, ideas, and creative content faster.</div>
+                    </div>
                   </div>
                 </div>
 
-                <div class="wallet-actions">
-                  <a href="wallet.html" class="btn btn-outline">Fund Wallet</a>
-                  <a href="subscriptions.html" class="btn btn-outline">View Plan</a>
+                <div class="showcase-card">
+                  <div class="card-row">
+                    <div class="avatar">₦</div>
+                    <div class="grow">
+                      <div class="name">Wallet & Upgrades</div>
+                      <div class="meta">Manage subscriptions and creator tools from one secure account.</div>
+                    </div>
+                  </div>
                 </div>
-              </article>
+              </div>
             </div>
-          </div>
-
-          <div class="floating-badge badge-one">
-            <strong>Connected Accounts</strong>
-            <span>3 active platforms linked</span>
-          </div>
-
-          <div class="floating-badge badge-two">
-            <strong>Ask View AI</strong>
-            <span>Need help? Get answers fast.</span>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="features" id="features">
-      <div class="container">
-        <div class="section-intro">
-          <h2>Everything you need in one premium social workspace</h2>
-          <p>
-            View combines social engagement, publishing tools, wallet support,
-            linked accounts, analytics, and AI help into one focused system.
-          </p>
+    <section id="about" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="section-title">About View</div>
+            <div class="section-sub">
+              View is a modern social platform by Ceetify built for sharing, live interaction,
+              messaging, creation, and growth — designed to bring community and creator tools together.
+            </div>
+          </div>
         </div>
 
-        <div class="features-grid">
-          <article class="feature-card">
-            <div class="feature-icon">↗</div>
-            <h3>Cross-Post Smarter</h3>
-            <p>
-              Publish from one place and manage selected platforms with a clear,
-              premium workflow.
-            </p>
-            <a href="connected-accounts.html" class="feature-link">Connected accounts</a>
-          </article>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">📡</div>
+            <div class="feature-title">Go Live</div>
+            <div class="feature-text">Start live sessions, interact with viewers, and build audience engagement in real time.</div>
+          </div>
 
-          <article class="feature-card">
+          <div class="feature-card">
             <div class="feature-icon">💬</div>
-            <h3>Chat and Engage</h3>
-            <p>
-              Keep your audience close with direct messages, fast replies, and a
-              clean communication layer.
-            </p>
-            <a href="messages.html" class="feature-link">Open messages</a>
-          </article>
+            <div class="feature-title">Chat & Connect</div>
+            <div class="feature-text">Stay connected through direct messaging, conversations, and community interactions.</div>
+          </div>
 
-          <article class="feature-card">
-            <div class="feature-icon">📊</div>
-            <h3>Track Performance</h3>
-            <p>
-              See your reach, engagement, and publishing activity from a modern
-              creator dashboard.
-            </p>
-            <a href="analytics.html" class="feature-link">View analytics</a>
-          </article>
+          <div class="feature-card">
+            <div class="feature-icon">✨</div>
+            <div class="feature-title">Create with AI</div>
+            <div class="feature-text">Use AI-powered tools to generate better posts, captions, and creative content faster.</div>
+          </div>
 
-          <article class="feature-card">
-            <div class="feature-icon">🤖</div>
-            <h3>AI Support Built In</h3>
-            <p>
-              Get help with captions, platform rewriting, support questions, and
-              performance guidance.
-            </p>
-            <a href="ai-help.html" class="feature-link">Ask View AI</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="workflow" id="workflow">
-      <div class="container">
-        <div class="workflow-wrap">
-          <h2>How View works</h2>
-          <p>
-            The flow is simple: create your content, choose your destinations,
-            confirm your price, and publish with confidence.
-          </p>
-
-          <div class="workflow-grid">
-            <article class="workflow-card">
-              <div class="workflow-step">1</div>
-              <h3>Create your post</h3>
-              <p>
-                Add text, images, or video in one clean composer designed for
-                creators and businesses.
-              </p>
-            </article>
-
-            <article class="workflow-card">
-              <div class="workflow-step">2</div>
-              <h3>Select platforms</h3>
-              <p>
-                Turn on the accounts you want to publish to and see account
-                status clearly before posting.
-              </p>
-            </article>
-
-            <article class="workflow-card">
-              <div class="workflow-step">3</div>
-              <h3>Pay or use your plan</h3>
-              <p>
-                View the cost, use wallet balance, or apply available plan
-                benefits before publishing.
-              </p>
-            </article>
-
-            <article class="workflow-card">
-              <div class="workflow-step">4</div>
-              <h3>Track and improve</h3>
-              <p>
-                Monitor results, retry failed jobs, and use analytics or AI help
-                to improve the next post.
-              </p>
-            </article>
+          <div class="feature-card">
+            <div class="feature-icon">💳</div>
+            <div class="feature-title">Wallet & Upgrades</div>
+            <div class="feature-text">Access premium features using wallet-based subscriptions and AI credit purchases.</div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="pricing" id="pricing">
-      <div class="container">
-        <div class="section-intro">
-          <h2>Simple plans for growth</h2>
-          <p>
-            Start free, upgrade when you need more publishing power, analytics,
-            and support.
-          </p>
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Important links</div>
+            <div class="section-sub">
+              These pages are publicly accessible and easy to find from the homepage.
+            </div>
+          </div>
         </div>
 
-        <div class="pricing-grid">
-          <article class="pricing-card">
-            <h3>Starter</h3>
-            <div class="price">
-              <strong>₦0</strong>
-              <span>/ month</span>
-            </div>
-            <p>Perfect for testing the View experience.</p>
-            <ul class="pricing-list">
-              <li>Basic access to View</li>
-              <li>Limited posting tools</li>
-              <li>Selected help features</li>
-            </ul>
-            <a href="signup.html" class="btn btn-outline">Start Free</a>
-          </article>
+        <div class="legal-grid">
+          <div class="legal-card">
+            <div class="legal-top">ℹ️</div>
+            <div class="legal-title">About</div>
+            <div class="legal-text">Learn what View is, what it offers, and the mission behind the platform.</div>
+            <a class="legal-link" href="about.html">Open About</a>
+          </div>
 
-          <article class="pricing-card featured">
-            <div class="pricing-badge">Popular</div>
-            <h3>Pro</h3>
-            <div class="price">
-              <strong>₦1,500</strong>
-              <span>/ month</span>
-            </div>
-            <p>For creators and serious small businesses.</p>
-            <ul class="pricing-list">
-              <li>More cross-posting access</li>
-              <li>Wallet and publish history tools</li>
-              <li>AI content support</li>
-            </ul>
-            <a href="signup.html" class="btn btn-primary">Choose Pro</a>
-          </article>
+          <div class="legal-card">
+            <div class="legal-top">🍪</div>
+            <div class="legal-title">Cookies & Policies</div>
+            <div class="legal-text">Understand how cookies, preferences, and platform policy notices are handled.</div>
+            <a class="legal-link" href="cookie-policy.html">Open Cookies & Policies</a>
+          </div>
 
-          <article class="pricing-card">
-            <h3>Business</h3>
-            <div class="price">
-              <strong>₦5,000</strong>
-              <span>/ month</span>
-            </div>
-            <p>For teams, brands, and premium publishing control.</p>
-            <ul class="pricing-list">
-              <li>Advanced workflow tools</li>
-              <li>Better analytics visibility</li>
-              <li>Priority support and expansion</li>
-            </ul>
-            <a href="signup.html" class="btn btn-outline">Choose Business</a>
-          </article>
+          <div class="legal-card">
+            <div class="legal-top">🛟</div>
+            <div class="legal-title">Support</div>
+            <div class="legal-text">Get help, contact support, and find answers for common user and account issues.</div>
+            <a class="legal-link" href="support.html">Open Support</a>
+          </div>
+
+          <div class="legal-card">
+            <div class="legal-top">📘</div>
+            <div class="legal-title">Terms</div>
+            <div class="legal-text">Review the rules, user responsibilities, and platform usage terms for View.</div>
+            <a class="legal-link" href="terms.html">Open Terms</a>
+          </div>
+
+          <div class="legal-card">
+            <div class="legal-top">🔒</div>
+            <div class="legal-title">Privacy</div>
+            <div class="legal-text">See how personal data, usage information, and account privacy are handled on View.</div>
+            <a class="legal-link" href="privacy.html">Open Privacy</a>
+          </div>
         </div>
       </div>
     </section>
 
     <section class="cta">
-      <div class="container">
-        <div class="cta-card">
-          <h2>Ready to simplify your social workflow?</h2>
-          <p>
-            Build your presence, manage your platforms, and grow with a premium
-            creator dashboard made for the Ceetify ecosystem.
-          </p>
-
-          <div class="cta-actions">
-            <a href="signup.html" class="btn btn-light">Create Account</a>
-            <a href="login.html" class="btn btn-ghost-light">Sign In</a>
+      <div class="wrap">
+        <div class="cta-box">
+          <div>
+            <div class="cta-title">Start your View journey</div>
+            <div class="cta-sub">
+              Create an account to explore social posting, live features, messaging, wallet upgrades, and AI tools.
+            </div>
           </div>
 
-          <div class="footer-links">
-            <a href="terms.html">Terms</a>
-            <a href="privacy.html">Privacy</a>
-            <a href="community-guidelines.html">Community Guidelines</a>
-            <a href="support.html">Support</a>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a class="btn primary" href="signup.html">Get Started</a>
+            <a class="btn ghost" href="login.html">Login</a>
           </div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container footer-wrap">
-      <div class="footer-top">
-        <div class="brand">
-          <div class="brand-mark">V</div>
-          <div class="brand-copy">
-            <div class="brand-title">View</div>
-            <div class="brand-subtitle">Your world, your view</div>
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-box">
+        <div class="footer-top">
+          <div class="brand">
+            <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+            <div class="brand-text">
+              <div class="brand-name">VIEW</div>
+              <div class="brand-sub">by Ceetify</div>
+            </div>
+          </div>
+
+          <div class="footer-links">
+            <a href="about.html">About</a>
+            <a href="cookie-policy.html">Cookies & Policies</a>
+            <a href="support.html">Support</a>
+            <a href="terms.html">Terms</a>
+            <a href="privacy.html">Privacy</a>
           </div>
         </div>
 
-        <p>
-          View is a premium creator and business social platform built under the
-          Ceetify ecosystem.
-        </p>
-      </div>
-
-      <div class="footer-links">
-        <a href="about.html">About</a>
-        <a href="faq.html">FAQ</a>
-        <a href="support.html">Support</a>
-        <a href="terms.html">Terms</a>
-        <a href="privacy.html">Privacy</a>
-      </div>
-
-      <div class="footer-bottom">
-        Powered by Ceetify Multi-Ventures Ltd
+        <div class="footer-note">
+          View by Ceetify is a platform for sharing, communication, live interaction, and AI-assisted creation.
+          Public legal and support pages are accessible from this homepage for transparency and compliance.
+        </div>
       </div>
     </div>
   </footer>
