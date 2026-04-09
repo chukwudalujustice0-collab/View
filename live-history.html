@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Live History | View</title>
+  <meta name="theme-color" content="#0b1454" />
+
+  <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden}
+    :root{
+      --text:#111827;--muted:#667085;--line:#dbe4ff;--primary:#2563eb;--primary2:#4f46e5;--red:#ef4444;
+      --success:#10b981;--warning:#f59e0b;--shadow:0 16px 44px rgba(8,17,76,.16);--shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+      color:var(--text)
+    }
+    body{padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom))}
+    a{color:inherit;text-decoration:none}
+    button,select{font:inherit;color:inherit}
+    button{border:none;background:none;cursor:pointer}
+    .wrap{width:min(100%,980px);margin:0 auto}
+    .notice{display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.55;box-shadow:var(--shadow-soft)}
+    .notice.show{display:block}.notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}.notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .top-left,.top-right{display:flex;align-items:center;gap:12px}.top-left{min-width:0;flex:1}.top-right{gap:10px}
+    .icon-btn{width:46px;height:46px;min-width:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid rgba(219,228,255,.95);box-shadow:var(--shadow-soft);font-size:18px;color:#111827}
+    .brand-box{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+    .brand-logo{width:42px;height:42px;min-width:42px;border-radius:14px;object-fit:cover;box-shadow:0 8px 20px rgba(37,99,235,.15);background:#fff;border:1px solid rgba(219,228,255,.95)}
+    .title-box{min-width:0;flex:1}.title{font-size:22px;font-weight:800;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0b1454}.sub{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .section{background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border:1px solid rgba(219,228,255,.9);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+    .section-body{padding:14px;display:grid;gap:14px}
+    .hero{display:grid;gap:12px;padding:18px;border-radius:18px;background:linear-gradient(135deg,#0b1454,#2563eb,#4f46e5,#ef4444);color:#fff;box-shadow:0 14px 34px rgba(37,99,235,.18)}
+    .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .hero-title{font-size:15px;font-weight:700;opacity:.9}.hero-value{font-size:30px;font-weight:800;line-height:1;margin-top:4px}.hero-sub{font-size:12px;opacity:.88;line-height:1.55}
+    .hero-pills{display:flex;gap:8px;flex-wrap:wrap}.hero-pill{min-height:30px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:11px;display:flex;align-items:center;gap:6px}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .filter-btn{min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#fff;color:#475569;font-size:12px;font-weight:700}
+    .filter-btn.active{background:#eef4ff;border-color:#93c5fd;color:#1d4ed8}
+    .sort-select{min-height:40px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:#111827;outline:none}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .stat-card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:14px;display:grid;gap:8px}
+    .stat-label{font-size:12px;color:var(--muted);font-weight:700}.stat-value{font-size:22px;font-weight:800;color:#0b1454;line-height:1.1}.stat-sub{font-size:11px;color:var(--muted);line-height:1.45}
+    .list{display:grid;gap:12px}
+    .card{border:1px solid var(--line);border-radius:20px;background:#fff;padding:14px;display:grid;gap:12px}
+    .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .card-left{display:flex;gap:12px;min-width:0;flex:1}
+    .thumb{width:64px;height:64px;min-width:64px;border-radius:18px;background:#f8fbff center/cover no-repeat;border:1px solid var(--line);display:grid;place-items:center;font-size:22px}
+    .main{min-width:0;flex:1}
+    .name{font-size:15px;font-weight:800;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
+    .meta{font-size:12px;color:var(--muted);line-height:1.5}
+    .badge{display:inline-flex;align-items:center;justify-content:center;min-height:26px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:800;border:1px solid transparent}
+    .badge.live{background:#fef2f2;color:#991b1b;border-color:#fecaca}.badge.ended{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}.badge.scheduled{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+    .meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .meta-box{border:1px solid #edf2ff;border-radius:14px;background:#f8fbff;padding:10px;display:grid;gap:4px}
+    .meta-label{font-size:11px;color:var(--muted);font-weight:700}.meta-value{font-size:13px;color:#111827;font-weight:800}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{min-height:42px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:#fff;color:#111827;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+    .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));border-color:transparent;color:#fff}
+    .empty{border:1px dashed var(--line);border-radius:18px;padding:20px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6;background:#fff}
+    @media (max-width:900px){.stats-grid,.meta-grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:560px){.stats-grid,.meta-grid{grid-template-columns:1fr}}
+  </style>
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script src="/js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="live.html" aria-label="Back">←</a>
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+          <div class="title-box">
+            <div class="title">Live History</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
+      </div>
+      <div class="top-right">
+        <button id="refreshBtn" class="icon-btn" type="button">↻</button>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="hero">
+          <div class="hero-top">
+            <div>
+              <div class="hero-title">Past Live Sessions</div>
+              <div id="heroValue" class="hero-value">0</div>
+            </div>
+            <div class="hero-pills">
+              <div id="heroStatusPill" class="hero-pill">All sessions</div>
+              <div id="heroViewsPill" class="hero-pill">0 views</div>
+            </div>
+          </div>
+          <div class="hero-sub">Review your previous, active and scheduled live sessions, including views, duration and replay status.</div>
+        </div>
+
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button class="filter-btn active" data-filter="all" type="button">All</button>
+            <button class="filter-btn" data-filter="live" type="button">Live</button>
+            <button class="filter-btn" data-filter="ended" type="button">Ended</button>
+            <button class="filter-btn" data-filter="scheduled" type="button">Scheduled</button>
+          </div>
+          <select id="sortSelect" class="sort-select">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="views">Most Views</option>
+          </select>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Sessions</div>
+            <div id="statTotal" class="stat-value">0</div>
+            <div class="stat-sub">All your live records.</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active Lives</div>
+            <div id="statLive" class="stat-value">0</div>
+            <div class="stat-sub">Currently running sessions.</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Ended Lives</div>
+            <div id="statEnded" class="stat-value">0</div>
+            <div class="stat-sub">Completed streams.</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Views</div>
+            <div id="statViews" class="stat-value">0</div>
+            <div class="stat-sub">Combined audience count.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-body">
+        <div id="historyList" class="list">
+          <div class="empty">Loading live history...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const heroValue = document.getElementById("heroValue");
+    const heroStatusPill = document.getElementById("heroStatusPill");
+    const heroViewsPill = document.getElementById("heroViewsPill");
+    const statTotal = document.getElementById("statTotal");
+    const statLive = document.getElementById("statLive");
+    const statEnded = document.getElementById("statEnded");
+    const statViews = document.getElementById("statViews");
+    const historyList = document.getElementById("historyList");
+    const sortSelect = document.getElementById("sortSelect");
+    const filterButtons = Array.from(document.querySelectorAll(".filter-btn"));
+
+    let currentUser = null;
+    let currentFilter = "all";
+    let allItems = [];
+
+    function showNotice(message, type = "info", duration = 3000){
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message;
+      clearTimeout(showNotice._timer);
+      if(duration > 0){
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, duration);
+      }
+    }
+
+    function formatDate(value){
+      try{return new Date(value).toLocaleString()}catch(_){return value || "--"}
+    }
+
+    function formatDuration(startedAt, endedAt){
+      if(!startedAt) return "--";
+      const start = new Date(startedAt).getTime();
+      const end = endedAt ? new Date(endedAt).getTime() : Date.now();
+      const diff = Math.max(0, end - start);
+      const total = Math.floor(diff / 1000);
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      return h > 0 ? `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}` : `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    }
+
+    function filteredItems(){
+      let items = [...allItems];
+      if(currentFilter !== "all"){
+        items = items.filter(x => String(x.status || "").toLowerCase() === currentFilter);
+      }
+      if(sortSelect.value === "oldest"){
+        items.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+      }else if(sortSelect.value === "views"){
+        items.sort((a,b) => Number(b.views_count || 0) - Number(a.views_count || 0));
+      }else{
+        items.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+      return items;
+    }
+
+    function updateStats(items){
+      const liveCount = allItems.filter(x => String(x.status||"").toLowerCase() === "live").length;
+      const endedCount = allItems.filter(x => String(x.status||"").toLowerCase() === "ended").length;
+      const views = allItems.reduce((s,x) => s + Number(x.views_count || 0), 0);
+
+      heroValue.textContent = String(items.length);
+      heroStatusPill.textContent = `${currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1)} sessions`;
+      heroViewsPill.textContent = `${views.toLocaleString()} views`;
+
+      statTotal.textContent = String(allItems.length);
+      statLive.textContent = String(liveCount);
+      statEnded.textContent = String(endedCount);
+      statViews.textContent = views.toLocaleString();
+    }
+
+    function render(){
+      const items = filteredItems();
+      updateStats(items);
+
+      if(!items.length){
+        historyList.innerHTML = `<div class="empty">No ${currentFilter === "all" ? "" : currentFilter + " "}live sessions found.</div>`;
+        return;
+      }
+
+      historyList.innerHTML = items.map(item => {
+        const status = String(item.status || "ended").toLowerCase();
+        const badgeClass = status === "live" ? "live" : status === "scheduled" ? "scheduled" : "ended";
+        const title = (item.title || "Untitled live").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        const detailUrl = `live-details.html?id=${encodeURIComponent(item.id)}`;
+        const watchUrl = status === "live" ? `live-watch.html?id=${encodeURIComponent(item.id)}` : detailUrl;
+        const replayText = item.save_replay ? "Replay saved" : "Replay off";
+
+        return `
+          <div class="card">
+            <div class="card-top">
+              <div class="card-left">
+                <div class="thumb" style="${item.thumbnail_url ? `background-image:url('${item.thumbnail_url}')` : ''}">${item.thumbnail_url ? '' : '🎥'}</div>
+                <div class="main">
+                  <div class="name">${title}</div>
+                  <div class="meta">${formatDate(item.created_at)} • ${item.category || "general"} • ${item.privacy || "public"}</div>
+                </div>
+              </div>
+              <div class="badge ${badgeClass}">${status.toUpperCase()}</div>
+            </div>
+
+            <div class="meta-grid">
+              <div class="meta-box">
+                <div class="meta-label">Views</div>
+                <div class="meta-value">${Number(item.views_count || 0).toLocaleString()}</div>
+              </div>
+              <div class="meta-box">
+                <div class="meta-label">Duration</div>
+                <div class="meta-value">${formatDuration(item.started_at, item.ended_at)}</div>
+              </div>
+              <div class="meta-box">
+                <div class="meta-label">Replay</div>
+                <div class="meta-value">${replayText}</div>
+              </div>
+              <div class="meta-box">
+                <div class="meta-label">Audience</div>
+                <div class="meta-value">${item.audience || "everyone"}</div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <a class="btn primary" href="${watchUrl}">${status === "live" ? "Open Live" : "Open Details"}</a>
+              <a class="btn" href="${detailUrl}">Details</a>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadItems(){
+      try{
+        const { data, error } = await supabaseClient
+          .from("live_sessions")
+          .select("*")
+          .eq("host_id", currentUser.id)
+          .order("created_at", { ascending:false });
+
+        if(error) throw error;
+        allItems = data || [];
+        render();
+      }catch(error){
+        historyList.innerHTML = `<div class="empty">Could not load live history.</div>`;
+        showNotice(error.message || "Could not load live history.", "error");
+      }
+    }
+
+    async function init(){
+      await protectPage("home.html");
+      currentUser = window.currentUser || null;
+      if(!currentUser){
+        location.replace("login.html");
+        return;
+      }
+
+      filterButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          filterButtons.forEach(x => x.classList.remove("active"));
+          btn.classList.add("active");
+          currentFilter = btn.dataset.filter || "all";
+          render();
+        });
+      });
+
+      sortSelect.addEventListener("change", render);
+      refreshBtn.addEventListener("click", async () => {
+        await loadItems();
+        showNotice("History refreshed.", "success", 1600);
+      });
+
+      await loadItems();
+    }
+
+    init();
+  </script>
+</body>
+</html>

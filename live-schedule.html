@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Schedule Live | View</title>
+  <meta name="theme-color" content="#0b1454" />
+  <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden}
+    :root{
+      --text:#111827;--muted:#667085;--line:#dbe4ff;--primary:#2563eb;--primary2:#4f46e5;--red:#ef4444;
+      --shadow:0 16px 44px rgba(8,17,76,.16);--shadow-soft:0 10px 24px rgba(15,23,42,.08);--safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom)
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{
+      min-height:100%;
+      background:radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+      color:var(--text)
+    }
+    body{padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom))}
+    a{color:inherit;text-decoration:none} button,input,textarea,select{font:inherit;color:inherit} button{border:none;background:none;cursor:pointer}
+    .wrap{width:min(100%,900px);margin:0 auto}
+    .notice{display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.55;box-shadow:var(--shadow-soft)}
+    .notice.show{display:block}.notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}.notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.top-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+    .icon-btn{width:46px;height:46px;min-width:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid rgba(219,228,255,.95);box-shadow:var(--shadow-soft);font-size:18px;color:#111827}
+    .brand-box{display:flex;align-items:center;gap:10px;min-width:0;flex:1}.brand-logo{width:42px;height:42px;min-width:42px;border-radius:14px;object-fit:cover;background:#fff;border:1px solid rgba(219,228,255,.95)}
+    .title{font-size:22px;font-weight:800;color:#0b1454}.sub{color:var(--muted);font-size:13px}
+    .section{background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border:1px solid rgba(219,228,255,.9);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+    .section-body{padding:14px;display:grid;gap:14px}
+    .hero{padding:18px;border-radius:18px;background:linear-gradient(135deg,#0b1454,#2563eb,#4f46e5,#ef4444);color:#fff;display:grid;gap:10px}
+    .hero h2{font-size:28px}.hero p{font-size:13px;line-height:1.6}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .field{display:grid;gap:8px}.label{font-size:13px;font-weight:700;color:#374151}
+    .input,.textarea,.select{width:100%;border-radius:14px;border:1px solid var(--line);background:#fff;color:#111827;outline:none}
+    .input,.select{min-height:48px;padding:0 14px}.textarea{min-height:110px;padding:14px;resize:vertical;line-height:1.6}
+    .input:focus,.textarea:focus,.select:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}.btn{min-height:46px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:#fff;color:#111827;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+    .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));border-color:transparent;color:#fff}
+    .list{display:grid;gap:12px}.card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:14px;display:grid;gap:10px}
+    .card-title{font-size:14px;font-weight:800;color:#111827}.card-sub{font-size:12px;color:var(--muted);line-height:1.5}
+    .empty{border:1px dashed var(--line);border-radius:18px;padding:20px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6;background:#fff}
+    @media (max-width:700px){.grid-2{grid-template-columns:1fr}}
+  </style>
+  <script>document.documentElement.classList.add("auth-loading");</script>
+  <script src="/js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="live.html">←</a>
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo">
+          <div>
+            <div class="title">Schedule Live</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="hero">
+          <h2>Schedule your next live</h2>
+          <p>Create a future live session and prepare your audience ahead of time.</p>
+        </div>
+
+        <div class="field">
+          <label class="label" for="titleInput">Live Title</label>
+          <input id="titleInput" class="input" type="text" maxlength="120" placeholder="Example: Weekend Q&A with followers" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="descInput">Description</label>
+          <textarea id="descInput" class="textarea" placeholder="Tell viewers what this scheduled live is about."></textarea>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label class="label" for="dateInput">Date</label>
+            <input id="dateInput" class="input" type="date" />
+          </div>
+          <div class="field">
+            <label class="label" for="timeInput">Time</label>
+            <input id="timeInput" class="input" type="time" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label class="label" for="privacySelect">Privacy</label>
+            <select id="privacySelect" class="select">
+              <option value="public">Public</option>
+              <option value="followers">Followers Only</option>
+              <option value="private">Private</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="label" for="categorySelect">Category</label>
+            <select id="categorySelect" class="select">
+              <option value="general">General</option>
+              <option value="music">Music</option>
+              <option value="gaming">Gaming</option>
+              <option value="business">Business</option>
+              <option value="education">Education</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="scheduleBtn" class="btn primary" type="button">Schedule Live</button>
+          <a class="btn" href="live-history.html">Open History</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-body">
+        <div>
+          <div class="title" style="font-size:18px">Scheduled Sessions</div>
+          <div class="sub">Your upcoming live broadcasts.</div>
+        </div>
+        <div id="scheduledList" class="list">
+          <div class="empty">Loading scheduled live sessions...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const titleInput = document.getElementById("titleInput");
+    const descInput = document.getElementById("descInput");
+    const dateInput = document.getElementById("dateInput");
+    const timeInput = document.getElementById("timeInput");
+    const privacySelect = document.getElementById("privacySelect");
+    const categorySelect = document.getElementById("categorySelect");
+    const scheduleBtn = document.getElementById("scheduleBtn");
+    const scheduledList = document.getElementById("scheduledList");
+
+    let currentUser = null;
+
+    function showNotice(message, type="error", duration=3000){
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message;
+      clearTimeout(showNotice._timer);
+      if(duration > 0) showNotice._timer = setTimeout(()=>{noticeBox.className="notice";noticeBox.textContent=""}, duration);
+    }
+
+    function formatDate(v){ try{return new Date(v).toLocaleString()}catch(_){return v || "--"} }
+
+    async function loadScheduled(){
+      try{
+        const { data, error } = await supabaseClient
+          .from("live_sessions")
+          .select("*")
+          .eq("host_id", currentUser.id)
+          .eq("status", "scheduled")
+          .order("scheduled_for", { ascending:true });
+
+        if(error) throw error;
+        const items = data || [];
+
+        if(!items.length){
+          scheduledList.innerHTML = `<div class="empty">No scheduled live yet.</div>`;
+          return;
+        }
+
+        scheduledList.innerHTML = items.map(item => `
+          <div class="card">
+            <div class="card-title">${(item.title || "Untitled live").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
+            <div class="card-sub">${formatDate(item.scheduled_for)} • ${item.privacy || "public"} • ${item.category || "general"}</div>
+          </div>
+        `).join("");
+      }catch(error){
+        scheduledList.innerHTML = `<div class="empty">Could not load scheduled live.</div>`;
+        showNotice(error.message || "Could not load scheduled live.");
+      }
+    }
+
+    async function scheduleLive(){
+      const title = titleInput.value.trim();
+      const desc = descInput.value.trim();
+      const date = dateInput.value;
+      const time = timeInput.value;
+
+      if(!title){ showNotice("Enter a live title."); return; }
+      if(!date || !time){ showNotice("Choose date and time."); return; }
+
+      scheduleBtn.disabled = true;
+      try{
+        const scheduledFor = new Date(`${date}T${time}`);
+        const { error } = await supabaseClient
+          .from("live_sessions")
+          .insert({
+            host_id: currentUser.id,
+            title,
+            description: desc || null,
+            status: "scheduled",
+            privacy: privacySelect.value,
+            category: categorySelect.value,
+            scheduled_for: scheduledFor.toISOString(),
+            created_at: new Date().toISOString()
+          });
+
+        if(error) throw error;
+
+        titleInput.value = "";
+        descInput.value = "";
+        dateInput.value = "";
+        timeInput.value = "";
+        showNotice("Live scheduled successfully.", "success", 1800);
+        await loadScheduled();
+      }catch(error){
+        showNotice(error.message || "Could not schedule live.");
+      }finally{
+        scheduleBtn.disabled = false;
+      }
+    }
+
+    async function init(){
+      await protectPage("home.html");
+      currentUser = window.currentUser || null;
+      if(!currentUser){
+        location.replace("login.html");
+        return;
+      }
+
+      scheduleBtn.addEventListener("click", scheduleLive);
+      await loadScheduled();
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Live Now | View</title>
+  <meta name="theme-color" content="#0b1454" />
+  <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden}
+    :root{
+      --text:#111827;--muted:#667085;--line:#dbe4ff;--primary:#2563eb;--primary2:#4f46e5;--red:#ef4444;
+      --shadow:0 16px 44px rgba(8,17,76,.16);--shadow-soft:0 10px 24px rgba(15,23,42,.08);--safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom)
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);color:var(--text)}
+    body{padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom))}
+    a{color:inherit;text-decoration:none} button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
+    .wrap{width:min(100%,980px);margin:0 auto}
+    .notice{display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.55;box-shadow:var(--shadow-soft)}
+    .notice.show{display:block}.notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.top-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+    .icon-btn{width:46px;height:46px;min-width:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid rgba(219,228,255,.95);box-shadow:var(--shadow-soft);font-size:18px;color:#111827}
+    .brand-box{display:flex;align-items:center;gap:10px;min-width:0;flex:1}.brand-logo{width:42px;height:42px;min-width:42px;border-radius:14px;object-fit:cover;background:#fff;border:1px solid rgba(219,228,255,.95)}
+    .title{font-size:22px;font-weight:800;color:#0b1454}.sub{color:var(--muted);font-size:13px}
+    .list{display:grid;gap:12px}
+    .card{border:1px solid var(--line);border-radius:20px;background:#fff;padding:14px;display:grid;gap:12px;box-shadow:var(--shadow)}
+    .top{display:flex;gap:12px}.thumb{width:80px;height:80px;min-width:80px;border-radius:18px;background:#f8fbff center/cover no-repeat;border:1px solid var(--line);display:grid;place-items:center;font-size:24px}
+    .main{min-width:0;flex:1}.name{font-size:15px;font-weight:800;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}.meta{font-size:12px;color:var(--muted);line-height:1.5}
+    .pill{display:inline-flex;align-items:center;justify-content:center;min-height:26px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:800;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;margin-bottom:8px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}.btn{min-height:42px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:#fff;color:#111827;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+    .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));border-color:transparent;color:#fff}
+    .empty{border:1px dashed var(--line);border-radius:18px;padding:20px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6;background:#fff}
+  </style>
+  <script>document.documentElement.classList.add("auth-loading");</script>
+  <script src="/js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="home.html">←</a>
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo">
+          <div>
+            <div class="title">Live Now</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div id="liveList" class="list">
+      <div class="empty">Loading live sessions...</div>
+    </div>
+  </div>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const liveList = document.getElementById("liveList");
+
+    function showNotice(message, type="error", duration=3000){
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message;
+      clearTimeout(showNotice._timer);
+      if(duration > 0) showNotice._timer = setTimeout(()=>{noticeBox.className="notice";noticeBox.textContent=""}, duration);
+    }
+
+    function formatDate(v){ try{return new Date(v).toLocaleString()}catch(_){return v || "--"} }
+
+    async function loadLives(){
+      try{
+        const { data, error } = await supabaseClient
+          .from("live_sessions")
+          .select("*")
+          .eq("status", "live")
+          .order("created_at", { ascending:false });
+
+        if(error) throw error;
+        const items = data || [];
+
+        if(!items.length){
+          liveList.innerHTML = `<div class="empty">No one is live right now.</div>`;
+          return;
+        }
+
+        liveList.innerHTML = items.map(item => `
+          <div class="card">
+            <div class="top">
+              <div class="thumb" style="${item.thumbnail_url ? `background-image:url('${item.thumbnail_url}')` : ''}">${item.thumbnail_url ? '' : '🔴'}</div>
+              <div class="main">
+                <div class="pill">LIVE NOW</div>
+                <div class="name">${(item.title || "Untitled live").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
+                <div class="meta">${formatDate(item.created_at)} • ${item.category || "general"} • ${item.privacy || "public"} • ${Number(item.views_count || 0).toLocaleString()} views</div>
+              </div>
+            </div>
+            <div class="actions">
+              <a class="btn primary" href="live-watch.html?id=${encodeURIComponent(item.id)}">Join Live</a>
+              <a class="btn" href="live-details.html?id=${encodeURIComponent(item.id)}">Details</a>
+            </div>
+          </div>
+        `).join("");
+      }catch(error){
+        liveList.innerHTML = `<div class="empty">Could not load live sessions.</div>`;
+        showNotice(error.message || "Could not load live sessions.");
+      }
+    }
+
+    async function init(){
+      await protectPage("home.html");
+      if(!window.currentUser){
+        location.replace("login.html");
+        return;
+      }
+      await loadLives();
+    }
+
+    init();
+  </script>
+</body>
+</html>

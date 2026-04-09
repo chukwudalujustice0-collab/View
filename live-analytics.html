@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Live Analytics | View</title>
+  <meta name="theme-color" content="#0b1454" />
+  <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden}
+    :root{
+      --text:#111827;--muted:#667085;--line:#dbe4ff;--primary:#2563eb;--primary2:#4f46e5;--red:#ef4444;
+      --shadow:0 16px 44px rgba(8,17,76,.16);--shadow-soft:0 10px 24px rgba(15,23,42,.08);--safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom)
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);color:var(--text)}
+    body{padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom))}
+    a{color:inherit;text-decoration:none} button,select{font:inherit;color:inherit} button{border:none;background:none;cursor:pointer}
+    .wrap{width:min(100%,980px);margin:0 auto}
+    .notice{display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.55;box-shadow:var(--shadow-soft)}
+    .notice.show{display:block}.notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}.notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.top-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+    .icon-btn{width:46px;height:46px;min-width:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid rgba(219,228,255,.95);box-shadow:var(--shadow-soft);font-size:18px;color:#111827}
+    .brand-box{display:flex;align-items:center;gap:10px;min-width:0;flex:1}.brand-logo{width:42px;height:42px;min-width:42px;border-radius:14px;object-fit:cover;background:#fff;border:1px solid rgba(219,228,255,.95)}
+    .title{font-size:22px;font-weight:800;color:#0b1454}.sub{color:var(--muted);font-size:13px}
+    .section{background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border:1px solid rgba(219,228,255,.9);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+    .section-body{padding:14px;display:grid;gap:14px}
+    .hero{padding:18px;border-radius:18px;background:linear-gradient(135deg,#0b1454,#2563eb,#4f46e5,#ef4444);color:#fff;display:grid;gap:10px}
+    .hero h2{font-size:28px}.hero p{font-size:13px;line-height:1.6}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .stat-card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:14px;display:grid;gap:8px}
+    .stat-label{font-size:12px;color:var(--muted);font-weight:700}.stat-value{font-size:22px;font-weight:800;color:#0b1454;line-height:1.1}.stat-sub{font-size:11px;color:var(--muted)}
+    .list{display:grid;gap:10px}.row{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .row-label{font-size:13px;color:#111827;font-weight:700}.row-value{font-size:13px;color:#1d4ed8;font-weight:800;text-align:right}
+    .empty{border:1px dashed var(--line);border-radius:18px;padding:20px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6;background:#fff}
+    @media (max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}} @media (max-width:560px){.stats-grid{grid-template-columns:1fr}}
+  </style>
+  <script>document.documentElement.classList.add("auth-loading");</script>
+  <script src="/js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="live.html">←</a>
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo">
+          <div>
+            <div class="title">Live Analytics</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
+      </div>
+      <button id="refreshBtn" class="icon-btn" type="button">↻</button>
+    </header>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="hero">
+          <h2>Live performance</h2>
+          <p>See how your live sessions are performing across views, comments, hearts and total sessions.</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Sessions</div><div id="s1" class="stat-value">0</div><div class="stat-sub">Total live sessions.</div></div>
+          <div class="stat-card"><div class="stat-label">Views</div><div id="s2" class="stat-value">0</div><div class="stat-sub">Combined total views.</div></div>
+          <div class="stat-card"><div class="stat-label">Comments</div><div id="s3" class="stat-value">0</div><div class="stat-sub">All live comments.</div></div>
+          <div class="stat-card"><div class="stat-label">Hearts</div><div id="s4" class="stat-value">0</div><div class="stat-sub">All live reactions.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-body">
+        <div>
+          <div class="title" style="font-size:18px">Analytics Breakdown</div>
+          <div class="sub">Simple overview of your live ecosystem.</div>
+        </div>
+        <div id="analyticsList" class="list">
+          <div class="empty">Loading analytics...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const s1 = document.getElementById("s1");
+    const s2 = document.getElementById("s2");
+    const s3 = document.getElementById("s3");
+    const s4 = document.getElementById("s4");
+    const analyticsList = document.getElementById("analyticsList");
+    let currentUser = null;
+
+    function showNotice(message, type="error", duration=3000){
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message;
+      clearTimeout(showNotice._timer);
+      if(duration > 0) showNotice._timer = setTimeout(()=>{noticeBox.className="notice";noticeBox.textContent=""}, duration);
+    }
+
+    async function loadAnalytics(){
+      try{
+        const { data: sessions, error: sessionErr } = await supabaseClient
+          .from("live_sessions")
+          .select("id,views_count,status")
+          .eq("host_id", currentUser.id);
+
+        if(sessionErr) throw sessionErr;
+
+        const sessionIds = (sessions || []).map(x => x.id);
+        let commentsCount = 0, heartsCount = 0;
+
+        if(sessionIds.length){
+          const [commentsRes, heartsRes] = await Promise.all([
+            supabaseClient.from("live_comments").select("id", { count:"exact", head:false }).in("live_id", sessionIds),
+            supabaseClient.from("live_reactions").select("id", { count:"exact", head:false }).in("live_id", sessionIds)
+          ]);
+          commentsCount = commentsRes.count || 0;
+          heartsCount = heartsRes.count || 0;
+        }
+
+        const totalSessions = sessions?.length || 0;
+        const totalViews = (sessions || []).reduce((s,x) => s + Number(x.views_count || 0), 0);
+        const liveCount = (sessions || []).filter(x => String(x.status||"").toLowerCase() === "live").length;
+        const endedCount = (sessions || []).filter(x => String(x.status||"").toLowerCase() === "ended").length;
+
+        s1.textContent = String(totalSessions);
+        s2.textContent = totalViews.toLocaleString();
+        s3.textContent = String(commentsCount);
+        s4.textContent = String(heartsCount);
+
+        analyticsList.innerHTML = `
+          <div class="row"><div class="row-label">Currently Live</div><div class="row-value">${liveCount}</div></div>
+          <div class="row"><div class="row-label">Ended Sessions</div><div class="row-value">${endedCount}</div></div>
+          <div class="row"><div class="row-label">Average Views Per Session</div><div class="row-value">${totalSessions ? (totalViews / totalSessions).toFixed(1) : 0}</div></div>
+          <div class="row"><div class="row-label">Average Comments Per Session</div><div class="row-value">${totalSessions ? (commentsCount / totalSessions).toFixed(1) : 0}</div></div>
+          <div class="row"><div class="row-label">Average Hearts Per Session</div><div class="row-value">${totalSessions ? (heartsCount / totalSessions).toFixed(1) : 0}</div></div>
+        `;
+      }catch(error){
+        analyticsList.innerHTML = `<div class="empty">Could not load live analytics.</div>`;
+        showNotice(error.message || "Could not load analytics.");
+      }
+    }
+
+    async function init(){
+      await protectPage("home.html");
+      currentUser = window.currentUser || null;
+      if(!currentUser){
+        location.replace("login.html");
+        return;
+      }
+
+      refreshBtn.addEventListener("click", async ()=>{
+        await loadAnalytics();
+        showNotice("Analytics refreshed.", "success", 1600);
+      });
+
+      await loadAnalytics();
+    }
+
+    init();
+  </script>
+</body>
+</html>

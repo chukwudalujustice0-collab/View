@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Live Settings | View</title>
+  <meta name="theme-color" content="#0b1454" />
+  <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden}
+    :root{
+      --text:#111827;--muted:#667085;--line:#dbe4ff;--primary:#2563eb;--primary2:#4f46e5;--red:#ef4444;
+      --shadow:0 16px 44px rgba(8,17,76,.16);--shadow-soft:0 10px 24px rgba(15,23,42,.08);--safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom)
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);color:var(--text)}
+    body{padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom))}
+    a{color:inherit;text-decoration:none} button,select{font:inherit;color:inherit} button{border:none;background:none;cursor:pointer}
+    .wrap{width:min(100%,900px);margin:0 auto}
+    .notice{display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.55;box-shadow:var(--shadow-soft)}
+    .notice.show{display:block}.notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}.notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.top-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+    .icon-btn{width:46px;height:46px;min-width:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid rgba(219,228,255,.95);box-shadow:var(--shadow-soft);font-size:18px;color:#111827}
+    .brand-box{display:flex;align-items:center;gap:10px;min-width:0;flex:1}.brand-logo{width:42px;height:42px;min-width:42px;border-radius:14px;object-fit:cover;background:#fff;border:1px solid rgba(219,228,255,.95)}
+    .title{font-size:22px;font-weight:800;color:#0b1454}.sub{color:var(--muted);font-size:13px}
+    .section{background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border:1px solid rgba(219,228,255,.9);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+    .section-body{padding:14px;display:grid;gap:14px}
+    .hero{padding:18px;border-radius:18px;background:linear-gradient(135deg,#0b1454,#2563eb,#4f46e5,#ef4444);color:#fff;display:grid;gap:10px}
+    .hero h2{font-size:28px}.hero p{font-size:13px;line-height:1.6}
+    .item{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:64px;padding:12px 14px;border:1px solid var(--line);border-radius:18px;background:#fff}
+    .item-left{min-width:0;flex:1}.item-title{font-size:14px;font-weight:800;color:#111827;margin-bottom:4px}.item-sub{font-size:12px;color:var(--muted);line-height:1.45}
+    .toggle{position:relative;width:56px;height:32px;border-radius:999px;background:#dbe4ff;border:1px solid #c7d2fe;transition:.2s ease;flex-shrink:0}
+    .toggle::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.12);transition:.2s ease}
+    .toggle.active{background:linear-gradient(135deg,#2563eb,#4f46e5);border-color:#4f46e5}.toggle.active::after{left:27px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}.btn{min-height:46px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:#fff;color:#111827;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+    .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));border-color:transparent;color:#fff}
+  </style>
+  <script>document.documentElement.classList.add("auth-loading");</script>
+  <script src="/js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="live.html">←</a>
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo">
+          <div>
+            <div class="title">Live Settings</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="hero">
+          <h2>Set your live defaults</h2>
+          <p>Control replay, comments, guest mode and notifications for future live sessions.</p>
+        </div>
+
+        <div class="item">
+          <div class="item-left">
+            <div class="item-title">Save Replay</div>
+            <div class="item-sub">Keep live recordings after the stream ends.</div>
+          </div>
+          <button id="toggleReplay" class="toggle active" type="button"></button>
+        </div>
+
+        <div class="item">
+          <div class="item-left">
+            <div class="item-title">Allow Comments</div>
+            <div class="item-sub">Let viewers comment while you are live.</div>
+          </div>
+          <button id="toggleComments" class="toggle active" type="button"></button>
+        </div>
+
+        <div class="item">
+          <div class="item-left">
+            <div class="item-title">Allow Guest Join</div>
+            <div class="item-sub">Enable future guest join support for your live rooms.</div>
+          </div>
+          <button id="toggleGuests" class="toggle" type="button"></button>
+        </div>
+
+        <div class="item">
+          <div class="item-left">
+            <div class="item-title">Notify Followers</div>
+            <div class="item-sub">Send alerts to followers when you start a live.</div>
+          </div>
+          <button id="toggleNotify" class="toggle active" type="button"></button>
+        </div>
+
+        <div class="actions">
+          <button id="saveBtn" class="btn primary" type="button">Save Settings</button>
+          <a class="btn" href="live.html">Back to Live</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const saveBtn = document.getElementById("saveBtn");
+    const toggleReplay = document.getElementById("toggleReplay");
+    const toggleComments = document.getElementById("toggleComments");
+    const toggleGuests = document.getElementById("toggleGuests");
+    const toggleNotify = document.getElementById("toggleNotify");
+
+    let currentUser = null;
+    let settings = {
+      save_replay: true,
+      allow_comments: true,
+      allow_guests: false,
+      notify_followers: true
+    };
+
+    function showNotice(message, type="error", duration=3000){
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message;
+      clearTimeout(showNotice._timer);
+      if(duration > 0) showNotice._timer = setTimeout(()=>{noticeBox.className="notice";noticeBox.textContent=""}, duration);
+    }
+
+    function syncUI(){
+      toggleReplay.classList.toggle("active", settings.save_replay);
+      toggleComments.classList.toggle("active", settings.allow_comments);
+      toggleGuests.classList.toggle("active", settings.allow_guests);
+      toggleNotify.classList.toggle("active", settings.notify_followers);
+    }
+
+    async function loadSettings(){
+      try{
+        const { data } = await supabaseClient
+          .from("profiles")
+          .select("live_settings")
+          .eq("id", currentUser.id)
+          .maybeSingle();
+
+        if(data?.live_settings && typeof data.live_settings === "object"){
+          settings = { ...settings, ...data.live_settings };
+        }
+        syncUI();
+      }catch(_){
+        syncUI();
+      }
+    }
+
+    async function saveSettings(){
+      saveBtn.disabled = true;
+      try{
+        const { error } = await supabaseClient
+          .from("profiles")
+          .update({
+            live_settings: settings,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", currentUser.id);
+
+        if(error) throw error;
+        showNotice("Live settings saved.", "success", 1800);
+      }catch(error){
+        showNotice(error.message || "Could not save settings.");
+      }finally{
+        saveBtn.disabled = false;
+      }
+    }
+
+    async function init(){
+      await protectPage("home.html");
+      currentUser = window.currentUser || null;
+      if(!currentUser){
+        location.replace("login.html");
+        return;
+      }
+
+      toggleReplay.addEventListener("click", ()=>{ settings.save_replay = !settings.save_replay; syncUI(); });
+      toggleComments.addEventListener("click", ()=>{ settings.allow_comments = !settings.allow_comments; syncUI(); });
+      toggleGuests.addEventListener("click", ()=>{ settings.allow_guests = !settings.allow_guests; syncUI(); });
+      toggleNotify.addEventListener("click", ()=>{ settings.notify_followers = !settings.notify_followers; syncUI(); });
+      saveBtn.addEventListener("click", saveSettings);
+
+      await loadSettings();
+    }
+
+    init();
+  </script>
+</body>
+</html>

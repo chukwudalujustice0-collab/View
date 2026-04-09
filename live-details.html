@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Live Details | View</title>
+  <meta name="theme-color" content="#0b1454" />
+  <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden}
+    :root{
+      --text:#111827;--muted:#667085;--line:#dbe4ff;--primary:#2563eb;--primary2:#4f46e5;--red:#ef4444;
+      --success:#10b981;--warning:#f59e0b;--shadow:0 16px 44px rgba(8,17,76,.16);--shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+      color:var(--text)
+    }
+    body{padding:calc(14px + var(--safe-top)) 14px calc(24px + var(--safe-bottom))}
+    a{color:inherit;text-decoration:none} button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
+    .wrap{width:min(100%,980px);margin:0 auto}
+    .notice{display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.55;box-shadow:var(--shadow-soft)}
+    .notice.show{display:block}.notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}.notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .top-left,.top-right{display:flex;align-items:center;gap:12px}.top-left{min-width:0;flex:1}.top-right{gap:10px}
+    .icon-btn{width:46px;height:46px;min-width:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid rgba(219,228,255,.95);box-shadow:var(--shadow-soft);font-size:18px;color:#111827}
+    .brand-box{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+    .brand-logo{width:42px;height:42px;min-width:42px;border-radius:14px;object-fit:cover;box-shadow:0 8px 20px rgba(37,99,235,.15);background:#fff;border:1px solid rgba(219,228,255,.95)}
+    .title-box{min-width:0;flex:1}.title{font-size:22px;font-weight:800;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#0b1454}.sub{color:var(--muted);font-size:13px}
+    .section{background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border:1px solid rgba(219,228,255,.9);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
+    .section-body{padding:14px;display:grid;gap:14px}
+    .hero{min-height:260px;border-radius:20px;overflow:hidden;position:relative;background:linear-gradient(135deg,#0b1454,#2563eb,#4f46e5,#ef4444)}
+    .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,.38) 100%)}
+    .hero-cover{position:absolute;inset:0;background:center/cover no-repeat}
+    .hero-inner{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:18px;color:#fff;display:grid;gap:10px}
+    .badge-row{display:flex;gap:8px;flex-wrap:wrap}
+    .pill{min-height:30px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;gap:6px}
+    .pill.live{background:rgba(239,68,68,.92);border-color:rgba(239,68,68,.98)}
+    .hero-title{font-size:24px;font-weight:800;line-height:1.2}
+    .hero-sub{font-size:13px;line-height:1.6;max-width:700px;opacity:.95}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+    .card-title{font-size:15px;font-weight:800;color:#0b1454}.card-sub{font-size:12px;color:var(--muted);line-height:1.5}
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .stat-card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:14px;display:grid;gap:8px}
+    .stat-label{font-size:12px;color:var(--muted);font-weight:700}.stat-value{font-size:22px;font-weight:800;color:#0b1454;line-height:1.1}.stat-sub{font-size:11px;color:var(--muted)}
+    .detail-list{display:grid;gap:10px}
+    .detail{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+    .detail-label{font-size:12px;color:var(--muted);font-weight:700}.detail-value{font-size:13px;color:#111827;font-weight:800;text-align:right;word-break:break-word}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{min-height:46px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:#fff;color:#111827;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center}
+    .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));border-color:transparent;color:#fff}
+    .empty{border:1px dashed var(--line);border-radius:18px;padding:20px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6;background:#fff}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  </style>
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script src="/js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="live-history.html">←</a>
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo">
+          <div class="title-box">
+            <div class="title">Live Details</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
+      </div>
+      <div class="top-right">
+        <button id="refreshBtn" class="icon-btn" type="button">↻</button>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-body">
+        <div class="hero">
+          <div id="heroCover" class="hero-cover"></div>
+          <div class="hero-inner">
+            <div class="badge-row">
+              <div id="statusPill" class="pill">Loading</div>
+              <div id="privacyPill" class="pill">Public</div>
+              <div id="categoryPill" class="pill">General</div>
+            </div>
+            <div id="heroTitle" class="hero-title">Loading session...</div>
+            <div id="heroSub" class="hero-sub">Preparing live details and analytics.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="section">
+        <div class="section-body">
+          <div>
+            <div class="card-title">Session Stats</div>
+            <div class="card-sub">Performance and session values for this live.</div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">Views</div><div id="statViews" class="stat-value">0</div><div class="stat-sub">Total audience count.</div></div>
+            <div class="stat-card"><div class="stat-label">Duration</div><div id="statDuration" class="stat-value">00:00</div><div class="stat-sub">How long this live lasted.</div></div>
+            <div class="stat-card"><div class="stat-label">Comments</div><div id="statComments" class="stat-value">0</div><div class="stat-sub">Messages in the live.</div></div>
+            <div class="stat-card"><div class="stat-label">Hearts</div><div id="statHearts" class="stat-value">0</div><div class="stat-sub">Total reactions received.</div></div>
+          </div>
+
+          <div class="actions">
+            <a id="openBtn" class="btn primary" href="#">Open Session</a>
+            <a class="btn" href="live-history.html">Back to History</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-body">
+          <div>
+            <div class="card-title">Session Info</div>
+            <div class="card-sub">Detailed setup and replay information.</div>
+          </div>
+
+          <div class="detail-list">
+            <div class="detail"><div class="detail-label">Status</div><div id="dStatus" class="detail-value">--</div></div>
+            <div class="detail"><div class="detail-label">Created</div><div id="dCreated" class="detail-value">--</div></div>
+            <div class="detail"><div class="detail-label">Started</div><div id="dStarted" class="detail-value">--</div></div>
+            <div class="detail"><div class="detail-label">Ended</div><div id="dEnded" class="detail-value">--</div></div>
+            <div class="detail"><div class="detail-label">Audience</div><div id="dAudience" class="detail-value">--</div></div>
+            <div class="detail"><div class="detail-label">Replay</div><div id="dReplay" class="detail-value">--</div></div>
+            <div class="detail"><div class="detail-label">Comments</div><div id="dComments" class="detail-value">--</div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const heroCover = document.getElementById("heroCover");
+    const statusPill = document.getElementById("statusPill");
+    const privacyPill = document.getElementById("privacyPill");
+    const categoryPill = document.getElementById("categoryPill");
+    const heroTitle = document.getElementById("heroTitle");
+    const heroSub = document.getElementById("heroSub");
+    const statViews = document.getElementById("statViews");
+    const statDuration = document.getElementById("statDuration");
+    const statComments = document.getElementById("statComments");
+    const statHearts = document.getElementById("statHearts");
+    const dStatus = document.getElementById("dStatus");
+    const dCreated = document.getElementById("dCreated");
+    const dStarted = document.getElementById("dStarted");
+    const dEnded = document.getElementById("dEnded");
+    const dAudience = document.getElementById("dAudience");
+    const dReplay = document.getElementById("dReplay");
+    const dComments = document.getElementById("dComments");
+    const openBtn = document.getElementById("openBtn");
+
+    let currentUser = null;
+    let liveId = "";
+
+    function showNotice(message, type="error", duration=3000){
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message;
+      clearTimeout(showNotice._timer);
+      if(duration > 0){
+        showNotice._timer = setTimeout(()=>{noticeBox.className="notice";noticeBox.textContent=""}, duration);
+      }
+    }
+
+    function formatDate(v){ try{return new Date(v).toLocaleString()}catch(_){return v || "--"} }
+    function formatDuration(startedAt, endedAt){
+      if(!startedAt) return "--";
+      const start = new Date(startedAt).getTime();
+      const end = endedAt ? new Date(endedAt).getTime() : Date.now();
+      const total = Math.floor(Math.max(0, end - start) / 1000);
+      const h = Math.floor(total / 3600), m = Math.floor((total % 3600)/60), s = total % 60;
+      return h > 0 ? `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}` : `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    }
+
+    async function loadDetails(){
+      const url = new URL(window.location.href);
+      liveId = url.searchParams.get("id") || "";
+      if(!liveId){
+        showNotice("Missing live id.");
+        return;
+      }
+
+      try{
+        const { data: session, error } = await supabaseClient
+          .from("live_sessions")
+          .select("*")
+          .eq("id", liveId)
+          .maybeSingle();
+
+        if(error) throw error;
+        if(!session) throw new Error("Live session not found.");
+
+        const [commentsRes, heartsRes] = await Promise.all([
+          supabaseClient.from("live_comments").select("id", { count:"exact", head:false }).eq("live_id", liveId),
+          supabaseClient.from("live_reactions").select("id", { count:"exact", head:false }).eq("live_id", liveId)
+        ]);
+
+        const commentsCount = commentsRes.count || 0;
+        const heartsCount = heartsRes.count || 0;
+
+        heroTitle.textContent = session.title || "Untitled live";
+        heroSub.textContent = session.description || "No description provided.";
+        if(session.thumbnail_url) heroCover.style.backgroundImage = `url('${session.thumbnail_url}')`;
+        statusPill.textContent = String(session.status || "ended").toUpperCase();
+        statusPill.className = `pill ${String(session.status||"").toLowerCase() === "live" ? "live" : ""}`;
+        privacyPill.textContent = session.privacy || "public";
+        categoryPill.textContent = session.category || "general";
+
+        statViews.textContent = Number(session.views_count || 0).toLocaleString();
+        statDuration.textContent = formatDuration(session.started_at, session.ended_at);
+        statComments.textContent = String(commentsCount);
+        statHearts.textContent = String(heartsCount);
+
+        dStatus.textContent = session.status || "--";
+        dCreated.textContent = formatDate(session.created_at);
+        dStarted.textContent = formatDate(session.started_at);
+        dEnded.textContent = session.ended_at ? formatDate(session.ended_at) : "--";
+        dAudience.textContent = session.audience || "everyone";
+        dReplay.textContent = session.save_replay ? "Saved" : "Off";
+        dComments.textContent = session.allow_comments ? "Allowed" : "Disabled";
+
+        openBtn.href = String(session.status || "").toLowerCase() === "live"
+          ? `live-watch.html?id=${encodeURIComponent(session.id)}`
+          : `live-history.html`;
+        openBtn.textContent = String(session.status || "").toLowerCase() === "live" ? "Open Live" : "Back to History";
+      }catch(error){
+        showNotice(error.message || "Could not load details.");
+      }
+    }
+
+    async function init(){
+      await protectPage("home.html");
+      currentUser = window.currentUser || null;
+      if(!currentUser){
+        location.replace("login.html");
+        return;
+      }
+
+      refreshBtn.addEventListener("click", async ()=>{
+        await loadDetails();
+        showNotice("Details refreshed.", "success", 1600);
+      });
+
+      await loadDetails();
+    }
+
+    init();
+  </script>
+</body>
+</html>

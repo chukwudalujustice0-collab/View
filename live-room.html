@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Live Room | View</title>
+  <meta name="theme-color" content="#0b1454" />
+
+  <style>
+    html.auth-loading, html.auth-loading body{
+      visibility:hidden;
+    }
+
+    :root{
+      --bg:#08114c;
+      --bg2:#0b1454;
+      --bg3:#10207a;
+      --panel:#ffffff;
+      --panel2:#f8fbff;
+      --text:#111827;
+      --muted:#667085;
+      --line:#dbe4ff;
+      --primary:#2563eb;
+      --primary2:#4f46e5;
+      --red:#ef4444;
+      --red2:#ff5f7a;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 16px 44px rgba(8,17,76,.16);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+      color:var(--text);
+    }
+
+    body{
+      padding:calc(14px + var(--safe-top)) 14px calc(90px + var(--safe-bottom));
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,input{
+      font:inherit;
+      color:inherit;
+    }
+
+    button{
+      border:none;
+      background:none;
+      cursor:pointer;
+    }
+
+    .wrap{
+      width:min(100%, 980px);
+      margin:0 auto;
+    }
+
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:13px;
+      line-height:1.55;
+      box-shadow:var(--shadow-soft);
+    }
+    .notice.show{display:block}
+    .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+      box-shadow:var(--shadow-soft);
+      font-size:18px;
+      color:#111827;
+    }
+
+    .brand-box{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-logo{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:14px;
+      object-fit:cover;
+      box-shadow:0 8px 20px rgba(37,99,235,.15);
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+    }
+
+    .title-box{
+      min-width:0;
+      flex:1;
+    }
+
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#0b1454;
+    }
+
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .room-grid{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:14px;
+    }
+
+    .section{
+      background:rgba(255,255,255,.95);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .section-body{
+      padding:14px;
+      display:grid;
+      gap:14px;
+    }
+
+    .screen-card{
+      position:relative;
+      overflow:hidden;
+      border-radius:24px;
+      min-height:520px;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.10), transparent 30%),
+        linear-gradient(135deg,#08114c,#0b1454,#2563eb,#4f46e5,#ef4444);
+      box-shadow:var(--shadow);
+      display:grid;
+      align-items:end;
+    }
+
+    .screen-overlay{
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.08) 45%, rgba(0,0,0,.35) 100%);
+      pointer-events:none;
+    }
+
+    .screen-video{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      background:#09123f;
+      display:none;
+    }
+
+    .screen-placeholder{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      padding:18px;
+      text-align:center;
+      color:#fff;
+      z-index:1;
+    }
+
+    .placeholder-inner{
+      display:grid;
+      gap:10px;
+      max-width:300px;
+    }
+
+    .placeholder-icon{
+      width:86px;
+      height:86px;
+      border-radius:24px;
+      margin:0 auto;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.2);
+      display:grid;
+      place-items:center;
+      font-size:34px;
+      font-weight:800;
+      backdrop-filter:blur(12px);
+    }
+
+    .placeholder-title{
+      font-size:22px;
+      font-weight:800;
+    }
+
+    .placeholder-sub{
+      font-size:13px;
+      line-height:1.6;
+      opacity:.92;
+    }
+
+    .live-head{
+      position:absolute;
+      top:12px;
+      left:12px;
+      right:12px;
+      z-index:2;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .head-left, .head-right{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .pill{
+      min-height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      font-weight:800;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.18);
+      color:#fff;
+      backdrop-filter:blur(10px);
+    }
+
+    .pill.live{
+      background:rgba(239,68,68,.94);
+      border-color:rgba(239,68,68,.98);
+    }
+
+    .screen-bottom{
+      position:relative;
+      z-index:2;
+      padding:16px;
+      display:grid;
+      gap:14px;
+    }
+
+    .host-meta{
+      display:grid;
+      gap:6px;
+      color:#fff;
+    }
+
+    .host-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .host-avatar{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:16px;
+      background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.18);
+      display:grid;
+      place-items:center;
+      font-size:18px;
+      font-weight:800;
+      overflow:hidden;
+      backdrop-filter:blur(10px);
+    }
+
+    .host-avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .host-name{
+      font-size:14px;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .live-title{
+      font-size:20px;
+      font-weight:800;
+      line-height:1.3;
+      max-width:100%;
+    }
+
+    .live-desc{
+      font-size:12px;
+      line-height:1.55;
+      opacity:.92;
+      max-width:620px;
+    }
+
+    .control-grid{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:10px;
+    }
+
+    .control-btn{
+      min-height:54px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.12);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      gap:4px;
+      padding:8px 6px;
+      text-align:center;
+      backdrop-filter:blur(10px);
+    }
+
+    .control-btn span:first-child{
+      font-size:18px;
+      line-height:1;
+    }
+
+    .control-btn span:last-child{
+      font-size:11px;
+      font-weight:700;
+      line-height:1.2;
+    }
+
+    .control-btn.danger{
+      background:rgba(239,68,68,.9);
+      border-color:rgba(239,68,68,.96);
+    }
+
+    .side-stack{
+      display:grid;
+      gap:14px;
+    }
+
+    .card-title{
+      font-size:15px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .card-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .stat-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      padding:14px;
+      display:grid;
+      gap:8px;
+    }
+
+    .stat-label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .stat-value{
+      font-size:22px;
+      font-weight:800;
+      color:#0b1454;
+      line-height:1.1;
+    }
+
+    .stat-sub{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .pinned-box{
+      border:1px solid #dbeafe;
+      background:linear-gradient(135deg, rgba(37,99,235,.05), rgba(79,70,229,.05), rgba(239,68,68,.04));
+      border-radius:18px;
+      padding:14px;
+      display:grid;
+      gap:8px;
+    }
+
+    .pinned-empty{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .comment-list{
+      display:grid;
+      gap:10px;
+      max-height:330px;
+      overflow:auto;
+      padding-right:2px;
+    }
+
+    .comment-item{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      padding:12px;
+      display:grid;
+      gap:8px;
+    }
+
+    .comment-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .comment-user{
+      font-size:13px;
+      font-weight:800;
+      color:#111827;
+    }
+
+    .comment-time{
+      font-size:11px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .comment-text{
+      font-size:13px;
+      line-height:1.6;
+      color:#374151;
+      word-break:break-word;
+    }
+
+    .comment-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .mini-btn{
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:#f8fbff;
+      color:#475569;
+      font-size:11px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      width:max-content;
+    }
+
+    .composer{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .composer input{
+      flex:1;
+      min-height:46px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      padding:0 14px;
+      outline:none;
+    }
+
+    .composer input:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 3px rgba(37,99,235,.08);
+    }
+
+    .btn{
+      min-height:46px;
+      padding:0 16px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111827;
+      font-size:14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red));
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.ghost{
+      background:#fff;
+      border-color:var(--line);
+      color:#111827;
+    }
+
+    .status-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .status-item{
+      min-height:56px;
+      padding:12px 14px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .status-main{
+      min-width:0;
+      flex:1;
+    }
+
+    .status-title{
+      font-size:13px;
+      font-weight:800;
+      color:#111827;
+      margin-bottom:4px;
+    }
+
+    .status-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .status-value{
+      font-size:12px;
+      font-weight:800;
+      color:#1d4ed8;
+      white-space:nowrap;
+    }
+
+    .empty{
+      border:1px dashed var(--line);
+      border-radius:18px;
+      padding:18px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+      background:#fff;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:12px;
+      width:min(760px, calc(100% - 20px));
+      background:rgba(255,255,255,.95);
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:20px;
+      padding:8px 6px calc(8px + var(--safe-bottom));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:6px;
+      box-shadow:var(--shadow);
+      z-index:50;
+      backdrop-filter:blur(10px);
+    }
+
+    .nav-btn{
+      min-height:56px;
+      border-radius:14px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
+      text-decoration:none;
+    }
+
+    .nav-btn.active{
+      background:#eef4ff;
+      color:#1d4ed8;
+    }
+
+    @media (max-width:980px){
+      .room-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width:720px){
+      .control-grid{
+        grid-template-columns:repeat(3,1fr);
+      }
+    }
+
+    @media (max-width:520px){
+      .control-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
+      .stats-grid{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+  </style>
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth:{
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:true,
+        flowType:"pkce"
+      }
+    });
+
+    async function protectPage(nextPage){
+      try{
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if(!user){
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "home.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      }catch(e){
+        document.documentElement.classList.remove("auth-loading");
+        location.replace("login.html");
+        return null;
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="live.html" aria-label="Back">←</a>
+
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+          <div class="title-box">
+            <div class="title">Live Room</div>
+            <div class="sub">VIEW | by Ceetify</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-right">
+        <button id="shareBtnTop" class="icon-btn" type="button" aria-label="Share">⤴</button>
+        <button id="refreshBtn" class="icon-btn" type="button" aria-label="Refresh">↻</button>
+      </div>
+    </header>
+
+    <div class="room-grid">
+      <section class="section" style="overflow:visible">
+        <div class="screen-card">
+          <video id="liveVideo" class="screen-video" autoplay muted playsinline></video>
+          <div class="screen-overlay"></div>
+
+          <div id="screenPlaceholder" class="screen-placeholder">
+            <div class="placeholder-inner">
+              <div class="placeholder-icon">🔴</div>
+              <div class="placeholder-title">Live Camera</div>
+              <div class="placeholder-sub">Your live preview will appear here while you host the session.</div>
+            </div>
+          </div>
+
+          <div class="live-head">
+            <div class="head-left">
+              <div class="pill live">LIVE</div>
+              <div id="timerPill" class="pill">00:00</div>
+              <div id="privacyPill" class="pill">Public</div>
+            </div>
+
+            <div class="head-right">
+              <div id="viewerPill" class="pill">0 viewers</div>
+              <div id="heartPill" class="pill">0 hearts</div>
+            </div>
+          </div>
+
+          <div class="screen-bottom">
+            <div class="host-meta">
+              <div class="host-row">
+                <div id="hostAvatar" class="host-avatar">V</div>
+                <div style="min-width:0;flex:1">
+                  <div id="hostName" class="host-name">Loading host...</div>
+                </div>
+              </div>
+
+              <div id="liveTitleText" class="live-title">Loading live session...</div>
+              <div id="liveDescText" class="live-desc">Preparing your live room and host controls.</div>
+            </div>
+
+            <div class="control-grid">
+              <button id="cameraBtn" class="control-btn" type="button">
+                <span>📷</span>
+                <span>Camera</span>
+              </button>
+
+              <button id="micBtn" class="control-btn" type="button">
+                <span>🎙</span>
+                <span>Mic</span>
+              </button>
+
+              <button id="switchBtn" class="control-btn" type="button">
+                <span>🔄</span>
+                <span>Switch</span>
+              </button>
+
+              <button id="heartBtn" class="control-btn" type="button">
+                <span>❤️</span>
+                <span>Hearts</span>
+              </button>
+
+              <button id="shareBtn" class="control-btn" type="button">
+                <span>⤴</span>
+                <span>Share</span>
+              </button>
+
+              <button id="endLiveBtn" class="control-btn danger" type="button">
+                <span>⏹</span>
+                <span>End Live</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="side-stack">
+        <section class="section">
+          <div class="section-body">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-label">Viewers</div>
+                <div id="viewerCount" class="stat-value">0</div>
+                <div class="stat-sub">People currently in your live.</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-label">Hearts</div>
+                <div id="heartCount" class="stat-value">0</div>
+                <div class="stat-sub">Realtime reactions from viewers.</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-label">Comments</div>
+                <div id="commentCount" class="stat-value">0</div>
+                <div class="stat-sub">Messages in this session.</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-label">Duration</div>
+                <div id="durationCount" class="stat-value">00:00</div>
+                <div class="stat-sub">Current live running time.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-body">
+            <div>
+              <div class="card-title">Pinned Comment</div>
+              <div class="card-sub">Highlight one important message for viewers.</div>
+            </div>
+
+            <div class="pinned-box">
+              <div id="pinnedComment" class="pinned-empty">No comment pinned yet.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-body">
+            <div>
+              <div class="card-title">Comments</div>
+              <div class="card-sub">Incoming live comments appear here.</div>
+            </div>
+
+            <div id="commentList" class="comment-list">
+              <div class="empty">No live comments yet.</div>
+            </div>
+
+            <div class="composer">
+              <input id="commentInput" type="text" maxlength="300" placeholder="Send a host comment..." />
+              <button id="sendCommentBtn" class="btn primary" type="button">Send</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-body">
+            <div>
+              <div class="card-title">Live Room Status</div>
+              <div class="card-sub">Quick state of your current session.</div>
+            </div>
+
+            <div class="status-list">
+              <div class="status-item">
+                <div class="status-main">
+                  <div class="status-title">Camera</div>
+                  <div class="status-sub">Preview and host stream readiness.</div>
+                </div>
+                <div id="cameraStatus" class="status-value">Checking...</div>
+              </div>
+
+              <div class="status-item">
+                <div class="status-main">
+                  <div class="status-title">Microphone</div>
+                  <div class="status-sub">Audio input during live session.</div>
+                </div>
+                <div id="micStatus" class="status-value">Checking...</div>
+              </div>
+
+              <div class="status-item">
+                <div class="status-main">
+                  <div class="status-title">Session</div>
+                  <div class="status-sub">Current live room status and sharing.</div>
+                </div>
+                <div id="sessionStatus" class="status-value">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="home.html"><span>🏠</span><span>Home</span></a>
+    <a class="nav-btn" href="live.html"><span>⚙️</span><span>Setup</span></a>
+    <a class="nav-btn active" href="#"><span>🔴</span><span>Live Room</span></a>
+    <a class="nav-btn" href="live-watch.html"><span>👁</span><span>Viewer</span></a>
+    <a class="nav-btn" href="live-history.html"><span>🕘</span><span>History</span></a>
+  </nav>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const shareBtnTop = document.getElementById("shareBtnTop");
+    const shareBtn = document.getElementById("shareBtn");
+    const endLiveBtn = document.getElementById("endLiveBtn");
+
+    const liveVideo = document.getElementById("liveVideo");
+    const screenPlaceholder = document.getElementById("screenPlaceholder");
+
+    const timerPill = document.getElementById("timerPill");
+    const privacyPill = document.getElementById("privacyPill");
+    const viewerPill = document.getElementById("viewerPill");
+    const heartPill = document.getElementById("heartPill");
+
+    const hostAvatar = document.getElementById("hostAvatar");
+    const hostName = document.getElementById("hostName");
+    const liveTitleText = document.getElementById("liveTitleText");
+    const liveDescText = document.getElementById("liveDescText");
+
+    const cameraBtn = document.getElementById("cameraBtn");
+    const micBtn = document.getElementById("micBtn");
+    const switchBtn = document.getElementById("switchBtn");
+    const heartBtn = document.getElementById("heartBtn");
+
+    const viewerCount = document.getElementById("viewerCount");
+    const heartCount = document.getElementById("heartCount");
+    const commentCount = document.getElementById("commentCount");
+    const durationCount = document.getElementById("durationCount");
+
+    const pinnedComment = document.getElementById("pinnedComment");
+    const commentList = document.getElementById("commentList");
+    const commentInput = document.getElementById("commentInput");
+    const sendCommentBtn = document.getElementById("sendCommentBtn");
+
+    const cameraStatus = document.getElementById("cameraStatus");
+    const micStatus = document.getElementById("micStatus");
+    const sessionStatus = document.getElementById("sessionStatus");
+
+    let currentUser = null;
+    let liveId = "";
+    let liveSession = null;
+    let previewStream = null;
+    let usingFrontCamera = true;
+    let cameraEnabled = true;
+    let micEnabled = true;
+    let timerInterval = null;
+    let commentsRealtimeChannel = null;
+    let sessionRealtimeChannel = null;
+    let heartRealtimeChannel = null;
+    let viewersRealtimeChannel = null;
+    let heartTotal = 0;
+    let commentTotal = 0;
+    let viewerTotal = 0;
+    let pinnedText = "";
+
+    function showNotice(message, type = "info", duration = 3200){
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      if(duration > 0){
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, duration);
+      }
+    }
+
+    function getQueryLiveId(){
+      const url = new URL(window.location.href);
+      return url.searchParams.get("id") || "";
+    }
+
+    function getInitial(text = "V"){
+      return String(text || "V").trim().charAt(0).toUpperCase() || "V";
+    }
+
+    function formatDate(value){
+      try{
+        return new Date(value).toLocaleString();
+      }catch(_){
+        return value || "--";
+      }
+    }
+
+    function formatDuration(startedAt){
+      if(!startedAt) return "00:00";
+      const start = new Date(startedAt).getTime();
+      const diff = Math.max(0, Date.now() - start);
+      const total = Math.floor(diff / 1000);
+      const hours = Math.floor(total / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const seconds = total % 60;
+      if(hours > 0){
+        return `${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+      }
+      return `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+    }
+
+    function escapeHtml(text){
+      return String(text || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function updateCounts(){
+      viewerPill.textContent = `${viewerTotal} viewers`;
+      heartPill.textContent = `${heartTotal} hearts`;
+      viewerCount.textContent = String(viewerTotal);
+      heartCount.textContent = String(heartTotal);
+      commentCount.textContent = String(commentTotal);
+    }
+
+    function updateControlLabels(){
+      cameraBtn.innerHTML = `<span>${cameraEnabled ? "📷" : "🚫"}</span><span>${cameraEnabled ? "Camera" : "Off"}</span>`;
+      micBtn.innerHTML = `<span>${micEnabled ? "🎙" : "🔇"}</span><span>${micEnabled ? "Mic" : "Muted"}</span>`;
+      cameraStatus.textContent = cameraEnabled ? "Ready" : "Off";
+      micStatus.textContent = micEnabled ? "Ready" : "Muted";
+    }
+
+    function setPinnedComment(text){
+      pinnedText = text || "";
+      if(!pinnedText){
+        pinnedComment.className = "pinned-empty";
+        pinnedComment.textContent = "No comment pinned yet.";
+        return;
+      }
+      pinnedComment.className = "";
+      pinnedComment.textContent = pinnedText;
+    }
+
+    async function loadSession(){
+      const { data, error } = await supabaseClient
+        .from("live_sessions")
+        .select("*")
+        .eq("id", liveId)
+        .maybeSingle();
+
+      if(error) throw error;
+      if(!data){
+        throw new Error("Live session not found.");
+      }
+
+      liveSession = data;
+
+      if(String(liveSession.host_id) !== String(currentUser.id)){
+        throw new Error("You are not the host of this live session.");
+      }
+
+      privacyPill.textContent = liveSession.privacy === "followers" ? "Followers Only" : (liveSession.privacy || "Public");
+      liveTitleText.textContent = liveSession.title || "Untitled live session";
+      liveDescText.textContent = liveSession.description || "Your live session is running. Keep engaging with your viewers in real time.";
+      sessionStatus.textContent = String(liveSession.status || "live").toUpperCase();
+
+      if(liveSession.started_at){
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          const value = formatDuration(liveSession.started_at);
+          timerPill.textContent = value;
+          durationCount.textContent = value;
+        }, 1000);
+      }
+    }
+
+    async function loadHostProfile(){
+      try{
+        const { data } = await supabaseClient
+          .from("profiles")
+          .select("full_name,username,avatar_url,email")
+          .eq("id", currentUser.id)
+          .maybeSingle();
+
+        const name = data?.full_name || data?.username || currentUser.email || "View Host";
+        hostName.textContent = name;
+
+        if(data?.avatar_url){
+          hostAvatar.innerHTML = `<img src="${data.avatar_url}" alt="Host avatar" />`;
+        }else{
+          hostAvatar.textContent = getInitial(name);
+        }
+      }catch(_){
+        hostName.textContent = currentUser.email || "View Host";
+        hostAvatar.textContent = getInitial(currentUser.email || "V");
+      }
+    }
+
+    async function stopPreview(){
+      if(previewStream){
+        previewStream.getTracks().forEach(track => track.stop());
+        previewStream = null;
+      }
+      liveVideo.pause();
+      liveVideo.srcObject = null;
+      liveVideo.style.display = "none";
+      screenPlaceholder.style.display = "grid";
+    }
+
+    async function startPreview(){
+      try{
+        await stopPreview();
+
+        previewStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: usingFrontCamera ? "user" : "environment"
+          },
+          audio: true
+        });
+
+        liveVideo.srcObject = previewStream;
+        liveVideo.style.display = "block";
+        screenPlaceholder.style.display = "none";
+
+        const videoTracks = previewStream.getVideoTracks();
+        const audioTracks = previewStream.getAudioTracks();
+
+        cameraEnabled = videoTracks.every(track => track.enabled);
+        micEnabled = audioTracks.every(track => track.enabled);
+        updateControlLabels();
+      }catch(error){
+        cameraStatus.textContent = "Permission Needed";
+        micStatus.textContent = "Permission Needed";
+        liveVideo.style.display = "none";
+        screenPlaceholder.style.display = "grid";
+        showNotice("Allow camera and microphone to host your live.", "error", 4200);
+      }
+    }
+
+    function toggleTracks(kind){
+      if(!previewStream) return;
+
+      const tracks = kind === "video"
+        ? previewStream.getVideoTracks()
+        : previewStream.getAudioTracks();
+
+      tracks.forEach(track => {
+        track.enabled = !track.enabled;
+      });
+
+      if(kind === "video"){
+        cameraEnabled = tracks.every(track => track.enabled);
+      }else{
+        micEnabled = tracks.every(track => track.enabled);
+      }
+
+      updateControlLabels();
+    }
+
+    async function switchCamera(){
+      usingFrontCamera = !usingFrontCamera;
+      await startPreview();
+    }
+
+    async function loadComments(){
+      try{
+        const { data, error } = await supabaseClient
+          .from("live_comments")
+          .select("id,user_id,comment,created_at,is_pinned")
+          .eq("live_id", liveId)
+          .order("created_at", { ascending:false })
+          .limit(40);
+
+        if(error){
+          commentList.innerHTML = `<div class="empty">Live comments table not ready yet.</div>`;
+          commentTotal = 0;
+          updateCounts();
+          return;
+        }
+
+        const comments = data || [];
+        commentTotal = comments.length;
+        updateCounts();
+
+        const pinned = comments.find(item => item.is_pinned);
+        setPinnedComment(pinned?.comment || "");
+
+        if(!comments.length){
+          commentList.innerHTML = `<div class="empty">No live comments yet.</div>`;
+          return;
+        }
+
+        commentList.innerHTML = comments.map(item => `
+          <div class="comment-item">
+            <div class="comment-head">
+              <div class="comment-user">${item.user_id === currentUser.id ? "You" : "Viewer"}</div>
+              <div class="comment-time">${formatDate(item.created_at)}</div>
+            </div>
+            <div class="comment-text">${escapeHtml(item.comment)}</div>
+            <div class="comment-actions">
+              <button class="mini-btn pin-comment-btn" data-id="${item.id}" data-text="${encodeURIComponent(item.comment || "")}" type="button">📌 Pin</button>
+            </div>
+          </div>
+        `).join("");
+
+        bindPinButtons();
+      }catch(_){
+        commentList.innerHTML = `<div class="empty">Could not load live comments.</div>`;
+      }
+    }
+
+    function bindPinButtons(){
+      document.querySelectorAll(".pin-comment-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const commentId = btn.dataset.id;
+          const commentText = decodeURIComponent(btn.dataset.text || "");
+          try{
+            await supabaseClient
+              .from("live_comments")
+              .update({ is_pinned:false })
+              .eq("live_id", liveId);
+
+            const { error } = await supabaseClient
+              .from("live_comments")
+              .update({ is_pinned:true })
+              .eq("id", commentId);
+
+            if(error) throw error;
+            setPinnedComment(commentText);
+            showNotice("Comment pinned.", "success", 1500);
+            await loadComments();
+          }catch(error){
+            showNotice(error.message || "Could not pin comment.", "error", 3200);
+          }
+        });
+      });
+    }
+
+    async function sendHostComment(){
+      const text = commentInput.value.trim();
+      if(!text){
+        showNotice("Write a comment first.", "error");
+        return;
+      }
+
+      sendCommentBtn.disabled = true;
+
+      try{
+        const { error } = await supabaseClient
+          .from("live_comments")
+          .insert({
+            live_id: liveId,
+            user_id: currentUser.id,
+            comment: text,
+            is_pinned: false,
+            created_at: new Date().toISOString()
+          });
+
+        if(error) throw error;
+
+        commentInput.value = "";
+        showNotice("Comment sent.", "success", 1400);
+        await loadComments();
+      }catch(error){
+        showNotice(error.message || "Could not send comment. Ensure live_comments table exists.", "error", 4200);
+      }finally{
+        sendCommentBtn.disabled = false;
+      }
+    }
+
+    async function loadReactions(){
+      try{
+        const { data, error } = await supabaseClient
+          .from("live_reactions")
+          .select("id,reaction_type,created_at")
+          .eq("live_id", liveId);
+
+        if(error){
+          heartTotal = 0;
+          updateCounts();
+          return;
+        }
+
+        heartTotal = (data || []).length;
+        updateCounts();
+      }catch(_){
+        heartTotal = 0;
+        updateCounts();
+      }
+    }
+
+    async function sendHeart(){
+      try{
+        const { error } = await supabaseClient
+          .from("live_reactions")
+          .insert({
+            live_id: liveId,
+            user_id: currentUser.id,
+            reaction_type: "heart",
+            created_at: new Date().toISOString()
+          });
+
+        if(error) throw error;
+
+        heartTotal += 1;
+        updateCounts();
+        showNotice("Heart sent.", "success", 1000);
+      }catch(error){
+        showNotice(error.message || "Could not send heart. Ensure live_reactions table exists.", "error", 3800);
+      }
+    }
+
+    async function loadViewers(){
+      try{
+        const { data, error } = await supabaseClient
+          .from("live_viewers")
+          .select("id,user_id,left_at")
+          .eq("live_id", liveId)
+          .is("left_at", null);
+
+        if(error){
+          viewerTotal = Number(liveSession?.views_count || 0);
+          updateCounts();
+          return;
+        }
+
+        viewerTotal = (data || []).length;
+        updateCounts();
+      }catch(_){
+        viewerTotal = Number(liveSession?.views_count || 0);
+        updateCounts();
+      }
+    }
+
+    function shareLive(){
+      const url = `${window.location.origin}/live-watch.html?id=${encodeURIComponent(liveId)}`;
+      if(navigator.share){
+        navigator.share({
+          title: liveSession?.title || "Join my live on View",
+          text: "Join my live session on View",
+          url
+        }).catch(() => {});
+        return;
+      }
+
+      navigator.clipboard.writeText(url).then(() => {
+        showNotice("Live link copied.", "success", 1600);
+      }).catch(() => {
+        showNotice(url, "info", 3200);
+      });
+    }
+
+    async function endLive(){
+      if(!liveSession) return;
+      const yes = window.confirm("End this live session now?");
+      if(!yes) return;
+
+      endLiveBtn.disabled = true;
+
+      try{
+        const { error } = await supabaseClient
+          .from("live_sessions")
+          .update({
+            status: "ended",
+            ended_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", liveId);
+
+        if(error) throw error;
+
+        if(timerInterval) clearInterval(timerInterval);
+        await stopPreview();
+        sessionStatus.textContent = "ENDED";
+        showNotice("Live session ended.", "success", 1500);
+
+        setTimeout(() => {
+          window.location.href = "live-history.html";
+        }, 900);
+      }catch(error){
+        showNotice(error.message || "Could not end live session.", "error", 4200);
+      }finally{
+        endLiveBtn.disabled = false;
+      }
+    }
+
+    async function initRealtime(){
+      try{
+        commentsRealtimeChannel = supabaseClient
+          .channel(`live-comments-${liveId}`)
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "live_comments",
+            filter: `live_id=eq.${liveId}`
+          }, async () => {
+            await loadComments();
+          })
+          .subscribe();
+
+        heartRealtimeChannel = supabaseClient
+          .channel(`live-reactions-${liveId}`)
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "live_reactions",
+            filter: `live_id=eq.${liveId}`
+          }, async () => {
+            await loadReactions();
+          })
+          .subscribe();
+
+        viewersRealtimeChannel = supabaseClient
+          .channel(`live-viewers-${liveId}`)
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "live_viewers",
+            filter: `live_id=eq.${liveId}`
+          }, async () => {
+            await loadViewers();
+          })
+          .subscribe();
+
+        sessionRealtimeChannel = supabaseClient
+          .channel(`live-session-${liveId}`)
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "live_sessions",
+            filter: `id=eq.${liveId}`
+          }, async () => {
+            await loadSession();
+          })
+          .subscribe();
+      }catch(_){}
+    }
+
+    function cleanupRealtime(){
+      if(commentsRealtimeChannel) supabaseClient.removeChannel(commentsRealtimeChannel);
+      if(heartRealtimeChannel) supabaseClient.removeChannel(heartRealtimeChannel);
+      if(viewersRealtimeChannel) supabaseClient.removeChannel(viewersRealtimeChannel);
+      if(sessionRealtimeChannel) supabaseClient.removeChannel(sessionRealtimeChannel);
+    }
+
+    async function init(){
+      currentUser = await protectPage("live.html");
+      if(!currentUser) return;
+
+      liveId = getQueryLiveId();
+      if(!liveId){
+        showNotice("Missing live session id.", "error", 3200);
+        setTimeout(() => location.href = "live.html", 800);
+        return;
+      }
+
+      try{
+        await loadSession();
+        await loadHostProfile();
+        await startPreview();
+        await loadComments();
+        await loadReactions();
+        await loadViewers();
+        await initRealtime();
+
+        refreshBtn.addEventListener("click", async () => {
+          await loadSession();
+          await loadComments();
+          await loadReactions();
+          await loadViewers();
+          showNotice("Live room refreshed.", "success", 1500);
+        });
+
+        shareBtn.addEventListener("click", shareLive);
+        shareBtnTop.addEventListener("click", shareLive);
+        endLiveBtn.addEventListener("click", endLive);
+
+        cameraBtn.addEventListener("click", () => toggleTracks("video"));
+        micBtn.addEventListener("click", () => toggleTracks("audio"));
+        switchBtn.addEventListener("click", switchCamera);
+        heartBtn.addEventListener("click", sendHeart);
+
+        sendCommentBtn.addEventListener("click", sendHostComment);
+        commentInput.addEventListener("keydown", (e) => {
+          if(e.key === "Enter"){
+            e.preventDefault();
+            sendHostComment();
+          }
+        });
+
+      }catch(error){
+        showNotice(error.message || "Could not load live room.", "error", 4200);
+      }
+    }
+
+    window.addEventListener("beforeunload", async () => {
+      cleanupRealtime();
+      if(timerInterval) clearInterval(timerInterval);
+      await stopPreview();
+    });
+
+    init();
+  </script>
+</body>
+</html>
