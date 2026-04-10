@@ -152,7 +152,6 @@
       gap:10px;
     }
 
-    .top-left,
     .top-right{
       display:flex;
       align-items:center;
@@ -403,12 +402,6 @@
       padding:0 88px 0 14px;
     }
 
-    .caption-card{
-      border-radius:18px;
-      padding:0;
-      background:transparent;
-    }
-
     .author-row{
       display:flex;
       align-items:center;
@@ -599,14 +592,14 @@
     }
 
     .create-link span:first-child{
-      width:52px;
-      height:52px;
+      width:42px;
+      height:42px;
       border-radius:50%;
       display:grid;
       place-items:center;
       background:linear-gradient(135deg,var(--red),var(--red2));
       color:#fff;
-      font-size:26px;
+      font-size:22px;
       box-shadow:0 8px 24px rgba(255,47,87,.35);
       margin-bottom:2px;
     }
@@ -821,97 +814,45 @@
       padding:0 16px;
     }
 
-    @media (max-width:680px){
-      .brand-title{
-        gap:6px;
-      }
-      .brand-view{
-        font-size:20px;
-      }
-      .brand-by{
-        font-size:12px;
-      }
-      .brand-underline{
-        width:132px;
-      }
-    }
-
     @media (max-width:560px){
       .feed-tabs{ gap:18px; }
       .feed-tab{ font-size:16px; }
       .bottom-caption{ padding-right:82px; }
       .author-name{ font-size:15px; }
-      .comments-compose{
-        grid-template-columns:1fr;
-      }
-      .comments-send{
-        width:100%;
-      }
-      .topbar{
-        gap:8px;
-      }
-      .top-right{
-        gap:8px;
-      }
-      .brand-logo{
-        width:42px;
-        height:42px;
-        min-width:42px;
-      }
-      .profile-chip{
-        width:46px;
-        height:46px;
-        min-width:46px;
-      }
-      .icon-btn{
-        width:42px;
-        height:42px;
-        min-width:42px;
-      }
-      .brand-view{
-        font-size:19px;
-      }
-      .brand-by{
-        font-size:12px;
-      }
-      .brand-underline{
-        width:120px;
-      }
+      .comments-compose{ grid-template-columns:1fr; }
+      .comments-send{ width:100%; }
     }
   </style>
 </head>
 <body>
   <div id="notice" class="notice"></div>
-
   <div class="overlay-top" id="fixedTopChrome"></div>
-
   <main id="feedShell" class="feed-shell"></main>
 
   <div id="bottomNav" class="bottom-nav">
-    <a href="home.html" class="bottom-link">
-      <span>🏠</span>
-      <span>Home</span>
-    </a>
-    <a href="explore.html" class="bottom-link">
-      <span>🧭</span>
-      <span>Explore</span>
-    </a>
-    <a href="create-post.html" class="bottom-link create-link">
-      <span>➕</span>
-      <span>Create</span>
-    </a>
-    <a href="chats.html" class="bottom-link">
-      <span>💬</span>
-      <span>Chat</span>
-    </a>
-    <a href="video-feed.html" class="bottom-link active">
-      <span>🎬</span>
-      <span>Video</span>
-    </a>
-    <a href="profile.html" class="bottom-link">
-      <span>👤</span>
-      <span>Profile</span>
-    </a>
+    <a href="home.html" class="bottom-link"><span>🏠</span><span>Home</span></a>
+    <a href="explore.html" class="bottom-link"><span>🧭</span><span>Explore</span></a>
+    <button id="openCreateMenuBtn" class="bottom-link create-link" type="button"><span>➕</span><span>Create</span></button>
+    <a href="chats.html" class="bottom-link"><span>💬</span><span>Chat</span></a>
+    <a href="video-feed.html" class="bottom-link active"><span>🎬</span><span>Video</span></a>
+    <a href="profile.html" class="bottom-link"><span>👤</span><span>Profile</span></a>
+  </div>
+
+  <div id="createMenuBackdrop" class="modal-backdrop">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <h3>Create</h3>
+        <p>Choose what you want to create.</p>
+      </div>
+      <div class="sheet-actions">
+        <button class="sheet-btn" onclick="location.href='create-post.html'">Create Post <span>📝</span></button>
+        <button class="sheet-btn" onclick="location.href='go-live.html'">Go Live <span>🔴</span></button>
+        <button class="sheet-btn" onclick="location.href='create-status.html'">Create Story <span>📸</span></button>
+        <button class="sheet-btn" onclick="location.href='create-reel.html'">Create Reels <span>🎬</span></button>
+        <button id="createMenuCloseBtn" class="sheet-btn">Close <span>✕</span></button>
+      </div>
+    </div>
   </div>
 
   <div id="actionSheetBackdrop" class="modal-backdrop">
@@ -943,9 +884,7 @@
         </div>
         <button id="commentsCloseBtn" class="icon-btn" type="button">✕</button>
       </div>
-
       <div id="commentsList" class="comments-list"></div>
-
       <div class="comments-compose">
         <input id="commentsInput" class="comments-input" type="text" placeholder="Write a comment..." />
         <button id="commentsSendBtn" class="comments-send" type="button">Send</button>
@@ -958,16 +897,15 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
 
     const noticeBox = document.getElementById("notice");
     const feedShell = document.getElementById("feedShell");
     const fixedTopChrome = document.getElementById("fixedTopChrome");
+    const createMenuBackdrop = document.getElementById("createMenuBackdrop");
+    const openCreateMenuBtn = document.getElementById("openCreateMenuBtn");
+    const createMenuCloseBtn = document.getElementById("createMenuCloseBtn");
     const actionSheetBackdrop = document.getElementById("actionSheetBackdrop");
     const commentsBackdrop = document.getElementById("commentsBackdrop");
 
@@ -996,9 +934,6 @@
       currentActionPost: null,
       currentCommentPost: null,
       observer: null,
-      postsChannel: null,
-      followersChannel: null,
-      commentsChannel: null,
       activeTab: "for_you",
       commentProfileMap: {}
     };
@@ -1046,15 +981,7 @@
 
     function looksLikeVideoByUrl(value) {
       const v = String(value || "").toLowerCase();
-      return (
-        v.includes(".mp4") ||
-        v.includes(".webm") ||
-        v.includes(".ogg") ||
-        v.includes(".mov") ||
-        v.includes(".m4v") ||
-        v.includes(".3gp") ||
-        v.includes(".mkv")
-      );
+      return v.includes(".mp4") || v.includes(".webm") || v.includes(".ogg") || v.includes(".mov") || v.includes(".m4v") || v.includes(".3gp") || v.includes(".mkv");
     }
 
     function looksLikeVideoByType(value) {
@@ -1064,7 +991,6 @@
     function normalizeMediaUrl(post) {
       const mediaUrl = String(post.media_url || "").trim();
       const mediaPath = String(post.media_path || "").trim();
-
       if (mediaUrl) return mediaUrl;
       if (mediaPath && /^https?:\/\//i.test(mediaPath)) return mediaPath;
       return "";
@@ -1083,7 +1009,9 @@
     }
 
     function buildProfileUrl(userId) {
-      return userId ? `public-profile.html?id=${encodeURIComponent(userId)}` : "public-profile.html";
+      if (!userId) return "public-profile.html";
+      if (state.user && userId === state.user.id) return "profile.html";
+      return `public-profile.html?id=${encodeURIComponent(userId)}`;
     }
 
     function isVideoPost(post) {
@@ -1091,33 +1019,23 @@
       const mediaUrl = String(post.media_url || "");
       const mediaPath = String(post.media_path || "");
       const mediaName = String(post.media_name || "");
-
-      return (
-        looksLikeVideoByType(mediaType) ||
-        looksLikeVideoByUrl(mediaUrl) ||
-        looksLikeVideoByUrl(mediaPath) ||
-        looksLikeVideoByUrl(mediaName)
-      );
+      return looksLikeVideoByType(mediaType) || looksLikeVideoByUrl(mediaUrl) || looksLikeVideoByUrl(mediaPath) || looksLikeVideoByUrl(mediaName);
     }
 
     function normalizePosts(rows) {
-      return (rows || []).map(post => {
-        const resolvedMediaUrl = normalizeMediaUrl(post);
-
-        return {
-          ...post,
-          media_url: resolvedMediaUrl,
-          full_name: post.profiles?.full_name || "",
-          username: post.profiles?.username || "",
-          avatar_url: post.profiles?.avatar_url || "",
-          title: post.title || "",
-          caption: post.content || "",
-          sound_name: post.sound_name || "Original sound",
-          likes_count: Number(post.likes_count || 0),
-          comments_count: Number(post.comments_count || 0),
-          shares_count: Number(post.shares_count || 0)
-        };
-      }).filter(post => isVideoPost(post) && !!post.media_url);
+      return (rows || []).map(post => ({
+        ...post,
+        media_url: normalizeMediaUrl(post),
+        full_name: post.profiles?.full_name || "",
+        username: post.profiles?.username || "",
+        avatar_url: post.profiles?.avatar_url || "",
+        title: post.title || "",
+        caption: post.content || "",
+        sound_name: post.sound_name || "Original sound",
+        likes_count: Number(post.likes_count || 0),
+        comments_count: Number(post.comments_count || 0),
+        shares_count: Number(post.shares_count || 0)
+      })).filter(post => isVideoPost(post) && !!post.media_url);
     }
 
     async function getSessionUser() {
@@ -1146,20 +1064,31 @@
         return;
       }
 
-      const { data, error } = await supabaseClient
+      const { data } = await supabaseClient
         .from("followers")
         .select("following_id")
         .eq("follower_id", state.user.id);
 
-      if (!error) {
-        state.followingSet = new Set((data || []).map(row => row.following_id));
-      }
+      state.followingSet = new Set((data || []).map(row => row.following_id));
     }
 
     function filteredPosts() {
-      if (state.activeTab === "following" && state.user) {
+      if (state.activeTab === "following") {
+        if (!state.user) return [];
         return state.posts.filter(post => state.followingSet.has(post.user_id));
       }
+
+      if (state.activeTab === "stem") {
+        return state.posts.filter(post => {
+          const text = `${post.title || ""} ${post.caption || ""} ${Array.isArray(post.hashtags) ? post.hashtags.join(" ") : ""}`.toLowerCase();
+          return text.includes("stem") || text.includes("science") || text.includes("tech") || text.includes("engineering") || text.includes("math");
+        });
+      }
+
+      if (state.activeTab === "explore") {
+        return state.posts.filter(post => post.visibility !== "private");
+      }
+
       return state.posts;
     }
 
@@ -1167,29 +1096,8 @@
       const { data, error } = await supabaseClient
         .from("posts")
         .select(`
-          id,
-          user_id,
-          content,
-          media_url,
-          media_type,
-          cover_url,
-          hashtags,
-          status,
-          published_at,
-          created_at,
-          updated_at,
-          title,
-          visibility,
-          media_name,
-          media_path,
-          likes_count,
-          comments_count,
-          shares_count,
-          profiles:profiles!posts_user_id_fkey (
-            username,
-            full_name,
-            avatar_url
-          )
+          id,user_id,content,media_url,media_type,cover_url,hashtags,status,published_at,created_at,updated_at,title,visibility,media_name,media_path,likes_count,comments_count,shares_count,
+          profiles:profiles!posts_user_id_fkey (username,full_name,avatar_url)
         `)
         .in("status", ["published", "active", "queued"])
         .order("published_at", { ascending: false, nullsFirst: false })
@@ -1218,21 +1126,14 @@
     function renderAvatar(post) {
       const displayName = getDisplayName(post);
       const avatarUrl = getAvatar(post);
-
-      if (avatarUrl) {
-        return `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(displayName)}" />`;
-      }
-
+      if (avatarUrl) return `<img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(displayName)}" />`;
       return `<span>${escapeHtml(getInitial(displayName))}</span>`;
     }
 
     function renderCurrentUserAvatar() {
       const avatar = state.userProfile?.avatar_url || "";
       const name = state.userProfile?.full_name || state.userProfile?.username || state.user?.email || "V";
-
-      if (avatar) {
-        return `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}" />`;
-      }
+      if (avatar) return `<img src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}" />`;
       return `<span>${escapeHtml(getInitial(name || "V"))}</span>`;
     }
 
@@ -1241,9 +1142,8 @@
         <div class="topbar">
           <div class="brand-wrap">
             <a href="home.html" class="brand-logo" aria-label="View Home">
-              <span>V</span>
+              <img src="icons/view-logo.png" alt="View logo" onerror="this.parentNode.textContent='V'" />
             </a>
-
             <div class="brand-copy">
               <div class="brand-title">
                 <span class="brand-view">view</span>
@@ -1257,9 +1157,7 @@
           <div class="top-right">
             <button class="icon-btn" onclick="location.href='notifications.html'" title="Notifications">🔔</button>
             <button class="icon-btn" onclick="location.href='chats.html'" title="Chat">💬</button>
-            <a href="profile.html" class="profile-chip" title="Profile">
-              ${renderCurrentUserAvatar()}
-            </a>
+            <a href="profile.html" class="profile-chip" title="Profile">${renderCurrentUserAvatar()}</a>
           </div>
         </div>
 
@@ -1273,16 +1171,7 @@
 
       document.querySelectorAll(".feed-tab").forEach(btn => {
         btn.addEventListener("click", () => {
-          const tab = btn.dataset.tab;
-          if (tab === "stem") {
-            showNotice("STEM feed can be connected later. Showing current video feed.", "info");
-            return;
-          }
-          if (tab === "explore") {
-            location.href = "explore.html";
-            return;
-          }
-          state.activeTab = tab;
+          state.activeTab = btn.dataset.tab;
           renderFeed();
           setTimeout(setupIntersectionPlayback, 120);
         });
@@ -1291,15 +1180,10 @@
 
     function renderFeed() {
       renderTopChrome();
-
       const posts = filteredPosts();
 
       if (!posts.length) {
-        feedShell.innerHTML = `
-          <section class="video-slide">
-            <div class="video-placeholder">No videos found in the feed yet.</div>
-          </section>
-        `;
+        feedShell.innerHTML = `<section class="video-slide"><div class="video-placeholder">No videos found in this feed yet.</div></section>`;
         return;
       }
 
@@ -1312,25 +1196,11 @@
 
         return `
           <section class="video-slide" data-post-id="${escapeHtml(post.id)}">
-            <video
-              class="video-media"
-              src="${escapeHtml(post.media_url)}"
-              poster="${escapeHtml(post.cover_url || "")}"
-              playsinline
-              preload="metadata"
-              loop
-              controlslist="nodownload noplaybackrate"
-              webkit-playsinline
-            ></video>
+            <video class="video-media" src="${escapeHtml(post.media_url)}" poster="${escapeHtml(post.cover_url || "")}" playsinline preload="metadata" loop controlslist="nodownload noplaybackrate" webkit-playsinline></video>
 
-            <div class="center-play">
-              <div class="play-badge">▶</div>
-            </div>
+            <div class="center-play"><div class="play-badge">▶</div></div>
 
-            <div class="volume-chip">
-              <span>🔊</span>
-              <span>Volume On</span>
-            </div>
+            <div class="volume-chip"><span>🔊</span><span>Volume On</span></div>
 
             <div class="right-rail">
               <button class="creator-mini creator-profile-btn" data-user-id="${escapeHtml(post.user_id)}" title="Open profile">
@@ -1340,7 +1210,7 @@
 
               <div class="rail-action">
                 <button class="rail-circle like-btn" data-post-id="${escapeHtml(post.id)}" title="Like">${liked ? "❤️" : "🤍"}</button>
-                <div class="rail-count like-count">${formatCompact(post.likes_count + (liked ? 1 : 0))}</div>
+                <div class="rail-count like-count">${formatCompact(post.likes_count)}</div>
               </div>
 
               <div class="rail-action">
@@ -1365,21 +1235,19 @@
             </div>
 
             <div class="bottom-caption">
-              <div class="caption-card">
-                <div class="author-row">
-                  <a class="author-name" href="${buildProfileUrl(post.user_id)}">@${escapeHtml(post.username || displayName)}</a>
-                  <button class="follow-btn ${following ? "following" : ""}" data-user-id="${escapeHtml(post.user_id)}">
-                    ${following ? "Following" : "Follow"}
-                  </button>
-                </div>
+              <div class="author-row">
+                <a class="author-name" href="${buildProfileUrl(post.user_id)}">@${escapeHtml(post.username || displayName)}</a>
+                <button class="follow-btn ${following ? "following" : ""}" data-user-id="${escapeHtml(post.user_id)}">
+                  ${following ? "Following" : "Follow"}
+                </button>
+              </div>
 
-                ${post.title ? `<div class="post-title">${escapeHtml(post.title)}</div>` : ""}
-                <div class="post-caption">${escapeHtml(post.caption || "")}</div>
+              ${post.title ? `<div class="post-title">${escapeHtml(post.title)}</div>` : ""}
+              <div class="post-caption">${escapeHtml(post.caption || "")}</div>
 
-                <div class="sound-row">
-                  <span>♫</span>
-                  <span>${escapeHtml(post.sound_name || "Original sound")}</span>
-                </div>
+              <div class="sound-row">
+                <span>♫</span>
+                <span>${escapeHtml(post.sound_name || "Original sound")}</span>
               </div>
 
               <button class="search-bar search-btn" data-post-id="${escapeHtml(post.id)}">
@@ -1401,15 +1269,12 @@
       document.querySelectorAll(".creator-profile-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
-          const userId = btn.dataset.userId;
-          location.href = buildProfileUrl(userId);
+          location.href = buildProfileUrl(btn.dataset.userId);
         });
       });
 
       document.querySelectorAll(".comment-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          openComments(btn.dataset.postId);
-        });
+        btn.addEventListener("click", () => openComments(btn.dataset.postId));
       });
 
       document.querySelectorAll(".share-btn").forEach(btn => {
@@ -1418,7 +1283,9 @@
 
       document.querySelectorAll(".search-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-          location.href = `explore.html?focus=search&post=${encodeURIComponent(btn.dataset.postId)}`;
+          state.activeTab = "explore";
+          renderFeed();
+          setTimeout(setupIntersectionPlayback, 120);
         });
       });
 
@@ -1430,9 +1297,11 @@
         btn.addEventListener("click", () => toggleLike(btn.dataset.postId));
       });
 
-      document.querySelectorAll(".save-btn").forEach(btn => {
-        btn.addEventListener("click", () => toggleSave(btn.dataset.postId));
-      });
+      document.querySelectorAll(".share-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    openActionSheet(btn.dataset.postId);
+  });
+});
 
       document.querySelectorAll(".follow-btn, .follow-mini-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
@@ -1446,12 +1315,7 @@
         const playBadge = slide.querySelector(".play-badge");
 
         slide.addEventListener("click", async (event) => {
-          if (
-            event.target.closest(".right-rail") ||
-            event.target.closest(".bottom-caption") ||
-            event.target.closest(".overlay-top")
-          ) return;
-
+          if (event.target.closest(".right-rail") || event.target.closest(".bottom-caption") || event.target.closest(".overlay-top")) return;
           if (!video) return;
 
           if (video.paused) {
@@ -1465,9 +1329,7 @@
 
         video.addEventListener("pause", () => playBadge.classList.add("show"));
         video.addEventListener("play", () => playBadge.classList.remove("show"));
-        video.addEventListener("error", () => {
-          showNotice("A video could not be loaded.", "error");
-        });
+        video.addEventListener("error", () => showNotice("A video could not be loaded.", "error"));
       });
     }
 
@@ -1476,7 +1338,7 @@
         video.muted = false;
         video.volume = 1;
         await video.play();
-      } catch (error) {
+      } catch {
         video.muted = true;
         try {
           await video.play();
@@ -1487,20 +1349,16 @@
 
     function setupIntersectionPlayback() {
       if (state.observer) state.observer.disconnect();
-
       const videos = document.querySelectorAll(".video-media");
 
       state.observer = new IntersectionObserver((entries) => {
         entries.forEach(async entry => {
           const video = entry.target;
           const slide = video.closest(".video-slide");
-          const postId = slide?.dataset.postId || null;
+          state.activeVideoId = slide?.dataset.postId || null;
 
           if (entry.isIntersecting && entry.intersectionRatio >= 0.75) {
-            state.activeVideoId = postId;
-            document.querySelectorAll(".video-media").forEach(v => {
-              if (v !== video) v.pause();
-            });
+            document.querySelectorAll(".video-media").forEach(v => { if (v !== video) v.pause(); });
             await playVideo(video);
           } else {
             video.pause();
@@ -1525,23 +1383,12 @@
 
       try {
         if (state.followingSet.has(userId)) {
-          const { error } = await supabaseClient
-            .from("followers")
-            .delete()
-            .eq("follower_id", state.user.id)
-            .eq("following_id", userId);
-
+          const { error } = await supabaseClient.from("followers").delete().eq("follower_id", state.user.id).eq("following_id", userId);
           if (error) throw error;
           state.followingSet.delete(userId);
           showNotice("Unfollowed.", "success");
         } else {
-          const { error } = await supabaseClient
-            .from("followers")
-            .insert({
-              follower_id: state.user.id,
-              following_id: userId
-            });
-
+          const { error } = await supabaseClient.from("followers").insert({ follower_id: state.user.id, following_id: userId });
           if (error) throw error;
           state.followingSet.add(userId);
           showNotice("Followed.", "success");
@@ -1555,7 +1402,13 @@
     }
 
     function toggleLike(postId) {
-      state.likesMap[postId] = !state.likesMap[postId];
+      const post = state.posts.find(p => p.id === postId);
+      if (!post) return;
+
+      const wasLiked = !!state.likesMap[postId];
+      state.likesMap[postId] = !wasLiked;
+      post.likes_count = Math.max(0, Number(post.likes_count || 0) + (wasLiked ? -1 : 1));
+
       localStorage.setItem("view_video_likes", JSON.stringify(state.likesMap));
       renderFeed();
       setTimeout(setupIntersectionPlayback, 120);
@@ -1576,37 +1429,45 @@
     }
 
     async function sharePost(postId) {
-      const post = state.posts.find(p => p.id === postId);
-      if (!post) return;
+  const post = state.posts.find(p => p.id === postId);
+  if (!post) return;
 
-      const shareUrl = getPostUrl(postId);
-      const shareText = post.title || post.caption || "Watch this video on View";
+  const shareUrl = getPostUrl(postId);
+  const shareText = post.title || post.caption || "Watch this video on View";
 
-      try {
-        if (navigator.share) {
-          await navigator.share({
-            title: "View Video",
-            text: shareText,
-            url: shareUrl
-          });
-          showNotice("Sharing opened.", "success");
-          return;
-        }
-      } catch (error) {
-        if (error && error.name === "AbortError") return;
-      }
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: "View Video",
+        text: shareText,
+        url: shareUrl
+      });
 
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        showNotice("Video link copied.", "success");
-      } catch {
-        showNotice("Could not share right now.", "error");
-      }
+      post.shares_count = Number(post.shares_count || 0) + 1;
+      renderFeed();
+      setTimeout(setupIntersectionPlayback, 120);
+      showNotice("Sharing opened.", "success");
+      return;
     }
 
+    showNotice("Choose Share to friends or Copy link from the options.", "info");
+    openActionSheet(postId);
+  } catch (error) {
+    if (error && error.name === "AbortError") return;
+    showNotice("Could not open external share.", "error");
+  }
+}
+
     function shareToFriends(postId) {
-      const url = `chats.html?share_post=${encodeURIComponent(postId)}&share_link=${encodeURIComponent(getPostUrl(postId))}`;
-      location.href = url;
+      location.href = `chats.html?share_post=${encodeURIComponent(postId)}&share_link=${encodeURIComponent(getPostUrl(postId))}`;
+    }
+
+    function openCreateMenu() {
+      createMenuBackdrop.classList.add("show");
+    }
+
+    function closeCreateMenu() {
+      createMenuBackdrop.classList.remove("show");
     }
 
     function openActionSheet(postId) {
@@ -1647,22 +1508,12 @@
       const missing = uniqueIds.filter(id => !state.commentProfileMap[id]);
       if (!missing.length) return;
 
-      const { data, error } = await supabaseClient
-        .from("profiles")
-        .select("id,full_name,username,avatar_url")
-        .in("id", missing);
-
-      if (!error) {
-        (data || []).forEach(profile => {
-          state.commentProfileMap[profile.id] = profile;
-        });
-      }
+      const { data } = await supabaseClient.from("profiles").select("id,full_name,username,avatar_url").in("id", missing);
+      (data || []).forEach(profile => { state.commentProfileMap[profile.id] = profile; });
     }
 
     function renderCommentAvatar(profile) {
-      if (profile?.avatar_url) {
-        return `<img src="${escapeHtml(profile.avatar_url)}" alt="${escapeHtml(profile.full_name || profile.username || "User")}" />`;
-      }
+      if (profile?.avatar_url) return `<img src="${escapeHtml(profile.avatar_url)}" alt="${escapeHtml(profile.full_name || profile.username || "User")}" />`;
       return `<span>${escapeHtml(getInitial(profile?.full_name || profile?.username || "U"))}</span>`;
     }
 
@@ -1718,23 +1569,30 @@
       }
 
       try {
-        const { error } = await supabaseClient
-          .from("comments")
-          .insert({
-            post_id: post.id,
-            user_id: state.user.id,
-            content
-          });
+        const { error } = await supabaseClient.from("comments").insert({
+          post_id: post.id,
+          user_id: state.user.id,
+          content
+        });
 
         if (error) throw error;
 
+        post.comments_count = Number(post.comments_count || 0) + 1;
         commentsInput.value = "";
         await loadComments(post.id);
+        renderFeed();
+        setTimeout(setupIntersectionPlayback, 120);
         showNotice("Comment added.", "success");
       } catch (error) {
         showNotice(error.message || "Could not add comment.", "error");
       }
     }
+
+    openCreateMenuBtn?.addEventListener("click", openCreateMenu);
+    createMenuCloseBtn?.addEventListener("click", closeCreateMenu);
+    createMenuBackdrop?.addEventListener("click", (e) => {
+      if (e.target === createMenuBackdrop) closeCreateMenu();
+    });
 
     sheetProfileBtn.addEventListener("click", () => {
       if (!state.currentActionPost) return;
@@ -1747,11 +1605,13 @@
       openComments(state.currentActionPost.id);
     });
 
-    sheetFriendShareBtn.addEventListener("click", () => {
-      if (!state.currentActionPost) return;
-      shareToFriends(state.currentActionPost.id);
-      closeActionSheet();
-    });
+    sheetShareBtn.addEventListener("click", async () => {
+  if (!state.currentActionPost) return;
+
+  const postId = state.currentActionPost.id;
+  closeActionSheet();
+  await sharePost(postId);
+});
 
     sheetCopyBtn.addEventListener("click", async () => {
       if (!state.currentActionPost) return;
@@ -1792,57 +1652,11 @@
       }
     });
 
-    function subscribeRealtime() {
-      if (!state.postsChannel) {
-        state.postsChannel = supabaseClient
-          .channel("video-feed-posts")
-          .on("postgres_changes", {
-            event: "*",
-            schema: "public",
-            table: "posts"
-          }, async () => {
-            await loadFeed();
-          })
-          .subscribe();
-      }
-
-      if (!state.followersChannel) {
-        state.followersChannel = supabaseClient
-          .channel("video-feed-followers")
-          .on("postgres_changes", {
-            event: "*",
-            schema: "public",
-            table: "followers"
-          }, async () => {
-            await loadFollowing();
-            renderFeed();
-            setTimeout(setupIntersectionPlayback, 120);
-          })
-          .subscribe();
-      }
-
-      if (!state.commentsChannel) {
-        state.commentsChannel = supabaseClient
-          .channel("video-feed-comments")
-          .on("postgres_changes", {
-            event: "*",
-            schema: "public",
-            table: "comments"
-          }, async (payload) => {
-            if (state.currentCommentPost && payload.new?.post_id === state.currentCommentPost.id) {
-              await loadComments(state.currentCommentPost.id);
-            }
-          })
-          .subscribe();
-      }
-    }
-
     async function init() {
       try {
         await getSessionUser();
         await loadFollowing();
         await loadFeed();
-        subscribeRealtime();
 
         const params = new URLSearchParams(location.search);
         const targetPostId = params.get("post");
