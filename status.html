@@ -4,35 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Status | View</title>
-  <meta name="theme-color" content="#0b141a" />
-  <link rel="manifest" href="/manifest.json" />
-  <script>
-    document.documentElement.classList.add("auth-loading");
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta name="theme-color" content="#0b1454" />
 
   <style>
-    html.auth-loading,
-    html.auth-loading body{
+    html.auth-loading, html.auth-loading body{
       visibility:hidden;
-      opacity:0;
     }
 
     :root{
-      --bg:#0b141a;
-      --bg2:#111b21;
-      --panel:#202c33;
-      --panel-2:#1f2c34;
-      --panel-3:#182229;
-      --line:#2a3942;
-      --text:#e9edef;
-      --muted:#8696a0;
-      --accent:#00a884;
-      --accent-2:#25d366;
-      --danger:#ff5c5c;
-      --safe-top:env(safe-area-inset-top,0px);
-      --safe-bottom:env(safe-area-inset-bottom,0px);
-      --shadow:0 10px 30px rgba(0,0,0,.22);
+      --bg:#08114c;
+      --bg2:#0b1454;
+      --bg3:#0a1b6f;
+      --panel:#ffffff;
+      --panel-soft:#f8fbff;
+      --text:#111827;
+      --muted:#667085;
+      --line:#dbe4ff;
+      --primary:#2563eb;
+      --primary2:#4f46e5;
+      --red:#ef4444;
+      --red2:#ff5f7a;
+      --green:#10b981;
+      --danger:#b91c1c;
+      --shadow:0 16px 40px rgba(8,17,76,.14);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.08);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
     }
 
     *{
@@ -45,12 +42,16 @@
 
     html,body{
       min-height:100%;
-      background:var(--bg);
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
+        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
+        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
+        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
       color:var(--text);
     }
 
     body{
-      padding:calc(var(--safe-top) + 10px) 0 calc(var(--safe-bottom) + 84px);
+      padding:calc(14px + var(--safe-top)) 14px calc(30px + var(--safe-bottom));
     }
 
     a{
@@ -69,605 +70,856 @@
       cursor:pointer;
     }
 
-    .app{
-      width:min(100%, 740px);
+    .wrap{
+      width:min(100%, 960px);
       margin:0 auto;
-      padding:0 12px;
     }
 
     .notice{
       display:none;
-      margin-bottom:12px;
-      padding:11px 13px;
-      border-radius:12px;
-      font-size:13px;
-      line-height:1.5;
-      border:1px solid transparent;
+      margin-bottom:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.55;
+      box-shadow:var(--shadow-soft);
+      white-space:pre-wrap;
     }
     .notice.show{display:block}
-    .notice.error{background:rgba(255,92,92,.12);border-color:rgba(255,92,92,.18);color:#ffd4d4}
-    .notice.success{background:rgba(37,211,102,.12);border-color:rgba(37,211,102,.18);color:#d9ffe6}
-    .notice.info{background:rgba(0,168,132,.12);border-color:rgba(0,168,132,.18);color:#d9fff7}
+    .notice.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+    .notice.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .notice.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
 
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
-      padding:8px 0 14px;
+      gap:12px;
+      margin-bottom:14px;
     }
 
     .top-left{
       display:flex;
       align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+
+    .top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .icon-btn{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
+      box-shadow:var(--shadow-soft);
+      font-size:18px;
+      color:#111827;
+    }
+
+    .brand-box{
+      display:flex;
+      align-items:center;
       gap:10px;
       min-width:0;
       flex:1;
     }
 
-    .back-btn,
-    .top-btn{
+    .brand-logo{
       width:42px;
       height:42px;
       min-width:42px;
-      border-radius:12px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:var(--panel);
-      color:var(--text);
-      border:1px solid var(--line);
+      border-radius:14px;
+      object-fit:cover;
+      box-shadow:0 8px 20px rgba(37,99,235,.15);
+      background:#fff;
+      border:1px solid rgba(219,228,255,.95);
     }
 
-    .title-wrap{
+    .title-box{
       min-width:0;
       flex:1;
     }
 
     .title{
-      font-size:20px;
+      font-size:22px;
       font-weight:800;
-      line-height:1.1;
-    }
-
-    .subtitle{
-      margin-top:3px;
-      color:var(--muted);
-      font-size:12px;
+      color:#0b1454;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .top-right{
-      display:flex;
-      gap:8px;
-      align-items:center;
+    .top-mini{
+      margin-top:3px;
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .card{
-      background:var(--panel-2);
-      border:1px solid var(--line);
-      border-radius:18px;
+    .hero{
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:22px;
       box-shadow:var(--shadow);
-      overflow:hidden;
-      margin-bottom:12px;
-    }
-
-    .my-status{
-      display:grid;
-      grid-template-columns:auto 1fr auto;
-      gap:12px;
-      align-items:center;
       padding:14px;
+      margin-bottom:14px;
+      display:grid;
+      gap:12px;
     }
 
-    .avatar-ring{
-      width:64px;
-      height:64px;
-      border-radius:50%;
-      padding:3px;
-      background:linear-gradient(135deg,var(--accent),var(--accent-2));
-      position:relative;
-      flex-shrink:0;
-    }
-
-    .avatar-ring.viewed{
-      background:#54656f;
-    }
-
-    .avatar-inner{
-      width:100%;
-      height:100%;
-      border-radius:50%;
-      background:var(--panel-3);
-      border:2px solid var(--panel-2);
-      overflow:hidden;
+    .hero-top{
       display:flex;
       align-items:center;
-      justify-content:center;
-      font-size:22px;
-      font-weight:800;
-      color:var(--text);
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
     }
 
-    .avatar-inner img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-    }
-
-    .add-badge{
-      position:absolute;
-      right:-1px;
-      bottom:-1px;
-      width:22px;
-      height:22px;
-      border-radius:50%;
-      background:var(--accent);
-      color:#fff;
-      border:2px solid var(--panel-2);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:16px;
-      font-weight:800;
-    }
-
-    .my-copy{
+    .hero-copy{
       min-width:0;
+      flex:1;
     }
 
-    .my-title{
-      font-size:16px;
+    .hero-title{
+      font-size:18px;
       font-weight:800;
+      color:#0b1454;
       margin-bottom:4px;
     }
 
-    .my-sub{
-      font-size:12px;
+    .hero-sub{
       color:var(--muted);
-      line-height:1.45;
+      font-size:13px;
+      line-height:1.5;
     }
 
-    .ghost-btn{
-      min-height:38px;
-      padding:0 12px;
-      border-radius:12px;
+    .hero-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      min-height:44px;
+      padding:0 16px;
+      border-radius:14px;
       border:1px solid var(--line);
-      background:var(--panel);
-      color:var(--text);
-      font-size:13px;
+      background:#fff;
+      color:#111827;
+      font-size:14px;
       font-weight:700;
       display:flex;
       align-items:center;
       justify-content:center;
-      white-space:nowrap;
+      gap:8px;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .btn.green{
+      background:linear-gradient(135deg,#059669,#10b981);
+      border-color:transparent;
+      color:#fff;
+    }
+
+    .hero-stats{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .stat-card{
+      background:var(--panel-soft);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+    }
+
+    .stat-label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .stat-value{
+      font-size:18px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .section{
+      background:rgba(255,255,255,.96);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(219,228,255,.9);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:visible;
+      margin-bottom:14px;
     }
 
     .section-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
+      gap:12px;
       padding:14px 14px 10px;
+      flex-wrap:wrap;
     }
 
     .section-title{
-      font-size:15px;
+      font-size:16px;
       font-weight:800;
+      color:#0b1454;
     }
 
-    .section-meta{
-      color:var(--muted);
-      font-size:12px;
+    .section-right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
     }
 
-    .rings{
+    .chip{
+      min-height:26px;
+      padding:0 10px;
+      border-radius:999px;
+      background:#eef4ff;
+      color:#1d4ed8;
+      border:1px solid #dbeafe;
+      font-size:11px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+    }
+
+    .chip.active{
+      background:#ecfdf5;
+      color:#166534;
+      border-color:#a7f3d0;
+    }
+
+    .ring-strip{
       display:flex;
       gap:14px;
-      overflow:auto hidden;
-      padding:0 14px 14px;
+      overflow-x:auto;
+      overflow-y:visible;
+      padding:0 14px 18px;
       scrollbar-width:none;
     }
 
-    .rings::-webkit-scrollbar{
+    .ring-strip::-webkit-scrollbar{
       display:none;
     }
 
     .ring-item{
-      flex:0 0 auto;
-      width:74px;
-      text-align:center;
-      cursor:pointer;
-    }
-
-    .ring-name{
-      margin-top:8px;
-      font-size:12px;
-      font-weight:700;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .ring-sub{
-      margin-top:3px;
-      color:var(--muted);
-      font-size:10px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .list{
-      display:grid;
-    }
-
-    .status-row{
-      display:grid;
-      grid-template-columns:auto 1fr auto;
-      gap:12px;
+      width:96px;
+      min-width:96px;
+      display:flex;
+      flex-direction:column;
       align-items:center;
-      padding:14px;
-      border-top:1px solid var(--line);
+      gap:8px;
       cursor:pointer;
+      text-align:center;
+      position:relative;
+      overflow:visible;
     }
 
-    .status-row:first-child{
-      border-top:none;
+    .ring-wrap{
+      width:82px;
+      height:82px;
+      border-radius:50%;
+      padding:3px;
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red2));
+      box-shadow:var(--shadow-soft);
+      position:relative;
     }
 
-    .status-row:hover{
-      background:rgba(255,255,255,.02);
+    .ring-wrap.viewed{
+      background:linear-gradient(135deg,#cbd5e1,#94a3b8);
     }
 
-    .thumb{
-      width:56px;
-      height:56px;
-      border-radius:14px;
+    .ring-inner{
+      width:100%;
+      height:100%;
+      border-radius:50%;
+      background:#fff;
       overflow:hidden;
-      background:var(--panel);
-      border:1px solid var(--line);
+      border:2px solid #fff;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:20px;
+      font-size:26px;
       font-weight:800;
-      color:#fff;
-      flex-shrink:0;
+      color:#0b1454;
     }
 
-    .thumb img,
-    .thumb video{
+    .ring-inner img{
       width:100%;
       height:100%;
       object-fit:cover;
     }
 
-    .thumb.text{
-      padding:8px;
-      text-align:center;
+    .ring-link{
+      display:block;
+      border-radius:50%;
+    }
+
+    .add-badge{
+      position:absolute;
+      right:1px;
+      bottom:1px;
+      width:24px;
+      height:24px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#059669,#10b981);
+      color:#fff;
+      border:2px solid #fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .ring-name{
       font-size:12px;
-      line-height:1.2;
       font-weight:800;
-      word-break:break-word;
-      background:linear-gradient(135deg,#0b6e5d,#00a884);
-    }
-
-    .row-copy{
-      min-width:0;
-    }
-
-    .row-title{
-      font-size:14px;
-      font-weight:800;
+      color:#111827;
+      width:100%;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      margin-bottom:4px;
     }
 
-    .row-sub{
+    .ring-meta{
+      font-size:10px;
       color:var(--muted);
+      width:100%;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .vertical-list{
+      display:grid;
+    }
+
+    .status-card{
+      border-top:1px solid rgba(219,228,255,.9);
+      padding:14px;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:12px;
+      align-items:center;
+    }
+
+    .status-card:first-child{
+      border-top:none;
+    }
+
+    .status-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .status-avatar-link{
+      display:block;
+      border-radius:50%;
+      flex-shrink:0;
+    }
+
+    .mini-ring{
+      width:60px;
+      height:60px;
+      min-width:60px;
+      border-radius:50%;
+      padding:2.5px;
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red2));
+    }
+
+    .mini-ring.viewed{
+      background:linear-gradient(135deg,#cbd5e1,#94a3b8);
+    }
+
+    .mini-ring-inner{
+      width:100%;
+      height:100%;
+      border-radius:50%;
+      background:#fff;
+      overflow:hidden;
+      border:2px solid #fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#0b1454;
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .mini-ring-inner img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .status-copy{
+      min-width:0;
+      cursor:pointer;
+    }
+
+    .status-name{
+      font-size:14px;
+      font-weight:800;
+      color:#111827;
+      margin-bottom:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .status-text{
       font-size:12px;
-      line-height:1.45;
+      color:var(--muted);
+      line-height:1.5;
       display:-webkit-box;
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
       overflow:hidden;
       word-break:break-word;
+      margin-bottom:6px;
     }
 
-    .row-meta{
-      text-align:right;
-      display:grid;
-      gap:4px;
-      justify-items:end;
-    }
-
-    .time{
+    .status-time{
       font-size:11px;
       color:var(--muted);
-      white-space:nowrap;
     }
 
-    .badge{
-      min-height:24px;
-      padding:0 8px;
-      border-radius:999px;
-      background:var(--panel);
+    .status-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:flex-end;
+      align-items:center;
+    }
+
+    .mini-btn{
+      min-height:34px;
+      padding:0 12px;
+      border-radius:10px;
       border:1px solid var(--line);
-      color:var(--text);
+      background:#fff;
+      color:#111827;
+      font-size:12px;
+      font-weight:700;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:10px;
-      font-weight:800;
-      white-space:nowrap;
+      gap:6px;
     }
 
-    .reply-row{
+    .mini-btn.danger{
+      background:#fff5f5;
+      color:var(--danger);
+      border-color:#fecaca;
+    }
+
+    .menu-wrap{
+      position:relative;
+    }
+
+    .menu-btn{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:#111827;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      line-height:1;
+    }
+
+    .menu-panel{
+      position:absolute;
+      right:auto;
+      left:50%;
+      transform:translateX(-50%);
+      top:42px;
+      min-width:178px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      box-shadow:var(--shadow-soft);
+      padding:6px;
+      display:none;
+      z-index:200;
+    }
+
+    .menu-panel.show{
+      display:block;
+    }
+
+    .menu-item{
+      width:100%;
+      min-height:40px;
+      border-radius:10px;
+      padding:0 12px;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:8px;
+      color:#111827;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .menu-item:hover{
+      background:#f8fbff;
+    }
+
+    .menu-item.danger{
+      color:var(--danger);
+    }
+
+    .sheet-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.35);
+      z-index:60;
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding:14px;
+    }
+
+    .sheet-backdrop.show{
+      display:flex;
+    }
+
+    .sheet{
+      width:min(100%, 520px);
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:22px 22px 16px 16px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .sheet-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px;
+      border-bottom:1px solid rgba(219,228,255,.9);
+    }
+
+    .sheet-title{
+      font-size:16px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .sheet-close{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+    }
+
+    .viewer-list{
+      max-height:min(72vh, 560px);
+      overflow:auto;
+    }
+
+    .viewer-row{
       display:grid;
       grid-template-columns:auto 1fr auto;
       gap:12px;
-      align-items:flex-start;
+      align-items:center;
       padding:14px;
-      border-top:1px solid var(--line);
+      border-top:1px solid rgba(219,228,255,.9);
     }
 
-    .reply-row:first-child{
+    .viewer-row:first-child{
       border-top:none;
     }
 
-    .reply-avatar{
-      width:42px;
-      height:42px;
+    .viewer-avatar-link{
+      display:block;
       border-radius:50%;
-      overflow:hidden;
-      background:var(--panel-3);
-      border:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:15px;
-      font-weight:800;
       flex-shrink:0;
     }
 
-    .reply-avatar img{
+    .viewer-avatar{
+      width:48px;
+      height:48px;
+      min-width:48px;
+      border-radius:50%;
+      overflow:hidden;
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red2));
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      font-size:16px;
+    }
+
+    .viewer-avatar img{
       width:100%;
       height:100%;
       object-fit:cover;
     }
 
-    .reply-name{
-      font-size:13px;
-      font-weight:800;
-      margin-bottom:4px;
+    .viewer-copy{
+      min-width:0;
+      cursor:pointer;
     }
 
-    .reply-text{
+    .viewer-name{
+      font-size:14px;
+      font-weight:800;
+      color:#111827;
+      margin-bottom:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .viewer-time{
       font-size:12px;
       color:var(--muted);
-      line-height:1.45;
-      word-break:break-word;
-    }
-
-    .reply-open{
-      min-height:34px;
-      padding:0 10px;
-      border-radius:10px;
-      background:var(--panel);
-      border:1px solid var(--line);
-      color:var(--text);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:12px;
-      font-weight:700;
-      white-space:nowrap;
     }
 
     .empty{
-      padding:26px 14px;
-      text-align:center;
+      padding:20px 14px 18px;
       color:var(--muted);
       font-size:13px;
-      line-height:1.5;
+      line-height:1.6;
+      text-align:center;
     }
 
-    .bottom-nav{
-      position:fixed;
-      left:50%;
-      bottom:10px;
-      transform:translateX(-50%);
-      width:min(720px,calc(100% - 12px));
-      display:grid;
-      grid-template-columns:repeat(5,minmax(0,1fr));
-      gap:2px;
-      padding:8px 4px calc(8px + var(--safe-bottom));
-      border-radius:18px;
-      background:#111b21f2;
-      border:1px solid var(--line);
-      box-shadow:0 18px 42px rgba(0,0,0,.35);
-      backdrop-filter:blur(14px);
-      z-index:40;
-    }
-
-    .nav-link{
-      min-height:54px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-direction:column;
-      gap:4px;
-      font-size:10px;
-      color:var(--muted);
-      border-radius:14px;
-    }
-
-    .nav-link.active{
-      color:var(--accent-2);
-    }
-
-    @media (max-width:560px){
-      .my-status{
-        grid-template-columns:auto 1fr;
-      }
-      .my-status .ghost-btn{
-        grid-column:1 / -1;
-      }
-      .topbar{
+    @media (max-width:720px){
+      .hero-stats{
         grid-template-columns:1fr;
       }
-      .top-right{
-        justify-content:flex-end;
+    }
+
+    @media (max-width:640px){
+      .status-card{
+        grid-template-columns:1fr;
+        align-items:flex-start;
       }
-      .status-row{
-        grid-template-columns:auto 1fr;
+
+      .status-actions{
+        justify-content:flex-start;
       }
-      .row-meta{
-        grid-column:2;
-        justify-items:start;
-        text-align:left;
-      }
-      .reply-row{
-        grid-template-columns:auto 1fr;
-      }
-      .reply-open{
-        grid-column:2;
-        justify-self:start;
+
+      .topbar{
+        align-items:flex-start;
       }
     }
   </style>
-</head>
-<body>
-  <div class="app">
-    <div id="notice" class="notice"></div>
 
-    <header class="topbar">
-      <div class="top-left">
-        <button class="back-btn" id="backBtn" type="button" aria-label="Back">←</button>
-        <div class="title-wrap">
-          <div class="title">Status</div>
-          <div class="subtitle">My status, recent updates, and replies</div>
-        </div>
-      </div>
-
-      <div class="top-right">
-        <button class="top-btn" id="searchBtn" type="button" aria-label="Open my status">◎</button>
-        <button class="top-btn" id="refreshBtn" type="button" aria-label="Refresh">↻</button>
-      </div>
-    </header>
-
-    <section class="card">
-      <div class="my-status">
-        <div class="avatar-ring" id="myAvatarRing">
-          <div class="avatar-inner" id="myAvatar">V</div>
-          <div class="add-badge">+</div>
-        </div>
-
-        <div class="my-copy">
-          <div class="my-title">My status</div>
-          <div class="my-sub" id="myStatusSub">Tap to add text, image, video, or caption status.</div>
-        </div>
-
-        <button class="ghost-btn" id="createStatusBtn" type="button">Add Status</button>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="section-head">
-        <div class="section-title">Recent updates</div>
-        <div class="section-meta" id="ringCountText">0 active users</div>
-      </div>
-      <div class="rings" id="ringsWrap"></div>
-    </section>
-
-    <section class="card">
-      <div class="section-head">
-        <div class="section-title">All active statuses</div>
-        <div class="section-meta" id="statusCountText">0 statuses</div>
-      </div>
-      <div class="list" id="statusList"></div>
-    </section>
-
-    <section class="card">
-      <div class="section-head">
-        <div class="section-title">Replies to my statuses</div>
-        <div class="section-meta" id="replyCountText">0 replies</div>
-      </div>
-      <div class="list" id="replyList"></div>
-    </section>
-  </div>
-
-  <nav class="bottom-nav">
-    <a href="home.html" class="nav-link"><span>🏠</span><span>Home</span></a>
-    <a href="status.html" class="nav-link active"><span>⭕</span><span>Status</span></a>
-    <a href="create-status.html" class="nav-link"><span>✚</span><span>Create</span></a>
-    <a href="chats.html" class="nav-link"><span>💬</span><span>Chats</span></a>
-    <a href="settings.html" class="nav-link"><span>⚙</span><span>Settings</span></a>
-  </nav>
-
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth:{
-        persistSession:true,
-        autoRefreshToken:true,
-        detectSessionInUrl:true,
-        flowType:"pkce"
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
       }
     });
 
-    const notice = document.getElementById("notice");
-    const ringsWrap = document.getElementById("ringsWrap");
-    const statusList = document.getElementById("statusList");
-    const replyList = document.getElementById("replyList");
-    const ringCountText = document.getElementById("ringCountText");
-    const statusCountText = document.getElementById("statusCountText");
-    const replyCountText = document.getElementById("replyCountText");
-    const myAvatar = document.getElementById("myAvatar");
-    const myStatusSub = document.getElementById("myStatusSub");
+    async function protectPage(nextPage) {
+      try {
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if (!user) {
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "status.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      } catch (e) {
+        document.documentElement.classList.remove("auth-loading");
+        location.replace("login.html");
+        return null;
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="notice" class="notice"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="home.html" aria-label="Back">←</a>
+
+        <div class="brand-box">
+          <img class="brand-logo" src="icons/view-logo.png" alt="View logo" />
+          <div class="title-box">
+            <div class="title">Status</div>
+            <div class="top-mini">View stories and recent updates</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-right">
+        <button class="icon-btn" id="refreshBtn" type="button" aria-label="Refresh">↻</button>
+        <a class="btn primary" href="create-status.html" aria-label="Create Status">＋ Create</a>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-top">
+        <div class="hero-copy">
+          <div class="hero-title">Status Hub</div>
+          <div class="hero-sub">Create, view, edit, delete, and manage story viewers in one place.</div>
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn" id="refreshBtn2" type="button">Refresh</button>
+          <a class="btn green" href="create-status.html">New Story</a>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-label">My stories</div>
+          <div class="stat-value" id="heroMyStories">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">My views</div>
+          <div class="stat-value" id="heroMyViews">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Updates</div>
+          <div class="stat-value" id="heroUpdates">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title">Stories</div>
+        <div class="section-right">
+          <div class="chip" id="myCountChip">0 stories</div>
+          <div class="chip active" id="myViewsChip">0 views</div>
+        </div>
+      </div>
+
+      <div id="myStoryStrip" class="ring-strip">
+        <div class="empty" style="width:100%">You have no active stories yet.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title">Updates</div>
+        <div class="section-right">
+          <div class="chip" id="friendCountChip">0 updates</div>
+        </div>
+      </div>
+
+      <div id="friendUpdateList" class="vertical-list">
+        <div class="empty">No active updates yet.</div>
+      </div>
+    </section>
+  </div>
+
+  <div id="viewerSheetBackdrop" class="sheet-backdrop">
+    <div class="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="viewerSheetTitle">Viewers</div>
+        <button id="closeViewerSheetBtn" class="sheet-close" type="button">✕</button>
+      </div>
+      <div id="viewerList" class="viewer-list">
+        <div class="empty">No viewers yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const noticeBox = document.getElementById("notice");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const refreshBtn2 = document.getElementById("refreshBtn2");
+    const myStoryStrip = document.getElementById("myStoryStrip");
+    const friendUpdateList = document.getElementById("friendUpdateList");
+    const friendCountChip = document.getElementById("friendCountChip");
+    const myCountChip = document.getElementById("myCountChip");
+    const myViewsChip = document.getElementById("myViewsChip");
+    const heroMyStories = document.getElementById("heroMyStories");
+    const heroMyViews = document.getElementById("heroMyViews");
+    const heroUpdates = document.getElementById("heroUpdates");
+    const viewerSheetBackdrop = document.getElementById("viewerSheetBackdrop");
+    const viewerList = document.getElementById("viewerList");
+    const viewerSheetTitle = document.getElementById("viewerSheetTitle");
+    const closeViewerSheetBtn = document.getElementById("closeViewerSheetBtn");
 
     let currentUser = null;
     let profilesMap = {};
-    let allStatuses = [];
-    let myStatuses = [];
-    let allViews = [];
-    let allReplies = [];
+    let activeStatuses = [];
+    let statusViews = [];
+    let followRows = [];
 
-    function showNotice(message, type = "info"){
-      notice.className = `notice show ${type}`;
-      notice.textContent = message || "";
+    function showNotice(message, type = "info", duration = 3200) {
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
       clearTimeout(showNotice._timer);
-      showNotice._timer = setTimeout(() => {
-        notice.className = "notice";
-        notice.textContent = "";
-      }, 2800);
+      if (duration > 0) {
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, duration);
+      }
     }
 
-    function initials(name){
-      const parts = String(name || "V").trim().split(/\s+/).filter(Boolean);
-      if(!parts.length) return "V";
-      if(parts.length === 1) return parts[0][0].toUpperCase();
-      return (parts[0][0] + parts[1][0]).toUpperCase();
+    function getInitial(name = "V") {
+      return String(name || "V").trim().charAt(0).toUpperCase() || "V";
     }
 
-    function timeAgo(value){
-      if(!value) return "Just now";
-      const date = new Date(value);
-      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-      if(diff < 60) return "Just now";
-      if(diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-      if(diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-      return `${Math.floor(diff / 86400)}d ago`;
-    }
-
-    function escapeHtml(value){
+    function escapeHtml(value) {
       return String(value || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -676,280 +928,495 @@
         .replace(/'/g, "&#39;");
     }
 
-    function openViewer(userId, statusId = ""){
-      const url = new URL("status-viewer.html", window.location.href);
-      url.searchParams.set("user_id", userId);
-      if(statusId) url.searchParams.set("status_id", statusId);
-      window.location.href = url.toString();
+    function timeAgo(value) {
+      if (!value) return "Just now";
+      const date = new Date(value);
+      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+      if (diff < 60) return "Just now";
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      return `${Math.floor(diff / 86400)}d ago`;
     }
 
-    function getProfile(userId){
+    function formatViewedAt(value) {
+      if (!value) return "Viewed";
+      const date = new Date(value);
+      return `Viewed ${date.toLocaleString([], {
+        hour: "numeric",
+        minute: "2-digit",
+        day: "numeric",
+        month: "short"
+      })}`;
+    }
+
+    function getProfile(userId) {
       return profilesMap[userId] || {};
     }
 
-    function getDisplayName(userId){
+    function getDisplayName(userId) {
       const p = getProfile(userId);
-      return p.full_name || p.username || (userId === currentUser.id ? "You" : "User");
+      return p.full_name || p.username || (userId === currentUser?.id ? "You" : "User");
     }
 
-    function getAvatarHtml(userId, className = ""){
+    function getAvatarUrl(userId) {
       const p = getProfile(userId);
-      const avatar = p.avatar_url || p.avatar_path || "";
-      const name = getDisplayName(userId);
-
-      if(avatar){
-        return `<div class="${className}"><img src="${avatar}" alt="${escapeHtml(name)}"></div>`;
-      }
-      return `<div class="${className}">${escapeHtml(initials(name))}</div>`;
+      return p.avatar_url || p.avatar_path || "";
     }
 
-    function statusKind(status){
-      const type = String(status.status_type || status.media_type || "").toLowerCase();
-      const mediaUrl = String(status.media_url || "").toLowerCase();
-      if(type.includes("video") || /\.(mp4|webm|mov|m4v)(\?|$)/.test(mediaUrl)) return "video";
-      if(type.includes("image") || /\.(jpg|jpeg|png|gif|webp)(\?|$)/.test(mediaUrl)) return "image";
+    function getStatusKind(row) {
+      const type = String(row?.status_type || row?.media_type || "").toLowerCase();
+      const mediaUrl = String(row?.media_url || "").toLowerCase();
+      const audioUrl = String(row?.audio_url || "").toLowerCase();
+      const musicUrl = String(row?.music_url || "").toLowerCase();
+
+      if (type.includes("voice") || audioUrl) return "voice";
+      if (type.includes("music") || musicUrl) return "music";
+      if (type.includes("video") || /\.(mp4|webm|mov|m4v)(\?|$)/.test(mediaUrl)) return "video";
+      if (type.includes("image") || /\.(jpg|jpeg|png|gif|webp)(\?|$)/.test(mediaUrl)) return "image";
       return "text";
     }
 
-    function getViewsForStatus(statusId){
-      return allViews.filter(v => v.status_id === statusId);
+    function getViewsForStatus(statusId) {
+      return statusViews.filter(v => v.status_id === statusId);
     }
 
-    function hasViewedStatus(statusId){
-      return getViewsForStatus(statusId).some(v => v.viewer_id === currentUser.id);
+    function isViewedByCurrentUser(statusId) {
+      return getViewsForStatus(statusId).some(v => v.viewer_id === currentUser?.id);
     }
 
-    async function requireUser(){
-      const { data, error } = await supabase.auth.getUser();
-      if(error) throw error;
-      if(!data?.user){
-        window.location.href = "login.html?next=status.html";
-        return null;
+    function openStatus(statusId) {
+      if (!statusId) return;
+      window.location.href = `status-viewer.html?id=${encodeURIComponent(statusId)}`;
+    }
+
+    function openEdit(statusId) {
+      if (!statusId) return;
+      window.location.href = `create-status.html?edit=${encodeURIComponent(statusId)}`;
+    }
+
+    function openProfile(userId) {
+      if (!userId) return;
+      window.location.href = `public-profile.html?id=${encodeURIComponent(userId)}`;
+    }
+
+    async function deleteStatus(statusId) {
+      if (!statusId) return;
+      const ok = window.confirm("Delete this story?");
+      if (!ok) return;
+
+      try {
+        const { error } = await supabaseClient
+          .from("statuses")
+          .delete()
+          .eq("id", statusId)
+          .eq("user_id", currentUser.id);
+
+        if (error) throw error;
+
+        showNotice("Story deleted.", "success");
+        await refreshAll();
+      } catch (error) {
+        console.error(error);
+        showNotice(error.message || "Could not delete story.", "error", 5000);
       }
-      currentUser = data.user;
-      return currentUser;
     }
 
-    function renderMyHeader(){
-      const myName = getDisplayName(currentUser.id);
-      const p = getProfile(currentUser.id);
-      const avatar = p.avatar_url || p.avatar_path || "";
-
-      if(avatar){
-        myAvatar.innerHTML = `<img src="${avatar}" alt="${escapeHtml(myName)}">`;
-      }else{
-        myAvatar.textContent = initials(myName);
-      }
-
-      if(!myStatuses.length){
-        myStatusSub.textContent = "Tap to add text, image, video, or caption status.";
-      }else{
-        const totalViews = myStatuses.reduce((sum, item) => sum + getViewsForStatus(item.id).length, 0);
-        myStatusSub.textContent = `${myStatuses.length} active ${myStatuses.length === 1 ? "status" : "statuses"} • ${totalViews} views`;
+    async function copyProfileLink(userId) {
+      const link = `${window.location.origin}/public-profile.html?id=${encodeURIComponent(userId)}`;
+      try {
+        await navigator.clipboard.writeText(link);
+        showNotice("Profile link copied.", "success");
+      } catch (_) {
+        showNotice(link, "info", 5000);
       }
     }
 
-    function renderRings(){
+    async function openViewerActions(userId) {
+      const name = getDisplayName(userId);
+      const action = prompt(
+        `Choose action for ${name}\n\nType:\n1 for Chat\n2 for View Profile\n3 for Copy Profile Link`
+      );
+
+      if (!action) return;
+
+      if (action === "1") {
+        window.location.href = `chat-room.html?user=${encodeURIComponent(userId)}`;
+        return;
+      }
+
+      if (action === "2") {
+        openProfile(userId);
+        return;
+      }
+
+      if (action === "3") {
+        await copyProfileLink(userId);
+        return;
+      }
+
+      showNotice("Invalid option.", "error");
+    }
+
+    function renderViewerSheet(statusId) {
+      const views = getViewsForStatus(statusId).sort((a, b) => new Date(b.viewed_at) - new Date(a.viewed_at));
+      viewerSheetTitle.textContent = `Viewers (${views.length})`;
+
+      if (!views.length) {
+        viewerList.innerHTML = `<div class="empty">No viewers yet.</div>`;
+        viewerSheetBackdrop.classList.add("show");
+        return;
+      }
+
+      viewerList.innerHTML = views.map(view => {
+        const name = getDisplayName(view.viewer_id);
+        const avatar = getAvatarUrl(view.viewer_id);
+
+        return `
+          <div class="viewer-row">
+            <a class="viewer-avatar-link" href="public-profile.html?id=${encodeURIComponent(view.viewer_id)}" aria-label="Open ${escapeHtml(name)} profile">
+              <div class="viewer-avatar">
+                ${avatar ? `<img src="${avatar}" alt="${escapeHtml(name)}">` : escapeHtml(getInitial(name))}
+              </div>
+            </a>
+
+            <div class="viewer-copy" data-viewer-copy="${view.viewer_id}">
+              <div class="viewer-name">${escapeHtml(name)}</div>
+              <div class="viewer-time">${escapeHtml(formatViewedAt(view.viewed_at))}</div>
+            </div>
+
+            <button class="mini-btn" type="button" data-viewer-action="${view.viewer_id}">Open</button>
+          </div>
+        `;
+      }).join("");
+
+      viewerList.querySelectorAll("[data-viewer-copy]").forEach(el => {
+        el.addEventListener("click", async () => {
+          await openViewerActions(el.getAttribute("data-viewer-copy"));
+        });
+      });
+
+      viewerList.querySelectorAll("[data-viewer-action]").forEach(el => {
+        el.addEventListener("click", async () => {
+          await openViewerActions(el.getAttribute("data-viewer-action"));
+        });
+      });
+
+      viewerSheetBackdrop.classList.add("show");
+    }
+
+    function closeViewerSheet() {
+      viewerSheetBackdrop.classList.remove("show");
+    }
+
+    function toggleMenu(statusId) {
+      document.querySelectorAll(".menu-panel.show").forEach(panel => {
+        if (panel.dataset.menu !== statusId) panel.classList.remove("show");
+      });
+
+      const panel = document.querySelector(`.menu-panel[data-menu="${statusId}"]`);
+      if (panel) panel.classList.toggle("show");
+    }
+
+    function getFollowIds() {
+      const followIds = new Set();
+
+      followRows.forEach(row => {
+        if (row.follower_id === currentUser.id && row.following_id) {
+          followIds.add(row.following_id);
+        }
+        if (row.following_id === currentUser.id && row.follower_id) {
+          followIds.add(row.follower_id);
+        }
+      });
+
+      return followIds;
+    }
+
+    function renderMyStories() {
+      const mine = activeStatuses
+        .filter(item => item.user_id === currentUser.id)
+        .sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+      const totalViews = mine.reduce((sum, item) => sum + getViewsForStatus(item.id).length, 0);
+
+      myCountChip.textContent = `${mine.length} stories`;
+      myViewsChip.textContent = `${totalViews} views`;
+      heroMyStories.textContent = String(mine.length);
+      heroMyViews.textContent = String(totalViews);
+
+      if (!mine.length) {
+        myStoryStrip.innerHTML = `
+          <div class="ring-item" onclick="window.location.href='create-status.html'">
+            <div class="ring-wrap">
+              <div class="ring-inner">${escapeHtml(getInitial(getDisplayName(currentUser.id)))}</div>
+              <div class="add-badge">+</div>
+            </div>
+            <div class="ring-name">Add Story</div>
+            <div class="ring-meta">Create now</div>
+          </div>
+        `;
+        return;
+      }
+
+      const avatar = getAvatarUrl(currentUser.id);
+      const me = getDisplayName(currentUser.id);
+
+      myStoryStrip.innerHTML = `
+        <div class="ring-item" onclick="window.location.href='create-status.html'">
+          <div class="ring-wrap">
+            <div class="ring-inner">
+              ${avatar ? `<img src="${avatar}" alt="${escapeHtml(me)}">` : escapeHtml(getInitial(me))}
+            </div>
+            <div class="add-badge">+</div>
+          </div>
+          <div class="ring-name">Add Story</div>
+          <div class="ring-meta">Create now</div>
+        </div>
+        ${mine.map(item => {
+          const viewed = isViewedByCurrentUser(item.id);
+          const viewCount = getViewsForStatus(item.id).length;
+          return `
+            <div class="ring-item">
+              <div class="ring-wrap ${viewed ? "viewed" : ""}" data-open="${item.id}">
+                <div class="ring-inner">
+                  ${avatar ? `<img src="${avatar}" alt="${escapeHtml(me)}">` : escapeHtml(getInitial(me))}
+                </div>
+              </div>
+              <div class="ring-name">My Story</div>
+              <div class="ring-meta">${viewCount} views</div>
+              <div class="menu-wrap" style="margin-top:4px;">
+                <button class="menu-btn" type="button" data-toggle-menu="${item.id}">⋯</button>
+                <div class="menu-panel" data-menu="${item.id}">
+                  <button class="menu-item" type="button" data-view="${item.id}">👁 View</button>
+                  <button class="menu-item" type="button" data-edit="${item.id}">✏️ Edit</button>
+                  <button class="menu-item" type="button" data-viewers="${item.id}">📋 Viewers</button>
+                  <button class="menu-item danger" type="button" data-delete="${item.id}">🗑 Delete</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      `;
+
+      myStoryStrip.querySelectorAll("[data-open]").forEach(el => {
+        el.addEventListener("click", () => openStatus(el.getAttribute("data-open")));
+      });
+
+      myStoryStrip.querySelectorAll("[data-toggle-menu]").forEach(el => {
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggleMenu(el.getAttribute("data-toggle-menu"));
+        });
+      });
+
+      myStoryStrip.querySelectorAll("[data-view]").forEach(el => {
+        el.addEventListener("click", () => openStatus(el.getAttribute("data-view")));
+      });
+
+      myStoryStrip.querySelectorAll("[data-edit]").forEach(el => {
+        el.addEventListener("click", () => openEdit(el.getAttribute("data-edit")));
+      });
+
+      myStoryStrip.querySelectorAll("[data-viewers]").forEach(el => {
+        el.addEventListener("click", () => renderViewerSheet(el.getAttribute("data-viewers")));
+      });
+
+      myStoryStrip.querySelectorAll("[data-delete]").forEach(el => {
+        el.addEventListener("click", () => deleteStatus(el.getAttribute("data-delete")));
+      });
+    }
+
+    function renderUpdates() {
+      const followIds = getFollowIds();
+
       const grouped = {};
-      allStatuses.forEach(item => {
-        if(!grouped[item.user_id]) grouped[item.user_id] = [];
+      activeStatuses.forEach(item => {
+        if (item.user_id === currentUser.id) return;
+        if (!followIds.has(item.user_id)) return;
+        if (!grouped[item.user_id]) grouped[item.user_id] = [];
         grouped[item.user_id].push(item);
       });
 
-      const ringUsers = Object.keys(grouped)
-        .map(userId => ({
+      const users = Object.keys(grouped).map(userId => {
+        const statuses = grouped[userId].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        const latest = statuses[0];
+        const viewedAll = statuses.every(item => isViewedByCurrentUser(item.id));
+        return {
           userId,
-          items: grouped[userId].sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
-        }))
-        .sort((a,b) => {
-          if(a.userId === currentUser.id) return -1;
-          if(b.userId === currentUser.id) return 1;
-          return new Date(b.items[0].created_at) - new Date(a.items[0].created_at);
-        });
+          statuses,
+          latest,
+          viewedAll
+        };
+      }).sort((a,b) => new Date(b.latest.created_at) - new Date(a.latest.created_at));
 
-      ringCountText.textContent = `${ringUsers.length} active users`;
+      friendCountChip.textContent = `${users.length} updates`;
+      heroUpdates.textContent = String(users.length);
 
-      if(!ringUsers.length){
-        ringsWrap.innerHTML = `<div class="empty" style="min-width:100%">No active status yet.</div>`;
+      if (!users.length) {
+        friendUpdateList.innerHTML = `<div class="empty">No active updates yet.</div>`;
         return;
       }
 
-      ringsWrap.innerHTML = ringUsers.map(group => {
-        const latest = group.items[0];
-        const name = getDisplayName(group.userId);
-        const viewedAll = group.items.every(item => hasViewedStatus(item.id));
-        const subText = group.userId === currentUser.id
-          ? `${group.items.reduce((sum, s) => sum + getViewsForStatus(s.id).length, 0)} views`
-          : timeAgo(latest.created_at);
-
-        const avatar = getProfile(group.userId).avatar_url || getProfile(group.userId).avatar_path || "";
+      friendUpdateList.innerHTML = users.map(item => {
+        const name = getDisplayName(item.userId);
+        const avatar = getAvatarUrl(item.userId);
+        const latest = item.latest;
+        const kind = getStatusKind(latest);
+        const text =
+          latest.caption ||
+          latest.text_content ||
+          latest.content ||
+          (kind === "image" ? "Image update" :
+           kind === "video" ? "Video update" :
+           kind === "voice" ? "Voice update" :
+           kind === "music" ? "Music update" : "Text update");
 
         return `
-          <div class="ring-item" onclick="openViewer('${group.userId}','${latest.id}')">
-            <div class="avatar-ring ${viewedAll ? "viewed" : ""}">
-              <div class="avatar-inner">
-                ${avatar ? `<img src="${avatar}" alt="${escapeHtml(name)}">` : escapeHtml(initials(name))}
+          <div class="status-card">
+            <div class="status-left">
+              <a class="status-avatar-link" href="public-profile.html?id=${encodeURIComponent(item.userId)}" aria-label="Open ${escapeHtml(name)} profile">
+                <div class="mini-ring ${item.viewedAll ? "viewed" : ""}">
+                  <div class="mini-ring-inner">
+                    ${avatar ? `<img src="${avatar}" alt="${escapeHtml(name)}">` : escapeHtml(getInitial(name))}
+                  </div>
+                </div>
+              </a>
+
+              <div class="status-copy" data-open-copy="${latest.id}">
+                <div class="status-name">${escapeHtml(name)}</div>
+                <div class="status-text">${escapeHtml(text)}</div>
+                <div class="status-time">${escapeHtml(timeAgo(latest.created_at))}</div>
               </div>
             </div>
-            <div class="ring-name">${escapeHtml(name)}</div>
-            <div class="ring-sub">${escapeHtml(subText)}</div>
+
+            <div class="status-actions">
+              <div class="chip ${item.viewedAll ? "" : "active"}">${item.viewedAll ? "Viewed" : "New"}</div>
+              <button class="mini-btn" data-open-btn="${latest.id}">Open</button>
+            </div>
           </div>
         `;
       }).join("");
+
+      friendUpdateList.querySelectorAll("[data-open-copy]").forEach(el => {
+        el.addEventListener("click", () => openStatus(el.getAttribute("data-open-copy")));
+      });
+
+      friendUpdateList.querySelectorAll("[data-open-btn]").forEach(el => {
+        el.addEventListener("click", () => openStatus(el.getAttribute("data-open-btn")));
+      });
     }
 
-    function renderStatuses(){
-      statusCountText.textContent = `${allStatuses.length} statuses`;
-
-      if(!allStatuses.length){
-        statusList.innerHTML = `<div class="empty">No active status found. Tap Add Status to post one.</div>`;
+    async function loadProfiles(userIds) {
+      const unique = Array.from(new Set(userIds.filter(Boolean)));
+      if (!unique.length) {
+        profilesMap = {};
         return;
       }
 
-      statusList.innerHTML = allStatuses.map(status => {
-        const kind = statusKind(status);
-        const name = getDisplayName(status.user_id);
-        const viewCount = getViewsForStatus(status.id).length;
-        const mine = status.user_id === currentUser.id;
-        const caption = status.caption || status.content || status.text_content || "";
-        let thumb = "";
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("id,full_name,username,avatar_url,avatar_path")
+        .in("id", unique);
 
-        if(kind === "image" && status.media_url){
-          thumb = `<div class="thumb"><img src="${status.media_url}" alt="Status image"></div>`;
-        } else if(kind === "video" && status.media_url){
-          thumb = `<div class="thumb"><video src="${status.media_url}" muted playsinline preload="metadata"></video></div>`;
-        } else {
-          thumb = `<div class="thumb text">${escapeHtml((status.text_content || status.content || "Status").slice(0, 40))}</div>`;
-        }
+      if (error) throw error;
 
-        return `
-          <div class="status-row" onclick="openViewer('${status.user_id}','${status.id}')">
-            ${thumb}
-            <div class="row-copy">
-              <div class="row-title">${escapeHtml(name)}</div>
-              <div class="row-sub">
-                ${kind === "text"
-                  ? escapeHtml(status.text_content || status.content || "Text status")
-                  : escapeHtml(caption || `${kind} status`)}
-              </div>
-            </div>
-            <div class="row-meta">
-              <div class="time">${escapeHtml(timeAgo(status.created_at))}</div>
-              <div class="badge">${mine ? `👁 ${viewCount}` : kind}</div>
-            </div>
-          </div>
-        `;
-      }).join("");
+      profilesMap = {};
+      (data || []).forEach(row => {
+        profilesMap[row.id] = row;
+      });
     }
 
-    function renderReplies(){
-      const myIds = new Set(myStatuses.map(s => s.id));
-      const mineReplies = allReplies.filter(r => myIds.has(r.status_id));
-
-      replyCountText.textContent = `${mineReplies.length} replies`;
-
-      if(!mineReplies.length){
-        replyList.innerHTML = `<div class="empty">No replies to your statuses yet.</div>`;
-        return;
-      }
-
-      replyList.innerHTML = mineReplies.map(reply => {
-        const senderName = getDisplayName(reply.sender_id);
-        const senderProfile = getProfile(reply.sender_id);
-        const avatar = senderProfile.avatar_url || senderProfile.avatar_path || "";
-        return `
-          <div class="reply-row">
-            <div class="reply-avatar">
-              ${avatar ? `<img src="${avatar}" alt="${escapeHtml(senderName)}">` : escapeHtml(initials(senderName))}
-            </div>
-            <div>
-              <div class="reply-name">${escapeHtml(senderName)}</div>
-              <div class="reply-text">${escapeHtml(reply.message || "")}</div>
-              <div class="time" style="margin-top:6px">${escapeHtml(timeAgo(reply.created_at))}</div>
-            </div>
-            <button class="reply-open" type="button" onclick="window.location.href='chats.html'">Open Chat</button>
-          </div>
-        `;
-      }).join("");
-    }
-
-    async function loadStatusPage(){
+    async function loadEverything() {
       const nowIso = new Date().toISOString();
 
-      const [statusesRes, profilesRes, repliesRes, viewsRes] = await Promise.all([
-        supabase
+      const [statusRes, viewRes, followRes] = await Promise.all([
+        supabaseClient
           .from("statuses")
-          .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,thumbnail_url,bg_style,privacy,expires_at,created_at")
+          .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,media_path,thumbnail_url,audio_url,audio_path,audio_type,music_url,music_path,music_name,created_at,expires_at")
           .gt("expires_at", nowIso)
-          .order("created_at", { ascending:false }),
+          .order("created_at", { ascending: false }),
 
-        supabase
-          .from("profiles")
-          .select("id,username,full_name,avatar_url,avatar_path"),
-
-        supabase
-          .from("status_replies")
-          .select("id,status_id,sender_id,message,created_at")
-          .order("created_at", { ascending:false })
-          .limit(30),
-
-        supabase
+        supabaseClient
           .from("status_views")
-          .select("id,status_id,viewer_id,viewed_at")
+          .select("id,status_id,viewer_id,viewed_at"),
+
+        supabaseClient
+          .from("follows")
+          .select("id,follower_id,following_id")
+          .or(`follower_id.eq.${currentUser.id},following_id.eq.${currentUser.id}`)
       ]);
 
-      if(statusesRes.error) throw statusesRes.error;
-      if(profilesRes.error) throw profilesRes.error;
-      if(repliesRes.error) throw repliesRes.error;
-      if(viewsRes.error) throw viewsRes.error;
+      if (statusRes.error) throw statusRes.error;
+      if (viewRes.error) throw viewRes.error;
+      if (followRes.error) throw followRes.error;
 
-      profilesMap = Object.fromEntries((profilesRes.data || []).map(p => [p.id, p]));
-      allStatuses = statusesRes.data || [];
-      myStatuses = allStatuses.filter(s => s.user_id === currentUser.id);
-      allReplies = repliesRes.data || [];
-      allViews = viewsRes.data || [];
+      activeStatuses = statusRes.data || [];
+      statusViews = viewRes.data || [];
+      followRows = followRes.data || [];
 
-      renderMyHeader();
-      renderRings();
-      renderStatuses();
-      renderReplies();
+      const ids = activeStatuses.map(item => item.user_id);
+      ids.push(currentUser.id);
+      followRows.forEach(row => {
+        ids.push(row.follower_id, row.following_id);
+      });
+
+      await loadProfiles(ids);
     }
 
-    document.getElementById("backBtn").addEventListener("click", () => {
-      window.location.href = "home.html";
-    });
+    function renderAll() {
+      renderMyStories();
+      renderUpdates();
+    }
 
-    document.getElementById("searchBtn").addEventListener("click", () => {
-      if(currentUser){
-        openViewer(currentUser.id);
+    async function refreshAll(showMsg = false) {
+      await loadEverything();
+      renderAll();
+      if (showMsg) showNotice("Status updated.", "success");
+    }
+
+    async function init() {
+      try {
+        currentUser = await protectPage("status.html");
+        if (!currentUser) return;
+
+        await refreshAll();
+
+        refreshBtn.addEventListener("click", async () => {
+          try {
+            await refreshAll(true);
+          } catch (error) {
+            console.error(error);
+            showNotice(error.message || "Could not refresh.", "error", 5000);
+          }
+        });
+
+        refreshBtn2.addEventListener("click", async () => {
+          try {
+            await refreshAll(true);
+          } catch (error) {
+            console.error(error);
+            showNotice(error.message || "Could not refresh.", "error", 5000);
+          }
+        });
+
+        closeViewerSheetBtn.addEventListener("click", closeViewerSheet);
+        viewerSheetBackdrop.addEventListener("click", (e) => {
+          if (e.target === viewerSheetBackdrop) closeViewerSheet();
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!e.target.closest(".menu-wrap")) {
+            document.querySelectorAll(".menu-panel.show").forEach(panel => panel.classList.remove("show"));
+          }
+        });
+
+      } catch (error) {
+        console.error(error);
+        showNotice(error.message || "Could not load statuses.", "error", 5000);
       }
-    });
+    }
 
-    document.getElementById("createStatusBtn").addEventListener("click", () => {
-      window.location.href = "create-status.html";
-    });
-
-    document.getElementById("refreshBtn").addEventListener("click", async () => {
-      try{
-        await loadStatusPage();
-        showNotice("Status page refreshed.", "success");
-      }catch(error){
-        showNotice(error.message || "Could not refresh status page.", "error");
-      }
-    });
-
-    window.openViewer = openViewer;
-
-    (async function init(){
-      try{
-        await requireUser();
-        await loadStatusPage();
-      }catch(error){
-        showNotice(error.message || "Could not load status page.", "error");
-      }finally{
-        document.documentElement.classList.remove("auth-loading");
-      }
-    })();
+    init();
   </script>
 </body>
 </html>
