@@ -1,567 +1,556 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="auth-loading">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Create Status | View</title>
-  <meta name="theme-color" content="#0a1028" />
-  <link rel="manifest" href="/manifest.json" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta name="theme-color" content="#0b1454" />
+
   <style>
+    html.auth-loading, html.auth-loading body{visibility:hidden}
+
     :root{
-      --bg1:#081a8f;
-      --bg2:#07115f;
-      --bg3:#05093c;
-      --card:rgba(255,255,255,.08);
-      --card-2:rgba(255,255,255,.05);
-      --line:rgba(255,255,255,.10);
+      --bg:#08114c;
+      --bg2:#0b1454;
+      --bg3:#0a1b6f;
       --text:#ffffff;
-      --muted:#d4dcff;
-      --blue:#2f7bff;
-      --blue2:#5ba0ff;
-      --red:#ff2f57;
-      --red2:#ff5a74;
-      --good:#19c37d;
-      --warn:#ffb020;
-      --danger:#ef4444;
-      --shadow:0 18px 46px rgba(0,0,0,.28);
-      --safe-top:env(safe-area-inset-top,0px);
-      --safe-bottom:env(safe-area-inset-bottom,0px);
+      --muted:rgba(255,255,255,.72);
+      --line:rgba(255,255,255,.14);
+      --panel:rgba(8,17,76,.86);
+      --panel2:rgba(11,20,84,.92);
+      --primary:#2563eb;
+      --primary2:#4f46e5;
+      --red:#ef4444;
+      --red2:#ff5f7a;
+      --green:#10b981;
+      --shadow:0 16px 40px rgba(0,0,0,.22);
+      --safe-top:env(safe-area-inset-top);
+      --safe-bottom:env(safe-area-inset-bottom);
     }
 
-    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
     html,body{
       min-height:100%;
-      background:
-        radial-gradient(circle at top left, rgba(91,160,255,.22), transparent 20%),
-        radial-gradient(circle at top right, rgba(255,47,87,.18), transparent 16%),
-        linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 48%,var(--bg3) 100%);
+      background:#0b1454;
       color:var(--text);
+      overflow:hidden;
     }
-    body{overflow-x:hidden;padding-bottom:110px}
-    a{text-decoration:none;color:inherit}
-    button,input,textarea,select{font:inherit}
-    img{display:block;max-width:100%}
 
-    .page{
-      width:min(100%,920px);
-      margin:0 auto;
-      padding:calc(12px + var(--safe-top)) 14px calc(20px + var(--safe-bottom));
+    body{
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.22), transparent 22%),
+        radial-gradient(circle at top right, rgba(255,95,122,.16), transparent 18%),
+        linear-gradient(180deg,#08114c 0%, #0b1454 55%, #0a1b6f 100%);
+    }
+
+    a{color:inherit;text-decoration:none}
+    button,input,textarea,select{font:inherit;color:inherit}
+    button{border:none;background:none;cursor:pointer}
+    img,video,audio{display:block;max-width:100%}
+
+    .app{
+      position:fixed;
+      inset:0;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
     }
 
     .notice{
+      position:absolute;
+      top:calc(var(--safe-top) + 74px);
+      left:14px;
+      right:14px;
+      z-index:90;
       display:none;
-      margin-bottom:12px;
       padding:12px 14px;
       border-radius:14px;
-      font-size:12px;
+      font-size:14px;
       line-height:1.5;
-      border:1px solid transparent;
-      backdrop-filter:blur(12px);
+      box-shadow:var(--shadow);
+      white-space:pre-wrap;
+      backdrop-filter:blur(10px);
     }
     .notice.show{display:block}
-    .notice.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.22);color:#ffd7df}
-    .notice.success{background:rgba(25,195,125,.10);border-color:rgba(25,195,125,.22);color:#dcffe7}
-    .notice.info{background:rgba(47,123,255,.10);border-color:rgba(47,123,255,.22);color:#dcebff}
+    .notice.error{background:rgba(127,29,29,.94);border:1px solid rgba(254,202,202,.35);color:#fff}
+    .notice.success{background:rgba(6,95,70,.94);border:1px solid rgba(167,243,208,.35);color:#fff}
+    .notice.info{background:rgba(30,64,175,.94);border:1px solid rgba(191,219,254,.35);color:#fff}
 
     .topbar{
-      display:grid;
-      grid-template-columns:48px 1fr auto;
-      gap:10px;
+      position:relative;
+      z-index:40;
+      display:flex;
       align-items:center;
-      margin-bottom:14px;
+      justify-content:space-between;
+      gap:12px;
+      padding:calc(12px + var(--safe-top)) 14px 10px;
+    }
+
+    .top-left,.top-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
     }
 
     .icon-btn{
-      width:46px;height:46px;min-width:46px;
-      border:none;border-radius:14px;
-      display:flex;align-items:center;justify-content:center;
-      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
-      border:1px solid var(--line);color:#fff;
-      box-shadow:var(--shadow);cursor:pointer;
-    }
-
-    .brand{
-      display:flex;align-items:center;gap:10px;min-width:0;
-    }
-    .brand-logo{
-      width:42px;height:42px;min-width:42px;border-radius:14px;overflow:hidden;
-      background:linear-gradient(135deg,var(--blue),var(--red));
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow:0 10px 22px rgba(0,0,0,.18);
-    }
-    .brand-logo img{width:100%;height:100%;object-fit:cover}
-    .brand-copy{min-width:0}
-    .brand-title{font-size:16px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .brand-title .ceetify{color:var(--red)}
-    .brand-sub{font-size:11px;color:var(--muted)}
-
-    .shell{
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:14px;
-    }
-
-    .card{
-      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
-      border:1px solid var(--line);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(12px);
-      overflow:hidden;
-    }
-
-    .card-body{padding:14px}
-    .section-title{
-      font-size:14px;font-weight:900;margin-bottom:10px;
-      display:flex;align-items:center;justify-content:space-between;gap:8px;
-    }
-    .section-sub{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5}
-
-    .form-grid{display:grid;gap:12px}
-    .label{
-      display:block;font-size:11px;font-weight:800;color:#dce8ff;
-      margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;
-    }
-
-    .input,.textarea,.select{
-      width:100%;
-      background:rgba(255,255,255,.05);
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.14);
       color:#fff;
-      border:1px solid var(--line);
-      border-radius:16px;
-      outline:none;
-    }
-    .input,.select{min-height:50px;padding:0 14px}
-    .textarea{
-      min-height:130px;padding:14px;resize:vertical;
-      line-height:1.55;
-    }
-    .input::placeholder,.textarea::placeholder{color:#9fb5df}
-    .input:focus,.textarea:focus,.select:focus{
-      border-color:rgba(91,160,255,.45);
-      box-shadow:0 0 0 4px rgba(47,123,255,.10);
+      box-shadow:var(--shadow);
+      font-size:20px;
+      backdrop-filter:blur(10px);
     }
 
-    .segmented{
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:8px;
-    }
-    .seg-btn{
-      min-height:42px;border-radius:14px;border:1px solid var(--line);
-      background:rgba(255,255,255,.05);color:#fff;font-size:12px;font-weight:800;
-      cursor:pointer;
-    }
-    .seg-btn.active{
-      background:linear-gradient(135deg,var(--blue),var(--red));
+    .icon-btn.active{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red2));
       border-color:transparent;
     }
 
-    .media-drop{
-      border:1.5px dashed rgba(255,255,255,.18);
+    .preview-stage{
+      position:relative;
+      flex:1;
+      overflow:hidden;
+    }
+
+    .preview-bg{
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg,#2563eb,#4f46e5,#ff5f7a);
+      transition:.2s ease;
+    }
+
+    .media-layer,
+    .audio-layer{
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:#000;
+      overflow:hidden;
+      pointer-events:none;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
+    .media-layer.show,
+    .audio-layer.show{
+      display:flex;
+    }
+
+    .media-image{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%) scale(1);
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      pointer-events:none;
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
+    .media-video{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      background:#000;
+      pointer-events:none;
+    }
+
+    .audio-card{
+      width:min(88vw,420px);
+      border-radius:26px;
+      padding:22px 18px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:var(--shadow);
+      text-align:center;
+      backdrop-filter:blur(12px);
+      pointer-events:auto;
+    }
+
+    .audio-icon{
+      width:84px;
+      height:84px;
+      margin:0 auto 16px;
+      border-radius:24px;
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:38px;
+      box-shadow:var(--shadow);
+    }
+
+    .audio-title{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:8px;
+      color:#fff;
+    }
+
+    .audio-sub{
+      font-size:14px;
+      line-height:1.5;
+      color:var(--muted);
+      margin-bottom:14px;
+      word-break:break-word;
+    }
+
+    .audio-player{
+      width:100%;
+      pointer-events:auto;
+    }
+
+    .stage-overlay{
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.2));
+      pointer-events:none;
+    }
+
+    .editor-center{
+      position:absolute;
+      inset:0;
+      z-index:5;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:110px 22px 165px;
+      text-align:center;
+      pointer-events:none;
+    }
+
+    .status-input{
+      width:100%;
+      max-width:92%;
+      min-height:120px;
+      border:none;
+      outline:none;
+      resize:none;
+      background:transparent;
+      color:#fff;
+      font-size:34px;
+      font-weight:700;
+      line-height:1.35;
+      text-align:center;
+      white-space:pre-wrap;
+      word-break:break-word;
+      overflow:hidden;
+      text-shadow:0 10px 24px rgba(0,0,0,.22);
+      pointer-events:auto;
+    }
+
+    .status-input.left{text-align:left}
+    .status-input.right{text-align:right}
+    .status-input.light-shadow{text-shadow:0 6px 16px rgba(0,0,0,.14)}
+    .status-input.no-shadow{text-shadow:none}
+
+    .caption-box{
+      position:absolute;
+      left:14px;
+      right:14px;
+      bottom:132px;
+      z-index:12;
+      display:none;
+      padding:12px 14px;
       border-radius:18px;
-      padding:18px;
-      background:rgba(255,255,255,.04);
+      background:rgba(0,0,0,.34);
+      border:1px solid rgba(255,255,255,.12);
+      backdrop-filter:blur(10px);
+      color:#fff;
+      font-size:14px;
+      line-height:1.5;
+      white-space:pre-wrap;
+      word-break:break-word;
+      pointer-events:none;
+    }
+    .caption-box.show{display:block}
+
+    .tools-top{
+      position:absolute;
+      top:calc(var(--safe-top) + 70px);
+      left:14px;
+      right:14px;
+      z-index:30;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      pointer-events:none;
+    }
+
+    .tools-left,
+    .tools-right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      pointer-events:auto;
+    }
+
+    .mini-tool{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.14);
+      color:#fff;
+      font-size:18px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+
+    .mini-tool.active{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red2));
+      border-color:transparent;
+    }
+
+    .mini-panel{
+      position:absolute;
+      left:14px;
+      right:14px;
+      bottom:138px;
+      z-index:35;
+      display:none;
+      padding:14px;
+      border-radius:22px;
+      background:rgba(9,20,78,.94);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+    }
+
+    .mini-panel.show{display:block}
+
+    .panel-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .panel-col{
       display:grid;
       gap:10px;
-      text-align:center;
     }
 
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .switch{
-      display:flex;align-items:center;justify-content:space-between;
-      gap:10px;padding:12px 14px;border-radius:16px;
-      border:1px solid var(--line);background:rgba(255,255,255,.04)
+    .panel-label{
+      font-size:12px;
+      font-weight:700;
+      color:var(--muted);
     }
-    .switch span{font-size:13px;font-weight:700}
-    .switch input{accent-color:var(--blue);width:18px;height:18px}
 
-    .chip-grid{
-      display:grid;
-      grid-template-columns:repeat(4,minmax(0,1fr));
+    .panel-scroll{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .swatch{
+      width:36px;
+      height:36px;
+      border-radius:999px;
+      border:2px solid rgba(255,255,255,.86);
+      box-shadow:0 0 0 1px rgba(255,255,255,.12);
+    }
+
+    .swatch.active{
+      box-shadow:0 0 0 3px rgba(147,197,253,.28);
+    }
+
+    .bg-swatch{
+      min-width:60px;
+      height:42px;
+      border-radius:14px;
+      border:2px solid transparent;
+      box-shadow:var(--shadow);
+    }
+
+    .bg-swatch.active{
+      border-color:#fff;
+    }
+
+    .option-btn{
+      min-height:42px;
+      padding:0 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       gap:8px;
     }
-    .bg-chip{
-      height:54px;border-radius:16px;border:2px solid transparent;
-      cursor:pointer;position:relative;overflow:hidden;
-      box-shadow:0 8px 18px rgba(0,0,0,.18);
-    }
-    .bg-chip.active{border-color:#fff}
-    .bg-chip span{
-      position:absolute;right:8px;bottom:6px;font-size:11px;font-weight:900;
-      background:rgba(0,0,0,.22);padding:2px 6px;border-radius:999px
+
+    .option-btn.active{
+      background:linear-gradient(135deg,var(--primary),var(--primary2),var(--red2));
+      border-color:transparent;
     }
 
-    .preview-wrap{
-      display:grid;gap:12px;
-    }
-
-    .viewer-preview{
-      min-height:520px;
-      border-radius:28px;
-      overflow:hidden;
-      position:relative;
-      background:linear-gradient(135deg,var(--blue),var(--red));
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow:0 24px 54px rgba(0,0,0,.30);
+    .emoji-grid{
       display:flex;
-      flex-direction:column;
-      justify-content:space-between;
+      gap:8px;
+      flex-wrap:wrap;
+      max-height:180px;
+      overflow:auto;
     }
 
-    .preview-top{
-      padding:12px 12px 0;
-      display:grid;gap:10px;
-    }
-    .progress-row{
-      display:grid;grid-template-columns:repeat(5,1fr);gap:6px;
-    }
-    .progress-row span{
-      display:block;height:4px;border-radius:999px;background:rgba(255,255,255,.24);
-    }
-    .progress-row span.active{background:#fff}
-    .viewer-head{
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-    }
-    .viewer-user{
-      display:flex;align-items:center;gap:10px;min-width:0;
-    }
-    .viewer-avatar{
-      width:42px;height:42px;border-radius:50%;
-      background:linear-gradient(135deg,var(--blue2),var(--red2));
-      border:2px solid rgba(255,255,255,.9);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:900;
-    }
-    .viewer-name{font-size:15px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .viewer-time{font-size:11px;color:#eef4ff}
-    .viewer-actions{display:flex;gap:8px}
-    .viewer-actions button{
-      width:38px;height:38px;border-radius:12px;border:none;
-      background:rgba(0,0,0,.20);color:#fff;cursor:pointer
+    .emoji-btn{
+      width:40px;
+      height:40px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
     }
 
-    .preview-media{
-      flex:1;
-      min-height:220px;
-      display:flex;align-items:center;justify-content:center;
-      position:relative;
-      overflow:hidden;
-      padding:18px;
-      text-align:center;
-    }
-    .preview-media img,.preview-media video{
-      width:100%;height:100%;object-fit:cover;border-radius:0
-    }
-    .text-status{
-      width:100%;height:100%;
-      display:flex;align-items:center;justify-content:center;
-      text-align:center;padding:22px;font-size:28px;font-weight:900;line-height:1.3;
-      text-shadow:0 8px 24px rgba(0,0,0,.24);
-      white-space:pre-wrap;word-break:break-word;
+    .field{
+      width:100%;
+      min-height:46px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      outline:none;
     }
 
-    .preview-foot{
-      padding:12px;
-      display:grid;gap:10px;
-    }
-    .preview-meta{
-      display:flex;align-items:center;justify-content:flex-start;gap:10px;
-      font-size:12px;font-weight:700;color:#eef4ff;
-    }
-    .reply-bar{
-      display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;
-      background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.14);
-      border-radius:18px;padding:8px;
-    }
-    .reply-input{
-      min-height:42px;border:none;outline:none;background:transparent;color:#fff;padding:0 8px
-    }
-    .reply-input::placeholder{color:#dce8ff}
-    .reply-icon,.send-btn{
-      min-width:42px;height:42px;border:none;border-radius:12px;cursor:pointer
-    }
-    .reply-icon{background:rgba(255,255,255,.10);color:#fff}
-    .send-btn{background:linear-gradient(135deg,var(--blue),var(--red));color:#fff;padding:0 14px;font-weight:800}
+    .field::placeholder{color:rgba(255,255,255,.58)}
 
-    .media-preview-box{
-      display:none;
-      border:1px solid var(--line);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.04)
-    }
-    .media-preview-box.show{display:block}
-    .media-preview-box img,.media-preview-box video{width:100%;max-height:280px;object-fit:cover}
-
-    .media-preview-actions{
-      display:flex;gap:8px;justify-content:flex-end;padding:10px
+    .slider{
+      width:100%;
+      accent-color:#93c5fd;
     }
 
-    .action-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
+    .bottom-actions{
+      position:absolute;
+      left:14px;
+      right:14px;
+      bottom:80px;
+      z-index:32;
+      display:flex;
+      justify-content:center;
+      pointer-events:none;
+    }
+
+    .bottom-actions-inner{
+      display:flex;
       gap:10px;
-    }
-    .btn{
-      min-height:48px;border:none;border-radius:16px;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;
-      gap:8px;font-weight:900;color:#fff;padding:0 14px;
-      box-shadow:0 12px 26px rgba(0,0,0,.22)
-    }
-    .btn.blue{background:linear-gradient(135deg,var(--blue),var(--blue2))}
-    .btn.red{background:linear-gradient(135deg,var(--red),var(--red2))}
-    .btn.soft{
-      background:rgba(255,255,255,.07);border:1px solid var(--line)
+      padding:8px 10px;
+      border-radius:18px;
+      background:rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+      pointer-events:auto;
     }
 
-    .helper-list{display:grid;gap:8px}
-    .helper-item{
-      padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.04)
+    .small-btn{
+      min-height:40px;
+      padding:0 16px;
+      border-radius:12px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
     }
-    .helper-item strong{display:block;font-size:12px;margin-bottom:4px}
-    .helper-item span{font-size:12px;color:var(--muted);line-height:1.5}
 
-    .bottom-nav{
-      position:fixed;left:50%;bottom:10px;transform:translateX(-50%);
-      width:min(720px,calc(100% - 12px));
-      display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
-      gap:2px;padding:8px 4px calc(8px + var(--safe-bottom));
-      border-radius:18px;background:rgba(7,14,54,.95);border:1px solid var(--line);
-      box-shadow:0 18px 42px rgba(0,0,0,.35);backdrop-filter:blur(14px);z-index:40;
+    .small-btn.primary{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      border-color:transparent;
     }
-    .nav-link{
-      min-height:54px;display:flex;align-items:center;justify-content:center;flex-direction:column;
-      gap:4px;font-size:10px;color:#d6e0ff;border-radius:14px
-    }
-    .nav-link.active{color:var(--red)}
-    .hidden{display:none!important}
 
-    @media (max-width:860px){
-      .shell{grid-template-columns:1fr}
-      .viewer-preview{min-height:560px}
+    .type-switch{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:34;
+      padding:12px 12px calc(12px + var(--safe-bottom));
+      background:rgba(7,10,22,.88);
+      border-top:1px solid rgba(255,255,255,.08);
+      backdrop-filter:blur(16px);
     }
-    @media (max-width:560px){
-      .chip-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .action-grid{grid-template-columns:1fr}
-      .segmented{grid-template-columns:1fr}
-      .reply-bar{grid-template-columns:1fr auto auto}
-      .send-btn{grid-column:1/-1}
-      .viewer-preview{min-height:500px}
+
+    .switch-row{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:8px;
+      width:min(100%,620px);
+      margin:0 auto;
+    }
+
+    .switch-btn{
+      min-height:52px;
+      border-radius:18px;
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:0 8px;
+      background:transparent;
+      border:1px solid transparent;
+    }
+
+    .switch-btn.active{
+      background:rgba(255,255,255,.12);
+      border-color:rgba(255,255,255,.14);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+    }
+
+    @media (max-width:640px){
+      .status-input{font-size:28px}
+      .tools-top{top:calc(var(--safe-top) + 68px)}
+      .switch-row{gap:6px}
+      .switch-btn{font-size:12px;min-height:48px}
+      .bottom-actions{bottom:72px}
     }
   </style>
-</head>
-<body>
-  <div class="page">
-    <div id="notice" class="notice"></div>
 
-    <header class="topbar">
-      <button class="icon-btn" onclick="window.location.href='status.html'" aria-label="Back">←</button>
-
-      <div class="brand">
-        <a href="home.html" class="brand-logo" aria-label="View home">
-          <img src="icons/view-logo.png" alt="View logo" onerror="this.style.display='none';this.parentNode.innerHTML='V';this.parentNode.style.display='flex';this.parentNode.style.alignItems='center';this.parentNode.style.justifyContent='center';this.parentNode.style.fontWeight='900';this.parentNode.style.color='#fff';" />
-        </a>
-        <div class="brand-copy">
-          <div class="brand-title">Create Status <span class="ceetify">| VIEW by Ceetify</span></div>
-          <div class="brand-sub">Text, photo, and video status with premium styling</div>
-        </div>
-      </div>
-
-      <a href="status.html" class="icon-btn" aria-label="Open status page">⌕</a>
-    </header>
-
-    <div class="shell">
-      <section class="card">
-        <div class="card-body">
-          <div class="section-title">Status Composer</div>
-          <div class="section-sub">Create a 24-hour story with text, image, or video. Every button below works and is fully linked to your status flow.</div>
-
-          <div class="form-grid">
-            <div>
-              <label class="label">Status Type</label>
-              <div class="segmented">
-                <button class="seg-btn active" type="button" data-type="text">Text Status</button>
-                <button class="seg-btn" type="button" data-type="image">Image Status</button>
-                <button class="seg-btn" type="button" data-type="video">Video Status</button>
-              </div>
-            </div>
-
-            <div>
-              <label class="label" for="textContent">Text / Caption</label>
-              <textarea id="textContent" class="textarea" placeholder="Share what’s happening..."></textarea>
-            </div>
-
-            <div id="backgroundSection">
-              <label class="label">Background Style</label>
-              <div class="chip-grid" id="bgGrid">
-                <button class="bg-chip active" type="button" data-bg="sunset" style="background:linear-gradient(135deg,#2f7bff,#ff2f57)"><span>1</span></button>
-                <button class="bg-chip" type="button" data-bg="royal" style="background:linear-gradient(135deg,#081a8f,#5ba0ff)"><span>2</span></button>
-                <button class="bg-chip" type="button" data-bg="flare" style="background:linear-gradient(135deg,#ff2f57,#ff8a00)"><span>3</span></button>
-                <button class="bg-chip" type="button" data-bg="deep" style="background:linear-gradient(135deg,#091127,#7c3aed)"><span>4</span></button>
-                <button class="bg-chip" type="button" data-bg="ocean" style="background:linear-gradient(135deg,#00bcd4,#2f7bff)"><span>5</span></button>
-                <button class="bg-chip" type="button" data-bg="berry" style="background:linear-gradient(135deg,#7f1d1d,#ff2f57)"><span>6</span></button>
-                <button class="bg-chip" type="button" data-bg="night" style="background:linear-gradient(135deg,#05093c,#1d4ed8)"><span>7</span></button>
-                <button class="bg-chip" type="button" data-bg="mix" style="background:linear-gradient(135deg,#5ba0ff,#ff5a74,#2f7bff)"><span>8</span></button>
-              </div>
-            </div>
-
-            <div id="mediaSection" class="hidden">
-              <label class="label">Media Upload</label>
-              <div class="media-drop">
-                <div style="font-size:14px;font-weight:800">Select image or video</div>
-                <div style="font-size:12px;color:var(--muted)">Upload one premium status media file</div>
-                <div class="row" style="justify-content:center">
-                  <button class="btn blue" type="button" id="pickMediaBtn">Choose Media</button>
-                  <input id="mediaInput" type="file" accept="image/*,video/*" class="hidden" />
-                </div>
-              </div>
-
-              <div id="mediaPreviewBox" class="media-preview-box">
-                <img id="mediaPreviewImage" class="hidden" alt="Status media preview" />
-                <video id="mediaPreviewVideo" class="hidden" controls playsinline></video>
-                <div class="media-preview-actions">
-                  <button class="btn soft" type="button" id="changeMediaBtn">Change</button>
-                  <button class="btn red" type="button" id="removeMediaBtn">Remove</button>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label class="label" for="privacySelect">Privacy</label>
-              <select id="privacySelect" class="select">
-                <option value="public">Public</option>
-                <option value="followers">Followers only</option>
-                <option value="friends">Friends only</option>
-                <option value="private">Only me</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="label" for="durationHours">Duration</label>
-              <select id="durationHours" class="select">
-                <option value="24">24 hours</option>
-                <option value="12">12 hours</option>
-                <option value="6">6 hours</option>
-                <option value="3">3 hours</option>
-              </select>
-            </div>
-
-            <div class="switch">
-              <span>Allow replies</span>
-              <input id="allowReplies" type="checkbox" checked />
-            </div>
-
-            <div class="switch">
-              <span>Notify followers</span>
-              <input id="notifyFollowers" type="checkbox" checked />
-            </div>
-
-            <div class="action-grid">
-              <button class="btn blue" id="postStatusBtn" type="button">Post Status</button>
-              <button class="btn soft" id="saveDraftBtn" type="button">Save Draft</button>
-              <button class="btn soft" id="openStatusPageBtn" type="button">Open Status Page</button>
-              <button class="btn red" id="clearFormBtn" type="button">Clear Form</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="preview-wrap">
-        <div class="card">
-          <div class="card-body">
-            <div class="section-title">Live Preview</div>
-            <div class="section-sub">This preview matches the premium blue-red status viewer style.</div>
-
-            <div class="viewer-preview" id="viewerPreview">
-              <div class="preview-top">
-                <div class="progress-row">
-                  <span class="active"></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-
-                <div class="viewer-head">
-                  <div class="viewer-user">
-                    <div class="viewer-avatar" id="previewAvatar">V</div>
-                    <div>
-                      <div class="viewer-name" id="previewName">You</div>
-                      <div class="viewer-time">Now</div>
-                    </div>
-                  </div>
-
-                  <div class="viewer-actions">
-                    <button type="button">🔇</button>
-                    <button type="button">⋯</button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="preview-media" id="previewMediaArea">
-                <div class="text-status" id="previewTextStatus">Your premium status preview will appear here.</div>
-                <img id="previewMediaImage" class="hidden" alt="Preview image" />
-                <video id="previewMediaVideo" class="hidden" muted playsinline loop></video>
-              </div>
-
-              <div class="preview-foot">
-                <div class="preview-meta">
-                  <span>👁 0 views</span>
-                  <span>•</span>
-                  <span id="previewPrivacy">Public</span>
-                </div>
-
-                <div class="reply-bar">
-                  <input class="reply-input" type="text" placeholder="Reply to status..." readonly />
-                  <button class="reply-icon" type="button">📷</button>
-                  <button class="reply-icon" type="button">🎤</button>
-                  <button class="send-btn" type="button">Send</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-body">
-            <div class="section-title">Quick Actions</div>
-            <div class="helper-list">
-              <div class="helper-item">
-                <strong>Status page</strong>
-                <span>Open the main status rings page to browse all active statuses.</span>
-              </div>
-              <div class="helper-item">
-                <strong>Status viewer</strong>
-                <span>Open full-screen story viewing with progress bars, replies, and views.</span>
-              </div>
-              <div class="helper-item">
-                <strong>Draft support</strong>
-                <span>Drafts are stored locally on your device and can be restored instantly.</span>
-              </div>
-            </div>
-
-            <div class="action-grid" style="margin-top:12px">
-              <button class="btn blue" type="button" onclick="window.location.href='status.html'">Status Rings</button>
-              <button class="btn red" type="button" onclick="window.location.href='status-viewer.html'">Viewer Screen</button>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  </div>
-
-  <nav class="bottom-nav">
-    <a href="home.html" class="nav-link"><span>🏠</span><span>Home</span></a>
-    <a href="status.html" class="nav-link active"><span>⭕</span><span>Status</span></a>
-    <a href="create-status.html" class="nav-link"><span>➕</span><span>Create</span></a>
-    <a href="status-viewer.html" class="nav-link"><span>▶</span><span>Viewer</span></a>
-    <a href="settings.html" class="nav-link"><span>⚙</span><span>Settings</span></a>
-  </nav>
-
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -570,330 +559,1005 @@
       }
     });
 
-    const notice = document.getElementById("notice");
-    const segButtons = [...document.querySelectorAll(".seg-btn")];
-    const bgChips = [...document.querySelectorAll(".bg-chip")];
-    const backgroundSection = document.getElementById("backgroundSection");
-    const mediaSection = document.getElementById("mediaSection");
-    const textContent = document.getElementById("textContent");
-    const mediaInput = document.getElementById("mediaInput");
-    const pickMediaBtn = document.getElementById("pickMediaBtn");
-    const changeMediaBtn = document.getElementById("changeMediaBtn");
-    const removeMediaBtn = document.getElementById("removeMediaBtn");
-    const mediaPreviewBox = document.getElementById("mediaPreviewBox");
-    const mediaPreviewImage = document.getElementById("mediaPreviewImage");
-    const mediaPreviewVideo = document.getElementById("mediaPreviewVideo");
-    const privacySelect = document.getElementById("privacySelect");
-    const durationHours = document.getElementById("durationHours");
-    const allowReplies = document.getElementById("allowReplies");
-    const notifyFollowers = document.getElementById("notifyFollowers");
-    const postStatusBtn = document.getElementById("postStatusBtn");
-    const saveDraftBtn = document.getElementById("saveDraftBtn");
-    const clearFormBtn = document.getElementById("clearFormBtn");
-    const openStatusPageBtn = document.getElementById("openStatusPageBtn");
-
-    const previewTextStatus = document.getElementById("previewTextStatus");
-    const previewMediaImage = document.getElementById("previewMediaImage");
-    const previewMediaVideo = document.getElementById("previewMediaVideo");
-    const previewMediaArea = document.getElementById("previewMediaArea");
-    const previewPrivacy = document.getElementById("previewPrivacy");
-    const previewName = document.getElementById("previewName");
-    const previewAvatar = document.getElementById("previewAvatar");
-
-    let currentUser = null;
-    let currentStatusType = "text";
-    let selectedBg = "sunset";
-    let selectedFile = null;
-    let draftKey = "view_status_draft_v1";
-
-    const bgStyles = {
-      sunset: "linear-gradient(135deg,#2f7bff,#ff2f57)",
-      royal: "linear-gradient(135deg,#081a8f,#5ba0ff)",
-      flare: "linear-gradient(135deg,#ff2f57,#ff8a00)",
-      deep: "linear-gradient(135deg,#091127,#7c3aed)",
-      ocean: "linear-gradient(135deg,#00bcd4,#2f7bff)",
-      berry: "linear-gradient(135deg,#7f1d1d,#ff2f57)",
-      night: "linear-gradient(135deg,#05093c,#1d4ed8)",
-      mix: "linear-gradient(135deg,#5ba0ff,#ff5a74,#2f7bff)"
-    };
-
-    function showNotice(message, type = "info") {
-      notice.className = `notice show ${type}`;
-      notice.textContent = message || "";
-      clearTimeout(showNotice._timer);
-      showNotice._timer = setTimeout(() => {
-        notice.className = "notice";
-        notice.textContent = "";
-      }, 3000);
-    }
-
-    function escapeHtml(v) {
-      return String(v || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function initials(name) {
-      const parts = String(name || "V").trim().split(/\s+/).filter(Boolean);
-      if (!parts.length) return "V";
-      if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-
-    async function requireUser() {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) throw error;
-      if (!data?.user) {
-        window.location.href = "login.html?next=create-status.html";
+    async function protectPage(nextPage) {
+      try {
+        const { data } = await supabaseClient.auth.getSession();
+        const user = data?.session?.user;
+        if (!user) {
+          location.replace(`login.html?next=${encodeURIComponent(nextPage || "status.html")}`);
+          return null;
+        }
+        document.documentElement.classList.remove("auth-loading");
+        return user;
+      } catch (e) {
+        document.documentElement.classList.remove("auth-loading");
+        location.replace("login.html");
         return null;
       }
-      currentUser = data.user;
-      previewName.textContent =
-        currentUser.user_metadata?.full_name ||
-        currentUser.user_metadata?.name ||
-        currentUser.email ||
-        "You";
-      previewAvatar.textContent = initials(previewName.textContent);
-      return currentUser;
     }
+  </script>
+</head>
+<body>
+  <div class="app">
+    <div id="notice" class="notice"></div>
 
-    function setType(type) {
-      currentStatusType = type;
-      segButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.type === type));
-      backgroundSection.classList.toggle("hidden", type !== "text");
-      mediaSection.classList.toggle("hidden", type === "text");
-      updatePreview();
-    }
+    <header class="topbar">
+      <div class="top-left">
+        <a class="icon-btn" href="status.html" aria-label="Back">✕</a>
+      </div>
 
-    function setBg(bg) {
-      selectedBg = bg;
-      bgChips.forEach(btn => btn.classList.toggle("active", btn.dataset.bg === bg));
-      updatePreview();
-    }
+      <div class="top-right">
+        <button id="textStyleTool" class="icon-btn" type="button" aria-label="Text style">Aa</button>
+        <button id="bgTool" class="icon-btn" type="button" aria-label="Background">🎨</button>
+      </div>
+    </header>
 
-    function resetMediaPreview() {
-      mediaPreviewImage.classList.add("hidden");
-      mediaPreviewVideo.classList.add("hidden");
-      mediaPreviewImage.removeAttribute("src");
-      mediaPreviewVideo.removeAttribute("src");
-      previewMediaImage.classList.add("hidden");
-      previewMediaVideo.classList.add("hidden");
-      previewMediaImage.removeAttribute("src");
-      previewMediaVideo.removeAttribute("src");
-      mediaPreviewBox.classList.remove("show");
-    }
+    <div class="preview-stage">
+      <div id="previewBg" class="preview-bg"></div>
 
-    function updatePreview() {
-      previewPrivacy.textContent = privacySelect.options[privacySelect.selectedIndex].text;
-      previewMediaArea.style.background = bgStyles[selectedBg] || bgStyles.sunset;
-      previewTextStatus.classList.toggle("hidden", currentStatusType !== "text");
-      previewMediaImage.classList.add("hidden");
-      previewMediaVideo.classList.add("hidden");
+      <div id="mediaLayer" class="media-layer">
+        <img id="previewImage" class="media-image" alt="Preview image" />
+        <video id="previewVideo" class="media-video" muted playsinline preload="metadata"></video>
+      </div>
 
-      if (currentStatusType === "text") {
-        previewTextStatus.textContent = textContent.value.trim() || "Your premium status preview will appear here.";
-        previewTextStatus.style.background = "transparent";
-      } else if (currentStatusType === "image" && selectedFile) {
-        previewTextStatus.classList.add("hidden");
-        previewMediaImage.classList.remove("hidden");
-      } else if (currentStatusType === "video" && selectedFile) {
-        previewTextStatus.classList.add("hidden");
-        previewMediaVideo.classList.remove("hidden");
-      } else {
-        previewTextStatus.classList.remove("hidden");
-        previewTextStatus.textContent = currentStatusType === "image"
-          ? "Select an image to preview your status."
-          : "Select a video to preview your status.";
+      <div id="audioLayer" class="audio-layer">
+        <div class="audio-card">
+          <div id="audioIcon" class="audio-icon">🎤</div>
+          <div id="audioTitle" class="audio-title">Voice Status</div>
+          <div id="audioSub" class="audio-sub">No audio selected yet.</div>
+          <audio id="audioPlayer" class="audio-player" controls preload="metadata"></audio>
+        </div>
+      </div>
+
+      <div class="stage-overlay"></div>
+
+      <div class="tools-top">
+        <div class="tools-left">
+          <button id="emojiTool" class="mini-tool" type="button" aria-label="Emoji">😀</button>
+          <button id="textColorTool" class="mini-tool" type="button" aria-label="Text color">🌈</button>
+          <button id="musicTool" class="mini-tool" type="button" aria-label="Music">🎵</button>
+        </div>
+
+        <div class="tools-right">
+          <button id="cameraTool" class="mini-tool" type="button" aria-label="Camera">📷</button>
+          <button id="uploadTool" class="mini-tool" type="button" aria-label="Upload">🖼️</button>
+          <button id="voiceTool" class="mini-tool" type="button" aria-label="Record voice">🎤</button>
+        </div>
+      </div>
+
+      <div class="editor-center">
+        <textarea id="statusInput" class="status-input" placeholder="Type a status"></textarea>
+      </div>
+
+      <div id="captionBox" class="caption-box"></div>
+
+      <div id="emojiPanel" class="mini-panel">
+        <div id="emojiGrid" class="emoji-grid"></div>
+      </div>
+
+      <div id="bgPanel" class="mini-panel">
+        <div class="panel-col">
+          <div class="panel-label">Background</div>
+          <div id="bgSwatches" class="panel-scroll"></div>
+        </div>
+      </div>
+
+      <div id="textColorPanel" class="mini-panel">
+        <div class="panel-col">
+          <div class="panel-label">Text color</div>
+          <div id="textSwatches" class="panel-scroll"></div>
+        </div>
+      </div>
+
+      <div id="textStylePanel" class="mini-panel">
+        <div class="panel-col">
+          <div class="panel-row">
+            <button id="fontSizeTool" class="option-btn" type="button">A+</button>
+            <button id="fontWeightTool" class="option-btn" type="button">Bold</button>
+            <button id="shadowTool" class="option-btn" type="button">Shadow</button>
+            <button id="alignTool" class="option-btn" type="button">Align</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="mediaPanel" class="mini-panel">
+        <div class="panel-col">
+          <div class="panel-label">Media</div>
+          <input id="mediaInput" class="field" type="file" accept="image/*,video/*" />
+          <input id="cameraInput" class="field" type="file" accept="image/*,video/*" capture="environment" style="display:none" />
+          <div class="panel-row">
+            <button id="fitTool" class="option-btn active" type="button">Fit</button>
+            <button id="fillTool" class="option-btn" type="button">Fill</button>
+            <button id="squareTool" class="option-btn" type="button">Square</button>
+          </div>
+          <div class="panel-row">
+            <div class="panel-label">Zoom</div>
+            <input id="zoomSlider" class="slider" type="range" min="1" max="2.5" step="0.05" value="1" />
+          </div>
+        </div>
+      </div>
+
+      <div id="audioPanel" class="mini-panel">
+        <div class="panel-col">
+          <div class="panel-label">Audio / Music</div>
+          <input id="audioInput" class="field" type="file" accept="audio/*" />
+          <textarea id="captionInput" class="field" placeholder="Add caption..."></textarea>
+        </div>
+      </div>
+
+      <div id="voicePanel" class="mini-panel">
+        <div class="panel-col">
+          <div class="panel-label">Voice Record</div>
+          <div class="panel-row">
+            <button id="startRecordBtn" class="option-btn" type="button">Start</button>
+            <button id="stopRecordBtn" class="option-btn" type="button">Stop</button>
+            <button id="discardRecordBtn" class="option-btn" type="button">Discard</button>
+          </div>
+          <div id="recordStatus" class="panel-label">Recorder idle.</div>
+        </div>
+      </div>
+
+      <div id="videoTrimPanel" class="mini-panel">
+        <div class="panel-col">
+          <div class="panel-label">Video Trim</div>
+          <div class="panel-row">
+            <div class="panel-label">Start</div>
+            <input id="trimStart" class="slider" type="range" min="0" max="60" step="1" value="0" />
+          </div>
+          <div class="panel-row">
+            <div class="panel-label">End</div>
+            <input id="trimEnd" class="slider" type="range" min="1" max="60" step="1" value="60" />
+          </div>
+          <div class="panel-row">
+            <div id="trimLabel" class="option-btn active" style="pointer-events:none">0s - 60s</div>
+            <button id="muteVideoTool" class="option-btn" type="button">Mute</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-actions">
+        <div class="bottom-actions-inner">
+          <button id="clearBtn" class="small-btn" type="button">Clear</button>
+          <button id="publishBtn" class="small-btn primary" type="button">Post</button>
+        </div>
+      </div>
+
+      <div class="type-switch">
+        <div class="switch-row">
+          <button class="switch-btn" data-type="video" type="button">Video</button>
+          <button class="switch-btn" data-type="image" type="button">Photo</button>
+          <button class="switch-btn active" data-type="text" type="button">Text</button>
+          <button class="switch-btn" data-type="voice" type="button">Voice</button>
+          <button class="switch-btn" data-type="music" type="button">Music</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STATUS_BUCKET = "status-media";
+
+    const EMOJIS = ["😀","😂","😍","🥰","😎","🔥","✨","❤️","💙","💯","🎉","🙏","😊","😇","🤍","💫","🌟","🥳","😌","📢","📸","🎥","🛍️","🚀","🙌","🌈","🎶","✍️","😜","🤩","🎤","🎵","💃","🕺","📍","🫶"];
+    const BG_PRESETS = [
+      "#d9a126",
+      "linear-gradient(135deg,#2563eb,#4f46e5,#ff5f7a)",
+      "linear-gradient(135deg,#0f172a,#334155,#64748b)",
+      "linear-gradient(135deg,#059669,#10b981,#34d399)",
+      "linear-gradient(135deg,#ef4444,#f97316,#f59e0b)",
+      "linear-gradient(135deg,#7c3aed,#a855f7,#ec4899)",
+      "linear-gradient(135deg,#111827,#1f2937,#374151)",
+      "linear-gradient(135deg,#0ea5e9,#2563eb,#1d4ed8)"
+    ];
+    const TEXT_COLORS = ["#ffffff","#111827","#fef08a","#fca5a5","#bfdbfe","#86efac","#fbcfe8","#e5e7eb"];
+
+    const noticeBox = document.getElementById("notice");
+    const statusInput = document.getElementById("statusInput");
+    const captionInput = document.getElementById("captionInput");
+    const captionBox = document.getElementById("captionBox");
+
+    const previewBg = document.getElementById("previewBg");
+    const mediaLayer = document.getElementById("mediaLayer");
+    const previewImage = document.getElementById("previewImage");
+    const previewVideo = document.getElementById("previewVideo");
+    const audioLayer = document.getElementById("audioLayer");
+    const audioIcon = document.getElementById("audioIcon");
+    const audioTitle = document.getElementById("audioTitle");
+    const audioSub = document.getElementById("audioSub");
+    const audioPlayer = document.getElementById("audioPlayer");
+
+    const textStyleTool = document.getElementById("textStyleTool");
+    const bgTool = document.getElementById("bgTool");
+    const emojiTool = document.getElementById("emojiTool");
+    const textColorTool = document.getElementById("textColorTool");
+    const musicTool = document.getElementById("musicTool");
+    const cameraTool = document.getElementById("cameraTool");
+    const uploadTool = document.getElementById("uploadTool");
+    const voiceTool = document.getElementById("voiceTool");
+
+    const emojiPanel = document.getElementById("emojiPanel");
+    const emojiGrid = document.getElementById("emojiGrid");
+    const bgPanel = document.getElementById("bgPanel");
+    const bgSwatches = document.getElementById("bgSwatches");
+    const textColorPanel = document.getElementById("textColorPanel");
+    const textSwatches = document.getElementById("textSwatches");
+    const textStylePanel = document.getElementById("textStylePanel");
+    const mediaPanel = document.getElementById("mediaPanel");
+    const audioPanel = document.getElementById("audioPanel");
+    const voicePanel = document.getElementById("voicePanel");
+    const videoTrimPanel = document.getElementById("videoTrimPanel");
+
+    const mediaInput = document.getElementById("mediaInput");
+    const cameraInput = document.getElementById("cameraInput");
+    const audioInput = document.getElementById("audioInput");
+    const zoomSlider = document.getElementById("zoomSlider");
+    const fitTool = document.getElementById("fitTool");
+    const fillTool = document.getElementById("fillTool");
+    const squareTool = document.getElementById("squareTool");
+    const fontSizeTool = document.getElementById("fontSizeTool");
+    const fontWeightTool = document.getElementById("fontWeightTool");
+    const shadowTool = document.getElementById("shadowTool");
+    const alignTool = document.getElementById("alignTool");
+    const trimStart = document.getElementById("trimStart");
+    const trimEnd = document.getElementById("trimEnd");
+    const trimLabel = document.getElementById("trimLabel");
+    const muteVideoTool = document.getElementById("muteVideoTool");
+
+    const startRecordBtn = document.getElementById("startRecordBtn");
+    const stopRecordBtn = document.getElementById("stopRecordBtn");
+    const discardRecordBtn = document.getElementById("discardRecordBtn");
+    const recordStatus = document.getElementById("recordStatus");
+
+    const clearBtn = document.getElementById("clearBtn");
+    const publishBtn = document.getElementById("publishBtn");
+    const switchButtons = Array.from(document.querySelectorAll("[data-type]"));
+
+    let currentUser = null;
+    let statusType = "text";
+    let selectedFile = null;
+    let selectedObjectUrl = "";
+    let currentBg = BG_PRESETS[0];
+    let currentTextColor = "rgba(255,255,255,.32)";
+    let currentFontSize = 34;
+    let currentFontWeight = 700;
+    let currentAlignIndex = 0;
+    let currentShadowMode = 0;
+    let currentImageFit = "contain";
+    let currentZoom = 1;
+    let trimStartSeconds = 0;
+    let trimEndSeconds = 60;
+    let videoMuted = true;
+    let mediaRecorder = null;
+    let recordChunks = [];
+
+    function showNotice(message, type = "info", duration = 3200){
+      noticeBox.className = `notice show ${type}`;
+      noticeBox.textContent = message || "";
+      clearTimeout(showNotice._timer);
+      if(duration > 0){
+        showNotice._timer = setTimeout(() => {
+          noticeBox.className = "notice";
+          noticeBox.textContent = "";
+        }, duration);
       }
     }
 
-    function saveDraft() {
-      const draft = {
-        currentStatusType,
-        selectedBg,
-        textContent: textContent.value,
-        privacy: privacySelect.value,
-        durationHours: durationHours.value,
-        allowReplies: allowReplies.checked,
-        notifyFollowers: notifyFollowers.checked
+function readFileAsDataUrl(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result || "");
+    reader.onerror = () => reject(new Error("Could not read selected file."));
+    reader.readAsDataURL(file);
+  });
+}
+
+    function closePanels(){
+      [emojiPanel,bgPanel,textColorPanel,textStylePanel,mediaPanel,audioPanel,voicePanel,videoTrimPanel].forEach(p => p.classList.remove("show"));
+      [emojiTool,bgTool,textColorTool,textStyleTool,musicTool,uploadTool,voiceTool].forEach(b => b.classList.remove("active"));
+    }
+
+    function togglePanel(name){
+      const map = {
+        emoji:[emojiPanel, emojiTool],
+        bg:[bgPanel, bgTool],
+        textColor:[textColorPanel, textColorTool],
+        textStyle:[textStylePanel, textStyleTool],
+        media:[mediaPanel, uploadTool],
+        music:[audioPanel, musicTool],
+        voice:[voicePanel, voiceTool],
+        trim:[videoTrimPanel, uploadTool]
       };
-      localStorage.setItem(draftKey, JSON.stringify(draft));
-      showNotice("Draft saved on this device.", "success");
+
+      const target = map[name];
+      if(!target) return;
+
+      const [panel, btn] = target;
+      const open = panel.classList.contains("show");
+      closePanels();
+      if(!open){
+        panel.classList.add("show");
+        btn.classList.add("active");
+      }
     }
 
-    function restoreDraft() {
-      try {
-        const raw = localStorage.getItem(draftKey);
-        if (!raw) return;
-        const draft = JSON.parse(raw);
-        if (draft.currentStatusType) setType(draft.currentStatusType);
-        if (draft.selectedBg) setBg(draft.selectedBg);
-        textContent.value = draft.textContent || "";
-        privacySelect.value = draft.privacy || "public";
-        durationHours.value = draft.durationHours || "24";
-        allowReplies.checked = draft.allowReplies !== false;
-        notifyFollowers.checked = draft.notifyFollowers !== false;
-        updatePreview();
-      } catch {}
+    function renderEmojiPanel(){
+      emojiGrid.innerHTML = EMOJIS.map(emoji => `<button class="emoji-btn" type="button" data-emoji="${emoji}">${emoji}</button>`).join("");
+      emojiGrid.querySelectorAll("[data-emoji]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const emoji = btn.getAttribute("data-emoji");
+          const start = statusInput.selectionStart ?? statusInput.value.length;
+          const end = statusInput.selectionEnd ?? statusInput.value.length;
+          const value = statusInput.value;
+          statusInput.value = value.slice(0, start) + emoji + value.slice(end);
+          statusInput.focus();
+          const pos = start + emoji.length;
+          statusInput.setSelectionRange(pos, pos);
+          renderPreview();
+        });
+      });
     }
 
-    function clearForm() {
-      textContent.value = "";
-      privacySelect.value = "public";
-      durationHours.value = "24";
-      allowReplies.checked = true;
-      notifyFollowers.checked = true;
+    function renderBgSwatches(){
+      bgSwatches.innerHTML = BG_PRESETS.map((bg, i) => `
+        <button class="bg-swatch ${bg === currentBg ? "active" : ""}" type="button" data-bg-index="${i}" style="background:${bg}"></button>
+      `).join("");
+
+      bgSwatches.querySelectorAll("[data-bg-index]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          currentBg = BG_PRESETS[Number(btn.getAttribute("data-bg-index"))];
+          renderBgSwatches();
+          renderPreview();
+        });
+      });
+    }
+
+    function renderTextSwatches(){
+      textSwatches.innerHTML = TEXT_COLORS.map(color => `
+        <button class="swatch ${color === currentTextColor ? "active" : ""}" type="button" data-color="${color}" style="background:${color}"></button>
+      `).join("");
+
+      textSwatches.querySelectorAll("[data-color]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          currentTextColor = btn.getAttribute("data-color");
+          renderTextSwatches();
+          renderPreview();
+        });
+      });
+    }
+
+    function resetSelectedFile(){
       selectedFile = null;
-      setType("text");
-      setBg("sunset");
-      resetMediaPreview();
-      updatePreview();
-      showNotice("Form cleared.", "info");
+      if(selectedObjectUrl){
+        URL.revokeObjectURL(selectedObjectUrl);
+        selectedObjectUrl = "";
+      }
+
+      mediaInput.value = "";
+      cameraInput.value = "";
+      audioInput.value = "";
+      previewImage.removeAttribute("src");
+      previewVideo.pause();
+      previewVideo.removeAttribute("src");
+      audioPlayer.pause();
+      audioPlayer.removeAttribute("src");
+      audioSub.textContent = "No audio selected yet.";
     }
 
-    async function uploadMedia(userId, file) {
-      const ext = file.name.split(".").pop();
-      const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const path = `${userId}/${safeName}`;
+    function setSwitchActive(){
+      switchButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-type") === statusType);
+      });
+    }
 
-      const { error: uploadError } = await supabase.storage
-        .from("status-media")
-        .upload(path, file, { upsert: false });
+    function updateModeUi(){
+      setSwitchActive();
+      closePanels();
 
-      if (uploadError) throw uploadError;
+      const isText = statusType === "text";
+      const isImage = statusType === "image";
+      const isVideo = statusType === "video";
+      const isVoice = statusType === "voice";
+      const isMusic = statusType === "music";
 
-      const { data } = supabase.storage.from("status-media").getPublicUrl(path);
+      statusInput.placeholder =
+        isText ? "Type a status" :
+        isImage ? "Add a photo caption" :
+        isVideo ? "Add a video caption" :
+        isVoice ? "Add a voice caption" :
+        "Add a music caption";
+
+      cameraTool.style.display = isImage || isVideo ? "flex" : "none";
+      voiceTool.style.display = isVoice ? "flex" : "none";
+
+      if(isVoice){
+        audioIcon.textContent = "🎤";
+        audioTitle.textContent = "Voice Status";
+      } else if(isMusic){
+        audioIcon.textContent = "🎵";
+        audioTitle.textContent = "Music Status";
+      } else {
+        audioIcon.textContent = "🎤";
+        audioTitle.textContent = "Voice Status";
+      }
+
+      renderPreview();
+    }
+
+    function setStatusType(type){
+      if(statusType !== type){
+        resetSelectedFile();
+      }
+      statusType = type;
+      updateModeUi();
+    }
+
+    function renderPreview(){
+      previewBg.style.background = currentBg;
+
+      mediaLayer.classList.toggle("show", statusType === "image" || statusType === "video");
+      audioLayer.classList.toggle("show", statusType === "voice" || statusType === "music");
+
+      previewImage.style.display = "none";
+      previewVideo.style.display = "none";
+
+      const alignClass = currentAlignIndex === 0 ? "" : currentAlignIndex === 1 ? "left" : "right";
+      statusInput.className = `status-input ${alignClass} ${currentShadowMode === 1 ? "light-shadow" : currentShadowMode === 2 ? "no-shadow" : ""}`;
+      statusInput.style.fontSize = `${currentFontSize}px`;
+      statusInput.style.fontWeight = String(currentFontWeight);
+      statusInput.style.color = currentTextColor;
+
+      const caption = statusInput.value.trim();
+      if((statusType === "image" || statusType === "video" || statusType === "voice" || statusType === "music") && caption){
+        captionBox.textContent = caption;
+        captionBox.classList.add("show");
+      } else {
+        captionBox.classList.remove("show");
+      }
+
+      if(statusType === "text"){
+        return;
+      }
+
+      if(statusType === "image" && selectedObjectUrl){
+        previewImage.style.display = "block";
+        previewImage.src = selectedObjectUrl;
+        previewImage.style.objectFit = currentImageFit === "square" ? "cover" : currentImageFit;
+        previewImage.style.transform = `translate(-50%,-50%) scale(${currentZoom})`;
+        return;
+      }
+
+      if(statusType === "video" && selectedObjectUrl){
+        previewVideo.style.display = "block";
+        previewVideo.src = selectedObjectUrl;
+        previewVideo.muted = videoMuted;
+        return;
+      }
+
+      if((statusType === "voice" || statusType === "music") && selectedObjectUrl){
+        audioPlayer.src = selectedObjectUrl;
+      }
+    }
+
+    async function initUser(){
+      currentUser = await protectPage("status.html");
+      return !!currentUser;
+    }
+
+    function validateForm(){
+      const text = statusInput.value.trim();
+
+      if(statusType === "text" && !text){
+        throw new Error("Write your status first.");
+      }
+
+      if((statusType === "image" || statusType === "video" || statusType === "voice" || statusType === "music") && !selectedFile){
+        throw new Error(`Choose or record a ${statusType} file first.`);
+      }
+
+      if(statusType === "video" && trimEndSeconds <= trimStartSeconds){
+        throw new Error("Video trim end must be greater than start.");
+      }
+
+      return text;
+    }
+
+    async function uploadMediaIfNeeded(){
+      if(!selectedFile){
+        return {
+          media_url:null,
+          media_path:null,
+          thumbnail_url:null,
+          media_type:null,
+          audio_url:null,
+          audio_path:null,
+          audio_type:null,
+          music_url:null,
+          music_path:null,
+          music_name:null
+        };
+      }
+
+      const safeName = selectedFile.name.replace(/[^\w.\-]+/g, "_");
+      const filePath = `${currentUser.id}/${Date.now()}-${safeName}`;
+
+      const { data: uploadData, error: uploadError } = await supabaseClient.storage
+        .from(STATUS_BUCKET)
+        .upload(filePath, selectedFile, {
+          upsert:false,
+          contentType:selectedFile.type || "application/octet-stream"
+        });
+
+      if(uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabaseClient.storage
+        .from(STATUS_BUCKET)
+        .getPublicUrl(uploadData.path);
+
+      const url = publicUrlData?.publicUrl || null;
+
+      if(statusType === "image" || statusType === "video"){
+        return {
+          media_url:url,
+          media_path:uploadData.path,
+          thumbnail_url:statusType === "image" ? url : null,
+          media_type:selectedFile.type || null,
+          audio_url:null,
+          audio_path:null,
+          audio_type:null,
+          music_url:null,
+          music_path:null,
+          music_name:null
+        };
+      }
+
+      if(statusType === "voice"){
+        return {
+          media_url:null,
+          media_path:null,
+          thumbnail_url:null,
+          media_type:null,
+          audio_url:url,
+          audio_path:uploadData.path,
+          audio_type:selectedFile.type || null,
+          music_url:null,
+          music_path:null,
+          music_name:null
+        };
+      }
+
+      if(statusType === "music"){
+        return {
+          media_url:null,
+          media_path:null,
+          thumbnail_url:null,
+          media_type:null,
+          audio_url:null,
+          audio_path:null,
+          audio_type:null,
+          music_url:url,
+          music_path:uploadData.path,
+          music_name:selectedFile.name || null
+        };
+      }
 
       return {
-        media_url: data.publicUrl,
-        media_path: path
+        media_url:null,
+        media_path:null,
+        thumbnail_url:null,
+        media_type:null,
+        audio_url:null,
+        audio_path:null,
+        audio_type:null,
+        music_url:null,
+        music_path:null,
+        music_name:null
       };
     }
 
-    async function postStatus() {
-      try {
-        postStatusBtn.disabled = true;
-        postStatusBtn.textContent = "Posting...";
+    async function publishStatus(){
+      publishBtn.disabled = true;
 
-        const user = currentUser || await requireUser();
-        if (!user) return;
+      try{
+        const text = validateForm();
+        showNotice("Publishing status...", "info", 0);
 
-        const text = textContent.value.trim();
-        if (currentStatusType === "text" && !text) {
-          showNotice("Enter a text status first.", "error");
-          return;
-        }
-        if ((currentStatusType === "image" || currentStatusType === "video") && !selectedFile) {
-          showNotice(`Choose a ${currentStatusType} first.`, "error");
-          return;
-        }
-
-        let media = { media_url: null, media_path: null };
-        if (selectedFile) {
-          media = await uploadMedia(user.id, selectedFile);
-        }
-
-        const expiresAt = new Date(Date.now() + Number(durationHours.value) * 60 * 60 * 1000).toISOString();
+        const uploadPayload = await uploadMediaIfNeeded();
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
         const payload = {
-          user_id: user.id,
-          status_type: currentStatusType,
-          text_content: currentStatusType === "text" ? text : "",
-          content: text,
-          media_url: media.media_url,
-          media_path: media.media_path,
-          thumbnail_url: currentStatusType === "image" ? media.media_url : null,
-          bg_style: selectedBg,
-          privacy: privacySelect.value,
-          allow_replies: allowReplies.checked,
-          duration_hours: Number(durationHours.value),
-          expires_at: expiresAt
+          user_id: currentUser.id,
+          status_type: statusType,
+          text_content: statusType === "text" ? (text || null) : null,
+          content: text || null,
+          caption: statusType === "text" ? null : (text || null),
+          privacy: "public",
+          allow_replies: true,
+          duration_hours: 24,
+          viewers_count: 0,
+          bg_style: statusType === "text" ? currentBg : null,
+          created_at: now.toISOString(),
+          updated_at: now.toISOString(),
+          expires_at: expiresAt.toISOString(),
+          ...uploadPayload
         };
 
-        const { error } = await supabase.from("statuses").insert(payload);
-        if (error) throw error;
+        const { data, error } = await supabaseClient
+          .from("statuses")
+          .insert(payload)
+          .select("id")
+          .single();
 
-        localStorage.removeItem(draftKey);
+        if(error) throw error;
+
         showNotice("Status posted successfully.", "success");
-
         setTimeout(() => {
-          window.location.href = "status.html";
+          window.location.href = data?.id ? `status-viewer.html?id=${encodeURIComponent(data.id)}` : "status.html";
         }, 700);
-      } catch (error) {
-        showNotice(error.message || "Could not post status.", "error");
-      } finally {
-        postStatusBtn.disabled = false;
-        postStatusBtn.textContent = "Post Status";
+      }catch(error){
+        console.error(error);
+        showNotice(error.message || "Could not publish status.", "error", 5000);
+      }finally{
+        publishBtn.disabled = false;
       }
     }
 
-    function handleFile(file) {
-      if (!file) return;
-      selectedFile = file;
-
-      const fileUrl = URL.createObjectURL(file);
-      mediaPreviewBox.classList.add("show");
-
-      if (file.type.startsWith("image/")) {
-        mediaPreviewImage.classList.remove("hidden");
-        mediaPreviewVideo.classList.add("hidden");
-        mediaPreviewImage.src = fileUrl;
-
-        previewMediaImage.classList.remove("hidden");
-        previewMediaVideo.classList.add("hidden");
-        previewMediaImage.src = fileUrl;
-        setType("image");
-      } else if (file.type.startsWith("video/")) {
-        mediaPreviewVideo.classList.remove("hidden");
-        mediaPreviewImage.classList.add("hidden");
-        mediaPreviewVideo.src = fileUrl;
-
-        previewMediaVideo.classList.remove("hidden");
-        previewMediaImage.classList.add("hidden");
-        previewMediaVideo.src = fileUrl;
-        previewMediaVideo.play().catch(() => {});
-        setType("video");
+    function clearAll(){
+      statusInput.value = "";
+      captionInput.value = "";
+      currentBg = BG_PRESETS[0];
+      currentTextColor = "rgba(255,255,255,.32)";
+      currentFontSize = 34;
+      currentFontWeight = 700;
+      currentAlignIndex = 0;
+      currentShadowMode = 0;
+      currentImageFit = "contain";
+      currentZoom = 1;
+      trimStartSeconds = 0;
+      trimEndSeconds = 60;
+      trimStart.value = 0;
+      trimEnd.value = 60;
+      videoMuted = true;
+      recordStatus.textContent = "Recorder idle.";
+      if(mediaRecorder && mediaRecorder.state !== "inactive"){
+        mediaRecorder.stop();
       }
-
-      updatePreview();
+      resetSelectedFile();
+      setStatusType("text");
+      renderBgSwatches();
+      renderTextSwatches();
+      renderTrimLabel();
+      renderPreview();
+      showNotice("Cleared.", "info");
     }
 
-    pickMediaBtn.addEventListener("click", () => mediaInput.click());
-    changeMediaBtn.addEventListener("click", () => mediaInput.click());
-    removeMediaBtn.addEventListener("click", () => {
-      selectedFile = null;
-      mediaInput.value = "";
-      resetMediaPreview();
-      updatePreview();
-      showNotice("Media removed.", "info");
-    });
+    function renderTrimLabel(){
+      trimLabel.textContent = `${trimStartSeconds}s - ${trimEndSeconds}s`;
+    }
 
-    mediaInput.addEventListener("change", (e) => {
-      const file = e.target.files?.[0];
-      if (file) handleFile(file);
-    });
+    async function startVoiceRecording(){
+      try{
+        if(!navigator.mediaDevices?.getUserMedia){
+          throw new Error("Voice recording is not supported on this device.");
+        }
 
-    segButtons.forEach(btn => btn.addEventListener("click", () => setType(btn.dataset.type)));
-    bgChips.forEach(btn => btn.addEventListener("click", () => setBg(btn.dataset.bg)));
-    textContent.addEventListener("input", updatePreview);
-    privacySelect.addEventListener("change", updatePreview);
-    saveDraftBtn.addEventListener("click", saveDraft);
-    clearFormBtn.addEventListener("click", clearForm);
-    postStatusBtn.addEventListener("click", postStatus);
-    openStatusPageBtn.addEventListener("click", () => window.location.href = "status.html");
+        const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+        recordChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
 
-    (async function init() {
-      try {
-        await requireUser();
-        restoreDraft();
-        updatePreview();
-      } catch (error) {
-        showNotice(error.message || "Could not load create status page.", "error");
+        mediaRecorder.ondataavailable = (event) => {
+          if(event.data && event.data.size > 0) recordChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          stream.getTracks().forEach(track => track.stop());
+
+          if(!recordChunks.length){
+            recordStatus.textContent = "No voice recorded.";
+            return;
+          }
+
+          const mimeType = mediaRecorder.mimeType || "audio/webm";
+          const blob = new Blob(recordChunks, { type:mimeType });
+          const ext = mimeType.includes("ogg") ? "ogg" : mimeType.includes("mp4") ? "m4a" : "webm";
+          const file = new File([blob], `voice-status-${Date.now()}.${ext}`, { type:mimeType });
+
+          resetSelectedFile();
+          selectedFile = file;
+          readFileAsDataUrl(file)
+  .then((dataUrl) => {
+    selectedObjectUrl = dataUrl;
+    audioSub.textContent = file.name;
+    recordStatus.textContent = "Voice recorded.";
+    renderPreview();
+  })
+  .catch((error) => {
+    console.error(error);
+    showNotice(error.message || "Could not preview recorded voice.", "error");
+  });
+          audioSub.textContent = file.name;
+          recordStatus.textContent = "Voice recorded.";
+          renderPreview();
+        };
+
+        mediaRecorder.start();
+        recordStatus.textContent = "Recording...";
+      }catch(error){
+        console.error(error);
+        showNotice(error.message || "Could not start recording.", "error");
       }
-    })();
+    }
+
+    function stopVoiceRecording(){
+      try{
+        if(mediaRecorder && mediaRecorder.state !== "inactive"){
+          mediaRecorder.stop();
+        }
+      }catch(error){
+        console.error(error);
+      }
+    }
+
+    function bindEvents(){
+      switchButtons.forEach(btn => {
+        btn.addEventListener("click", () => setStatusType(btn.getAttribute("data-type")));
+      });
+
+      textStyleTool.addEventListener("click", () => togglePanel("textStyle"));
+      bgTool.addEventListener("click", () => togglePanel("bg"));
+      emojiTool.addEventListener("click", () => togglePanel("emoji"));
+      textColorTool.addEventListener("click", () => togglePanel("textColor"));
+
+      musicTool.addEventListener("click", () => {
+        setStatusType("music");
+        togglePanel("music");
+      });
+
+      uploadTool.addEventListener("click", () => {
+        if(statusType === "music"){
+          togglePanel("music");
+          audioInput.click();
+          return;
+        }
+
+        if(statusType === "video"){
+          togglePanel("trim");
+        } else {
+          togglePanel("media");
+        }
+        mediaInput.click();
+      });
+
+      cameraTool.addEventListener("click", () => {
+        if(statusType !== "image" && statusType !== "video"){
+          showNotice("Camera works with Photo or Video mode.", "info");
+          return;
+        }
+        cameraInput.accept = statusType === "video" ? "video/*" : "image/*";
+        cameraInput.click();
+      });
+
+      voiceTool.addEventListener("click", () => {
+        setStatusType("voice");
+        togglePanel("voice");
+      });
+
+      statusInput.addEventListener("input", renderPreview);
+
+      captionInput.addEventListener("input", () => {
+        if(statusType === "voice" || statusType === "music"){
+          statusInput.value = captionInput.value;
+          renderPreview();
+        }
+      });
+
+      mediaInput.addEventListener("change", async () => {
+  const file = mediaInput.files?.[0] || null;
+  if(!file) return;
+
+  if(statusType === "image" && !file.type.startsWith("image/")){
+    showNotice("Choose an image file.", "error");
+    mediaInput.value = "";
+    return;
+  }
+
+  if(statusType === "video" && !file.type.startsWith("video/")){
+    showNotice("Choose a video file.", "error");
+    mediaInput.value = "";
+    return;
+  }
+
+  try{
+    resetSelectedFile();
+    selectedFile = file;
+    selectedObjectUrl = await readFileAsDataUrl(file);
+
+    if(statusType === "video"){
+      previewVideo.onloadedmetadata = () => {
+        const max = Math.min(Math.floor(previewVideo.duration || 60), 60);
+        trimStart.max = String(Math.max(0, max - 1));
+        trimEnd.max = String(max);
+        trimEnd.value = String(max);
+        trimStart.value = "0";
+        trimStartSeconds = 0;
+        trimEndSeconds = max;
+        renderTrimLabel();
+      };
+    }
+
+    renderPreview();
+  }catch(error){
+    console.error(error);
+    showNotice(error.message || "Could not preview selected media.", "error");
+  }
+});
+
+      cameraInput.addEventListener("change", () => {
+        const file = cameraInput.files?.[0] || null;
+        if(!file) return;
+
+        resetSelectedFile();
+        selectedFile = file;
+        selectedObjectUrl = URL.createObjectURL(file);
+
+        if(statusType === "video"){
+          previewVideo.onloadedmetadata = () => {
+            const max = Math.min(Math.floor(previewVideo.duration || 60), 60);
+            trimStart.max = String(Math.max(0, max - 1));
+            trimEnd.max = String(max);
+            trimEnd.value = String(max);
+            trimStart.value = "0";
+            trimStartSeconds = 0;
+            trimEndSeconds = max;
+            renderTrimLabel();
+          };
+        }
+
+        renderPreview();
+      });
+
+      audioInput.addEventListener("change", async () => {
+  const file = audioInput.files?.[0] || null;
+  if(!file) return;
+
+  if(!file.type.startsWith("audio/")){
+    showNotice("Choose an audio file.", "error");
+    audioInput.value = "";
+    return;
+  }
+
+  try{
+    resetSelectedFile();
+    selectedFile = file;
+    selectedObjectUrl = await readFileAsDataUrl(file);
+    audioSub.textContent = file.name;
+    renderPreview();
+  }catch(error){
+    console.error(error);
+    showNotice(error.message || "Could not preview selected audio.", "error");
+  }
+});
+
+      zoomSlider.addEventListener("input", () => {
+        currentZoom = Number(zoomSlider.value);
+        renderPreview();
+      });
+
+      fitTool.addEventListener("click", () => {
+        currentImageFit = "contain";
+        fitTool.classList.add("active");
+        fillTool.classList.remove("active");
+        squareTool.classList.remove("active");
+        renderPreview();
+      });
+
+      fillTool.addEventListener("click", () => {
+        currentImageFit = "cover";
+        fillTool.classList.add("active");
+        fitTool.classList.remove("active");
+        squareTool.classList.remove("active");
+        renderPreview();
+      });
+
+      squareTool.addEventListener("click", () => {
+        currentImageFit = "square";
+        squareTool.classList.add("active");
+        fitTool.classList.remove("active");
+        fillTool.classList.remove("active");
+        renderPreview();
+      });
+
+      fontSizeTool.addEventListener("click", () => {
+        currentFontSize = currentFontSize >= 44 ? 24 : currentFontSize + 4;
+        renderPreview();
+      });
+
+      fontWeightTool.addEventListener("click", () => {
+        currentFontWeight = currentFontWeight >= 900 ? 500 : currentFontWeight + 100;
+        renderPreview();
+      });
+
+      shadowTool.addEventListener("click", () => {
+        currentShadowMode = (currentShadowMode + 1) % 3;
+        renderPreview();
+      });
+
+      alignTool.addEventListener("click", () => {
+        currentAlignIndex = (currentAlignIndex + 1) % 3;
+        renderPreview();
+      });
+
+      trimStart.addEventListener("input", () => {
+        trimStartSeconds = Number(trimStart.value);
+        if(trimStartSeconds >= trimEndSeconds){
+          trimEndSeconds = trimStartSeconds + 1;
+          trimEnd.value = String(trimEndSeconds);
+        }
+        renderTrimLabel();
+        if(previewVideo.src){
+          previewVideo.currentTime = trimStartSeconds;
+        }
+      });
+
+      trimEnd.addEventListener("input", () => {
+        trimEndSeconds = Number(trimEnd.value);
+        if(trimEndSeconds <= trimStartSeconds){
+          trimStartSeconds = Math.max(0, trimEndSeconds - 1);
+          trimStart.value = String(trimStartSeconds);
+        }
+        renderTrimLabel();
+      });
+
+      muteVideoTool.addEventListener("click", () => {
+        videoMuted = !videoMuted;
+        muteVideoTool.classList.toggle("active", !videoMuted);
+        muteVideoTool.textContent = videoMuted ? "Mute" : "Sound";
+        renderPreview();
+      });
+
+      startRecordBtn.addEventListener("click", startVoiceRecording);
+      stopRecordBtn.addEventListener("click", stopVoiceRecording);
+
+      discardRecordBtn.addEventListener("click", () => {
+        if(mediaRecorder && mediaRecorder.state !== "inactive"){
+          mediaRecorder.stop();
+        }
+        resetSelectedFile();
+        recordStatus.textContent = "Recording discarded.";
+        renderPreview();
+      });
+
+      clearBtn.addEventListener("click", clearAll);
+      publishBtn.addEventListener("click", publishStatus);
+
+      previewVideo.addEventListener("timeupdate", () => {
+        if(statusType === "video" && previewVideo.currentTime >= trimEndSeconds){
+          previewVideo.pause();
+        }
+      });
+    }
+
+    async function init(){
+      try{
+        const ready = await initUser();
+        if(!ready) return;
+        renderEmojiPanel();
+        renderBgSwatches();
+        renderTextSwatches();
+        renderTrimLabel();
+        bindEvents();
+        setStatusType("text");
+        renderPreview();
+      }catch(error){
+        console.error(error);
+        showNotice(error.message || "Could not load page.", "error", 5000);
+      }
+    }
+
+    window.addEventListener("beforeunload", () => {
+      if(selectedObjectUrl) URL.revokeObjectURL(selectedObjectUrl);
+    });
+
+    init();
   </script>
 </body>
 </html>
