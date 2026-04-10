@@ -3,6 +3,14 @@
     {
       "path": "/api/process-publish-jobs",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/auto-post/run-due-rules",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/auto-post/check-kling-task",
+      "schedule": "*/10 * * * *"
     }
   ],
   "headers": [
