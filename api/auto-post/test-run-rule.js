@@ -1,4 +1,5 @@
 const { createClient } = require("@supabase/supabase-js");
+const runDueRulesHandler = require("./run-due-rules");
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -48,42 +49,38 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const baseUrl =
-      process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : (process.env.VIEW_BASE_URL || req.headers.origin || "");
-
-    if (!baseUrl) {
-      return res.status(500).json({
-        ok: false,
-        error: "Unable to resolve base URL for internal trigger"
-      });
-    }
-
-    const runResponse = await fetch(`${baseUrl}/api/auto-post/run-due-rules?rule_id=${encodeURIComponent(ruleId)}`, {
+    const fakeReq = {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${AUTO_POST_CRON_SECRET || ""}`,
+        authorization: `Bearer ${AUTO_POST_CRON_SECRET || ""}`,
         "x-force-rule-id": String(ruleId)
       },
-      body: JSON.stringify({ rule_id: ruleId, force: true })
-    });
+      query: { rule_id: String(ruleId) },
+      body: { rule_id: String(ruleId), force: true }
+    };
 
-    const rawText = await runResponse.text();
+    const captured = {
+      statusCode: 200,
+      body: null
+    };
 
-    let runData;
-    try {
-      runData = rawText ? JSON.parse(rawText) : {};
-    } catch {
-      runData = { raw_response: rawText || "Non-JSON response returned" };
-    }
+    const fakeRes = {
+      status(code) {
+        captured.statusCode = code;
+        return this;
+      },
+      json(payload) {
+        captured.body = payload;
+        return this;
+      }
+    };
 
-    return res.status(runResponse.status).json({
-      ok: runResponse.ok,
+    await runDueRulesHandler(fakeReq, fakeRes);
+
+    return res.status(captured.statusCode || 200).json({
+      ok: captured.statusCode >= 200 && captured.statusCode < 300,
       triggered_rule_id: ruleId,
-      base_url_used: baseUrl,
-      result: runData
+      result: captured.body
     });
   } catch (error) {
     console.error("test-run-rule fatal error:", error);
@@ -99,7 +96,6 @@ function isAuthorized(req) {
   const xCronSecret = req.headers["x-cron-secret"] || "";
 
   if (!AUTO_POST_CRON_SECRET) return true;
-
   if (xCronSecret && xCronSecret === AUTO_POST_CRON_SECRET) return true;
   if (authHeader === AUTO_POST_CRON_SECRET) return true;
 
