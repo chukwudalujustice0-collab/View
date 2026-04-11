@@ -31,19 +31,45 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ ok: false, error: "Unauthorized" });
     }
 
-    const nowIso = new Date().toISOString();
+    const forcedRuleId =
+      req.headers["x-force-rule-id"] ||
+      req.query?.rule_id ||
+      req.body?.rule_id ||
+      null;
 
-    const { data: dueRules, error: dueRulesError } = await supabase
-      .from("auto_post_rules")
-      .select("*")
-      .eq("is_active", true)
-      .lte("next_run_at", nowIso)
-      .order("next_run_at", { ascending: true })
-      .limit(BATCH_LIMIT);
+    let dueRules = [];
 
-    if (dueRulesError) throw dueRulesError;
+    if (forcedRuleId) {
+      const { data: forcedRule, error: forcedRuleError } = await supabase
+        .from("auto_post_rules")
+        .select("*")
+        .eq("id", forcedRuleId)
+        .single();
 
-    if (!dueRules || !dueRules.length) {
+      if (forcedRuleError || !forcedRule) {
+        return res.status(404).json({
+          ok: false,
+          error: "Forced rule not found"
+        });
+      }
+
+      dueRules = [forcedRule];
+    } else {
+      const nowIso = new Date().toISOString();
+
+      const { data, error } = await supabase
+        .from("auto_post_rules")
+        .select("*")
+        .eq("is_active", true)
+        .lte("next_run_at", nowIso)
+        .order("next_run_at", { ascending: true })
+        .limit(BATCH_LIMIT);
+
+      if (error) throw error;
+      dueRules = data || [];
+    }
+
+    if (!dueRules.length) {
       return res.status(200).json({
         ok: true,
         message: "No due rules found.",
@@ -52,15 +78,15 @@ module.exports = async function handler(req, res) {
     }
 
     const results = [];
-
     for (const rule of dueRules) {
-      const result = await processRule(rule);
+      const result = await processRule(rule, { forced: !!forcedRuleId });
       results.push(result);
     }
 
     return res.status(200).json({
       ok: true,
       processed: results.length,
+      forced: !!forcedRuleId,
       results
     });
   } catch (error) {
@@ -77,18 +103,15 @@ function isAuthorized(req) {
   const xCronSecret = req.headers["x-cron-secret"] || "";
 
   if (!AUTO_POST_CRON_SECRET) return true;
-
   if (xCronSecret && xCronSecret === AUTO_POST_CRON_SECRET) return true;
   if (authHeader === AUTO_POST_CRON_SECRET) return true;
-
   if (authHeader.startsWith("Bearer ")) {
     return authHeader.slice(7).trim() === AUTO_POST_CRON_SECRET;
   }
-
   return false;
 }
 
-async function processRule(rule) {
+async function processRule(rule, options = {}) {
   const startedAt = new Date().toISOString();
   let runId = null;
   let generatedContentId = null;
@@ -99,7 +122,7 @@ async function processRule(rule) {
       rule_id: rule.id,
       title: rule.title,
       status: "processing",
-      message: "Started rule processing",
+      message: options.forced ? "Started manual rule processing" : "Started rule processing",
       started_at: startedAt
     });
 
@@ -155,8 +178,7 @@ async function processRule(rule) {
         generated_content_id: generatedContentId
       });
 
-      await updateRuleAfterSuccess(rule);
-
+      await updateRuleAfterSuccess(rule, options);
       return {
         rule_id: rule.id,
         run_id: runId,
@@ -200,7 +222,7 @@ async function processRule(rule) {
       generated_content_id: generatedContentId
     });
 
-    await updateRuleAfterSuccess(rule);
+    await updateRuleAfterSuccess(rule, options);
 
     return {
       rule_id: rule.id,
@@ -272,8 +294,8 @@ async function updateRuleStatus(ruleId, fields) {
   if (error) throw error;
 }
 
-async function updateRuleAfterSuccess(rule) {
-  const nextRunAt = computeNextRunAt(rule);
+async function updateRuleAfterSuccess(rule, options = {}) {
+  const nextRunAt = computeNextRunAt(rule, options);
   await updateRuleStatus(rule.id, {
     last_status: rule.is_active ? "success" : "paused",
     last_error: null,
@@ -281,7 +303,7 @@ async function updateRuleAfterSuccess(rule) {
   });
 }
 
-function computeNextRunAt(rule) {
+function computeNextRunAt(rule, options = {}) {
   const base = new Date();
   const [hh, mm] = String(rule.post_time || "09:00").split(":").map(Number);
 
@@ -289,13 +311,16 @@ function computeNextRunAt(rule) {
   next.setSeconds(0, 0);
   next.setHours(Number.isFinite(hh) ? hh : 9, Number.isFinite(mm) ? mm : 0, 0, 0);
 
-  if (rule.frequency === "every_2_days") {
-    next.setDate(next.getDate() + 2);
-  } else if (rule.frequency === "weekly") {
-    next.setDate(next.getDate() + 7);
-  } else {
-    next.setDate(next.getDate() + 1);
+  if (options.forced) {
+    if (rule.frequency === "every_2_days") next.setDate(next.getDate() + 2);
+    else if (rule.frequency === "weekly") next.setDate(next.getDate() + 7);
+    else next.setDate(next.getDate() + 1);
+    return next.toISOString();
   }
+
+  if (rule.frequency === "every_2_days") next.setDate(next.getDate() + 2);
+  else if (rule.frequency === "weekly") next.setDate(next.getDate() + 7);
+  else next.setDate(next.getDate() + 1);
 
   return next.toISOString();
 }
@@ -541,17 +566,12 @@ async function generateVideoWithKling({ rule, prompt }) {
   };
 }
 
-async function callGeminiGenerateContent({
-  model,
-  contents,
-  responseMimeType
-}) {
+async function callGeminiGenerateContent({ model, contents, responseMimeType }) {
   if (!GEMINI_API_KEY) {
     throw new Error("Missing GEMINI_API_KEY.");
   }
 
   const body = { contents };
-
   if (responseMimeType) {
     body.generationConfig = { responseMimeType };
   }
@@ -566,7 +586,6 @@ async function callGeminiGenerateContent({
   );
 
   const json = await response.json().catch(() => ({}));
-
   if (!response.ok) {
     throw new Error(json?.error?.message || "Gemini request failed.");
   }
@@ -585,7 +604,6 @@ function extractTextFromGemini(json) {
 
 function extractInlineImagePart(json) {
   const parts = json?.candidates?.[0]?.content?.parts || [];
-
   for (const part of parts) {
     if (part?.inlineData?.data) {
       return {
@@ -593,7 +611,6 @@ function extractInlineImagePart(json) {
         mimeType: part.inlineData.mimeType || "image/png"
       };
     }
-
     if (part?.inline_data?.data) {
       return {
         data: part.inline_data.data,
@@ -601,7 +618,6 @@ function extractInlineImagePart(json) {
       };
     }
   }
-
   return null;
 }
 
