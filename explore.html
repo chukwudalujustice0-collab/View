@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="auth-loading">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -7,33 +7,36 @@
   <meta name="theme-color" content="#081a8f" />
   <meta
     name="description"
-    content="Explore trending content, status, people, groups, pages, market, news, AI, settings, and saved posts on View by Ceetify."
+    content="Explore trending videos, status, people, groups, pages, marketplace, news, AI, and saved content on View by Ceetify."
   />
   <link rel="manifest" href="/manifest.json" />
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/auth-guard.js"></script>
 
   <style>
-    html.auth-loading, html.auth-loading body{
-      visibility:hidden;
-    }
+    html.auth-loading, html.auth-loading body{ visibility:hidden; }
 
     :root{
       --bg:#05093c;
       --bg2:#07115f;
       --bg3:#081a8f;
-      --panel:rgba(255,255,255,.06);
-      --panel-2:rgba(255,255,255,.04);
-      --line:rgba(255,255,255,.08);
-      --text:#f8fbff;
-      --muted:#c7d5f1;
-      --soft:#9fb3d7;
+      --panel:#ffffff;
+      --panel-2:#f7faff;
+      --line:#dbe7ff;
+      --text:#111827;
+      --muted:#5f6f95;
+      --soft:#7d8db2;
       --blue:#2f7bff;
       --blue2:#5ba0ff;
       --red:#ff2f57;
       --red2:#ff5a74;
       --green:#22c55e;
-      --shadow:0 18px 46px rgba(0,0,0,.28);
-      --shadow-soft:0 10px 24px rgba(0,0,0,.18);
+      --black:#060814;
+      --shadow:0 18px 46px rgba(0,0,0,.18);
+      --shadow-soft:0 10px 24px rgba(0,0,0,.10);
       --safe-top:env(safe-area-inset-top,0px);
       --safe-bottom:env(safe-area-inset-bottom,0px);
     }
@@ -43,7 +46,7 @@
       padding:0;
       box-sizing:border-box;
       -webkit-tap-highlight-color:transparent;
-      font-family:Inter,Arial,sans-serif;
+      font-family:Arial,sans-serif;
     }
 
     html,body{
@@ -52,7 +55,7 @@
         radial-gradient(circle at top right, rgba(47,123,255,.18), transparent 24%),
         radial-gradient(circle at top left, rgba(255,47,87,.08), transparent 18%),
         linear-gradient(180deg,#081a8f 0%,#07115f 42%,#05093c 100%);
-      color:var(--text);
+      color:#fff;
     }
 
     body{
@@ -60,11 +63,7 @@
       padding-bottom:108px;
     }
 
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
-
+    a{ color:inherit; text-decoration:none; }
     button{
       border:none;
       outline:none;
@@ -73,16 +72,13 @@
       font:inherit;
       cursor:pointer;
     }
-
-    img{
-      display:block;
-      max-width:100%;
-    }
+    img{ display:block; max-width:100%; }
 
     .explore-page{
       width:min(100%,980px);
       margin:0 auto;
       padding:calc(10px + var(--safe-top)) 12px 0;
+      overflow-x:hidden;
     }
 
     .page-notice{
@@ -96,7 +92,6 @@
       backdrop-filter:blur(12px);
       box-shadow:var(--shadow-soft);
     }
-
     .page-notice.show{display:block}
     .page-notice.error{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.24);color:#ffd9df}
     .page-notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffea}
@@ -109,15 +104,14 @@
       gap:10px;
       margin-bottom:12px;
       background:rgba(7,17,95,.35);
-      border:1px solid var(--line);
+      border:1px solid rgba(255,255,255,.08);
       border-radius:24px;
       padding:12px;
       box-shadow:var(--shadow);
       backdrop-filter:blur(14px);
     }
 
-    .topbar-left,
-    .topbar-right{
+    .topbar-left,.topbar-right{
       display:flex;
       align-items:center;
       gap:10px;
@@ -131,13 +125,14 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid var(--line);
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
       color:#fff;
       font-size:18px;
       box-shadow:var(--shadow-soft);
       backdrop-filter:blur(12px);
       position:relative;
+      overflow:hidden;
     }
 
     .icon-badge{
@@ -159,11 +154,7 @@
     }
 
     .hidden{display:none !important}
-
-    .topbar-brand{
-      min-width:0;
-      flex:1;
-    }
+    .topbar-brand{ min-width:0; flex:1; }
 
     .brand-wrap{
       display:flex;
@@ -172,22 +163,20 @@
       min-width:0;
     }
 
-    .brand-logo,
-    .drawer-brand-logo{
+    .brand-logo,.drawer-brand-logo{
       width:50px;
       height:50px;
       min-width:50px;
       border-radius:18px;
       overflow:hidden;
       background:rgba(255,255,255,.08);
-      border:1px solid var(--line);
+      border:1px solid rgba(255,255,255,.10);
       display:grid;
       place-items:center;
       box-shadow:var(--shadow-soft);
     }
 
-    .brand-logo img,
-    .drawer-brand-logo img{
+    .brand-logo img,.drawer-brand-logo img{
       width:100%;
       height:100%;
       object-fit:cover;
@@ -199,10 +188,7 @@
       color:#fff;
     }
 
-    .brand-copy{
-      min-width:0;
-      flex:1;
-    }
+    .brand-copy{ min-width:0; flex:1; }
 
     .brand-title-row{
       display:flex;
@@ -229,21 +215,19 @@
     .brand-title-sub{
       font-size:11px;
       font-weight:900;
-      color:var(--red2);
+      color:#ffd4de;
     }
 
     .brand-tagline{
       margin-top:5px;
-      color:var(--muted);
+      color:#dbe5ff;
       font-size:11px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .search-panel{
-      margin-bottom:12px;
-    }
+    .search-panel{ margin-bottom:12px; }
 
     .search-box{
       min-height:50px;
@@ -252,7 +236,7 @@
       gap:10px;
       padding:0 14px;
       border-radius:22px;
-      background:rgba(255,255,255,.055);
+      background:rgba(255,255,255,.07);
       border:1px solid rgba(255,255,255,.10);
       box-shadow:var(--shadow);
       backdrop-filter:blur(12px);
@@ -272,9 +256,7 @@
       font-size:14px;
     }
 
-    .search-input::placeholder{
-      color:#c8b8ef;
-    }
+    .search-input::placeholder{ color:#c8b8ef; }
 
     .search-voice-btn{
       width:34px;
@@ -283,34 +265,33 @@
       display:grid;
       place-items:center;
       background:rgba(255,255,255,.08);
-      border:1px solid var(--line);
+      border:1px solid rgba(255,255,255,.10);
       font-size:14px;
+      position:relative;
+      color:#fff;
     }
 
-    .main-tabs-wrap{
-      margin-bottom:12px;
+    .search-voice-btn.listening{
+      background:linear-gradient(135deg,var(--red),var(--red2));
+      border-color:transparent;
     }
 
-    .main-tabs,
-    .sub-tabs{
+    .main-tabs-wrap{ margin-bottom:12px; }
+
+    .main-tabs,.sub-tabs{
       display:flex;
       gap:8px;
       overflow:auto hidden;
       scrollbar-width:none;
     }
+    .main-tabs::-webkit-scrollbar,.sub-tabs::-webkit-scrollbar{ display:none; }
 
-    .main-tabs::-webkit-scrollbar,
-    .sub-tabs::-webkit-scrollbar{
-      display:none;
-    }
-
-    .main-tab,
-    .sub-tab{
+    .main-tab,.sub-tab{
       min-height:38px;
       padding:0 13px;
       border-radius:999px;
-      background:rgba(255,255,255,.08);
-      border:1px solid var(--line);
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
       color:#fff;
       font-size:12px;
       font-weight:800;
@@ -318,25 +299,21 @@
       flex:0 0 auto;
     }
 
-    .main-tab.active,
-    .sub-tab.active{
-      background:linear-gradient(135deg, rgba(47,123,255,.22), rgba(255,47,87,.14));
-      border-color:rgba(47,123,255,.20);
+    .main-tab.active,.sub-tab.active{
+      background:linear-gradient(135deg, rgba(47,123,255,.30), rgba(255,47,87,.18));
+      border-color:rgba(255,255,255,.14);
     }
 
-    .page-content{
-      display:grid;
-      gap:14px;
-    }
+    .page-content{ display:grid; gap:14px; }
 
     .explore-hero-card{
       border-radius:24px;
       padding:16px;
       background:
         radial-gradient(circle at top right, rgba(47,123,255,.14), transparent 26%),
-        radial-gradient(circle at bottom left, rgba(255,47,87,.14), transparent 24%),
-        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
-      border:1px solid var(--line);
+        radial-gradient(circle at bottom left, rgba(255,47,87,.12), transparent 24%),
+        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid rgba(255,255,255,.10);
       box-shadow:var(--shadow);
       backdrop-filter:blur(16px);
     }
@@ -349,7 +326,7 @@
     }
 
     .explore-hero-copy p{
-      color:var(--muted);
+      color:#dce7ff;
       font-size:12px;
       line-height:1.65;
       max-width:720px;
@@ -369,20 +346,21 @@
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
       color:#fff;
       font-size:11px;
       font-weight:800;
     }
 
     .content-section{
-      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
-      border:1px solid var(--line);
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.08);
       border-radius:24px;
       padding:14px;
       box-shadow:var(--shadow);
       backdrop-filter:blur(16px);
+      overflow:hidden;
     }
 
     .section-head{
@@ -399,10 +377,11 @@
       font-weight:900;
       margin-bottom:4px;
       letter-spacing:-.02em;
+      color:#fff;
     }
 
     .section-head p{
-      color:var(--muted);
+      color:#dce7ff;
       font-size:11px;
       line-height:1.6;
     }
@@ -414,14 +393,12 @@
       flex-wrap:wrap;
     }
 
-    .section-link,
-    .section-mini-link,
-    .feature-panel-btn{
+    .section-link,.section-mini-link,.feature-panel-btn{
       min-height:34px;
       padding:0 12px;
       border-radius:12px;
-      background:rgba(255,255,255,.08);
-      border:1px solid var(--line);
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
       display:inline-flex;
       align-items:center;
       justify-content:center;
@@ -430,10 +407,7 @@
       color:#fff;
     }
 
-    .section-icon-actions{
-      display:flex;
-      gap:8px;
-    }
+    .section-icon-actions{ display:flex; gap:8px; }
 
     .section-icon-btn{
       width:34px;
@@ -441,154 +415,206 @@
       border-radius:12px;
       display:grid;
       place-items:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid var(--line);
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
       font-size:12px;
+      color:#fff;
     }
 
-    .trending-layout{
-      display:grid;
-      grid-template-columns:1.2fr .8fr .8fr;
+    .scroll-viewport{
+      width:100%;
+      overflow:hidden;
+    }
+
+    .h-scroll{
+      display:flex;
       gap:10px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      width:100%;
+      max-width:100%;
+      padding-bottom:2px;
+      scrollbar-width:none;
+      -webkit-overflow-scrolling:touch;
     }
+    .h-scroll::-webkit-scrollbar{ display:none; }
 
-    .trend-card{
-      position:relative;
-      min-height:162px;
+    .slide-card{
+      flex:0 0 260px;
+      min-width:260px;
+      max-width:260px;
       border-radius:22px;
       overflow:hidden;
-      background:linear-gradient(135deg,#122870,#0f154f);
+      background:#fff;
       border:1px solid var(--line);
       box-shadow:var(--shadow-soft);
+      position:relative;
+      color:var(--text);
     }
 
-    .trend-card-featured{
-      min-height:200px;
-      background:
-        radial-gradient(circle at top right, rgba(255,255,255,.18), transparent 22%),
-        linear-gradient(135deg,#17356f,#0c1e46 45%,#08142e 100%);
+    .slide-card.large{ flex-basis:320px; min-width:320px; max-width:320px; }
+    .slide-card.small{ flex-basis:240px; min-width:240px; max-width:240px; }
+    .slide-card.market-card{ flex-basis:240px; min-width:240px; max-width:240px; }
+    .slide-card.status-card{
+      flex-basis:110px;
+      min-width:110px;
+      max-width:110px;
+      background:transparent;
+      border:none;
+      box-shadow:none;
+      overflow:visible;
+      color:#fff;
     }
 
-    .trend-card-blue{
-      background:linear-gradient(135deg,#1642b5,#122870 60%,#0c1e46);
+    .trend-media,.market-media{
+      position:relative;
+      height:170px;
+      background:linear-gradient(135deg,#e6efff,#f4f7ff);
+      overflow:hidden;
     }
 
-    .trend-card-red{
-      background:linear-gradient(135deg,#7f1d45,#4d183d 55%,#1c1238);
+    .market-media{ height:185px; }
+
+    .trend-media img,.market-media img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
     }
 
-    .trend-card-overlay{
+    .trend-overlay{
       position:absolute;
       inset:0;
-      background:linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.34));
-    }
-
-    .trend-card-content{
-      position:relative;
-      z-index:2;
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      justify-content:flex-end;
-      padding:14px;
+      background:linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.18));
     }
 
     .trend-chip{
+      position:absolute;
+      left:12px;
+      top:12px;
+      z-index:2;
       min-height:24px;
       padding:0 8px;
       border-radius:999px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      background:rgba(255,255,255,.14);
-      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.92);
+      border:1px solid #e5ecff;
       font-size:10px;
       font-weight:900;
-      width:max-content;
-      margin-bottom:8px;
+      color:#1c2952;
     }
 
-    .trend-card-content h3{
-      font-size:15px;
+    .trend-play{
+      position:absolute;
+      right:12px;
+      bottom:12px;
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:rgba(7,17,95,.84);
+      border:1px solid rgba(255,255,255,.18);
+      z-index:2;
+      font-size:16px;
+      color:#fff;
+    }
+
+    .slide-body{
+      padding:12px;
+    }
+
+    .slide-title{
+      font-size:13px;
       font-weight:900;
-      line-height:1.35;
+      line-height:1.45;
       margin-bottom:5px;
+      color:#111827;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
     }
 
-    .trend-card-content p{
-      color:#e5efff;
+    .slide-sub{
+      color:var(--muted);
       font-size:11px;
       line-height:1.55;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      word-break:break-word;
     }
 
-    .trend-meta{
+    .slide-meta{
       margin-top:8px;
       display:flex;
       gap:10px;
       flex-wrap:wrap;
       font-size:10px;
-      color:#dfe9ff;
+      color:#42527d;
       font-weight:800;
     }
 
-    .status-strip{
-      display:flex;
-      gap:10px;
-      overflow:auto hidden;
-      scrollbar-width:none;
-    }
-
-    .status-strip::-webkit-scrollbar{display:none}
-
-    .status-item{
-      flex:0 0 auto;
-      width:78px;
+    .status-card-inner{
       text-align:center;
     }
 
-    .status-ring{
-      width:74px;
-      height:74px;
-      border-radius:50%;
-      padding:2px;
-      background:linear-gradient(135deg,var(--blue),var(--red));
-      margin:0 auto 6px;
-    }
-
-    .status-avatar{
-      width:100%;
-      height:100%;
-      border-radius:50%;
+    .status-preview{
+      width:92px;
+      height:122px;
+      border-radius:20px;
       overflow:hidden;
-      background:#1b1241;
-      border:2px solid rgba(255,255,255,.9);
+      margin:0 auto 8px;
+      border:2px solid rgba(255,255,255,.30);
+      background:#fff;
+      box-shadow:var(--shadow-soft);
+      position:relative;
       display:flex;
       align-items:center;
       justify-content:center;
-      color:#fff;
-      font-size:20px;
-      font-weight:900;
-      position:relative;
     }
 
-    .status-avatar img{
+    .status-preview img,.status-preview video{
       width:100%;
       height:100%;
       object-fit:cover;
     }
 
-    .status-plus{
+    .status-text-preview{
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:10px;
+      color:#111827;
+      font-size:12px;
+      font-weight:900;
+      line-height:1.45;
+      background:#fff;
+      word-break:break-word;
+    }
+
+    .status-tag{
       position:absolute;
-      right:2px;
-      bottom:1px;
-      width:22px;
-      height:22px;
-      border-radius:50%;
-      background:linear-gradient(135deg,var(--red),var(--red2));
-      display:grid;
-      place-items:center;
-      border:2px solid #1b1241;
-      font-size:13px;
+      left:7px;
+      top:7px;
+      min-height:22px;
+      padding:0 7px;
+      border-radius:999px;
+      background:rgba(7,17,95,.85);
+      border:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:9px;
+      font-weight:900;
+      z-index:2;
     }
 
     .status-name{
@@ -597,54 +623,40 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      color:#fff;
     }
 
     .status-sub{
       margin-top:2px;
-      color:var(--muted);
+      color:#dbe5ff;
       font-size:10px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .status-loading{
-      display:flex;
-      gap:10px;
-    }
-
-    .status-skeleton{
-      width:78px;
-      height:102px;
-      border-radius:18px;
-      background:linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line);
-      flex:0 0 auto;
-    }
-
-    .people-grid,
-    .groups-grid,
-    .page-cards-grid{
+    .people-grid,.groups-grid,.page-cards-grid{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
       gap:10px;
     }
 
     .empty-state-card{
-      grid-column:1/-1;
+      min-width:100%;
+      width:100%;
       padding:28px 16px;
       text-align:center;
       border-radius:20px;
-      background:rgba(255,255,255,.04);
-      border:1px dashed rgba(255,255,255,.12);
-      color:var(--muted);
+      background:#fff;
+      border:1px dashed #dbe7ff;
+      color:#516180;
       font-size:12px;
       line-height:1.6;
     }
 
     .empty-state-card strong{
       display:block;
-      color:#fff;
+      color:#111827;
       font-size:14px;
       margin-bottom:4px;
     }
@@ -652,10 +664,11 @@
     .person-card{
       border-radius:22px;
       padding:12px;
-      background:rgba(255,255,255,.05);
+      background:#fff;
       border:1px solid var(--line);
       box-shadow:var(--shadow-soft);
       text-align:center;
+      color:var(--text);
     }
 
     .person-avatar-wrap{
@@ -675,9 +688,9 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      background:#1b1241;
-      border:2px solid rgba(255,255,255,.92);
-      color:#fff;
+      background:#fff;
+      border:2px solid #fff;
+      color:#1b1241;
       font-size:20px;
       font-weight:900;
     }
@@ -695,6 +708,7 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      color:#111827;
     }
 
     .person-username{
@@ -707,9 +721,10 @@
     }
 
     .person-meta{
-      color:#dfe9ff;
+      color:#42527d;
       font-size:10px;
       margin-bottom:8px;
+      min-height:14px;
     }
 
     .person-actions{
@@ -722,62 +737,54 @@
       min-height:30px;
       padding:0 10px;
       border-radius:12px;
-      background:rgba(255,255,255,.08);
+      background:#fff;
       border:1px solid var(--line);
       display:inline-flex;
       align-items:center;
       justify-content:center;
       font-size:10px;
       font-weight:800;
-      color:#fff;
+      color:#111827;
     }
 
     .mini-btn.primary{
       background:linear-gradient(135deg,var(--blue),var(--blue2));
       border:none;
+      color:#fff;
     }
 
-    .group-card,
-    .page-card,
-    .news-card{
+    .group-card,.page-card,.news-card{
       border-radius:20px;
       overflow:hidden;
-      background:rgba(255,255,255,.05);
+      background:#fff;
       border:1px solid var(--line);
       box-shadow:var(--shadow-soft);
+      color:var(--text);
     }
 
-    .group-cover,
-    .news-card-thumb{
+    .group-cover,.news-card-thumb{
       height:92px;
-      background:linear-gradient(135deg,#16368d,#0c1e46);
+      background:linear-gradient(135deg,#d8e6ff,#e8efff);
     }
 
-    .group-cover-blue,
-    .news-thumb-blue{background:linear-gradient(135deg,#1642b5,#122870 60%,#0c1e46)}
-    .group-cover-red,
-    .news-thumb-red{background:linear-gradient(135deg,#7f1d45,#4d183d 55%,#1c1238)}
-    .group-cover-mix{background:linear-gradient(135deg,#7f1d45,#2147b8 60%,#10225a)}
-    .group-cover-dark{background:linear-gradient(135deg,#0f172a,#16214a 60%,#2b143d)}
+    .group-cover-blue,.news-thumb-blue{background:linear-gradient(135deg,#cfe0ff,#e7efff)}
+    .group-cover-red,.news-thumb-red{background:linear-gradient(135deg,#ffd7df,#fff1f5)}
+    .group-cover-mix{background:linear-gradient(135deg,#ffdbe5,#dde9ff)}
+    .group-cover-dark{background:linear-gradient(135deg,#dde6f8,#eef2ff)}
 
-    .group-body,
-    .page-card-body,
-    .news-card-body{
+    .group-body,.page-card-body,.news-card-body{
       padding:12px;
     }
 
-    .group-body h3,
-    .page-card-body h3,
-    .news-card-body h3{
+    .group-body h3,.page-card-body h3,.news-card-body h3{
       font-size:12px;
       font-weight:900;
       margin-bottom:4px;
       line-height:1.45;
+      color:#111827;
     }
 
-    .group-body p,
-    .page-card-body p,
-    .news-card-body p{
+    .group-body p,.page-card-body p,.news-card-body p{
       color:var(--muted);
       font-size:11px;
       line-height:1.55;
@@ -790,15 +797,14 @@
       padding:12px;
     }
 
-    .page-card-icon,
-    .feature-panel-icon{
+    .page-card-icon,.feature-panel-icon{
       width:46px;
       height:46px;
       min-width:46px;
       border-radius:16px;
       display:grid;
       place-items:center;
-      background:linear-gradient(135deg,rgba(47,123,255,.2),rgba(255,47,87,.18));
+      background:linear-gradient(135deg,#eef4ff,#fff1f5);
       border:1px solid var(--line);
       font-size:20px;
     }
@@ -809,9 +815,10 @@
       gap:12px;
       padding:12px;
       border-radius:20px;
-      background:rgba(255,255,255,.05);
+      background:#fff;
       border:1px solid var(--line);
       box-shadow:var(--shadow-soft);
+      color:var(--text);
     }
 
     .feature-panel-copy{
@@ -823,6 +830,7 @@
       font-size:12px;
       font-weight:900;
       margin-bottom:4px;
+      color:#111827;
     }
 
     .feature-panel-copy p{
@@ -831,9 +839,52 @@
       line-height:1.55;
     }
 
-    .news-list{
-      display:grid;
-      gap:10px;
+    .headline-bar{
+      width:100%;
+      min-height:52px;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-soft);
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:0 14px;
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    .headline-label{
+      min-height:26px;
+      padding:0 10px;
+      border-radius:999px;
+      background:#fff1f5;
+      border:1px solid #ffd6df;
+      color:#b3123a;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:10px;
+      font-weight:900;
+      flex:0 0 auto;
+    }
+
+    .headline-text{
+      min-width:0;
+      flex:1;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#111827;
+    }
+
+    .headline-time{
+      flex:0 0 auto;
+      font-size:10px;
+      color:var(--muted);
+      font-weight:800;
     }
 
     .drawer-backdrop{
@@ -855,7 +906,7 @@
       width:min(86vw,340px);
       z-index:96;
       background:linear-gradient(180deg,#13237f,#0d1861 58%,#09124c);
-      border-left:1px solid var(--line);
+      border-left:1px solid rgba(255,255,255,.10);
       box-shadow:-20px 0 60px rgba(0,0,0,.34);
       transform:translateX(104%);
       transition:transform .28s ease;
@@ -888,7 +939,7 @@
     }
 
     .drawer-brand-sub{
-      color:var(--muted);
+      color:#dbe5ff;
       font-size:11px;
     }
 
@@ -913,8 +964,8 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
       color:#fff;
       font-size:13px;
       font-weight:800;
@@ -932,9 +983,7 @@
       line-height:1;
     }
 
-    .drawer-arrow{
-      opacity:.7;
-    }
+    .drawer-arrow{ opacity:.7; }
 
     .bottom-nav{
       position:fixed;
@@ -944,7 +993,7 @@
       z-index:55;
       background:rgba(5,9,60,.96);
       backdrop-filter:blur(18px);
-      border-top:1px solid var(--line);
+      border-top:1px solid rgba(255,255,255,.10);
       display:grid;
       grid-template-columns:repeat(6,1fr);
       gap:0;
@@ -964,32 +1013,39 @@
       font-size:11px;
       font-weight:800;
       text-align:center;
+      border:none;
+      background:none;
+      transition:none;
+      opacity:1;
+      transform:none;
+      visibility:visible;
     }
 
-    .bottom-nav-link.active{
-      color:#fff;
-    }
+    .bottom-nav-link.active{ color:#fff; }
 
     .nav-icon{
       font-size:21px;
       line-height:1;
+      width:24px;
+      height:24px;
+      display:grid;
+      place-items:center;
     }
 
     .create-nav{
       position:relative;
+      color:#fff;
     }
 
     .create-nav .nav-icon{
-      width:52px;
-      height:52px;
-      border-radius:50%;
-      display:grid;
-      place-items:center;
-      background:linear-gradient(135deg,var(--red),var(--red2));
+      width:24px;
+      height:24px;
+      border-radius:0;
+      background:none;
       color:#fff;
-      font-size:27px;
-      box-shadow:0 8px 24px rgba(255,47,87,.35);
-      margin-bottom:1px;
+      font-size:21px;
+      box-shadow:none;
+      margin-bottom:0;
     }
 
     .modal-backdrop{
@@ -1004,15 +1060,13 @@
       padding:10px;
     }
 
-    .modal-backdrop.show{
-      display:flex;
-    }
+    .modal-backdrop.show{ display:flex; }
 
     .sheet{
       width:min(100%,720px);
       border-radius:28px 28px 0 0;
       background:linear-gradient(180deg,#1d2f9e,#101d73 55%,#0a1252);
-      border:1px solid var(--line);
+      border:1px solid rgba(255,255,255,.10);
       box-shadow:var(--shadow);
       padding:10px 12px 14px;
     }
@@ -1030,6 +1084,7 @@
       font-size:16px;
       font-weight:900;
       margin-bottom:12px;
+      color:#fff;
     }
 
     .sheet-grid{
@@ -1042,7 +1097,7 @@
       min-height:88px;
       border-radius:20px;
       background:rgba(255,255,255,.08);
-      border:1px solid var(--line);
+      border:1px solid rgba(255,255,255,.10);
       color:#fff;
       display:flex;
       align-items:center;
@@ -1060,10 +1115,7 @@
     }
 
     @media (max-width:900px){
-      .trending-layout,
-      .people-grid,
-      .groups-grid,
-      .page-cards-grid{
+      .people-grid,.groups-grid,.page-cards-grid{
         grid-template-columns:repeat(2,minmax(0,1fr));
       }
     }
@@ -1074,8 +1126,7 @@
         padding-right:10px;
       }
 
-      .brand-logo,
-      .drawer-brand-logo{
+      .brand-logo,.drawer-brand-logo{
         width:46px;
         height:46px;
         min-width:46px;
@@ -1088,18 +1139,10 @@
         border-radius:15px;
       }
 
-      .brand-title-main{
-        font-size:18px;
-      }
+      .brand-title-main{ font-size:18px; }
+      .brand-title-sub{ font-size:10px; }
 
-      .brand-title-sub{
-        font-size:10px;
-      }
-
-      .trending-layout,
-      .people-grid,
-      .groups-grid,
-      .page-cards-grid{
+      .people-grid,.groups-grid,.page-cards-grid{
         grid-template-columns:1fr;
       }
 
@@ -1110,12 +1153,13 @@
       .sheet-grid{
         grid-template-columns:1fr 1fr;
       }
+
+      .slide-card.large{ flex-basis:286px; min-width:286px; max-width:286px; }
+      .slide-card.small{ flex-basis:220px; min-width:220px; max-width:220px; }
+      .slide-card.market-card{ flex-basis:220px; min-width:220px; max-width:220px; }
     }
   </style>
 
-  <script>
-    document.documentElement.classList.add("auth-loading");
-  </script>
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
@@ -1128,25 +1172,6 @@
         flowType: "pkce"
       }
     });
-
-    async function protectPage(nextPage) {
-      try {
-        const { data, error } = await window.supabaseClient.auth.getSession();
-        if (error) throw error;
-
-        const user = data?.session?.user || null;
-        if (!user) {
-          location.replace(`login.html?next=${encodeURIComponent(nextPage || location.pathname.split("/").pop() || "home.html")}`);
-          return null;
-        }
-
-        document.documentElement.classList.remove("auth-loading");
-        return user;
-      } catch (err) {
-        location.replace(`login.html?next=${encodeURIComponent(nextPage || location.pathname.split("/").pop() || "home.html")}`);
-        return null;
-      }
-    }
   </script>
 </head>
 <body>
@@ -1155,7 +1180,7 @@
 
     <header class="topbar">
       <div class="topbar-left">
-        <a href="home.html" class="icon-btn nav-back" aria-label="Back to home">←</a>
+        <a href="home.html" class="icon-btn" aria-label="Back to home">←</a>
       </div>
 
       <div class="topbar-brand">
@@ -1180,9 +1205,19 @@
       </div>
 
       <div class="topbar-right">
-        <a href="notifications.html" class="icon-btn" aria-label="Notifications" id="notificationsBtn">
+        <a href="notifications.html" class="icon-btn" aria-label="Notifications">
           <span>🔔</span>
           <span id="notificationBadge" class="icon-badge hidden">0</span>
+        </a>
+
+        <a id="myProfileBtn" href="profile.html" class="icon-btn" aria-label="My profile">
+          <img
+            id="myProfileAvatar"
+            src="icons/view-logo.png"
+            alt="My profile"
+            style="width:100%;height:100%;object-fit:cover;"
+            onerror="this.src='icons/view-logo.png';"
+          />
         </a>
 
         <button
@@ -1213,7 +1248,7 @@
         <button class="main-tab" type="button" data-target="peopleSection">People</button>
         <button class="main-tab" type="button" data-target="groupsSection">Groups</button>
         <button class="main-tab" type="button" data-target="pagesSection">Pages</button>
-        <button class="main-tab" type="button" data-target="marketSection">Market</button>
+        <button class="main-tab" type="button" data-target="marketSection">Marketplace</button>
         <button class="main-tab" type="button" data-target="newsSection">News</button>
         <button class="main-tab" type="button" data-target="aiSection">AI</button>
         <button class="main-tab" type="button" data-target="savedSection">Saved</button>
@@ -1226,8 +1261,8 @@
           <div class="explore-hero-copy">
             <h1>Discover what matters now</h1>
             <p>
-              Explore trending moments, status updates, people, groups, pages, market offers,
-              news, AI tools, settings links, and saved content across the View ecosystem.
+              Explore trending moments, real status previews, suggested people, groups, pages,
+              marketplace offers, news, AI tools, and saved content across the View ecosystem.
             </p>
           </div>
 
@@ -1235,6 +1270,7 @@
             <div class="hero-stat-pill" id="heroProfilesCount">Profiles: 0</div>
             <div class="hero-stat-pill" id="heroOnlineCount">Online: 0</div>
             <div class="hero-stat-pill" id="heroSuggestedCount">Suggested: 0</div>
+            <div class="hero-stat-pill" id="heroMarketCount">Products: 0</div>
           </div>
         </div>
       </section>
@@ -1243,48 +1279,21 @@
         <div class="section-head">
           <div>
             <h2>Trending</h2>
-            <p>Hot content and highlighted moments on View.</p>
+            <p>Real internet videos supplied from Trendings.html.</p>
           </div>
-          <a href="trending.html" class="section-link">See more ›</a>
+          <div class="section-head-actions">
+            <a href="trendings.html" class="section-link">See more ›</a>
+            <button id="refreshTrendingBtn" class="section-mini-link" type="button">Refresh</button>
+          </div>
         </div>
 
-        <div class="trending-layout">
-          <a href="trending.html" class="trend-card trend-card-featured">
-            <div class="trend-card-overlay"></div>
-            <div class="trend-card-content">
-              <span class="trend-chip">Trending</span>
-              <h3>Fashion Week Highlights 🔥</h3>
-              <p>Discover the most talked-about creator moments right now.</p>
-              <div class="trend-meta">
-                <span>❤ 982k</span>
-                <span>● 25k</span>
-              </div>
+        <div class="scroll-viewport">
+          <div id="trendingScroller" class="h-scroll">
+            <div class="empty-state-card">
+              <strong>No trending videos yet</strong>
+              <span>Open Trendings.html to refresh internet trending videos.</span>
             </div>
-          </a>
-
-          <a href="trending.html" class="trend-card trend-card-small trend-card-blue">
-            <div class="trend-card-overlay"></div>
-            <div class="trend-card-content">
-              <span class="trend-chip">People</span>
-              <h3>Creator Spotlight</h3>
-              <p>Fast-rising creators and live conversations.</p>
-              <div class="trend-meta">
-                <span>#explore</span>
-              </div>
-            </div>
-          </a>
-
-          <a href="trending.html" class="trend-card trend-card-small trend-card-red">
-            <div class="trend-card-overlay"></div>
-            <div class="trend-card-content">
-              <span class="trend-chip">Lifestyle</span>
-              <h3>Adventure Picks</h3>
-              <p>Fresh travel, style, and premium discovery.</p>
-              <div class="trend-meta">
-                <span>#ootd</span>
-              </div>
-            </div>
-          </a>
+          </div>
         </div>
       </section>
 
@@ -1292,32 +1301,16 @@
         <div class="section-head">
           <div>
             <h2>Status</h2>
-            <p>Quick moments and fresh stories from people on View.</p>
+            <p>Your status first, then real previews from people with active status.</p>
           </div>
           <div class="section-head-actions">
             <a href="status.html" class="section-link">See all ›</a>
-            <a href="create-status.html" class="section-mini-link">Add status</a>
+            <a href="create-status.html" class="section-mini-link">Create status</a>
           </div>
         </div>
 
-        <div id="statusStrip" class="status-strip">
-          <a href="create-status.html" class="status-item add-status-card">
-            <div class="status-ring">
-              <div class="status-avatar add-status-avatar">
-                <span>+</span>
-                <span class="status-plus">+</span>
-              </div>
-            </div>
-            <div class="status-name">Add</div>
-            <div class="status-sub">Your status</div>
-          </a>
-
-          <div id="statusLoadingCards" class="status-loading">
-            <div class="status-skeleton"></div>
-            <div class="status-skeleton"></div>
-            <div class="status-skeleton"></div>
-            <div class="status-skeleton"></div>
-          </div>
+        <div class="scroll-viewport">
+          <div id="statusScroller" class="h-scroll"></div>
         </div>
       </section>
 
@@ -1325,14 +1318,14 @@
         <div class="section-head">
           <div>
             <h2>People</h2>
-            <p>Discover suggested profiles, friends, followers, and following.</p>
+            <p>Suggested by View so users can follow and discover more profiles.</p>
           </div>
           <div class="section-head-actions">
             <a href="friends.html" class="section-link">See all ›</a>
             <div class="section-icon-actions">
-              <a href="friends.html" class="section-icon-btn" aria-label="Open people search">⌕</a>
-              <button class="section-icon-btn" type="button" aria-label="People filter tools">◐</button>
-              <button class="section-icon-btn" type="button" aria-label="More people options">☰</button>
+              <button id="peopleRefreshBtn" class="section-icon-btn" type="button" aria-label="Refresh people">↻</button>
+              <button id="peopleSearchBtn" class="section-icon-btn" type="button" aria-label="Focus people search">⌕</button>
+              <button id="peopleMoreBtn" class="section-icon-btn" type="button" aria-label="Open people page">☰</button>
             </div>
           </div>
         </div>
@@ -1340,9 +1333,8 @@
         <div class="sub-tabs-wrap">
           <div class="sub-tabs" id="peopleTabs">
             <button class="sub-tab active" type="button" data-filter="suggested">Suggested</button>
-            <button class="sub-tab" type="button" data-filter="friends">Friends</button>
-            <button class="sub-tab" type="button" data-filter="followers">Followers</button>
-            <button class="sub-tab" type="button" data-filter="following">Following</button>
+            <button class="sub-tab" type="button" data-filter="online">Online</button>
+            <button class="sub-tab" type="button" data-filter="newest">Newest</button>
           </div>
         </div>
 
@@ -1368,7 +1360,7 @@
             <div class="group-cover group-cover-blue"></div>
             <div class="group-body">
               <h3>Fitness Zone</h3>
-              <p>16k members</p>
+              <p>Open groups and discover active communities.</p>
             </div>
           </a>
 
@@ -1376,7 +1368,7 @@
             <div class="group-cover group-cover-red"></div>
             <div class="group-body">
               <h3>Coding Enthusiasts</h3>
-              <p>21k members</p>
+              <p>Find creator and skill-based groups.</p>
             </div>
           </a>
 
@@ -1384,15 +1376,7 @@
             <div class="group-cover group-cover-mix"></div>
             <div class="group-body">
               <h3>Manga Lovers</h3>
-              <p>71k members</p>
-            </div>
-          </a>
-
-          <a href="groups.html" class="group-card">
-            <div class="group-cover group-cover-dark"></div>
-            <div class="group-body">
-              <h3>Explore Italy</h3>
-              <p>331k members</p>
+              <p>Explore entertainment communities on View.</p>
             </div>
           </a>
         </div>
@@ -1437,19 +1421,22 @@
       <section id="marketSection" class="content-section">
         <div class="section-head">
           <div>
-            <h2>Market</h2>
-            <p>Explore products, promos, offers, and ecosystem listings.</p>
+            <h2>Marketplace</h2>
+            <p>Real items fetched from marketplace data. Slide to see more.</p>
           </div>
-          <a href="market.html" class="section-link">Open market ›</a>
+          <div class="section-head-actions">
+            <a href="marketplace.html" class="section-link">Open marketplace ›</a>
+            <button id="refreshMarketBtn" class="section-mini-link" type="button">Refresh</button>
+          </div>
         </div>
 
-        <div class="feature-panel">
-          <div class="feature-panel-icon">🛍️</div>
-          <div class="feature-panel-copy">
-            <h3>Marketplace and offers</h3>
-            <p>Open Market to discover vendors, products, and trending deals.</p>
+        <div class="scroll-viewport">
+          <div id="marketScroller" class="h-scroll">
+            <div class="empty-state-card">
+              <strong>No marketplace items</strong>
+              <span>Products will appear here when marketplace items are available.</span>
+            </div>
           </div>
-          <a href="market.html" class="feature-panel-btn">Open</a>
         </div>
       </section>
 
@@ -1457,28 +1444,16 @@
         <div class="section-head">
           <div>
             <h2>News</h2>
-            <p>Important updates, announcements, and ecosystem highlights.</p>
+            <p>Headline rotates every 3 seconds using news data.</p>
           </div>
           <a href="news.html" class="section-link">See all ›</a>
         </div>
 
-        <div class="news-list">
-          <a href="news.html" class="news-card">
-            <div class="news-card-thumb news-thumb-blue"></div>
-            <div class="news-card-body">
-              <h3>View expands creator discovery tools</h3>
-              <p>Explore smarter suggestions, cleaner discovery, and premium reach.</p>
-            </div>
-          </a>
-
-          <a href="news.html" class="news-card">
-            <div class="news-card-thumb news-thumb-red"></div>
-            <div class="news-card-body">
-              <h3>Communities and live spaces are growing</h3>
-              <p>More users are joining topic groups and public conversations daily.</p>
-            </div>
-          </a>
-        </div>
+        <a href="news.html" id="headlineBar" class="headline-bar">
+          <div class="headline-label">Headline</div>
+          <div id="headlineText" class="headline-text">No headline available yet.</div>
+          <div id="headlineTime" class="headline-time">Now</div>
+        </a>
       </section>
 
       <section id="aiSection" class="content-section">
@@ -1493,8 +1468,8 @@
         <div class="feature-panel">
           <div class="feature-panel-icon">✨</div>
           <div class="feature-panel-copy">
-            <h3>Ask AI</h3>
-            <p>Use AI for captions, drafts, smart ideas, design help, and more.</p>
+            <h3>View AI</h3>
+            <p>Use View AI for captions, drafts, smart ideas, and premium creativity tools.</p>
           </div>
           <a href="ask-ai.html" class="feature-panel-btn">Launch</a>
         </div>
@@ -1513,7 +1488,7 @@
           <div class="feature-panel-icon">🔖</div>
           <div class="feature-panel-copy">
             <h3>Saved content</h3>
-            <p>Find your bookmarked posts, ideas, and premium creator moments.</p>
+            <p>Find your bookmarked posts, ideas, and creator moments.</p>
           </div>
           <a href="saved-posts.html" class="feature-panel-btn">Open</a>
         </div>
@@ -1562,6 +1537,11 @@
     </div>
 
     <nav class="drawer-nav">
+      <a href="dashboard.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">📊</span><span>Dashboard</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
+
       <a href="groups.html" class="drawer-link">
         <span class="drawer-link-left"><span class="drawer-icon">👥</span><span>Groups</span></span>
         <span class="drawer-arrow">›</span>
@@ -1572,8 +1552,8 @@
         <span class="drawer-arrow">›</span>
       </a>
 
-      <a href="trending.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">🔥</span><span>Trending</span></span>
+      <a href="trendings.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">🔥</span><span>Trendings</span></span>
         <span class="drawer-arrow">›</span>
       </a>
 
@@ -1582,28 +1562,23 @@
         <span class="drawer-arrow">›</span>
       </a>
 
+      <a href="live-score.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">🏟️</span><span>Live Score</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
+
+      <a href="jobs.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">💼</span><span>Jobs</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
+
       <a href="friends.html" class="drawer-link">
         <span class="drawer-link-left"><span class="drawer-icon">🤝</span><span>Friends</span></span>
         <span class="drawer-arrow">›</span>
       </a>
 
-      <a href="followers.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">👣</span><span>Followers</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="following.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">➕</span><span>Following</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="suggested.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">🧠</span><span>Suggested</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="market.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">🛍️</span><span>Market</span></span>
+      <a href="marketplace.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">🛍️</span><span>Marketplace</span></span>
         <span class="drawer-arrow">›</span>
       </a>
 
@@ -1612,18 +1587,18 @@
         <span class="drawer-arrow">›</span>
       </a>
 
-      <a href="settings.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">⚙️</span><span>Settings</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
       <a href="ask-ai.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">✨</span><span>AI</span></span>
+        <span class="drawer-link-left"><span class="drawer-icon">✨</span><span>View AI</span></span>
         <span class="drawer-arrow">›</span>
       </a>
 
       <a href="saved-posts.html" class="drawer-link">
         <span class="drawer-link-left"><span class="drawer-icon">🔖</span><span>Saved Posts</span></span>
+        <span class="drawer-arrow">›</span>
+      </a>
+
+      <a href="settings.html" class="drawer-link">
+        <span class="drawer-link-left"><span class="drawer-icon">⚙️</span><span>Settings</span></span>
         <span class="drawer-arrow">›</span>
       </a>
     </nav>
@@ -1668,19 +1643,19 @@
       <div class="sheet-grid">
         <a class="sheet-btn" href="create-post.html">
           <span class="big">✍️</span>
-          <span>Post</span>
+          <span>Create Post</span>
         </a>
-        <a class="sheet-btn" href="create-status.html">
-          <span class="big">🟣</span>
-          <span>Story</span>
+        <a class="sheet-btn" href="video-feed.html?create=reel">
+          <span class="big">🎬</span>
+          <span>Reels</span>
         </a>
         <a class="sheet-btn" href="go-live.html">
           <span class="big">📺</span>
           <span>Go Live</span>
         </a>
-        <a class="sheet-btn" href="upload-media.html">
-          <span class="big">📷</span>
-          <span>Upload Media</span>
+        <a class="sheet-btn" href="create-status.html">
+          <span class="big">⭕</span>
+          <span>Create Status</span>
         </a>
       </div>
     </div>
@@ -1693,33 +1668,49 @@
     const drawerToggleBtn = document.getElementById("drawerToggleBtn");
     const drawerCloseBtn = document.getElementById("drawerCloseBtn");
     const notificationBadge = document.getElementById("notificationBadge");
+    const myProfileBtn = document.getElementById("myProfileBtn");
+    const myProfileAvatar = document.getElementById("myProfileAvatar");
     const createFooterBtn = document.getElementById("createFooterBtn");
     const createSheetBackdrop = document.getElementById("createSheetBackdrop");
     const mainTabs = [...document.querySelectorAll(".main-tab")];
     const peopleTabs = [...document.querySelectorAll(".sub-tab")];
     const globalSearchInput = document.getElementById("globalSearchInput");
+    const voiceSearchBtn = document.getElementById("voiceSearchBtn");
     const heroProfilesCount = document.getElementById("heroProfilesCount");
     const heroOnlineCount = document.getElementById("heroOnlineCount");
     const heroSuggestedCount = document.getElementById("heroSuggestedCount");
+    const heroMarketCount = document.getElementById("heroMarketCount");
     const peopleGrid = document.getElementById("peopleGrid");
-    const statusStrip = document.getElementById("statusStrip");
-    const statusLoadingCards = document.getElementById("statusLoadingCards");
+    const statusScroller = document.getElementById("statusScroller");
+    const trendingScroller = document.getElementById("trendingScroller");
+    const marketScroller = document.getElementById("marketScroller");
+    const refreshTrendingBtn = document.getElementById("refreshTrendingBtn");
+    const refreshMarketBtn = document.getElementById("refreshMarketBtn");
+    const peopleRefreshBtn = document.getElementById("peopleRefreshBtn");
+    const peopleSearchBtn = document.getElementById("peopleSearchBtn");
+    const peopleMoreBtn = document.getElementById("peopleMoreBtn");
+    const headlineText = document.getElementById("headlineText");
+    const headlineTime = document.getElementById("headlineTime");
 
     let currentUser = null;
+    let currentProfile = null;
     let profilesCache = [];
     let followingIds = new Set();
-    let followersIds = new Set();
-    let friendsIds = new Set();
     let currentPeopleFilter = "suggested";
+    let voiceRecognition = null;
+    let voiceListening = false;
+    let headlineItems = [];
+    let headlineIndex = 0;
+    let headlineTimer = null;
 
     function showNotice(message, type = "info") {
       pageNotice.className = `page-notice show ${type}`;
       pageNotice.textContent = message || "";
-    }
-
-    function hideNotice() {
-      pageNotice.className = "page-notice";
-      pageNotice.textContent = "";
+      clearTimeout(showNotice._t);
+      showNotice._t = setTimeout(() => {
+        pageNotice.className = "page-notice";
+        pageNotice.textContent = "";
+      }, 3000);
     }
 
     function safeText(value, fallback = "") {
@@ -1741,10 +1732,79 @@
     }
 
     function renderAvatar(url, name) {
-      if (url) {
-        return `<img src="${url}" alt="${name}">`;
+      if (url) return `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}">`;
+      return `<span>${escapeHtml(getInitial(name))}</span>`;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+    }
+
+    function formatCompact(num){
+      const n = Number(num || 0);
+      if(n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(".0","") + "M";
+      if(n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0","") + "K";
+      return String(n);
+    }
+
+    function timeAgo(value) {
+      if (!value) return "Just now";
+      const date = new Date(value);
+      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+      if (diff < 60) return "Just now";
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      return `${Math.floor(diff / 86400)}d ago`;
+    }
+
+    function formatPrice(value){
+      const num = Number(value || 0);
+      try{
+        return new Intl.NumberFormat("en-NG", {
+          style:"currency",
+          currency:"NGN",
+          maximumFractionDigits:0
+        }).format(num);
+      }catch{
+        return `₦${num.toLocaleString()}`;
       }
-      return `<span>${getInitial(name)}</span>`;
+    }
+
+    function getImages(item){
+      if(!item) return [];
+      if(Array.isArray(item.images) && item.images.length) return item.images.filter(Boolean);
+      if(typeof item.images === "string" && item.images.trim().startsWith("[")){
+        try{
+          const parsed = JSON.parse(item.images);
+          return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+        }catch(_){}
+      }
+      if(typeof item.image_url === "string" && item.image_url.trim()) return [item.image_url.trim()];
+      if(typeof item.cover_url === "string" && item.cover_url.trim()) return [item.cover_url.trim()];
+      return [];
+    }
+
+    function getStatusPreview(row){
+      const mediaUrl = safeText(row.media_url);
+      const thumb = safeText(row.thumbnail_url);
+      const kind = safeText(row.status_type || row.media_type).toLowerCase();
+      const text = safeText(row.text_content || row.content || row.caption || "Status");
+
+      if (mediaUrl && (kind.includes("image") || /\.(png|jpg|jpeg|gif|webp)(\?|$)/i.test(mediaUrl))) {
+        return `<img src="${escapeHtml(mediaUrl)}" alt="Status preview">`;
+      }
+      if (thumb) {
+        return `<img src="${escapeHtml(thumb)}" alt="Status preview">`;
+      }
+      if (mediaUrl && (kind.includes("video") || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(mediaUrl))) {
+        return `<div class="status-text-preview">▶ Video Status</div>`;
+      }
+      return `<div class="status-text-preview">${escapeHtml(text.slice(0, 60))}</div>`;
     }
 
     function openDrawer() {
@@ -1796,26 +1856,44 @@
       });
     });
 
-    globalSearchInput.addEventListener("input", renderPeople);
+    globalSearchInput.addEventListener("input", () => {
+      renderPeople();
+      filterDynamicSections();
+    });
 
-    function computeFriendsSet() {
-      const set = new Set();
-      followersIds.forEach(id => {
-        if (followingIds.has(id)) set.add(id);
-      });
-      friendsIds = set;
-    }
+    peopleRefreshBtn.addEventListener("click", async () => {
+      await loadProfiles();
+      renderPeople();
+      showNotice("People refreshed.", "success");
+    });
+
+    peopleSearchBtn.addEventListener("click", () => {
+      globalSearchInput.focus();
+      globalSearchInput.scrollIntoView({ behavior:"smooth", block:"center" });
+    });
+
+    peopleMoreBtn.addEventListener("click", () => {
+      window.location.href = "friends.html";
+    });
+
+    refreshTrendingBtn.addEventListener("click", () => {
+      renderTrending();
+      showNotice("Trending reloaded from Trendings.html cache.", "success");
+    });
+
+    refreshMarketBtn.addEventListener("click", async () => {
+      await loadMarket();
+      showNotice("Marketplace refreshed.", "success");
+    });
 
     async function loadNotificationCount() {
       try {
         const { count, error } = await window.supabaseClient
           .from("notifications")
           .select("*", { count: "exact", head: true })
-          .eq("user_id", currentUser.id)
-          .eq("is_read", false);
+          .eq("user_id", currentUser.id);
 
         if (error) throw error;
-
         const total = Number(count || 0);
         notificationBadge.textContent = total > 99 ? "99+" : String(total);
         notificationBadge.classList.toggle("hidden", total < 1);
@@ -1839,26 +1917,17 @@
       }
     }
 
-    async function loadRelations() {
+    async function loadFollowing() {
       try {
-        const [followingRes, followersRes] = await Promise.all([
-          window.supabaseClient
-            .from("followers")
-            .select("following_id")
-            .eq("follower_id", currentUser.id),
-          window.supabaseClient
-            .from("followers")
-            .select("follower_id")
-            .eq("following_id", currentUser.id)
-        ]);
+        const { data, error } = await window.supabaseClient
+          .from("follows")
+          .select("following_id")
+          .eq("follower_id", currentUser.id);
 
-        followingIds = new Set((followingRes.data || []).map(row => row.following_id).filter(Boolean));
-        followersIds = new Set((followersRes.data || []).map(row => row.follower_id).filter(Boolean));
-        computeFriendsSet();
+        if (error) throw error;
+        followingIds = new Set((data || []).map(row => row.following_id).filter(Boolean));
       } catch {
         followingIds = new Set();
-        followersIds = new Set();
-        friendsIds = new Set();
       }
     }
 
@@ -1866,7 +1935,7 @@
       try {
         const { data, error } = await window.supabaseClient
           .from("profiles")
-          .select("id,full_name,username,avatar_url,is_online,last_seen_at,last_seen,email")
+          .select("id,full_name,username,avatar_url,is_online,created_at,email")
           .neq("id", currentUser.id)
           .limit(60);
 
@@ -1879,19 +1948,17 @@
     }
 
     function getFilteredPeople() {
+      const term = safeText(globalSearchInput.value).toLowerCase();
       let rows = [...profilesCache];
 
-      if (currentPeopleFilter === "friends") {
-        rows = rows.filter(row => friendsIds.has(row.id));
-      } else if (currentPeopleFilter === "followers") {
-        rows = rows.filter(row => followersIds.has(row.id));
-      } else if (currentPeopleFilter === "following") {
-        rows = rows.filter(row => followingIds.has(row.id));
+      if (currentPeopleFilter === "online") {
+        rows = rows.filter(row => !!row.is_online);
+      } else if (currentPeopleFilter === "newest") {
+        rows.sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
       } else {
         rows = rows.filter(row => !followingIds.has(row.id));
       }
 
-      const term = safeText(globalSearchInput.value).toLowerCase();
       if (term) {
         rows = rows.filter(row => {
           const blob = `${safeText(row.full_name)} ${safeText(row.username)} ${safeText(row.email)}`.toLowerCase();
@@ -1899,7 +1966,7 @@
         });
       }
 
-      return rows;
+      return rows.slice(0, 12);
     }
 
     function renderPeople() {
@@ -1924,7 +1991,7 @@
 
         return `
           <div class="person-card">
-            <a href="public-profile.html?id=${encodeURIComponent(profile.id)}">
+            <a href="public-profile.html?id=${encodeURIComponent(profile.id)}" aria-label="Open ${escapeHtml(name)} profile">
               <div class="person-avatar-wrap">
                 <div class="person-avatar">
                   ${renderAvatar(profile.avatar_url, name)}
@@ -1932,9 +1999,9 @@
               </div>
             </a>
 
-            <div class="person-name">${name}</div>
-            <div class="person-username">${username}</div>
-            <div class="person-meta">${profile.is_online ? "Online now" : "Explore profile"}</div>
+            <div class="person-name">${escapeHtml(name)}</div>
+            <div class="person-username">${escapeHtml(username)}</div>
+            <div class="person-meta">${profile.is_online ? "Online now" : "Suggested by View"}</div>
 
             <div class="person-actions">
               <a class="mini-btn" href="public-profile.html?id=${encodeURIComponent(profile.id)}">View</a>
@@ -1951,7 +2018,7 @@
       try {
         if (followingIds.has(userId)) {
           const { error } = await window.supabaseClient
-            .from("followers")
+            .from("follows")
             .delete()
             .eq("follower_id", currentUser.id)
             .eq("following_id", userId);
@@ -1961,7 +2028,7 @@
           showNotice("Unfollowed successfully.", "success");
         } else {
           const { error } = await window.supabaseClient
-            .from("followers")
+            .from("follows")
             .insert({
               follower_id: currentUser.id,
               following_id: userId
@@ -1972,31 +2039,88 @@
           showNotice("Followed successfully.", "success");
         }
 
-        computeFriendsSet();
         renderPeople();
       } catch (error) {
         showNotice(error.message || "Could not update follow state.", "error");
       }
     }
-
     window.toggleFollow = toggleFollow;
 
     async function loadStatuses() {
+      statusScroller.innerHTML = `
+        <a href="create-status.html" class="slide-card status-card">
+          <div class="status-card-inner">
+            <div class="status-preview">
+              <div class="status-text-preview">Create Status</div>
+              <div class="status-tag">ME</div>
+            </div>
+            <div class="status-name">My Status</div>
+            <div class="status-sub">Tap to create</div>
+          </div>
+        </a>
+      `;
+
       try {
-        const { data, error } = await window.supabaseClient
-          .from("statuses")
-          .select("id,user_id,status_type,text_content,content,media_url,thumbnail_url,created_at")
-          .order("created_at", { ascending: false })
-          .limit(16);
+        const nowIso = new Date().toISOString();
 
-        if (error) throw error;
+        const [myRes, othersRes] = await Promise.all([
+          window.supabaseClient
+            .from("statuses")
+            .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,thumbnail_url,created_at,expires_at")
+            .eq("user_id", currentUser.id)
+            .gt("expires_at", nowIso)
+            .order("created_at", { ascending: false })
+            .limit(1),
+          window.supabaseClient
+            .from("statuses")
+            .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,thumbnail_url,created_at,expires_at")
+            .gt("expires_at", nowIso)
+            .neq("user_id", currentUser.id)
+            .order("created_at", { ascending: false })
+            .limit(20)
+        ]);
 
-        if (statusLoadingCards) statusLoadingCards.remove();
+        const myStatus = (myRes.data || [])[0] || null;
+        const otherRows = othersRes.data || [];
 
-        const rows = data || [];
-        if (!rows.length) return;
+        if (myStatus) {
+          statusScroller.innerHTML = `
+            <a href="status-viewer.html?id=${encodeURIComponent(myStatus.id)}" class="slide-card status-card">
+              <div class="status-card-inner">
+                <div class="status-preview">
+                  ${getStatusPreview(myStatus)}
+                  <div class="status-tag">MY</div>
+                </div>
+                <div class="status-name">My Status</div>
+                <div class="status-sub">${escapeHtml(timeAgo(myStatus.created_at))}</div>
+              </div>
+            </a>
+            <a href="create-status.html" class="slide-card status-card">
+              <div class="status-card-inner">
+                <div class="status-preview">
+                  <div class="status-text-preview">Add More</div>
+                  <div class="status-tag">+</div>
+                </div>
+                <div class="status-name">Add</div>
+                <div class="status-sub">Create status</div>
+              </div>
+            </a>
+          `;
+        }
 
-        const uniqueUserIds = [...new Set(rows.map(row => row.user_id).filter(Boolean))];
+        if (!otherRows.length) {
+          if (!myStatus) {
+            statusScroller.insertAdjacentHTML("beforeend", `
+              <div class="empty-state-card" style="min-width:260px;">
+                <strong>No active status yet</strong>
+                <span>Create a status or wait for updates.</span>
+              </div>
+            `);
+          }
+          return;
+        }
+
+        const uniqueUserIds = [...new Set(otherRows.map(row => row.user_id).filter(Boolean))];
         const profileMap = new Map();
 
         if (uniqueUserIds.length) {
@@ -2008,49 +2132,302 @@
           (people || []).forEach(row => profileMap.set(row.id, row));
         }
 
-        const cards = rows.map(row => {
+        const byUser = new Map();
+        otherRows.forEach(row => {
+          if (!byUser.has(row.user_id)) byUser.set(row.user_id, row);
+        });
+
+        const cards = [...byUser.values()].map(row => {
           const profile = profileMap.get(row.user_id) || {};
           const name = getDisplayName(profile);
-          const sub = safeText(row.status_type) || "Status";
           return `
-            <a href="status-viewer.html?id=${encodeURIComponent(row.id)}" class="status-item">
-              <div class="status-ring">
-                <div class="status-avatar">
-                  ${renderAvatar(profile.avatar_url, name)}
+            <a href="status-viewer.html?id=${encodeURIComponent(row.id)}" class="slide-card status-card">
+              <div class="status-card-inner">
+                <div class="status-preview">
+                  ${getStatusPreview(row)}
+                  <div class="status-tag">${escapeHtml((safeText(row.status_type || row.media_type) || "Status").slice(0,8))}</div>
                 </div>
+                <div class="status-name">${escapeHtml(name)}</div>
+                <div class="status-sub">${escapeHtml(timeAgo(row.created_at))}</div>
               </div>
-              <div class="status-name">${name}</div>
-              <div class="status-sub">${sub}</div>
             </a>
           `;
         }).join("");
 
-        statusStrip.insertAdjacentHTML("beforeend", cards);
-      } catch {
-        if (statusLoadingCards) statusLoadingCards.remove();
+        statusScroller.insertAdjacentHTML("beforeend", cards);
+      } catch (error) {
+        statusScroller.insertAdjacentHTML("beforeend", `
+          <div class="empty-state-card" style="min-width:260px;">
+            <strong>Could not load status</strong>
+            <span>${escapeHtml(error.message || "Please try again.")}</span>
+          </div>
+        `);
       }
+    }
+
+    function loadTrendingExport(){
+      try{
+        const raw = localStorage.getItem("view_trending_export_v1");
+        if(!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed?.items) ? parsed.items : [];
+      }catch{
+        return [];
+      }
+    }
+
+    function renderTrending(){
+      const items = loadTrendingExport();
+      const q = safeText(globalSearchInput.value).toLowerCase();
+      const rows = items.filter(item => {
+        if(!q) return true;
+        const blob = `${safeText(item.title)} ${safeText(item.author)} ${safeText(item.description)}`.toLowerCase();
+        return blob.includes(q);
+      });
+
+      if(!rows.length){
+        trendingScroller.innerHTML = `
+          <div class="empty-state-card">
+            <strong>No trending videos yet</strong>
+            <span>Open Trendings.html to refresh internet trending videos.</span>
+          </div>
+        `;
+        return;
+      }
+
+      trendingScroller.innerHTML = rows.slice(0, 12).map((item, index) => `
+        <a
+          href="trendings.html"
+          class="slide-card ${index === 0 ? "large" : "small"}"
+          onclick="localStorage.setItem('view_trending_selected_video', '${escapeHtml(item.videoId || "")}')"
+        >
+          <div class="trend-media">
+            <img src="${escapeHtml(item.thumbnail || '')}" alt="${escapeHtml(item.title || 'Trending video')}" onerror="this.style.display='none';" />
+            <div class="trend-overlay"></div>
+            <div class="trend-chip">${escapeHtml(item.derivedCategory || "trending")}</div>
+            <div class="trend-play">▶</div>
+          </div>
+          <div class="slide-body">
+            <div class="slide-title">${escapeHtml(item.title || "Untitled video")}</div>
+            <div class="slide-sub">${escapeHtml(item.author || "Internet source")}</div>
+            <div class="slide-meta">
+              <span>${escapeHtml(formatCompact(item.viewCount || 0))} views</span>
+              <span>${escapeHtml(item.publishedText || "Trending now")}</span>
+            </div>
+          </div>
+        </a>
+      `).join("");
+    }
+
+    async function loadMarket(){
+      try{
+        const { data, error } = await window.supabaseClient
+          .from("marketplace_items")
+          .select("*")
+          .order("created_at", { ascending:false })
+          .limit(12);
+
+        if(error) throw error;
+        const items = data || [];
+        heroMarketCount.textContent = `Products: ${items.length}`;
+
+        const q = safeText(globalSearchInput.value).toLowerCase();
+        const rows = items.filter(item => {
+          if(!q) return true;
+          const blob = `${safeText(item.title)} ${safeText(item.description)} ${safeText(item.category)} ${safeText(item.location)}`.toLowerCase();
+          return blob.includes(q);
+        });
+
+        if(!rows.length){
+          marketScroller.innerHTML = `
+            <div class="empty-state-card">
+              <strong>No marketplace items</strong>
+              <span>Products will appear here when marketplace items are available.</span>
+            </div>
+          `;
+          return;
+        }
+
+        marketScroller.innerHTML = rows.map(item => {
+          const image = getImages(item)[0] || "";
+          const status = safeText(item.status, "active");
+          return `
+            <a href="product-details.html?id=${encodeURIComponent(item.id)}" class="slide-card market-card">
+              <div class="market-media">
+                ${
+                  image
+                    ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(item.title || "Item")}" onerror="this.style.display='none';">`
+                    : `<div class="status-text-preview">No Image</div>`
+                }
+                <div class="trend-chip">${escapeHtml(item.category || "Market")}</div>
+              </div>
+              <div class="slide-body">
+                <div class="slide-title">${escapeHtml(item.title || "Untitled Item")}</div>
+                <div class="slide-sub">${escapeHtml(item.location || "No location")}</div>
+                <div class="slide-meta">
+                  <span>${escapeHtml(formatPrice(item.price || 0))}</span>
+                  <span>${escapeHtml(status)}</span>
+                </div>
+              </div>
+            </a>
+          `;
+        }).join("");
+      }catch(error){
+        marketScroller.innerHTML = `
+          <div class="empty-state-card">
+            <strong>Could not load marketplace</strong>
+            <span>${escapeHtml(error.message || "Please try again.")}</span>
+          </div>
+        `;
+      }
+    }
+
+    function loadNewsExport(){
+      try{
+        const raw = localStorage.getItem("view_news_export_v1");
+        if(!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed?.items) ? parsed.items : [];
+      }catch{
+        return [];
+      }
+    }
+
+    function renderHeadlines(){
+      headlineItems = loadNewsExport();
+      if(!headlineItems.length){
+        headlineText.textContent = "No headline available yet.";
+        headlineTime.textContent = "Now";
+        return;
+      }
+
+      headlineIndex = 0;
+      updateHeadline();
+      clearInterval(headlineTimer);
+      headlineTimer = setInterval(() => {
+        headlineIndex = (headlineIndex + 1) % headlineItems.length;
+        updateHeadline();
+      }, 3000);
+    }
+
+    function updateHeadline(){
+      if(!headlineItems.length) return;
+      const item = headlineItems[headlineIndex] || {};
+      headlineText.textContent = safeText(item.title, "News headline");
+      headlineTime.textContent = safeText(item.time, "Now");
+    }
+
+    function filterDynamicSections(){
+      renderTrending();
+      loadMarket();
+    }
+
+    function setupVoiceSearch(){
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if(!SpeechRecognition){
+        voiceSearchBtn.addEventListener("click", () => {
+          showNotice("Voice search is not supported on this device browser.", "info");
+        });
+        return;
+      }
+
+      voiceRecognition = new SpeechRecognition();
+      voiceRecognition.lang = "en-US";
+      voiceRecognition.continuous = false;
+      voiceRecognition.interimResults = true;
+      voiceRecognition.maxAlternatives = 1;
+
+      voiceRecognition.onstart = () => {
+        voiceListening = true;
+        voiceSearchBtn.classList.add("listening");
+        showNotice("Listening... speak now.", "info");
+      };
+
+      voiceRecognition.onend = () => {
+        voiceListening = false;
+        voiceSearchBtn.classList.remove("listening");
+      };
+
+      voiceRecognition.onerror = () => {
+        voiceListening = false;
+        voiceSearchBtn.classList.remove("listening");
+        showNotice("Voice search could not complete. Try again.", "error");
+      };
+
+      voiceRecognition.onresult = (event) => {
+        const transcript = [...event.results].map(r => r[0]?.transcript || "").join(" ").trim();
+        if(transcript){
+          globalSearchInput.value = transcript;
+          renderPeople();
+          filterDynamicSections();
+          showNotice(`Search: ${transcript}`, "success");
+        }
+      };
+
+      voiceSearchBtn.addEventListener("click", () => {
+        try{
+          if(voiceListening){
+            voiceRecognition.stop();
+          }else{
+            voiceRecognition.start();
+          }
+        }catch{
+          showNotice("Voice search could not start. Try again.", "error");
+        }
+      });
     }
 
     async function initExplore() {
       try {
-        hideNotice();
-        const user = await protectPage("explore.html");
-        if (!user) return;
-        currentUser = user;
+        if (typeof protectPage === "function") {
+          await protectPage("explore.html");
+        } else {
+          const { data } = await window.supabaseClient.auth.getSession();
+          if (!data?.session?.user) {
+            location.replace(`login.html?next=${encodeURIComponent("explore.html")}`);
+            return;
+          }
+        }
+
+        currentUser = window.currentUser || (await window.supabaseClient.auth.getUser()).data.user || null;
+        currentProfile = window.currentProfile || null;
+
+        if (!currentUser) {
+          location.replace(`login.html?next=${encodeURIComponent("explore.html")}`);
+          return;
+        }
+
+        if (myProfileBtn) {
+          myProfileBtn.href = "profile.html";
+        }
+
+        if (myProfileAvatar) {
+          myProfileAvatar.src =
+            currentProfile?.avatar_url ||
+            currentUser?.user_metadata?.avatar_url ||
+            "icons/view-logo.png";
+        }
+
+        document.documentElement.classList.remove("auth-loading");
+        setupVoiceSearch();
+        renderHeadlines();
 
         await Promise.all([
           loadNotificationCount(),
           loadHeroStats(),
-          loadRelations()
-        ]);
-
-        await Promise.all([
-          loadProfiles(),
-          loadStatuses()
+          loadFollowing(),
+          loadProfiles()
         ]);
 
         renderPeople();
+        renderTrending();
+        await Promise.all([
+          loadStatuses(),
+          loadMarket()
+        ]);
+
       } catch (error) {
+        document.documentElement.classList.remove("auth-loading");
         showNotice(error.message || "Could not load Explore.", "error");
       }
     }
@@ -2058,4 +2435,4 @@
     initExplore();
   </script>
 </body>
-</html>
+</html>ask-ai.html
