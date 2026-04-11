@@ -11,7 +11,6 @@ const AUTO_POST_CRON_SECRET = process.env.AUTO_POST_CRON_SECRET;
 const GEMINI_TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || "gemini-2.5-flash";
 const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image";
 const KLING_VIDEO_MODEL = process.env.KLING_VIDEO_MODEL || "kling-v2.6-std";
-
 const USE_GEMINI_IMAGE = String(process.env.USE_GEMINI_IMAGE || "false").toLowerCase() === "true";
 
 const POST_MEDIA_BUCKET = process.env.POST_MEDIA_BUCKET || "post-media";
@@ -44,11 +43,7 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ ok: false, error: "Unauthorized" });
     }
 
-    const action = String(
-      req.query?.action ||
-      req.body?.action ||
-      ""
-    ).trim().toLowerCase();
+    const action = String(req.query?.action || req.body?.action || "").trim().toLowerCase();
 
     if (!action) {
       return res.status(400).json({
@@ -57,17 +52,9 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    if (action === "test") {
-      return await handleTestRun(req, res);
-    }
-
-    if (action === "run") {
-      return await handleRunDueRules(req, res);
-    }
-
-    if (action === "check") {
-      return await handleCheckKlingTasks(req, res);
-    }
+    if (action === "test") return await handleTestRun(req, res);
+    if (action === "run") return await handleRunDueRules(req, res);
+    if (action === "check") return await handleCheckKlingTasks(req, res);
 
     return res.status(400).json({
       ok: false,
@@ -89,11 +76,9 @@ function isAuthorized(req) {
   if (!AUTO_POST_CRON_SECRET) return true;
   if (xCronSecret && xCronSecret === AUTO_POST_CRON_SECRET) return true;
   if (authHeader === AUTO_POST_CRON_SECRET) return true;
-
   if (authHeader.startsWith("Bearer ")) {
     return authHeader.slice(7).trim() === AUTO_POST_CRON_SECRET;
   }
-
   return false;
 }
 
@@ -122,11 +107,8 @@ async function triggerPublishWorkerNow() {
     }
 
     const res = await fetch(`${baseUrl}/api/process-publish-jobs?limit=10&concurrency=4`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ limit: 10, concurrency: 4 })
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
     });
 
     const text = await res.text();
@@ -158,10 +140,7 @@ async function handleTestRun(req, res) {
     req.body?.id;
 
   if (!ruleId) {
-    return res.status(400).json({
-      ok: false,
-      error: "Missing rule_id"
-    });
+    return res.status(400).json({ ok: false, error: "Missing rule_id" });
   }
 
   const { data: rule, error: ruleError } = await supabase
@@ -171,10 +150,7 @@ async function handleTestRun(req, res) {
     .single();
 
   if (ruleError || !rule) {
-    return res.status(404).json({
-      ok: false,
-      error: "Rule not found"
-    });
+    return res.status(404).json({ ok: false, error: "Rule not found" });
   }
 
   const result = await processRule(rule, { forced: true });
@@ -204,10 +180,7 @@ async function handleRunDueRules(req, res) {
       .single();
 
     if (forcedRuleError || !forcedRule) {
-      return res.status(404).json({
-        ok: false,
-        error: "Forced rule not found"
-      });
+      return res.status(404).json({ ok: false, error: "Forced rule not found" });
     }
 
     rules = [forcedRule];
@@ -237,8 +210,7 @@ async function handleRunDueRules(req, res) {
 
   const results = [];
   for (const rule of rules) {
-    const result = await processRule(rule, { forced: !!forcedRuleId });
-    results.push(result);
+    results.push(await processRule(rule, { forced: !!forcedRuleId }));
   }
 
   return res.status(200).json({
@@ -273,8 +245,7 @@ async function handleCheckKlingTasks(req, res) {
 
   const results = [];
   for (const item of pendingItems) {
-    const result = await checkOneKlingTask(item);
-    results.push(result);
+    results.push(await checkOneKlingTask(item));
   }
 
   return res.status(200).json({
@@ -310,7 +281,6 @@ async function processRule(rule, options = {}) {
     const prompt = buildPromptFromRule(rule);
 
     let generated;
-
     if (rule.content_type === "text") {
       generated = await generateTextWithGemini({ rule, prompt });
     } else if (rule.content_type === "image") {
@@ -342,8 +312,6 @@ async function processRule(rule, options = {}) {
       generation_meta: generated.generation_meta || {}
     });
 
-    let postId = null;
-
     if (rule.content_type === "video" && generated.status === "processing") {
       await finalizeRunLog(runId, {
         status: "success",
@@ -363,7 +331,7 @@ async function processRule(rule, options = {}) {
       };
     }
 
-    postId = await createViewPost({
+    const postId = await createViewPost({
       user_id: rule.user_id,
       title: generated.title || rule.title,
       content_type: rule.content_type,
@@ -390,7 +358,7 @@ async function processRule(rule, options = {}) {
       platforms: normalizedPlatforms
     });
 
-    let workerTriggerResult = await triggerPublishWorkerNow();
+    const workerTriggerResult = await triggerPublishWorkerNow();
 
     await finalizeRunLog(runId, {
       status: "success",
@@ -412,7 +380,6 @@ async function processRule(rule, options = {}) {
     };
   } catch (error) {
     console.error("processRule error:", rule.id, error);
-
     const temporary = isTemporaryProviderError(error?.message || "");
 
     if (runId) {
@@ -444,9 +411,7 @@ async function checkOneKlingTask(item) {
   try {
     const statusResponse = await fetch(`${KLING_BASE_URL}/v1/videos/${encodeURIComponent(item.provider_task_id)}`, {
       method: "GET",
-      headers: {
-        "Authorization": `Bearer ${KLING_API_KEY}`
-      }
+      headers: { "Authorization": `Bearer ${KLING_API_KEY}` }
     });
 
     const statusJson = await statusResponse.json().catch(() => ({}));
@@ -568,7 +533,7 @@ async function checkOneKlingTask(item) {
       platforms: normalizePlatforms(item.selected_platforms, item.platforms_label)
     });
 
-    let workerTriggerResult = await triggerPublishWorkerNow();
+    const workerTriggerResult = await triggerPublishWorkerNow();
 
     if (runId) {
       await finalizeRunLog(runId, {
@@ -683,12 +648,7 @@ async function generateImageSmart({ rule, prompt }) {
   try {
     const imageRaw = await callGeminiGenerateContent({
       model: GEMINI_IMAGE_MODEL,
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: imagePrompt }]
-        }
-      ]
+      contents: [{ role: "user", parts: [{ text: imagePrompt }] }]
     });
 
     const imagePart = extractInlineImagePart(imageRaw);
@@ -715,8 +675,6 @@ async function generateImageSmart({ rule, prompt }) {
       generation_meta: { image_prompt: imagePrompt, image_mode: "gemini" }
     };
   } catch (error) {
-    console.log("Gemini image failed, falling back to Pollinations:", error?.message || error);
-
     return {
       provider: "pollinations",
       provider_model: "pollinations-free",
@@ -775,9 +733,7 @@ async function generateVideoWithKling({ rule, prompt }) {
   }
 
   const taskId = json?.task_id || json?.data?.task_id || json?.id;
-  if (!taskId) {
-    throw new Error("Kling did not return a task ID.");
-  }
+  if (!taskId) throw new Error("Kling did not return a task ID.");
 
   return {
     provider: "kling",
@@ -795,12 +751,9 @@ async function generateVideoWithKling({ rule, prompt }) {
 }
 
 async function callGeminiGenerateContent({ model, contents, responseMimeType }) {
-  if (!GEMINI_API_KEY) {
-    throw new Error("Missing GEMINI_API_KEY.");
-  }
+  if (!GEMINI_API_KEY) throw new Error("Missing GEMINI_API_KEY.");
 
   const body = { contents };
-
   if (responseMimeType) {
     body.generationConfig = { responseMimeType };
   }
@@ -815,7 +768,6 @@ async function callGeminiGenerateContent({ model, contents, responseMimeType }) 
   );
 
   const json = await response.json().catch(() => ({}));
-
   if (!response.ok) {
     throw new Error(json?.error?.message || "Gemini request failed.");
   }
@@ -837,10 +789,7 @@ async function createRunLog(payload) {
 async function finalizeRunLog(runId, fields) {
   const { error } = await supabase
     .from("auto_post_runs")
-    .update({
-      ...fields,
-      updated_at: new Date().toISOString()
-    })
+    .update({ ...fields, updated_at: new Date().toISOString() })
     .eq("id", runId);
 
   if (error) throw error;
@@ -849,10 +798,7 @@ async function finalizeRunLog(runId, fields) {
 async function updateRuleStatus(ruleId, fields) {
   const { error } = await supabase
     .from("auto_post_rules")
-    .update({
-      ...fields,
-      updated_at: new Date().toISOString()
-    })
+    .update({ ...fields, updated_at: new Date().toISOString() })
     .eq("id", ruleId);
 
   if (error) throw error;
@@ -870,7 +816,6 @@ async function updateRuleAfterSuccess(rule) {
 function computeNextRunAt(rule) {
   const base = new Date();
   const [hh, mm] = String(rule.post_time || "09:00").split(":").map(Number);
-
   const next = new Date(base);
   next.setSeconds(0, 0);
   next.setHours(Number.isFinite(hh) ? hh : 9, Number.isFinite(mm) ? mm : 0, 0, 0);
@@ -896,10 +841,7 @@ async function createGeneratedContent(payload) {
 async function updateGeneratedContent(id, fields) {
   const { error } = await supabase
     .from("auto_generated_contents")
-    .update({
-      ...fields,
-      updated_at: new Date().toISOString()
-    })
+    .update({ ...fields, updated_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) throw error;
@@ -917,15 +859,10 @@ async function createViewPost({
   const content = text_content || caption || title || "";
 
   let mediaType = "text";
-  if (content_type === "image") {
-    mediaType = "image";
-  } else if (content_type === "video") {
-    mediaType = "video";
-  } else if (content_type === "text") {
-    mediaType = "text";
-  } else if (media_url) {
-    mediaType = "image";
-  }
+  if (content_type === "image") mediaType = "image";
+  else if (content_type === "video") mediaType = "video";
+  else if (content_type === "text") mediaType = "text";
+  else if (media_url) mediaType = "image";
 
   if (!["text", "image", "video"].includes(mediaType)) {
     mediaType = "text";
@@ -938,6 +875,7 @@ async function createViewPost({
     media_type: mediaType,
     selected_platforms,
     publish_status: "queued",
+    status: "queued",
     created_at: new Date().toISOString()
   };
 
@@ -954,8 +892,7 @@ async function createViewPost({
 async function queueCrossPostJobs({ user_id, post_id, platforms }) {
   const selectedPlatforms = (platforms || [])
     .map(p => String(p).trim().toLowerCase())
-    .filter(Boolean)
-    .filter(p => p !== "view");
+    .filter(Boolean);
 
   if (!selectedPlatforms.length) {
     return { queued: 0, skipped: [] };
@@ -963,7 +900,7 @@ async function queueCrossPostJobs({ user_id, post_id, platforms }) {
 
   const { data: connectedAccounts, error: connectedError } = await supabase
     .from("connected_accounts")
-    .select("id, platform, provider, status, is_connected, account_name, account_handle")
+    .select("id, platform, provider, status, is_connected")
     .eq("user_id", user_id);
 
   if (connectedError) throw connectedError;
@@ -972,50 +909,62 @@ async function queueCrossPostJobs({ user_id, post_id, platforms }) {
 
   for (const acc of connectedAccounts || []) {
     const rawPlatform = acc.platform || acc.provider || "";
-    const platform = String(rawPlatform).trim().toLowerCase();
-
+    const platform = normalizePlatformKey(rawPlatform);
     const isActive =
       acc.is_connected === true ||
       String(acc.status || "").toLowerCase() === "connected";
 
     if (!platform || !isActive) continue;
-
-    if (!connectedMap.has(platform)) {
-      connectedMap.set(platform, []);
-    }
-
-    connectedMap.get(platform).push(acc);
+    if (!connectedMap.has(platform)) connectedMap.set(platform, []);
+    connectedMap.set(platform, [...connectedMap.get(platform), acc]);
   }
 
   const jobs = [];
   const skipped = [];
 
   for (const platform of selectedPlatforms) {
-    const matchingAccounts = connectedMap.get(platform) || [];
+    const normalized = normalizePlatformKey(platform);
 
-    if (!matchingAccounts.length) {
-      skipped.push({
-        platform,
-        reason: "No connected account found"
-      });
-      continue;
-    }
-
-    for (const account of matchingAccounts) {
+    if (normalized === "view") {
       jobs.push({
-        user_id,
         post_id,
-        platform,
-        connected_account_id: account.id,
+        user_id,
+        platform: "view",
         status: "queued",
         attempts: 0,
         created_at: new Date().toISOString()
       });
+      continue;
     }
-  }
 
-  if (!jobs.length) {
-    return { queued: 0, skipped };
+    const matchingAccounts = connectedMap.get(normalized) || [];
+
+    if (!matchingAccounts.length) {
+      skipped.push({
+        platform: normalized,
+        reason: "No connected account found"
+      });
+
+      jobs.push({
+        post_id,
+        user_id,
+        platform: normalized,
+        status: "queued",
+        attempts: 0,
+        created_at: new Date().toISOString()
+      });
+      continue;
+    }
+
+    jobs.push({
+      post_id,
+      user_id,
+      platform: normalized,
+      connected_account_id: matchingAccounts[0].id,
+      status: "queued",
+      attempts: 0,
+      created_at: new Date().toISOString()
+    });
   }
 
   const { error: insertError } = await supabase
@@ -1052,6 +1001,13 @@ async function findLatestRunIdForItem(item) {
   return fallback.data?.id || null;
 }
 
+function normalizePlatformKey(value) {
+  const key = String(value || "").trim().toLowerCase();
+  if (key === "twitter") return "x";
+  if (key === "whatsapp_business" || key === "whatsappbusiness") return "whatsapp";
+  return key;
+}
+
 function normalizePlatforms(selectedPlatforms, platformsLabel) {
   let platforms = [];
 
@@ -1067,7 +1023,7 @@ function normalizePlatforms(selectedPlatforms, platformsLabel) {
   }
 
   platforms = platforms
-    .map(p => String(p).toLowerCase())
+    .map(p => normalizePlatformKey(p))
     .filter(Boolean);
 
   return platforms.length ? platforms : ["view"];
@@ -1141,11 +1097,7 @@ function normalizeKlingStatus(payload) {
 
 function extractTextFromGemini(json) {
   const parts = json?.candidates?.[0]?.content?.parts || [];
-  return parts
-    .map(part => part?.text || "")
-    .filter(Boolean)
-    .join("\n")
-    .trim();
+  return parts.map(part => part?.text || "").filter(Boolean).join("\n").trim();
 }
 
 function extractInlineImagePart(json) {
@@ -1158,7 +1110,6 @@ function extractInlineImagePart(json) {
         mimeType: part.inlineData.mimeType || "image/png"
       };
     }
-
     if (part?.inline_data?.data) {
       return {
         data: part.inline_data.data,
@@ -1173,7 +1124,7 @@ function extractInlineImagePart(json) {
 function safeJsonParse(value) {
   try {
     return JSON.parse(value);
-  } catch (_) {
+  } catch {
     return null;
   }
 }
@@ -1189,10 +1140,7 @@ async function uploadBase64ToStorage({ bucket, path, base64Data, contentType }) 
 
   const { error: uploadError } = await supabase.storage
     .from(bucket)
-    .upload(path, buffer, {
-      contentType,
-      upsert: false
-    });
+    .upload(path, buffer, { contentType, upsert: false });
 
   if (uploadError) throw uploadError;
 
@@ -1202,9 +1150,7 @@ async function uploadBase64ToStorage({ bucket, path, base64Data, contentType }) 
 
 async function fetchAndUploadRemoteFile({ userId, remoteUrl, prefix, extension, contentType }) {
   const response = await fetch(remoteUrl);
-  if (!response.ok) {
-    throw new Error(`Unable to download remote file for ${prefix}.`);
-  }
+  if (!response.ok) throw new Error(`Unable to download remote file for ${prefix}.`);
 
   const arrayBuffer = await response.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
@@ -1212,10 +1158,7 @@ async function fetchAndUploadRemoteFile({ userId, remoteUrl, prefix, extension, 
 
   const { error } = await supabase.storage
     .from(POST_MEDIA_BUCKET)
-    .upload(filePath, buffer, {
-      contentType,
-      upsert: false
-    });
+    .upload(filePath, buffer, { contentType, upsert: false });
 
   if (error) throw error;
 
@@ -1234,13 +1177,10 @@ function mergeGenerationMeta(existing, extra) {
       if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
         base = parsed;
       }
-    } catch (_) {}
+    } catch {}
   }
 
-  return {
-    ...base,
-    ...extra
-  };
+  return { ...base, ...extra };
 }
 
 function buildRunMessage(baseMessage, publishQueueResult) {
