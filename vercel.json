@@ -6,11 +6,11 @@
     },
     {
       "path": "/api/auto-post/run-due-rules",
-      "schedule": "*/10 * * * *"
+      "schedule": "5 1 * * *"
     },
     {
       "path": "/api/auto-post/check-kling-task",
-      "schedule": "*/10 * * * *"
+      "schedule": "10 1 * * *"
     }
   ],
   "headers": [
