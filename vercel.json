@@ -5,11 +5,11 @@
       "schedule": "0 1 * * *"
     },
     {
-      "path": "/api/auto-post/run-due-rules",
+      "path": "/api/auto-post?action=run",
       "schedule": "5 1 * * *"
     },
     {
-      "path": "/api/auto-post/check-kling-task",
+      "path": "/api/auto-post?action=check",
       "schedule": "10 1 * * *"
     }
   ],
