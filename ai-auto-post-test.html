@@ -14,82 +14,329 @@
   <script src="/js/auth-guard.js"></script>
 
   <style>
-    html.auth-loading, html.auth-loading body{visibility:hidden;opacity:0}
+    html.auth-loading,
+    html.auth-loading body{
+      visibility:hidden;
+      opacity:0;
+    }
+
     :root{
-      --bg:#08145c;--bg2:#0b1b78;--bg3:#061041;--line:rgba(255,255,255,.14);--line2:rgba(255,255,255,.22);
-      --text:#fff;--muted:rgba(255,255,255,.74);--muted2:rgba(255,255,255,.56);--red:#ff3b57;--red2:#ff4d6a;--nav:rgba(6,16,65,.96);--max:760px
+      --bg:#08145c;
+      --bg2:#0b1b78;
+      --bg3:#061041;
+      --line:rgba(255,255,255,.14);
+      --line2:rgba(255,255,255,.22);
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.74);
+      --muted2:rgba(255,255,255,.56);
+      --red:#ff3b57;
+      --red2:#ff4d6a;
+      --nav:rgba(6,16,65,.96);
+      --max:760px;
     }
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{overflow-x:hidden}
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html, body{
+      overflow-x:hidden;
+    }
+
     body{
-      margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;color:var(--text);
-      background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%)
+      margin:0;
+      min-height:100vh;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);
     }
-    a{color:inherit;text-decoration:none}
-    button,input,select{font:inherit}
-    input,select{
-      width:100%;border:none;outline:none;background:transparent;color:var(--text);padding:0;
-      appearance:none;-webkit-appearance:none
+
+    a{
+      color:inherit;
+      text-decoration:none;
     }
-    select option{color:#111827}
-    .app{width:100%;max-width:760px;margin:0 auto;padding:14px 14px 104px;overflow:hidden}
-    .topbar{display:flex;align-items:center;gap:10px;padding:6px 0 10px}
+
+    button,
+    input,
+    select{
+      font:inherit;
+    }
+
+    input,
+    select{
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:var(--text);
+      padding:0;
+      appearance:none;
+      -webkit-appearance:none;
+    }
+
+    select option{
+      color:#111827;
+    }
+
+    .app{
+      width:100%;
+      max-width:760px;
+      margin:0 auto;
+      padding:14px 14px 104px;
+      overflow:hidden;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:6px 0 10px;
+    }
+
     .back{
-      width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-      border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:18px;flex:0 0 auto
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      font-size:18px;
+      flex:0 0 auto;
     }
-    .head{min-width:0;flex:1}
-    .head .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)}
-    .head h1{margin:2px 0 0;font-size:20px;line-height:1.1}
-    .intro{padding:12px 0 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12.5px;line-height:1.5;color:var(--muted)}
-    .field{padding:12px 0;border-bottom:1px solid var(--line)}
-    .label{display:block;margin-bottom:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2)}
-    .input,.select{min-height:22px;font-size:14px;line-height:1.45}
-    .hint{margin-top:8px;font-size:11.5px;line-height:1.45;color:var(--muted)}
-    .actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+
+    .head{
+      min-width:0;
+      flex:1;
+    }
+
+    .head .eyebrow{
+      font-size:10px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--muted2);
+    }
+
+    .head h1{
+      margin:2px 0 0;
+      font-size:20px;
+      line-height:1.1;
+    }
+
+    .intro{
+      padding:12px 0 14px;
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      font-size:12.5px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+
+    .field{
+      padding:12px 0;
+      border-bottom:1px solid var(--line);
+    }
+
+    .label{
+      display:block;
+      margin-bottom:8px;
+      font-size:11px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted2);
+    }
+
+    .input,
+    .select{
+      min-height:22px;
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    .hint{
+      margin-top:8px;
+      font-size:11.5px;
+      line-height:1.45;
+      color:var(--muted);
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:18px;
+    }
+
     .btn{
-      height:46px;border:none;border-radius:999px;cursor:pointer;font-size:13px;font-weight:700;
-      display:flex;align-items:center;justify-content:center
+      height:46px;
+      border:none;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
-    .btn.secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--line)}
-    .btn.primary{background:linear-gradient(180deg,var(--red2) 0%,var(--red) 100%);color:#fff;box-shadow:0 10px 24px rgba(255,59,87,.22)}
-    .status{margin-top:12px;min-height:22px;font-size:12px;color:var(--muted);line-height:1.5;word-break:break-word}
-    .status.error{color:#ffd7dd}
-    .status.success{color:#d9ffeb}
-    .section{margin-top:18px}
-    .section h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2)}
-    .list{border-top:1px solid var(--line)}
-    .row{padding:12px 0;border-bottom:1px solid var(--line)}
-    .row-title{font-size:13px;font-weight:700;line-height:1.4}
-    .row-sub{margin-top:4px;font-size:11.5px;color:var(--muted);line-height:1.5;word-break:break-word}
+
+    .btn.secondary{
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      border:1px solid var(--line);
+    }
+
+    .btn.primary{
+      background:linear-gradient(180deg,var(--red2) 0%, var(--red) 100%);
+      color:#fff;
+      box-shadow:0 10px 24px rgba(255,59,87,.22);
+    }
+
+    .status{
+      margin-top:12px;
+      min-height:22px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+      word-break:break-word;
+    }
+
+    .status.error{
+      color:#ffd7dd;
+    }
+
+    .status.success{
+      color:#d9ffeb;
+    }
+
+    .section{
+      margin-top:18px;
+    }
+
+    .section h3{
+      margin:0 0 10px;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted2);
+    }
+
+    .list{
+      border-top:1px solid var(--line);
+    }
+
+    .row{
+      padding:12px 0;
+      border-bottom:1px solid var(--line);
+    }
+
+    .row-title{
+      font-size:13px;
+      font-weight:700;
+      line-height:1.4;
+    }
+
+    .row-sub{
+      margin-top:4px;
+      font-size:11.5px;
+      color:var(--muted);
+      line-height:1.5;
+      word-break:break-word;
+    }
+
     .pill{
-      display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:0 12px;border-radius:999px;
-      font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line2);margin-top:8px
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:28px;
+      padding:0 12px;
+      border-radius:999px;
+      font-size:10.5px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      border:1px solid var(--line2);
+      margin-top:8px;
     }
-    .pill.green{color:#dcffed;background:rgba(22,212,123,.14);border-color:rgba(22,212,123,.28)}
-    .pill.red{color:#ffd7dd;background:rgba(255,59,87,.14);border-color:rgba(255,59,87,.28)}
-    .pill.blue{color:#dcebff;background:rgba(90,160,255,.14);border-color:rgba(90,160,255,.28)}
+
+    .pill.green{
+      color:#dcffed;
+      background:rgba(22,212,123,.14);
+      border-color:rgba(22,212,123,.28);
+    }
+
+    .pill.red{
+      color:#ffd7dd;
+      background:rgba(255,59,87,.14);
+      border-color:rgba(255,59,87,.28);
+    }
+
+    .pill.blue{
+      color:#dcebff;
+      background:rgba(90,160,255,.14);
+      border-color:rgba(90,160,255,.28);
+    }
+
     pre{
-      white-space:pre-wrap;word-break:break-word;margin:8px 0 0;padding:10px;border-radius:12px;
-      background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:11px;color:#fff
+      white-space:pre-wrap;
+      word-break:break-word;
+      margin:8px 0 0;
+      padding:10px;
+      border-radius:12px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      font-size:11px;
+      color:#fff;
+      overflow:auto;
     }
+
     .nav{
-      position:fixed;left:0;right:0;bottom:0;width:100%;max-width:760px;margin:0 auto;
-      display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:var(--nav);backdrop-filter:blur(14px);
-      border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:50
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      width:100%;
+      max-width:760px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:4px;
+      background:var(--nav);
+      backdrop-filter:blur(14px);
+      border-top:1px solid var(--line);
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      z-index:50;
     }
+
     .nav a{
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;
-      color:var(--muted);padding:6px 2px;border-radius:10px;min-width:0
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:10px;
+      color:var(--muted);
+      padding:6px 2px;
+      border-radius:10px;
+      min-width:0;
     }
-    .nav a.active{color:#fff;background:rgba(255,255,255,.07)}
-    .nav .icon{font-size:15px;line-height:1}
+
+    .nav a.active{
+      color:#fff;
+      background:rgba(255,255,255,.07);
+    }
+
+    .nav .icon{
+      font-size:15px;
+      line-height:1;
+    }
   </style>
 </head>
 <body>
   <main class="app">
     <header class="topbar">
-      <a class="back" href="ai-auto-post.html">‹</a>
+      <a class="back" href="ai-auto-post.html" aria-label="Back">‹</a>
       <div class="head">
         <div class="eyebrow">View • Auto Content Agent</div>
         <h1>Test Auto Post Rule</h1>
@@ -129,21 +376,42 @@
   </main>
 
   <nav class="nav">
-    <a href="ai-auto-post.html"><span class="icon">⌂</span><span>Home</span></a>
-    <a href="ai-auto-post-create.html"><span class="icon">＋</span><span>Create</span></a>
-    <a href="ai-auto-post-rules.html"><span class="icon">≣</span><span>Rules</span></a>
-    <a href="ai-auto-post-history.html"><span class="icon">↻</span><span>History</span></a>
-    <a href="ai-auto-post-test.html" class="active"><span class="icon">▶</span><span>Test</span></a>
+    <a href="ai-auto-post.html">
+      <span class="icon">⌂</span>
+      <span>Home</span>
+    </a>
+    <a href="ai-auto-post-create.html">
+      <span class="icon">＋</span>
+      <span>Create</span>
+    </a>
+    <a href="ai-auto-post-rules.html">
+      <span class="icon">≣</span>
+      <span>Rules</span>
+    </a>
+    <a href="ai-auto-post-history.html">
+      <span class="icon">↻</span>
+      <span>History</span>
+    </a>
+    <a href="ai-auto-post-test.html" class="active">
+      <span class="icon">▶</span>
+      <span>Test</span>
+    </a>
   </nav>
 
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
     const AUTO_POST_CRON_SECRET = "alwaysusemysecretkey";
+    const API_BASE_URL = "https://view-psi-lac.vercel.app";
 
     const supabaseClient = window.supabase?.createClient
       ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "pkce" }
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            flowType: "pkce"
+          }
         })
       : null;
 
@@ -176,6 +444,7 @@
         if (error) throw error;
 
         const rules = data || [];
+
         if (!rules.length) {
           select.innerHTML = `<option value="">No rules found</option>`;
           return;
@@ -185,7 +454,7 @@
           <option value="">Choose a rule</option>
           ${rules.map(rule => `
             <option value="${rule.id}">
-              ${rule.title || "Untitled rule"} • ${rule.content_type || "content"} • ${rule.is_active ? "Active" : "Paused"}
+              ${escapeHtml(rule.title || "Untitled rule")} • ${escapeHtml(rule.content_type || "content")} • ${rule.is_active ? "Active" : "Paused"}
             </option>
           `).join("")}
         `;
@@ -209,27 +478,27 @@
 
         <div class="row">
           <div class="row-title">Rule ID</div>
-          <div class="row-sub">${result?.triggered_rule_id || first?.rule_id || "-"}</div>
+          <div class="row-sub">${escapeHtml(result?.triggered_rule_id || first?.rule_id || "-")}</div>
         </div>
 
         <div class="row">
           <div class="row-title">Run status</div>
-          <div class="row-sub">${first?.status || response.status || result?.status || result?.error || "No status returned"}</div>
+          <div class="row-sub">${escapeHtml(first?.status || response.status || result?.status || result?.error || "No status returned")}</div>
         </div>
 
         <div class="row">
           <div class="row-title">Generated content ID</div>
-          <div class="row-sub">${first?.generated_content_id || "-"}</div>
+          <div class="row-sub">${escapeHtml(first?.generated_content_id || "-")}</div>
         </div>
 
         <div class="row">
           <div class="row-title">Post ID</div>
-          <div class="row-sub">${first?.post_id || "-"}</div>
+          <div class="row-sub">${escapeHtml(first?.post_id || "-")}</div>
         </div>
 
         <div class="row">
           <div class="row-title">Message</div>
-          <div class="row-sub">${first?.message || response.message || result?.message || result?.error || "No message returned"}</div>
+          <div class="row-sub">${escapeHtml(first?.message || response.message || result?.message || result?.error || "No message returned")}</div>
         </div>
 
         <div class="row">
@@ -244,7 +513,9 @@
       return String(value)
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;");
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
     }
 
     document.getElementById("testRuleForm").addEventListener("submit", async (e) => {
@@ -263,12 +534,15 @@
       status.textContent = "Running selected rule...";
 
       try {
-        const response = await fetch(`/api/auto-post/test-run-rule?rule_id=${encodeURIComponent(ruleId)}`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${AUTO_POST_CRON_SECRET}`
+        const response = await fetch(
+          `${API_BASE_URL}/api/auto-post?action=test&rule_id=${encodeURIComponent(ruleId)}`,
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${AUTO_POST_CRON_SECRET}`
+            }
           }
-        });
+        );
 
         const rawText = await response.text();
         let json = {};
@@ -293,7 +567,12 @@
         console.error(error);
         status.className = "status error";
         status.textContent = error?.message || "Unable to trigger test run.";
-        renderResult({ error: error?.message || "Unknown error" }, false, 0, error?.message || "Unknown error");
+        renderResult(
+          { error: error?.message || "Unknown error" },
+          false,
+          0,
+          error?.message || "Unknown error"
+        );
       }
     });
 
