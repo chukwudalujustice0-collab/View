@@ -699,29 +699,76 @@ async function dispatchPlatform(post, account, platform) {
   }
 }
 
-async function loadPostAndAccount(supabase, job) {
-  const [{ data: post, error: postError }, { data: account, error: accountError }] = await Promise.all([
-    supabase.from("posts").select("*").eq("id", job.post_id).single(),
-    supabase
+async function loadConnectedAccountForJob(supabase, job) {
+  const normalizedJobPlatform = normalizePlatform(job.platform);
+
+  if (normalizedJobPlatform === "view") return null;
+
+  // 1. Prefer exact connected_account_id when available
+  if (job.connected_account_id) {
+    const { data: accountById, error: accountByIdError } = await supabase
       .from("connected_accounts")
       .select("*")
+      .eq("id", job.connected_account_id)
       .eq("user_id", job.user_id)
-      .eq("platform", job.platform)
-      .maybeSingle(),
-  ]);
+      .maybeSingle();
 
-  if (postError || !post) throw new Error(postError?.message || "Post not found");
+    if (accountByIdError) {
+      throw new Error(accountByIdError.message || "Connected account lookup by id failed");
+    }
 
-  if (normalizePlatform(job.platform) !== "view") {
-    if (accountError) throw new Error(accountError.message || "Connected account lookup failed");
-    if (!account) throw new Error(`No connected ${job.platform} account found`);
-    if (!resolveConnectedFlag(account)) throw new Error(`${job.platform} account exists but is not active`);
+    if (!accountById) {
+      throw new Error("Selected connected account not found");
+    }
 
-    const freshAccount = await ensureFreshAccountToken(supabase, account);
-    return { post, account: freshAccount };
+    const accountPlatform = normalizePlatform(accountById.platform || accountById.provider || "");
+    if (accountPlatform !== normalizedJobPlatform) {
+      throw new Error(`Connected account platform mismatch for job platform ${normalizedJobPlatform}`);
+    }
+
+    if (!resolveConnectedFlag(accountById)) {
+      throw new Error(`${normalizedJobPlatform} selected account is not active`);
+    }
+
+    return await ensureFreshAccountToken(supabase, accountById);
   }
 
-  return { post, account: null };
+  // 2. Fallback to old platform-based lookup so existing flow does not break
+  const { data: account, error: accountError } = await supabase
+    .from("connected_accounts")
+    .select("*")
+    .eq("user_id", job.user_id)
+    .eq("platform", normalizedJobPlatform)
+    .maybeSingle();
+
+  if (accountError) {
+    throw new Error(accountError.message || "Connected account lookup failed");
+  }
+
+  if (!account) {
+    throw new Error(`No connected ${normalizedJobPlatform} account found`);
+  }
+
+  if (!resolveConnectedFlag(account)) {
+    throw new Error(`${normalizedJobPlatform} account exists but is not active`);
+  }
+
+  return await ensureFreshAccountToken(supabase, account);
+}
+
+async function loadPostAndAccount(supabase, job) {
+  const { data: post, error: postError } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("id", job.post_id)
+    .single();
+
+  if (postError || !post) {
+    throw new Error(postError?.message || "Post not found");
+  }
+
+  const account = await loadConnectedAccountForJob(supabase, job);
+  return { post, account };
 }
 
 async function updatePostAggregateStatus(supabase, postId) {
@@ -790,6 +837,7 @@ async function processJob(supabase, job) {
     status: JOB_STATUS.COMPLETED,
     attempts,
     platform_post_id: String(platformPostId),
+    connected_account_id: job.connected_account_id || null,
     created_at: startedAt,
   });
 
@@ -799,6 +847,7 @@ async function processJob(supabase, job) {
     ok: true,
     job_id: job.id,
     platform,
+    connected_account_id: job.connected_account_id || null,
     platform_post_id: String(platformPostId),
     status: JOB_STATUS.COMPLETED,
   };
@@ -826,6 +875,7 @@ async function failJob(supabase, job, message) {
     platform: normalizePlatform(job.platform),
     status,
     attempts,
+    connected_account_id: job.connected_account_id || null,
     error_message: cleanMessage,
     created_at: nowIso(),
   });
@@ -836,6 +886,7 @@ async function failJob(supabase, job, message) {
     ok: false,
     job_id: job.id,
     platform: normalizePlatform(job.platform),
+    connected_account_id: job.connected_account_id || null,
     error: cleanMessage,
     status,
   };
