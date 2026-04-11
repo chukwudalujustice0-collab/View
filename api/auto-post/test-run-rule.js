@@ -60,7 +60,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const runResponse = await fetch(`${baseUrl}/api/auto-post/run-due-rules`, {
+    const runResponse = await fetch(`${baseUrl}/api/auto-post/run-due-rules?rule_id=${encodeURIComponent(ruleId)}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -70,12 +70,20 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({ rule_id: ruleId, force: true })
     });
 
-    const runJson = await runResponse.json().catch(() => ({}));
+    const rawText = await runResponse.text();
+
+    let runData;
+    try {
+      runData = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      runData = { raw_response: rawText || "Non-JSON response returned" };
+    }
 
     return res.status(runResponse.status).json({
       ok: runResponse.ok,
       triggered_rule_id: ruleId,
-      result: runJson
+      base_url_used: baseUrl,
+      result: runData
     });
   } catch (error) {
     console.error("test-run-rule fatal error:", error);
@@ -91,8 +99,10 @@ function isAuthorized(req) {
   const xCronSecret = req.headers["x-cron-secret"] || "";
 
   if (!AUTO_POST_CRON_SECRET) return true;
+
   if (xCronSecret && xCronSecret === AUTO_POST_CRON_SECRET) return true;
   if (authHeader === AUTO_POST_CRON_SECRET) return true;
+
   if (authHeader.startsWith("Bearer ")) {
     return authHeader.slice(7).trim() === AUTO_POST_CRON_SECRET;
   }
