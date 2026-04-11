@@ -9,8 +9,10 @@ const KLING_BASE_URL = (process.env.KLING_BASE_URL || "https://api.klingapi.com"
 const AUTO_POST_CRON_SECRET = process.env.AUTO_POST_CRON_SECRET;
 
 const GEMINI_TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || "gemini-2.5-flash";
-const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image-preview";
+const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image";
 const KLING_VIDEO_MODEL = process.env.KLING_VIDEO_MODEL || "kling-v2.6-std";
+
+const USE_GEMINI_IMAGE = String(process.env.USE_GEMINI_IMAGE || "false").toLowerCase() === "true";
 
 const POST_MEDIA_BUCKET = process.env.POST_MEDIA_BUCKET || "post-media";
 const AUTO_POST_BATCH_LIMIT = Number(process.env.AUTO_POST_BATCH_LIMIT || 5);
@@ -103,7 +105,8 @@ function isTemporaryProviderError(message = "") {
     text.includes("overloaded") ||
     text.includes("resource exhausted") ||
     text.includes("rate limit") ||
-    text.includes("try again later")
+    text.includes("try again later") ||
+    text.includes("quota exceeded")
   );
 }
 
@@ -311,7 +314,7 @@ async function processRule(rule, options = {}) {
     if (rule.content_type === "text") {
       generated = await generateTextWithGemini({ rule, prompt });
     } else if (rule.content_type === "image") {
-      generated = await generateImageWithGemini({ rule, prompt });
+      generated = await generateImageSmart({ rule, prompt });
     } else if (rule.content_type === "video") {
       generated = await generateVideoWithKling({ rule, prompt });
     } else {
@@ -387,10 +390,7 @@ async function processRule(rule, options = {}) {
       platforms: normalizedPlatforms
     });
 
-    let workerTriggerResult = null;
-    if ((publishQueueResult?.queued || 0) > 0) {
-      workerTriggerResult = await triggerPublishWorkerNow();
-    }
+    let workerTriggerResult = await triggerPublishWorkerNow();
 
     await finalizeRunLog(runId, {
       status: "success",
@@ -568,10 +568,7 @@ async function checkOneKlingTask(item) {
       platforms: normalizePlatforms(item.selected_platforms, item.platforms_label)
     });
 
-    let workerTriggerResult = null;
-    if ((publishQueueResult?.queued || 0) > 0) {
-      workerTriggerResult = await triggerPublishWorkerNow();
-    }
+    let workerTriggerResult = await triggerPublishWorkerNow();
 
     if (runId) {
       await finalizeRunLog(runId, {
@@ -649,7 +646,12 @@ async function generateTextWithGemini({ rule, prompt }) {
   };
 }
 
-async function generateImageWithGemini({ rule, prompt }) {
+function buildPollinationsUrl(prompt) {
+  const enhancedPrompt = `${prompt}, modern business advert, social media poster, professional branding, red and blue theme, clean layout, high quality, sharp focus, eye catching design`;
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}`;
+}
+
+async function generateImageSmart({ rule, prompt }) {
   const captionRaw = await callGeminiGenerateContent({
     model: GEMINI_TEXT_MODEL,
     contents: [
@@ -665,39 +667,71 @@ async function generateImageWithGemini({ rule, prompt }) {
   const captionParsed = safeJsonParse(captionText) || {};
   const imagePrompt = captionParsed.image_prompt || prompt;
 
-  const imageRaw = await callGeminiGenerateContent({
-    model: GEMINI_IMAGE_MODEL,
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: imagePrompt }]
-      }
-    ]
-  });
-
-  const imagePart = extractInlineImagePart(imageRaw);
-  if (!imagePart?.data) {
-    throw new Error("Gemini image generation did not return image data.");
+  if (!USE_GEMINI_IMAGE) {
+    return {
+      provider: "pollinations",
+      provider_model: "pollinations-free",
+      title: captionParsed.title || rule.title,
+      caption: captionParsed.caption || rule.title,
+      media_url: buildPollinationsUrl(imagePrompt),
+      status: "generated",
+      publish_status: "pending",
+      generation_meta: { image_prompt: imagePrompt, image_mode: "pollinations_only" }
+    };
   }
 
-  const filePath = buildStoragePath(rule.user_id, "image", "png");
-  const mediaUrl = await uploadBase64ToStorage({
-    bucket: POST_MEDIA_BUCKET,
-    path: filePath,
-    base64Data: imagePart.data,
-    contentType: imagePart.mimeType || "image/png"
-  });
+  try {
+    const imageRaw = await callGeminiGenerateContent({
+      model: GEMINI_IMAGE_MODEL,
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: imagePrompt }]
+        }
+      ]
+    });
 
-  return {
-    provider: "gemini",
-    provider_model: GEMINI_IMAGE_MODEL,
-    title: captionParsed.title || rule.title,
-    caption: captionParsed.caption || rule.title,
-    media_url: mediaUrl,
-    status: "generated",
-    publish_status: "pending",
-    generation_meta: { image_prompt: imagePrompt }
-  };
+    const imagePart = extractInlineImagePart(imageRaw);
+    if (!imagePart?.data) {
+      throw new Error("Gemini image generation did not return image data.");
+    }
+
+    const filePath = buildStoragePath(rule.user_id, "image", "png");
+    const mediaUrl = await uploadBase64ToStorage({
+      bucket: POST_MEDIA_BUCKET,
+      path: filePath,
+      base64Data: imagePart.data,
+      contentType: imagePart.mimeType || "image/png"
+    });
+
+    return {
+      provider: "gemini",
+      provider_model: GEMINI_IMAGE_MODEL,
+      title: captionParsed.title || rule.title,
+      caption: captionParsed.caption || rule.title,
+      media_url: mediaUrl,
+      status: "generated",
+      publish_status: "pending",
+      generation_meta: { image_prompt: imagePrompt, image_mode: "gemini" }
+    };
+  } catch (error) {
+    console.log("Gemini image failed, falling back to Pollinations:", error?.message || error);
+
+    return {
+      provider: "pollinations",
+      provider_model: "pollinations-free",
+      title: captionParsed.title || rule.title,
+      caption: captionParsed.caption || rule.title,
+      media_url: buildPollinationsUrl(imagePrompt),
+      status: "generated",
+      publish_status: "pending",
+      generation_meta: {
+        image_prompt: imagePrompt,
+        image_mode: "pollinations_fallback",
+        gemini_error: error?.message || "Unknown Gemini image error"
+      }
+    };
+  }
 }
 
 async function generateVideoWithKling({ rule, prompt }) {
@@ -1019,27 +1053,24 @@ async function findLatestRunIdForItem(item) {
 }
 
 function normalizePlatforms(selectedPlatforms, platformsLabel) {
-  if (Array.isArray(selectedPlatforms) && selectedPlatforms.length) {
-    return selectedPlatforms.map(String).map(v => v.toLowerCase());
-  }
+  let platforms = [];
 
-  if (typeof selectedPlatforms === "string" && selectedPlatforms.trim()) {
+  if (Array.isArray(selectedPlatforms) && selectedPlatforms.length) {
+    platforms = selectedPlatforms;
+  } else if (typeof selectedPlatforms === "string" && selectedPlatforms.trim()) {
     try {
       const parsed = JSON.parse(selectedPlatforms);
-      if (Array.isArray(parsed) && parsed.length) {
-        return parsed.map(String).map(v => v.toLowerCase());
-      }
-    } catch (_) {}
+      if (Array.isArray(parsed)) platforms = parsed;
+    } catch {}
+  } else if (platformsLabel) {
+    platforms = String(platformsLabel).split(",").map(v => v.trim());
   }
 
-  if (platformsLabel) {
-    return String(platformsLabel)
-      .split(",")
-      .map(v => v.trim().toLowerCase())
-      .filter(Boolean);
-  }
+  platforms = platforms
+    .map(p => String(p).toLowerCase())
+    .filter(Boolean);
 
-  return ["view"];
+  return platforms.length ? platforms : ["view"];
 }
 
 function buildPromptFromRule(rule) {
@@ -1047,6 +1078,7 @@ function buildPromptFromRule(rule) {
 
   if (rule.prompt_template) pieces.push(String(rule.prompt_template).trim());
   else if (rule.topic) pieces.push(String(rule.topic).trim());
+  else if (rule.title) pieces.push(String(rule.title).trim());
 
   if (rule.caption_style) pieces.push(`Caption style: ${rule.caption_style}.`);
   if (rule.visual_style && rule.content_type !== "text") pieces.push(`Visual style: ${rule.visual_style}.`);
