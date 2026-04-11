@@ -9,7 +9,7 @@ const KLING_BASE_URL = (process.env.KLING_BASE_URL || "https://api.klingapi.com"
 const AUTO_POST_CRON_SECRET = process.env.AUTO_POST_CRON_SECRET;
 
 const GEMINI_TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || "gemini-2.5-flash";
-const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "nano-banana";
+const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
 const POST_MEDIA_BUCKET = process.env.POST_MEDIA_BUCKET || "post-media";
 const BATCH_LIMIT = Number(process.env.AUTO_POST_BATCH_LIMIT || 5);
 
@@ -41,9 +41,7 @@ module.exports = async function handler(req, res) {
       .order("next_run_at", { ascending: true })
       .limit(BATCH_LIMIT);
 
-    if (dueRulesError) {
-      throw dueRulesError;
-    }
+    if (dueRulesError) throw dueRulesError;
 
     if (!dueRules || !dueRules.length) {
       return res.status(200).json({
@@ -81,7 +79,6 @@ function isAuthorized(req) {
   if (!AUTO_POST_CRON_SECRET) return true;
 
   if (xCronSecret && xCronSecret === AUTO_POST_CRON_SECRET) return true;
-
   if (authHeader === AUTO_POST_CRON_SECRET) return true;
 
   if (authHeader.startsWith("Bearer ")) {
@@ -511,7 +508,7 @@ async function generateVideoWithKling({ rule, prompt }) {
       "Authorization": `Bearer ${KLING_API_KEY}`
     },
     body: JSON.stringify({
-      model: process.env.KLING_VIDEO_MODEL || "kling-v2.1",
+      model: process.env.KLING_VIDEO_MODEL || "kling-v2.6-pro",
       prompt: videoPrompt,
       duration: Number(process.env.KLING_VIDEO_DURATION || 5),
       aspect_ratio: process.env.KLING_VIDEO_ASPECT_RATIO || "9:16",
@@ -531,7 +528,7 @@ async function generateVideoWithKling({ rule, prompt }) {
 
   return {
     provider: "kling",
-    provider_model: process.env.KLING_VIDEO_MODEL || "kling-v2.1",
+    provider_model: process.env.KLING_VIDEO_MODEL || "kling-v2.6-pro",
     provider_task_id: taskId,
     title: prepParsed.title || rule.title,
     caption: prepParsed.caption || rule.title,
@@ -553,9 +550,7 @@ async function callGeminiGenerateContent({
     throw new Error("Missing GEMINI_API_KEY.");
   }
 
-  const body = {
-    contents
-  };
+  const body = { contents };
 
   if (responseMimeType) {
     body.generationConfig = { responseMimeType };
@@ -581,18 +576,16 @@ async function callGeminiGenerateContent({
 
 function extractTextFromGemini(json) {
   const parts = json?.candidates?.[0]?.content?.parts || [];
-  const text = parts
+  return parts
     .map(part => part?.text || "")
     .filter(Boolean)
     .join("\n")
     .trim();
-
-  if (text) return text;
-  return "";
 }
 
 function extractInlineImagePart(json) {
   const parts = json?.candidates?.[0]?.content?.parts || [];
+
   for (const part of parts) {
     if (part?.inlineData?.data) {
       return {
@@ -600,6 +593,7 @@ function extractInlineImagePart(json) {
         mimeType: part.inlineData.mimeType || "image/png"
       };
     }
+
     if (part?.inline_data?.data) {
       return {
         data: part.inline_data.data,
@@ -607,6 +601,7 @@ function extractInlineImagePart(json) {
       };
     }
   }
+
   return null;
 }
 
