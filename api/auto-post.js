@@ -9,8 +9,8 @@ const KLING_BASE_URL = (process.env.KLING_BASE_URL || "https://api.klingapi.com"
 const AUTO_POST_CRON_SECRET = process.env.AUTO_POST_CRON_SECRET;
 
 const GEMINI_TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || "gemini-2.5-flash";
-const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
-const KLING_VIDEO_MODEL = process.env.KLING_VIDEO_MODEL || "kling-v2.6-pro";
+const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image-preview";
+const KLING_VIDEO_MODEL = process.env.KLING_VIDEO_MODEL || "kling-v2.6-std";
 
 const POST_MEDIA_BUCKET = process.env.POST_MEDIA_BUCKET || "post-media";
 const AUTO_POST_BATCH_LIMIT = Number(process.env.AUTO_POST_BATCH_LIMIT || 5);
@@ -93,6 +93,58 @@ function isAuthorized(req) {
   }
 
   return false;
+}
+
+function isTemporaryProviderError(message = "") {
+  const text = String(message || "").toLowerCase();
+  return (
+    text.includes("high demand") ||
+    text.includes("temporarily unavailable") ||
+    text.includes("overloaded") ||
+    text.includes("resource exhausted") ||
+    text.includes("rate limit") ||
+    text.includes("try again later")
+  );
+}
+
+async function triggerPublishWorkerNow() {
+  try {
+    const baseUrl =
+      process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : (process.env.VIEW_BASE_URL || "");
+
+    if (!baseUrl) {
+      return { triggered: false, reason: "No base URL available" };
+    }
+
+    const res = await fetch(`${baseUrl}/api/process-publish-jobs?limit=10&concurrency=4`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ limit: 10, concurrency: 4 })
+    });
+
+    const text = await res.text();
+    let data = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      data = { raw: text };
+    }
+
+    return {
+      triggered: res.ok,
+      status: res.status,
+      data
+    };
+  } catch (error) {
+    return {
+      triggered: false,
+      reason: error?.message || "Failed to trigger worker"
+    };
+  }
 }
 
 async function handleTestRun(req, res) {
@@ -335,6 +387,11 @@ async function processRule(rule, options = {}) {
       platforms: normalizedPlatforms
     });
 
+    let workerTriggerResult = null;
+    if ((publishQueueResult?.queued || 0) > 0) {
+      workerTriggerResult = await triggerPublishWorkerNow();
+    }
+
     await finalizeRunLog(runId, {
       status: "success",
       message: buildRunMessage("Rule processed successfully.", publishQueueResult),
@@ -350,15 +407,18 @@ async function processRule(rule, options = {}) {
       generated_content_id: generatedContentId,
       post_id: postId,
       status: "success",
-      publish_queue: publishQueueResult
+      publish_queue: publishQueueResult,
+      worker_trigger: workerTriggerResult
     };
   } catch (error) {
     console.error("processRule error:", rule.id, error);
 
+    const temporary = isTemporaryProviderError(error?.message || "");
+
     if (runId) {
       await finalizeRunLog(runId, {
-        status: "failed",
-        message: "Rule processing failed",
+        status: temporary ? "processing" : "failed",
+        message: temporary ? "Temporary provider overload. Retry later." : "Rule processing failed",
         error_message: error?.message || "Unknown error",
         completed_at: new Date().toISOString(),
         generated_content_id: generatedContentId
@@ -366,7 +426,7 @@ async function processRule(rule, options = {}) {
     }
 
     await updateRuleStatus(rule.id, {
-      last_status: "failed",
+      last_status: temporary ? "processing" : "failed",
       last_error: error?.message || "Unknown error"
     });
 
@@ -374,7 +434,7 @@ async function processRule(rule, options = {}) {
       rule_id: rule.id,
       run_id: runId,
       generated_content_id: generatedContentId,
-      status: "failed",
+      status: temporary ? "processing" : "failed",
       error: error?.message || "Unknown error"
     };
   }
@@ -508,6 +568,11 @@ async function checkOneKlingTask(item) {
       platforms: normalizePlatforms(item.selected_platforms, item.platforms_label)
     });
 
+    let workerTriggerResult = null;
+    if ((publishQueueResult?.queued || 0) > 0) {
+      workerTriggerResult = await triggerPublishWorkerNow();
+    }
+
     if (runId) {
       await finalizeRunLog(runId, {
         status: "success",
@@ -534,7 +599,8 @@ async function checkOneKlingTask(item) {
       task_id: item.provider_task_id,
       post_id: postId,
       status: "success",
-      publish_queue: publishQueueResult
+      publish_queue: publishQueueResult,
+      worker_trigger: workerTriggerResult
     };
   } catch (error) {
     console.error("checkOneKlingTask error:", item.id, error);
@@ -668,7 +734,10 @@ async function generateVideoWithKling({ rule, prompt }) {
   const json = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(json?.message || json?.error || "Kling video request failed.");
+    const message = json?.message || json?.error || "Kling video request failed.";
+    const error = new Error(message);
+    error.isTemporary = isTemporaryProviderError(message);
+    throw error;
   }
 
   const taskId = json?.task_id || json?.data?.task_id || json?.id;
