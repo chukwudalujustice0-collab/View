@@ -16,6 +16,11 @@ const USE_GEMINI_IMAGE = String(process.env.USE_GEMINI_IMAGE || "false").toLower
 const POST_MEDIA_BUCKET = process.env.POST_MEDIA_BUCKET || "post-media";
 const AUTO_POST_BATCH_LIMIT = Number(process.env.AUTO_POST_BATCH_LIMIT || 5);
 const AUTO_POST_VIDEO_POLL_BATCH = Number(process.env.AUTO_POST_VIDEO_POLL_BATCH || 10);
+const PROCESS_WORKER_URL =
+  process.env.PROCESS_WORKER_URL ||
+  process.env.VIEW_BASE_URL
+    ? `${(process.env.VIEW_BASE_URL || `https://${process.env.VERCEL_URL || ""}`).replace(/\/+$/, "")}/api/process-publish-jobs`
+    : "https://view-psi-lac.vercel.app/api/process-publish-jobs";
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error("Missing Supabase environment variables.");
@@ -82,6 +87,145 @@ function isAuthorized(req) {
   return false;
 }
 
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function safeJsonParse(value, fallback = null) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function normalizePlatformKey(value) {
+  const key = String(value || "").trim().toLowerCase();
+  if (key === "twitter") return "x";
+  if (key === "whatsapp_business" || key === "whatsappbusiness") return "whatsapp";
+  return key;
+}
+
+function normalizePlatforms(selectedPlatforms, platformsLabel) {
+  let platforms = [];
+
+  if (Array.isArray(selectedPlatforms) && selectedPlatforms.length) {
+    platforms = selectedPlatforms;
+  } else if (typeof selectedPlatforms === "string" && selectedPlatforms.trim()) {
+    const parsed = safeJsonParse(selectedPlatforms, null);
+    if (Array.isArray(parsed)) platforms = parsed;
+  } else if (platformsLabel) {
+    platforms = String(platformsLabel)
+      .split(",")
+      .map(v => v.trim());
+  }
+
+  platforms = platforms
+    .map(normalizePlatformKey)
+    .filter(Boolean);
+
+  return platforms.length ? platforms : ["view"];
+}
+
+function extractTextFromGemini(json) {
+  const parts = json?.candidates?.[0]?.content?.parts || [];
+  return parts
+    .map(part => part?.text || "")
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+}
+
+function extractInlineImagePart(json) {
+  const parts = json?.candidates?.[0]?.content?.parts || [];
+
+  for (const part of parts) {
+    if (part?.inlineData?.data) {
+      return {
+        data: part.inlineData.data,
+        mimeType: part.inlineData.mimeType || "image/png"
+      };
+    }
+    if (part?.inline_data?.data) {
+      return {
+        data: part.inline_data.data,
+        mimeType: part.inline_data.mime_type || "image/png"
+      };
+    }
+  }
+
+  return null;
+}
+
+function buildPollinationsUrl(prompt) {
+  const enhancedPrompt = `${prompt}, modern business advert, social media poster, professional branding, red and blue theme, clean layout, high quality, sharp focus, eye catching design`;
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}`;
+}
+
+function buildStoragePath(userId, prefix, extension) {
+  const id = crypto.randomUUID();
+  const date = new Date().toISOString().slice(0, 10);
+  return `auto-post/${userId}/${prefix}/${date}/${id}.${extension}`;
+}
+
+async function uploadBase64ToStorage({ bucket, path, base64Data, contentType }) {
+  const buffer = Buffer.from(base64Data, "base64");
+
+  const { error: uploadError } = await supabase.storage
+    .from(bucket)
+    .upload(path, buffer, {
+      contentType,
+      upsert: false
+    });
+
+  if (uploadError) throw uploadError;
+
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+async function fetchAndUploadRemoteFile({ userId, remoteUrl, prefix, extension, contentType }) {
+  const response = await fetch(remoteUrl);
+  if (!response.ok) throw new Error(`Unable to download remote file for ${prefix}.`);
+
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const filePath = buildStoragePath(userId, prefix, extension);
+
+  const { error } = await supabase.storage
+    .from(POST_MEDIA_BUCKET)
+    .upload(filePath, buffer, {
+      contentType,
+      upsert: false
+    });
+
+  if (error) throw error;
+
+  const { data } = supabase.storage.from(POST_MEDIA_BUCKET).getPublicUrl(filePath);
+  return data.publicUrl;
+}
+
+function buildPromptFromRule(rule) {
+  const pieces = [];
+
+  if (rule.prompt_template) pieces.push(String(rule.prompt_template).trim());
+  else if (rule.topic) pieces.push(String(rule.topic).trim());
+  else if (rule.title) pieces.push(String(rule.title).trim());
+
+  if (rule.caption_style) pieces.push(`Caption style: ${rule.caption_style}.`);
+  if (rule.visual_style && rule.content_type !== "text") pieces.push(`Visual style: ${rule.visual_style}.`);
+
+  if (rule.content_type === "text") {
+    pieces.push("Return a strong social media title, the main text content, and a short caption.");
+  } else if (rule.content_type === "image") {
+    pieces.push("Generate a social-media-ready image concept and a strong caption for posting.");
+  } else if (rule.content_type === "video") {
+    pieces.push("Create a short vertical video concept suitable for social media posting.");
+  }
+
+  return pieces.filter(Boolean).join("\n");
+}
+
 function isTemporaryProviderError(message = "") {
   const text = String(message || "").toLowerCase();
   return (
@@ -95,493 +239,29 @@ function isTemporaryProviderError(message = "") {
   );
 }
 
-async function triggerPublishWorkerNow() {
-  try {
-    const baseUrl =
-      process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : (process.env.VIEW_BASE_URL || "");
+async function callGeminiGenerateContent({ model, contents, responseMimeType }) {
+  if (!GEMINI_API_KEY) throw new Error("Missing GEMINI_API_KEY.");
 
-    if (!baseUrl) {
-      return { triggered: false, reason: "No base URL available" };
-    }
-
-    const res = await fetch(`${baseUrl}/api/process-publish-jobs?limit=10&concurrency=4`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" }
-    });
-
-    const text = await res.text();
-    let data = {};
-    try {
-      data = text ? JSON.parse(text) : {};
-    } catch {
-      data = { raw: text };
-    }
-
-    return {
-      triggered: res.ok,
-      status: res.status,
-      data
-    };
-  } catch (error) {
-    return {
-      triggered: false,
-      reason: error?.message || "Failed to trigger worker"
-    };
-  }
-}
-
-async function handleTestRun(req, res) {
-  const ruleId =
-    req.query?.rule_id ||
-    req.body?.rule_id ||
-    req.query?.id ||
-    req.body?.id;
-
-  if (!ruleId) {
-    return res.status(400).json({ ok: false, error: "Missing rule_id" });
+  const body = { contents };
+  if (responseMimeType) {
+    body.generationConfig = { responseMimeType };
   }
 
-  const { data: rule, error: ruleError } = await supabase
-    .from("auto_post_rules")
-    .select("*")
-    .eq("id", ruleId)
-    .single();
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }
+  );
 
-  if (ruleError || !rule) {
-    return res.status(404).json({ ok: false, error: "Rule not found" });
+  const json = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(json?.error?.message || "Gemini request failed.");
   }
 
-  const result = await processRule(rule, { forced: true });
-
-  return res.status(result.status === "failed" ? 500 : 200).json({
-    ok: result.status !== "failed",
-    action: "test",
-    triggered_rule_id: ruleId,
-    result
-  });
-}
-
-async function handleRunDueRules(req, res) {
-  const forcedRuleId =
-    req.headers["x-force-rule-id"] ||
-    req.query?.rule_id ||
-    req.body?.rule_id ||
-    null;
-
-  let rules = [];
-
-  if (forcedRuleId) {
-    const { data: forcedRule, error: forcedRuleError } = await supabase
-      .from("auto_post_rules")
-      .select("*")
-      .eq("id", forcedRuleId)
-      .single();
-
-    if (forcedRuleError || !forcedRule) {
-      return res.status(404).json({ ok: false, error: "Forced rule not found" });
-    }
-
-    rules = [forcedRule];
-  } else {
-    const nowIso = new Date().toISOString();
-
-    const { data, error } = await supabase
-      .from("auto_post_rules")
-      .select("*")
-      .eq("is_active", true)
-      .lte("next_run_at", nowIso)
-      .order("next_run_at", { ascending: true })
-      .limit(AUTO_POST_BATCH_LIMIT);
-
-    if (error) throw error;
-    rules = data || [];
-  }
-
-  if (!rules.length) {
-    return res.status(200).json({
-      ok: true,
-      action: "run",
-      processed: 0,
-      message: "No due rules found."
-    });
-  }
-
-  const results = [];
-  for (const rule of rules) {
-    results.push(await processRule(rule, { forced: !!forcedRuleId }));
-  }
-
-  return res.status(200).json({
-    ok: true,
-    action: "run",
-    processed: results.length,
-    forced: !!forcedRuleId,
-    results
-  });
-}
-
-async function handleCheckKlingTasks(req, res) {
-  const { data: pendingItems, error } = await supabase
-    .from("auto_generated_contents")
-    .select("*")
-    .eq("content_type", "video")
-    .eq("status", "processing")
-    .not("provider_task_id", "is", null)
-    .order("created_at", { ascending: true })
-    .limit(AUTO_POST_VIDEO_POLL_BATCH);
-
-  if (error) throw error;
-
-  if (!pendingItems || !pendingItems.length) {
-    return res.status(200).json({
-      ok: true,
-      action: "check",
-      processed: 0,
-      message: "No processing Kling video jobs found."
-    });
-  }
-
-  const results = [];
-  for (const item of pendingItems) {
-    results.push(await checkOneKlingTask(item));
-  }
-
-  return res.status(200).json({
-    ok: true,
-    action: "check",
-    processed: results.length,
-    results
-  });
-}
-
-async function processRule(rule, options = {}) {
-  const startedAt = new Date().toISOString();
-  let runId = null;
-  let generatedContentId = null;
-
-  try {
-    runId = await createRunLog({
-      user_id: rule.user_id,
-      rule_id: rule.id,
-      title: rule.title,
-      status: "processing",
-      message: options.forced ? "Started manual rule processing" : "Started rule processing",
-      started_at: startedAt
-    });
-
-    await updateRuleStatus(rule.id, {
-      last_status: "processing",
-      last_error: null,
-      last_run_at: startedAt
-    });
-
-    const normalizedPlatforms = normalizePlatforms(rule.selected_platforms, rule.platforms_label);
-    const prompt = buildPromptFromRule(rule);
-
-    let generated;
-    if (rule.content_type === "text") {
-      generated = await generateTextWithGemini({ rule, prompt });
-    } else if (rule.content_type === "image") {
-      generated = await generateImageSmart({ rule, prompt });
-    } else if (rule.content_type === "video") {
-      generated = await generateVideoWithKling({ rule, prompt });
-    } else {
-      throw new Error(`Unsupported content_type: ${rule.content_type}`);
-    }
-
-    generatedContentId = await createGeneratedContent({
-      user_id: rule.user_id,
-      rule_id: rule.id,
-      title: generated.title || rule.title,
-      content_type: rule.content_type,
-      prompt_used: prompt,
-      text_content: generated.text_content || null,
-      caption: generated.caption || null,
-      media_url: generated.media_url || null,
-      thumbnail_url: generated.thumbnail_url || null,
-      selected_platforms: normalizedPlatforms,
-      platforms_label: normalizedPlatforms.join(", "),
-      status: generated.status,
-      publish_status: generated.publish_status || "pending",
-      error_message: null,
-      provider: generated.provider || null,
-      provider_model: generated.provider_model || null,
-      provider_task_id: generated.provider_task_id || null,
-      generation_meta: generated.generation_meta || {}
-    });
-
-    if (rule.content_type === "video" && generated.status === "processing") {
-      await finalizeRunLog(runId, {
-        status: "success",
-        message: "Video task submitted to Kling and waiting for completion.",
-        completed_at: new Date().toISOString(),
-        generated_content_id: generatedContentId
-      });
-
-      await updateRuleAfterSuccess(rule);
-
-      return {
-        rule_id: rule.id,
-        run_id: runId,
-        generated_content_id: generatedContentId,
-        status: "processing",
-        message: "Video task submitted"
-      };
-    }
-
-    const postId = await createViewPost({
-      user_id: rule.user_id,
-      title: generated.title || rule.title,
-      content_type: rule.content_type,
-      text_content: generated.text_content || null,
-      caption: generated.caption || null,
-      media_url: generated.media_url || null,
-      selected_platforms: normalizedPlatforms
-    });
-
-    await supabase
-      .from("auto_generated_contents")
-      .update({
-        post_id: postId,
-        status: "posted",
-        publish_status: "queued",
-        posted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", generatedContentId);
-
-    const publishQueueResult = await queueCrossPostJobs({
-      user_id: rule.user_id,
-      post_id: postId,
-      platforms: normalizedPlatforms
-    });
-
-    const workerTriggerResult = await triggerPublishWorkerNow();
-
-    await finalizeRunLog(runId, {
-      status: "success",
-      message: buildRunMessage("Rule processed successfully.", publishQueueResult),
-      completed_at: new Date().toISOString(),
-      generated_content_id: generatedContentId
-    });
-
-    await updateRuleAfterSuccess(rule);
-
-    return {
-      rule_id: rule.id,
-      run_id: runId,
-      generated_content_id: generatedContentId,
-      post_id: postId,
-      status: "success",
-      publish_queue: publishQueueResult,
-      worker_trigger: workerTriggerResult
-    };
-  } catch (error) {
-    console.error("processRule error:", rule.id, error);
-    const temporary = isTemporaryProviderError(error?.message || "");
-
-    if (runId) {
-      await finalizeRunLog(runId, {
-        status: temporary ? "processing" : "failed",
-        message: temporary ? "Temporary provider overload. Retry later." : "Rule processing failed",
-        error_message: error?.message || "Unknown error",
-        completed_at: new Date().toISOString(),
-        generated_content_id: generatedContentId
-      });
-    }
-
-    await updateRuleStatus(rule.id, {
-      last_status: temporary ? "processing" : "failed",
-      last_error: error?.message || "Unknown error"
-    });
-
-    return {
-      rule_id: rule.id,
-      run_id: runId,
-      generated_content_id: generatedContentId,
-      status: temporary ? "processing" : "failed",
-      error: error?.message || "Unknown error"
-    };
-  }
-}
-
-async function checkOneKlingTask(item) {
-  try {
-    const statusResponse = await fetch(`${KLING_BASE_URL}/v1/videos/${encodeURIComponent(item.provider_task_id)}`, {
-      method: "GET",
-      headers: { "Authorization": `Bearer ${KLING_API_KEY}` }
-    });
-
-    const statusJson = await statusResponse.json().catch(() => ({}));
-
-    if (!statusResponse.ok) {
-      throw new Error(statusJson?.message || statusJson?.error || "Kling status request failed.");
-    }
-
-    const normalized = normalizeKlingStatus(statusJson);
-    const runId = await findLatestRunIdForItem(item);
-
-    if (normalized.state === "processing") {
-      await updateGeneratedContent(item.id, {
-        generation_meta: mergeGenerationMeta(item.generation_meta, {
-          last_poll_response: statusJson,
-          last_polled_at: new Date().toISOString()
-        })
-      });
-
-      return {
-        generated_content_id: item.id,
-        task_id: item.provider_task_id,
-        status: "processing"
-      };
-    }
-
-    if (normalized.state === "failed") {
-      await updateGeneratedContent(item.id, {
-        status: "failed",
-        error_message: normalized.error || "Kling video generation failed.",
-        generation_meta: mergeGenerationMeta(item.generation_meta, {
-          last_poll_response: statusJson,
-          failed_at: new Date().toISOString()
-        })
-      });
-
-      if (runId) {
-        await finalizeRunLog(runId, {
-          status: "failed",
-          message: "Kling video generation failed",
-          error_message: normalized.error || "Kling failure",
-          completed_at: new Date().toISOString()
-        });
-      }
-
-      if (item.rule_id) {
-        await updateRuleStatus(item.rule_id, {
-          last_status: "failed",
-          last_error: normalized.error || "Kling failure"
-        });
-      }
-
-      return {
-        generated_content_id: item.id,
-        task_id: item.provider_task_id,
-        status: "failed",
-        error: normalized.error || "Kling failure"
-      };
-    }
-
-    if (normalized.state !== "success" || !normalized.video_url) {
-      return {
-        generated_content_id: item.id,
-        task_id: item.provider_task_id,
-        status: "processing"
-      };
-    }
-
-    const uploadedVideoUrl = await fetchAndUploadRemoteFile({
-      userId: item.user_id,
-      remoteUrl: normalized.video_url,
-      prefix: "video",
-      extension: "mp4",
-      contentType: "video/mp4"
-    });
-
-    let thumbnailUrl = null;
-    if (normalized.thumbnail_url) {
-      try {
-        thumbnailUrl = await fetchAndUploadRemoteFile({
-          userId: item.user_id,
-          remoteUrl: normalized.thumbnail_url,
-          prefix: "thumbnail",
-          extension: "jpg",
-          contentType: "image/jpeg"
-        });
-      } catch (thumbError) {
-        console.error("thumbnail upload error:", thumbError);
-      }
-    }
-
-    const postId = await createViewPost({
-      user_id: item.user_id,
-      title: item.title,
-      content_type: "video",
-      text_content: item.text_content || null,
-      caption: item.caption || null,
-      media_url: uploadedVideoUrl,
-      selected_platforms: normalizePlatforms(item.selected_platforms, item.platforms_label)
-    });
-
-    await updateGeneratedContent(item.id, {
-      media_url: uploadedVideoUrl,
-      thumbnail_url: thumbnailUrl,
-      post_id: postId,
-      status: "posted",
-      publish_status: "queued",
-      posted_at: new Date().toISOString(),
-      error_message: null,
-      generation_meta: mergeGenerationMeta(item.generation_meta, {
-        last_poll_response: statusJson,
-        completed_at: new Date().toISOString()
-      })
-    });
-
-    const publishQueueResult = await queueCrossPostJobs({
-      user_id: item.user_id,
-      post_id: postId,
-      platforms: normalizePlatforms(item.selected_platforms, item.platforms_label)
-    });
-
-    const workerTriggerResult = await triggerPublishWorkerNow();
-
-    if (runId) {
-      await finalizeRunLog(runId, {
-        status: "success",
-        message: buildRunMessage("Kling video completed and post created.", publishQueueResult),
-        completed_at: new Date().toISOString(),
-        generated_content_id: item.id
-      });
-    }
-
-    if (item.rule_id) {
-      const { data: rule } = await supabase
-        .from("auto_post_rules")
-        .select("*")
-        .eq("id", item.rule_id)
-        .single();
-
-      if (rule) {
-        await updateRuleAfterSuccess(rule);
-      }
-    }
-
-    return {
-      generated_content_id: item.id,
-      task_id: item.provider_task_id,
-      post_id: postId,
-      status: "success",
-      publish_queue: publishQueueResult,
-      worker_trigger: workerTriggerResult
-    };
-  } catch (error) {
-    console.error("checkOneKlingTask error:", item.id, error);
-
-    await updateGeneratedContent(item.id, {
-      error_message: error?.message || "Unknown polling error",
-      generation_meta: mergeGenerationMeta(item.generation_meta, {
-        last_poll_error: error?.message || "Unknown polling error",
-        last_polled_at: new Date().toISOString()
-      })
-    });
-
-    return {
-      generated_content_id: item.id,
-      task_id: item.provider_task_id,
-      status: "error",
-      error: error?.message || "Unknown polling error"
-    };
-  }
+  return json;
 }
 
 async function generateTextWithGemini({ rule, prompt }) {
@@ -597,7 +277,7 @@ async function generateTextWithGemini({ rule, prompt }) {
   });
 
   const text = extractTextFromGemini(raw);
-  const parsed = safeJsonParse(text);
+  const parsed = safeJsonParse(text, null);
 
   return {
     provider: "gemini",
@@ -609,11 +289,6 @@ async function generateTextWithGemini({ rule, prompt }) {
     publish_status: "pending",
     generation_meta: { raw_text: text }
   };
-}
-
-function buildPollinationsUrl(prompt) {
-  const enhancedPrompt = `${prompt}, modern business advert, social media poster, professional branding, red and blue theme, clean layout, high quality, sharp focus, eye catching design`;
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}`;
 }
 
 async function generateImageSmart({ rule, prompt }) {
@@ -629,7 +304,7 @@ async function generateImageSmart({ rule, prompt }) {
   });
 
   const captionText = extractTextFromGemini(captionRaw);
-  const captionParsed = safeJsonParse(captionText) || {};
+  const captionParsed = safeJsonParse(captionText, {}) || {};
   const imagePrompt = captionParsed.image_prompt || prompt;
 
   if (!USE_GEMINI_IMAGE) {
@@ -705,7 +380,7 @@ async function generateVideoWithKling({ rule, prompt }) {
   });
 
   const prepText = extractTextFromGemini(prepRaw);
-  const prepParsed = safeJsonParse(prepText) || {};
+  const prepParsed = safeJsonParse(prepText, {}) || {};
   const videoPrompt = prepParsed.video_prompt || prompt;
 
   const response = await fetch(`${KLING_BASE_URL}/v1/videos/text2video`, {
@@ -750,31 +425,6 @@ async function generateVideoWithKling({ rule, prompt }) {
   };
 }
 
-async function callGeminiGenerateContent({ model, contents, responseMimeType }) {
-  if (!GEMINI_API_KEY) throw new Error("Missing GEMINI_API_KEY.");
-
-  const body = { contents };
-  if (responseMimeType) {
-    body.generationConfig = { responseMimeType };
-  }
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    }
-  );
-
-  const json = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(json?.error?.message || "Gemini request failed.");
-  }
-
-  return json;
-}
-
 async function createRunLog(payload) {
   const { data, error } = await supabase
     .from("auto_post_runs")
@@ -789,7 +439,10 @@ async function createRunLog(payload) {
 async function finalizeRunLog(runId, fields) {
   const { error } = await supabase
     .from("auto_post_runs")
-    .update({ ...fields, updated_at: new Date().toISOString() })
+    .update({
+      ...fields,
+      updated_at: nowIso()
+    })
     .eq("id", runId);
 
   if (error) throw error;
@@ -798,19 +451,13 @@ async function finalizeRunLog(runId, fields) {
 async function updateRuleStatus(ruleId, fields) {
   const { error } = await supabase
     .from("auto_post_rules")
-    .update({ ...fields, updated_at: new Date().toISOString() })
+    .update({
+      ...fields,
+      updated_at: nowIso()
+    })
     .eq("id", ruleId);
 
   if (error) throw error;
-}
-
-async function updateRuleAfterSuccess(rule) {
-  const nextRunAt = computeNextRunAt(rule);
-  await updateRuleStatus(rule.id, {
-    last_status: rule.is_active ? "success" : "paused",
-    last_error: null,
-    next_run_at: nextRunAt
-  });
 }
 
 function computeNextRunAt(rule) {
@@ -827,6 +474,15 @@ function computeNextRunAt(rule) {
   return next.toISOString();
 }
 
+async function updateRuleAfterSuccess(rule) {
+  const nextRunAt = computeNextRunAt(rule);
+  await updateRuleStatus(rule.id, {
+    last_status: rule.is_active ? "success" : "paused",
+    last_error: null,
+    next_run_at: nextRunAt
+  });
+}
+
 async function createGeneratedContent(payload) {
   const { data, error } = await supabase
     .from("auto_generated_contents")
@@ -841,7 +497,10 @@ async function createGeneratedContent(payload) {
 async function updateGeneratedContent(id, fields) {
   const { error } = await supabase
     .from("auto_generated_contents")
-    .update({ ...fields, updated_at: new Date().toISOString() })
+    .update({
+      ...fields,
+      updated_at: nowIso()
+    })
     .eq("id", id);
 
   if (error) throw error;
@@ -861,12 +520,7 @@ async function createViewPost({
   let mediaType = "text";
   if (content_type === "image") mediaType = "image";
   else if (content_type === "video") mediaType = "video";
-  else if (content_type === "text") mediaType = "text";
   else if (media_url) mediaType = "image";
-
-  if (!["text", "image", "video"].includes(mediaType)) {
-    mediaType = "text";
-  }
 
   const payload = {
     user_id,
@@ -876,7 +530,7 @@ async function createViewPost({
     selected_platforms,
     publish_status: "queued",
     status: "queued",
-    created_at: new Date().toISOString()
+    created_at: nowIso()
   };
 
   const { data, error } = await supabase
@@ -889,175 +543,70 @@ async function createViewPost({
   return data.id;
 }
 
-async function queueCrossPostJobs({ user_id, post_id, platforms }) {
-  const selectedPlatforms = (platforms || [])
-    .map(p => String(p).trim().toLowerCase())
+async function queueJobsLikeCreatePost({ postId, userId, selectedPlatforms }) {
+  const platforms = (selectedPlatforms || [])
+    .map(normalizePlatformKey)
     .filter(Boolean);
 
-  if (!selectedPlatforms.length) {
-    return { queued: 0, skipped: [] };
+  if (!platforms.length) {
+    return { queued: 0 };
   }
 
-  const { data: connectedAccounts, error: connectedError } = await supabase
-    .from("connected_accounts")
-    .select("id, platform, provider, status, is_connected")
-    .eq("user_id", user_id);
+  const jobs = platforms.map(platform => ({
+    post_id: postId,
+    user_id: userId,
+    platform,
+    status: "queued"
+  }));
 
-  if (connectedError) throw connectedError;
-
-  const connectedMap = new Map();
-
-  for (const acc of connectedAccounts || []) {
-    const rawPlatform = acc.platform || acc.provider || "";
-    const platform = normalizePlatformKey(rawPlatform);
-    const isActive =
-      acc.is_connected === true ||
-      String(acc.status || "").toLowerCase() === "connected";
-
-    if (!platform || !isActive) continue;
-    if (!connectedMap.has(platform)) connectedMap.set(platform, []);
-    connectedMap.set(platform, [...connectedMap.get(platform), acc]);
-  }
-
-  const jobs = [];
-  const skipped = [];
-
-  for (const platform of selectedPlatforms) {
-    const normalized = normalizePlatformKey(platform);
-
-    if (normalized === "view") {
-      jobs.push({
-        post_id,
-        user_id,
-        platform: "view",
-        status: "queued",
-        attempts: 0,
-        created_at: new Date().toISOString()
-      });
-      continue;
-    }
-
-    const matchingAccounts = connectedMap.get(normalized) || [];
-
-    if (!matchingAccounts.length) {
-      skipped.push({
-        platform: normalized,
-        reason: "No connected account found"
-      });
-
-      jobs.push({
-        post_id,
-        user_id,
-        platform: normalized,
-        status: "queued",
-        attempts: 0,
-        created_at: new Date().toISOString()
-      });
-      continue;
-    }
-
-    jobs.push({
-      post_id,
-      user_id,
-      platform: normalized,
-      connected_account_id: matchingAccounts[0].id,
-      status: "queued",
-      attempts: 0,
-      created_at: new Date().toISOString()
-    });
-  }
-
-  const { error: insertError } = await supabase
+  const { error } = await supabase
     .from("post_publish_jobs")
     .insert(jobs);
 
-  if (insertError) throw insertError;
+  if (error) throw error;
 
-  return {
-    queued: jobs.length,
-    skipped
-  };
+  return { queued: jobs.length };
 }
 
-async function findLatestRunIdForItem(item) {
-  const { data, error } = await supabase
-    .from("auto_post_runs")
-    .select("id")
-    .eq("generated_content_id", item.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (!error && data?.id) return data.id;
-
-  const fallback = await supabase
-    .from("auto_post_runs")
-    .select("id")
-    .eq("rule_id", item.rule_id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  return fallback.data?.id || null;
+async function triggerWorkerLikeCreatePost() {
+  try {
+    await fetch(PROCESS_WORKER_URL, {
+      method: "GET",
+      mode: "cors",
+      cache: "no-store"
+    });
+    return { triggered: true };
+  } catch (error) {
+    return {
+      triggered: false,
+      error: error?.message || "Worker trigger failed"
+    };
+  }
 }
 
-function normalizePlatformKey(value) {
-  const key = String(value || "").trim().toLowerCase();
-  if (key === "twitter") return "x";
-  if (key === "whatsapp_business" || key === "whatsappbusiness") return "whatsapp";
-  return key;
-}
+function mergeGenerationMeta(existing, extra) {
+  let base = {};
 
-function normalizePlatforms(selectedPlatforms, platformsLabel) {
-  let platforms = [];
-
-  if (Array.isArray(selectedPlatforms) && selectedPlatforms.length) {
-    platforms = selectedPlatforms;
-  } else if (typeof selectedPlatforms === "string" && selectedPlatforms.trim()) {
-    try {
-      const parsed = JSON.parse(selectedPlatforms);
-      if (Array.isArray(parsed)) platforms = parsed;
-    } catch {}
-  } else if (platformsLabel) {
-    platforms = String(platformsLabel).split(",").map(v => v.trim());
+  if (existing && typeof existing === "object" && !Array.isArray(existing)) {
+    base = existing;
+  } else if (typeof existing === "string" && existing.trim()) {
+    const parsed = safeJsonParse(existing, null);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      base = parsed;
+    }
   }
 
-  platforms = platforms
-    .map(p => normalizePlatformKey(p))
-    .filter(Boolean);
-
-  return platforms.length ? platforms : ["view"];
-}
-
-function buildPromptFromRule(rule) {
-  const pieces = [];
-
-  if (rule.prompt_template) pieces.push(String(rule.prompt_template).trim());
-  else if (rule.topic) pieces.push(String(rule.topic).trim());
-  else if (rule.title) pieces.push(String(rule.title).trim());
-
-  if (rule.caption_style) pieces.push(`Caption style: ${rule.caption_style}.`);
-  if (rule.visual_style && rule.content_type !== "text") pieces.push(`Visual style: ${rule.visual_style}.`);
-
-  if (rule.content_type === "text") {
-    pieces.push("Return a strong social media title, the main text content, and a short caption.");
-  } else if (rule.content_type === "image") {
-    pieces.push("Generate a social-media-ready image concept and a strong caption for posting.");
-  } else if (rule.content_type === "video") {
-    pieces.push("Create a short vertical video concept suitable for social media posting.");
-  }
-
-  return pieces.filter(Boolean).join("\n");
+  return { ...base, ...extra };
 }
 
 function normalizeKlingStatus(payload) {
   const root = payload?.data || payload || {};
   const status = String(
     root.status ||
-    root.task_status ||
-    root.state ||
-    root.taskState ||
-    ""
+      root.task_status ||
+      root.state ||
+      root.taskState ||
+      ""
   ).toLowerCase();
 
   let state = "processing";
@@ -1095,110 +644,480 @@ function normalizeKlingStatus(payload) {
   };
 }
 
-function extractTextFromGemini(json) {
-  const parts = json?.candidates?.[0]?.content?.parts || [];
-  return parts.map(part => part?.text || "").filter(Boolean).join("\n").trim();
+function buildRunMessage(baseMessage, publishQueueResult) {
+  if (!publishQueueResult) return baseMessage;
+  const queued = Number(publishQueueResult.queued || 0);
+  return `${baseMessage} Queued ${queued} publish job${queued === 1 ? "" : "s"}.`;
 }
 
-function extractInlineImagePart(json) {
-  const parts = json?.candidates?.[0]?.content?.parts || [];
+async function processRule(rule, options = {}) {
+  const startedAt = nowIso();
+  let runId = null;
+  let generatedContentId = null;
 
-  for (const part of parts) {
-    if (part?.inlineData?.data) {
-      return {
-        data: part.inlineData.data,
-        mimeType: part.inlineData.mimeType || "image/png"
-      };
-    }
-    if (part?.inline_data?.data) {
-      return {
-        data: part.inline_data.data,
-        mimeType: part.inline_data.mime_type || "image/png"
-      };
-    }
-  }
-
-  return null;
-}
-
-function safeJsonParse(value) {
   try {
-    return JSON.parse(value);
-  } catch {
-    return null;
+    runId = await createRunLog({
+      user_id: rule.user_id,
+      rule_id: rule.id,
+      title: rule.title,
+      status: "processing",
+      message: options.forced ? "Started manual rule processing" : "Started rule processing",
+      started_at: startedAt
+    });
+
+    await updateRuleStatus(rule.id, {
+      last_status: "processing",
+      last_error: null,
+      last_run_at: startedAt
+    });
+
+    const normalizedPlatforms = normalizePlatforms(rule.selected_platforms, rule.platforms_label);
+    const prompt = buildPromptFromRule(rule);
+
+    let generated;
+    if (rule.content_type === "text") {
+      generated = await generateTextWithGemini({ rule, prompt });
+    } else if (rule.content_type === "image") {
+      generated = await generateImageSmart({ rule, prompt });
+    } else if (rule.content_type === "video") {
+      generated = await generateVideoWithKling({ rule, prompt });
+    } else {
+      throw new Error(`Unsupported content_type: ${rule.content_type}`);
+    }
+
+    generatedContentId = await createGeneratedContent({
+      user_id: rule.user_id,
+      rule_id: rule.id,
+      title: generated.title || rule.title,
+      content_type: rule.content_type,
+      prompt_used: prompt,
+      text_content: generated.text_content || null,
+      caption: generated.caption || null,
+      media_url: generated.media_url || null,
+      thumbnail_url: generated.thumbnail_url || null,
+      selected_platforms: normalizedPlatforms,
+      platforms_label: normalizedPlatforms.join(", "),
+      status: generated.status,
+      publish_status: generated.publish_status || "pending",
+      error_message: null,
+      provider: generated.provider || null,
+      provider_model: generated.provider_model || null,
+      provider_task_id: generated.provider_task_id || null,
+      generation_meta: generated.generation_meta || {}
+    });
+
+    if (rule.content_type === "video" && generated.status === "processing") {
+      await finalizeRunLog(runId, {
+        status: "success",
+        message: "Video task submitted to Kling and waiting for completion.",
+        completed_at: nowIso(),
+        generated_content_id: generatedContentId
+      });
+
+      await updateRuleAfterSuccess(rule);
+
+      return {
+        rule_id: rule.id,
+        run_id: runId,
+        generated_content_id: generatedContentId,
+        status: "processing",
+        message: "Video task submitted"
+      };
+    }
+
+    const postId = await createViewPost({
+      user_id: rule.user_id,
+      title: generated.title || rule.title,
+      content_type: rule.content_type,
+      text_content: generated.text_content || null,
+      caption: generated.caption || null,
+      media_url: generated.media_url || null,
+      selected_platforms: normalizedPlatforms
+    });
+
+    await updateGeneratedContent(generatedContentId, {
+      post_id: postId,
+      status: "posted",
+      publish_status: "queued",
+      posted_at: nowIso()
+    });
+
+    const publishQueueResult = await queueJobsLikeCreatePost({
+      postId,
+      userId: rule.user_id,
+      selectedPlatforms: normalizedPlatforms
+    });
+
+    const workerTriggerResult = await triggerWorkerLikeCreatePost();
+
+    await finalizeRunLog(runId, {
+      status: "success",
+      message: buildRunMessage("Rule processed successfully.", publishQueueResult),
+      completed_at: nowIso(),
+      generated_content_id: generatedContentId
+    });
+
+    await updateRuleAfterSuccess(rule);
+
+    return {
+      rule_id: rule.id,
+      run_id: runId,
+      generated_content_id: generatedContentId,
+      post_id: postId,
+      status: "success",
+      publish_queue: publishQueueResult,
+      worker_trigger: workerTriggerResult
+    };
+  } catch (error) {
+    console.error("processRule error:", rule.id, error);
+    const temporary = isTemporaryProviderError(error?.message || "");
+
+    if (runId) {
+      await finalizeRunLog(runId, {
+        status: temporary ? "processing" : "failed",
+        message: temporary ? "Temporary provider overload. Retry later." : "Rule processing failed",
+        error_message: error?.message || "Unknown error",
+        completed_at: nowIso(),
+        generated_content_id: generatedContentId
+      });
+    }
+
+    await updateRuleStatus(rule.id, {
+      last_status: temporary ? "processing" : "failed",
+      last_error: error?.message || "Unknown error"
+    });
+
+    return {
+      rule_id: rule.id,
+      run_id: runId,
+      generated_content_id: generatedContentId,
+      status: temporary ? "processing" : "failed",
+      error: error?.message || "Unknown error"
+    };
   }
 }
 
-function buildStoragePath(userId, prefix, extension) {
-  const id = crypto.randomUUID();
-  const date = new Date().toISOString().slice(0, 10);
-  return `auto-post/${userId}/${prefix}/${date}/${id}.${extension}`;
+async function findLatestRunIdForItem(item) {
+  const { data, error } = await supabase
+    .from("auto_post_runs")
+    .select("id")
+    .eq("generated_content_id", item.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!error && data?.id) return data.id;
+
+  const fallback = await supabase
+    .from("auto_post_runs")
+    .select("id")
+    .eq("rule_id", item.rule_id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return fallback.data?.id || null;
 }
 
-async function uploadBase64ToStorage({ bucket, path, base64Data, contentType }) {
-  const buffer = Buffer.from(base64Data, "base64");
+async function checkOneKlingTask(item) {
+  try {
+    const statusResponse = await fetch(`${KLING_BASE_URL}/v1/videos/${encodeURIComponent(item.provider_task_id)}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${KLING_API_KEY}`
+      }
+    });
 
-  const { error: uploadError } = await supabase.storage
-    .from(bucket)
-    .upload(path, buffer, { contentType, upsert: false });
+    const statusJson = await statusResponse.json().catch(() => ({}));
 
-  if (uploadError) throw uploadError;
+    if (!statusResponse.ok) {
+      throw new Error(statusJson?.message || statusJson?.error || "Kling status request failed.");
+    }
 
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-  return data.publicUrl;
+    const normalized = normalizeKlingStatus(statusJson);
+    const runId = await findLatestRunIdForItem(item);
+
+    if (normalized.state === "processing") {
+      await updateGeneratedContent(item.id, {
+        generation_meta: mergeGenerationMeta(item.generation_meta, {
+          last_poll_response: statusJson,
+          last_polled_at: nowIso()
+        })
+      });
+
+      return {
+        generated_content_id: item.id,
+        task_id: item.provider_task_id,
+        status: "processing"
+      };
+    }
+
+    if (normalized.state === "failed") {
+      await updateGeneratedContent(item.id, {
+        status: "failed",
+        error_message: normalized.error || "Kling video generation failed.",
+        generation_meta: mergeGenerationMeta(item.generation_meta, {
+          last_poll_response: statusJson,
+          failed_at: nowIso()
+        })
+      });
+
+      if (runId) {
+        await finalizeRunLog(runId, {
+          status: "failed",
+          message: "Kling video generation failed",
+          error_message: normalized.error || "Kling failure",
+          completed_at: nowIso()
+        });
+      }
+
+      if (item.rule_id) {
+        await updateRuleStatus(item.rule_id, {
+          last_status: "failed",
+          last_error: normalized.error || "Kling failure"
+        });
+      }
+
+      return {
+        generated_content_id: item.id,
+        task_id: item.provider_task_id,
+        status: "failed",
+        error: normalized.error || "Kling failure"
+      };
+    }
+
+    if (normalized.state !== "success" || !normalized.video_url) {
+      return {
+        generated_content_id: item.id,
+        task_id: item.provider_task_id,
+        status: "processing"
+      };
+    }
+
+    const uploadedVideoUrl = await fetchAndUploadRemoteFile({
+      userId: item.user_id,
+      remoteUrl: normalized.video_url,
+      prefix: "video",
+      extension: "mp4",
+      contentType: "video/mp4"
+    });
+
+    let thumbnailUrl = null;
+    if (normalized.thumbnail_url) {
+      try {
+        thumbnailUrl = await fetchAndUploadRemoteFile({
+          userId: item.user_id,
+          remoteUrl: normalized.thumbnail_url,
+          prefix: "thumbnail",
+          extension: "jpg",
+          contentType: "image/jpeg"
+        });
+      } catch (thumbError) {
+        console.error("thumbnail upload error:", thumbError);
+      }
+    }
+
+    const selectedPlatforms = normalizePlatforms(item.selected_platforms, item.platforms_label);
+
+    const postId = await createViewPost({
+      user_id: item.user_id,
+      title: item.title,
+      content_type: "video",
+      text_content: item.text_content || null,
+      caption: item.caption || null,
+      media_url: uploadedVideoUrl,
+      selected_platforms: selectedPlatforms
+    });
+
+    await updateGeneratedContent(item.id, {
+      media_url: uploadedVideoUrl,
+      thumbnail_url: thumbnailUrl,
+      post_id: postId,
+      status: "posted",
+      publish_status: "queued",
+      posted_at: nowIso(),
+      error_message: null,
+      generation_meta: mergeGenerationMeta(item.generation_meta, {
+        last_poll_response: statusJson,
+        completed_at: nowIso()
+      })
+    });
+
+    const publishQueueResult = await queueJobsLikeCreatePost({
+      postId,
+      userId: item.user_id,
+      selectedPlatforms
+    });
+
+    const workerTriggerResult = await triggerWorkerLikeCreatePost();
+
+    if (runId) {
+      await finalizeRunLog(runId, {
+        status: "success",
+        message: buildRunMessage("Kling video completed and post created.", publishQueueResult),
+        completed_at: nowIso(),
+        generated_content_id: item.id
+      });
+    }
+
+    if (item.rule_id) {
+      const { data: rule } = await supabase
+        .from("auto_post_rules")
+        .select("*")
+        .eq("id", item.rule_id)
+        .single();
+
+      if (rule) {
+        await updateRuleAfterSuccess(rule);
+      }
+    }
+
+    return {
+      generated_content_id: item.id,
+      task_id: item.provider_task_id,
+      post_id: postId,
+      status: "success",
+      publish_queue: publishQueueResult,
+      worker_trigger: workerTriggerResult
+    };
+  } catch (error) {
+    console.error("checkOneKlingTask error:", item.id, error);
+
+    await updateGeneratedContent(item.id, {
+      error_message: error?.message || "Unknown polling error",
+      generation_meta: mergeGenerationMeta(item.generation_meta, {
+        last_poll_error: error?.message || "Unknown polling error",
+        last_polled_at: nowIso()
+      })
+    });
+
+    return {
+      generated_content_id: item.id,
+      task_id: item.provider_task_id,
+      status: "error",
+      error: error?.message || "Unknown polling error"
+    };
+  }
 }
 
-async function fetchAndUploadRemoteFile({ userId, remoteUrl, prefix, extension, contentType }) {
-  const response = await fetch(remoteUrl);
-  if (!response.ok) throw new Error(`Unable to download remote file for ${prefix}.`);
+async function handleTestRun(req, res) {
+  const ruleId =
+    req.query?.rule_id ||
+    req.body?.rule_id ||
+    req.query?.id ||
+    req.body?.id;
 
-  const arrayBuffer = await response.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  const filePath = buildStoragePath(userId, prefix, extension);
+  if (!ruleId) {
+    return res.status(400).json({ ok: false, error: "Missing rule_id" });
+  }
 
-  const { error } = await supabase.storage
-    .from(POST_MEDIA_BUCKET)
-    .upload(filePath, buffer, { contentType, upsert: false });
+  const { data: rule, error: ruleError } = await supabase
+    .from("auto_post_rules")
+    .select("*")
+    .eq("id", ruleId)
+    .single();
+
+  if (ruleError || !rule) {
+    return res.status(404).json({ ok: false, error: "Rule not found" });
+  }
+
+  const result = await processRule(rule, { forced: true });
+
+  return res.status(result.status === "failed" ? 500 : 200).json({
+    ok: result.status !== "failed",
+    action: "test",
+    triggered_rule_id: ruleId,
+    result
+  });
+}
+
+async function handleRunDueRules(req, res) {
+  const forcedRuleId =
+    req.headers["x-force-rule-id"] ||
+    req.query?.rule_id ||
+    req.body?.rule_id ||
+    null;
+
+  let rules = [];
+
+  if (forcedRuleId) {
+    const { data: forcedRule, error: forcedRuleError } = await supabase
+      .from("auto_post_rules")
+      .select("*")
+      .eq("id", forcedRuleId)
+      .single();
+
+    if (forcedRuleError || !forcedRule) {
+      return res.status(404).json({ ok: false, error: "Forced rule not found" });
+    }
+
+    rules = [forcedRule];
+  } else {
+    const { data, error } = await supabase
+      .from("auto_post_rules")
+      .select("*")
+      .eq("is_active", true)
+      .lte("next_run_at", nowIso())
+      .order("next_run_at", { ascending: true })
+      .limit(AUTO_POST_BATCH_LIMIT);
+
+    if (error) throw error;
+    rules = data || [];
+  }
+
+  if (!rules.length) {
+    return res.status(200).json({
+      ok: true,
+      action: "run",
+      processed: 0,
+      message: "No due rules found."
+    });
+  }
+
+  const results = [];
+  for (const rule of rules) {
+    results.push(await processRule(rule, { forced: !!forcedRuleId }));
+  }
+
+  return res.status(200).json({
+    ok: true,
+    action: "run",
+    processed: results.length,
+    forced: !!forcedRuleId,
+    results
+  });
+}
+
+async function handleCheckKlingTasks(req, res) {
+  const { data: pendingItems, error } = await supabase
+    .from("auto_generated_contents")
+    .select("*")
+    .eq("content_type", "video")
+    .eq("status", "processing")
+    .not("provider_task_id", "is", null)
+    .order("created_at", { ascending: true })
+    .limit(AUTO_POST_VIDEO_POLL_BATCH);
 
   if (error) throw error;
 
-  const { data } = supabase.storage.from(POST_MEDIA_BUCKET).getPublicUrl(filePath);
-  return data.publicUrl;
-}
-
-function mergeGenerationMeta(existing, extra) {
-  let base = {};
-
-  if (existing && typeof existing === "object" && !Array.isArray(existing)) {
-    base = existing;
-  } else if (typeof existing === "string" && existing.trim()) {
-    try {
-      const parsed = JSON.parse(existing);
-      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-        base = parsed;
-      }
-    } catch {}
+  if (!pendingItems || !pendingItems.length) {
+    return res.status(200).json({
+      ok: true,
+      action: "check",
+      processed: 0,
+      message: "No processing Kling video jobs found."
+    });
   }
 
-  return { ...base, ...extra };
-}
-
-function buildRunMessage(baseMessage, publishQueueResult) {
-  if (!publishQueueResult) return baseMessage;
-
-  const queued = Number(publishQueueResult.queued || 0);
-  const skippedCount = Array.isArray(publishQueueResult.skipped)
-    ? publishQueueResult.skipped.length
-    : 0;
-
-  let text = `${baseMessage} Queued ${queued} external publish job${queued === 1 ? "" : "s"}.`;
-
-  if (skippedCount > 0) {
-    const skippedText = publishQueueResult.skipped
-      .map(item => `${item.platform}: ${item.reason}`)
-      .join("; ");
-    text += ` Skipped ${skippedCount}: ${skippedText}.`;
+  const results = [];
+  for (const item of pendingItems) {
+    results.push(await checkOneKlingTask(item));
   }
 
-  return text;
+  return res.status(200).json({
+    ok: true,
+    action: "check",
+    processed: results.length,
+    results
+  });
 }
