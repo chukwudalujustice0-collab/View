@@ -25,6 +25,15 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 module.exports = async function handler(req, res) {
+  // CORS
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-cron-secret");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   try {
     if (req.method !== "GET" && req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "Method not allowed" });
@@ -289,7 +298,7 @@ async function processRule(rule, options = {}) {
         generated_content_id: generatedContentId
       });
 
-      await updateRuleAfterSuccess(rule, options);
+      await updateRuleAfterSuccess(rule);
 
       return {
         rule_id: rule.id,
@@ -334,7 +343,7 @@ async function processRule(rule, options = {}) {
       generated_content_id: generatedContentId
     });
 
-    await updateRuleAfterSuccess(rule, options);
+    await updateRuleAfterSuccess(rule);
 
     return {
       rule_id: rule.id,
@@ -516,7 +525,7 @@ async function checkOneKlingTask(item) {
         .single();
 
       if (rule) {
-        await updateRuleAfterSuccess(rule, {});
+        await updateRuleAfterSuccess(rule);
       }
     }
 
@@ -745,8 +754,8 @@ async function updateRuleStatus(ruleId, fields) {
   if (error) throw error;
 }
 
-async function updateRuleAfterSuccess(rule, options = {}) {
-  const nextRunAt = computeNextRunAt(rule, options);
+async function updateRuleAfterSuccess(rule) {
+  const nextRunAt = computeNextRunAt(rule);
   await updateRuleStatus(rule.id, {
     last_status: rule.is_active ? "success" : "paused",
     last_error: null,
@@ -754,7 +763,7 @@ async function updateRuleAfterSuccess(rule, options = {}) {
   });
 }
 
-function computeNextRunAt(rule, options = {}) {
+function computeNextRunAt(rule) {
   const base = new Date();
   const [hh, mm] = String(rule.post_time || "09:00").split(":").map(Number);
 
