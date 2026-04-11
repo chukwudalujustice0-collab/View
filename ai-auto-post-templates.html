@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Templates | View</title>
+  <meta name="theme-color" content="#08145c" />
+  <script>document.documentElement.classList.add("auth-loading");</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/auth-guard.js"></script>
+  <style>
+    html.auth-loading,html.auth-loading body{visibility:hidden;opacity:0}
+    :root{
+      --bg:#08145c;--bg2:#0b1b78;--bg3:#061041;--line:rgba(255,255,255,.15);--line2:rgba(255,255,255,.24);
+      --text:#fff;--muted:rgba(255,255,255,.73);--muted2:rgba(255,255,255,.55);--red:#ff3b57;--max:760px;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);min-height:100vh}
+    a{color:inherit;text-decoration:none} button,select{font:inherit}
+    .app{width:min(100%,var(--max));margin:0 auto;padding:14px 14px 100px}
+    .topbar{display:flex;align-items:center;gap:10px;padding:6px 0 10px}
+    .back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:18px;flex:0 0 auto}
+    .head{min-width:0;flex:1}.head .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)}
+    .head h1{margin:2px 0 0;font-size:20px;line-height:1.1}
+    .toolbar{padding:10px 0 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+    .toolbar select{flex:1;min-width:0;border:none;outline:none;background:transparent;color:#fff;font-size:13px}
+    .toolbar select option{color:#111}
+    .toolbar a{height:38px;padding:0 14px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:var(--red);font-size:12px;font-weight:700;white-space:nowrap}
+    .list{border-top:1px solid var(--line);margin-top:14px}
+    .item{display:block;padding:12px 0;border-bottom:1px solid var(--line)}
+    .item-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .item-title{min-width:0;flex:1;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pill{padding:6px 10px;border-radius:999px;font-size:10.5px;border:1px solid var(--line2);white-space:nowrap;text-transform:uppercase;letter-spacing:.08em;background:rgba(90,160,255,.14);color:#dcebff;border-color:rgba(90,160,255,.28)}
+    .item-meta{margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--muted)}
+    .item-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .mini-btn{min-height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.05);color:#fff;font-size:11.5px;font-weight:700;cursor:pointer}
+    .empty{padding:18px 0;font-size:12px;color:var(--muted);line-height:1.5}
+    .nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,var(--max));display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:rgba(6,16,65,.95);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+    .nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;color:var(--muted);padding:6px 2px;border-radius:10px}
+    .nav a.active{color:#fff;background:rgba(255,255,255,.07)}
+    .nav .icon{font-size:15px;line-height:1}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="back" href="ai-auto-post.html">‹</a>
+      <div class="head">
+        <div class="eyebrow">View • Auto Content Agent</div>
+        <h1>Templates</h1>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <select id="templateFilter">
+        <option value="all">All templates</option>
+        <option value="text">Text</option>
+        <option value="image">Image</option>
+        <option value="video">Video</option>
+      </select>
+      <a href="ai-auto-post-template-editor.html">New template</a>
+    </div>
+
+    <div class="list" id="templateList">
+      <div class="empty">Loading templates…</div>
+    </div>
+  </main>
+
+  <nav class="nav">
+    <a href="ai-auto-post.html"><span class="icon">⌂</span><span>Home</span></a>
+    <a href="ai-auto-post-create.html"><span class="icon">＋</span><span>Create</span></a>
+    <a href="ai-auto-post-rules.html"><span class="icon">≣</span><span>Rules</span></a>
+    <a href="ai-auto-post-templates.html" class="active"><span class="icon">✦</span><span>Templates</span></a>
+    <a href="dashboard.html"><span class="icon">◉</span><span>Dashboard</span></a>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const supabaseClient = window.supabase?.createClient
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:"pkce" } })
+      : null;
+
+    let allTemplates = [];
+
+    async function ensureAuth(){
+      if (typeof window.protectPage === "function") await window.protectPage("ai-auto-post-templates.html");
+      else if (supabaseClient) {
+        const { data:{ session } } = await supabaseClient.auth.getSession();
+        if (!session) { location.href = `login.html?next=${encodeURIComponent("ai-auto-post-templates.html")}`; return; }
+      }
+      document.documentElement.classList.remove("auth-loading");
+    }
+
+    function applyFilter(){
+      const filter = document.getElementById("templateFilter").value;
+      let items = [...allTemplates];
+      if (filter !== "all") items = items.filter(i => i.content_type === filter);
+      renderTemplates(items);
+    }
+
+    function renderTemplates(items){
+      const list = document.getElementById("templateList");
+      if (!items.length) {
+        list.innerHTML = `<div class="empty">No templates found for this filter.</div>`;
+        return;
+      }
+
+      list.innerHTML = items.map(item => `
+        <div class="item">
+          <a class="item-top" href="ai-auto-post-template-editor.html?id=${encodeURIComponent(item.id)}">
+            <div class="item-title">${item.title || "Untitled template"}</div>
+            <span class="pill">${item.content_type || "template"}</span>
+          </a>
+          <div class="item-meta">${item.category || "General"} • ${item.caption_style || "Default caption style"}</div>
+          <div class="item-meta">${item.prompt_template || "No template prompt"}</div>
+          <div class="item-actions">
+            <button class="mini-btn" type="button" onclick="location.href='ai-auto-post-template-editor.html?id=${encodeURIComponent(item.id)}'">Edit</button>
+            <button class="mini-btn" type="button" onclick="useTemplate('${item.id}')">Use</button>
+            <button class="mini-btn" type="button" onclick="deleteTemplate('${item.id}')">Delete</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function loadTemplates(){
+      try{
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+        const { data, error } = await supabaseClient
+          .from("auto_post_templates")
+          .select("*")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending:false });
+
+        if (error) throw error;
+        allTemplates = data || [];
+        applyFilter();
+      }catch(error){
+        console.error(error);
+        document.getElementById("templateList").innerHTML = `<div class="empty">Unable to load templates right now.</div>`;
+      }
+    }
+
+    function useTemplate(id){
+      location.href = `ai-auto-post-create.html?template_id=${encodeURIComponent(id)}`;
+    }
+
+    async function deleteTemplate(id){
+      if (!confirm("Delete this template?")) return;
+      try{
+        const { error } = await supabaseClient.from("auto_post_templates").delete().eq("id", id);
+        if (error) throw error;
+        await loadTemplates();
+      }catch(error){
+        console.error(error);
+        alert("Unable to delete this template.");
+      }
+    }
+
+    window.useTemplate = useTemplate;
+    window.deleteTemplate = deleteTemplate;
+    document.getElementById("templateFilter").addEventListener("change", applyFilter);
+
+    (async function init(){
+      try{
+        await ensureAuth();
+        await loadTemplates();
+      }catch(error){
+        console.error(error);
+        document.documentElement.classList.remove("auth-loading");
+      }
+    })();
+  </script>
+</body>
+</html>

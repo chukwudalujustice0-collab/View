@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Create Automation | View</title>
+  <meta name="theme-color" content="#08145c" />
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/auth-guard.js"></script>
+
+  <style>
+    html.auth-loading,
+    html.auth-loading body{
+      visibility:hidden;
+      opacity:0;
+    }
+
+    :root{
+      --bg:#08145c;
+      --bg2:#0b1b78;
+      --bg3:#061041;
+      --line:rgba(255,255,255,.14);
+      --line-2:rgba(255,255,255,.22);
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.74);
+      --muted-2:rgba(255,255,255,.56);
+      --red:#ff3b57;
+      --red-2:#ff4d6a;
+      --red-soft:rgba(255,59,87,.12);
+      --pill:rgba(255,255,255,.05);
+      --nav:rgba(6,16,65,.96);
+      --max:760px;
+      --radius:18px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,
+    input,
+    select,
+    textarea{
+      font:inherit;
+    }
+
+    input,
+    select,
+    textarea{
+      appearance:none;
+      -webkit-appearance:none;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:var(--text);
+      width:100%;
+      padding:0;
+    }
+
+    select option{
+      color:#111827;
+    }
+
+    .app{
+      width:min(100%, var(--max));
+      margin:0 auto;
+      padding:14px 14px 104px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:6px 0 10px;
+    }
+
+    .back{
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      font-size:18px;
+      flex:0 0 auto;
+    }
+
+    .title-wrap{
+      min-width:0;
+      flex:1;
+    }
+
+    .title-wrap .eyebrow{
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.18em;
+      color:var(--muted-2);
+    }
+
+    .title-wrap h1{
+      margin:2px 0 0;
+      font-size:20px;
+      line-height:1.1;
+    }
+
+    .intro{
+      padding:10px 0 14px;
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      font-size:12.5px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+
+    .form{
+      margin-top:14px;
+    }
+
+    .field{
+      padding:12px 0;
+      border-bottom:1px solid var(--line);
+    }
+
+    .field.grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .subfield{
+      min-width:0;
+    }
+
+    .label{
+      display:block;
+      margin-bottom:8px;
+      font-size:11px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted-2);
+    }
+
+    .text-value,
+    .input,
+    .select,
+    .textarea{
+      min-height:22px;
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    .textarea{
+      resize:none;
+      min-height:88px;
+    }
+
+    .hint{
+      margin-top:8px;
+      font-size:11.5px;
+      line-height:1.45;
+      color:var(--muted);
+    }
+
+    .choice-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:2px;
+    }
+
+    .chip{
+      position:relative;
+      display:inline-flex;
+    }
+
+    .chip input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .chip span{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+      padding:0 18px;
+      border-radius:999px;
+      border:1px solid var(--line-2);
+      background:var(--pill);
+      color:var(--muted);
+      cursor:pointer;
+      font-size:12px;
+      white-space:nowrap;
+      transition:.18s ease;
+    }
+
+    .chip input:checked + span{
+      background:linear-gradient(180deg,var(--red-2) 0%, var(--red) 100%);
+      border-color:transparent;
+      color:#fff;
+      box-shadow:0 8px 20px rgba(255,59,87,.20);
+    }
+
+    .switch-line{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .switch-line .text{
+      min-width:0;
+      flex:1;
+    }
+
+    .switch-line .title{
+      font-size:13px;
+      font-weight:700;
+      line-height:1.3;
+    }
+
+    .switch-line .sub{
+      margin-top:4px;
+      font-size:11.5px;
+      line-height:1.45;
+      color:var(--muted);
+    }
+
+    .switch{
+      position:relative;
+      width:58px;
+      height:32px;
+      flex:0 0 auto;
+    }
+
+    .switch input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .switch span{
+      position:absolute;
+      inset:0;
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid var(--line);
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .switch span::after{
+      content:"";
+      position:absolute;
+      top:3px;
+      left:3px;
+      width:24px;
+      height:24px;
+      border-radius:50%;
+      background:#fff;
+      transition:.2s ease;
+    }
+
+    .switch input:checked + span{
+      background:linear-gradient(180deg,var(--red-2) 0%, var(--red) 100%);
+      border-color:transparent;
+    }
+
+    .switch input:checked + span::after{
+      transform:translateX(26px);
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      margin-top:18px;
+    }
+
+    .btn{
+      height:46px;
+      border:none;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .btn.secondary{
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      border:1px solid var(--line);
+    }
+
+    .btn.primary{
+      background:linear-gradient(180deg,var(--red-2) 0%, var(--red) 100%);
+      color:#fff;
+      box-shadow:0 10px 24px rgba(255,59,87,.22);
+    }
+
+    .status{
+      margin-top:12px;
+      min-height:20px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .status.error{
+      color:#ffd7dd;
+    }
+
+    .status.success{
+      color:#d9ffeb;
+    }
+
+    .nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:0;
+      width:min(100%, var(--max));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:4px;
+      background:var(--nav);
+      backdrop-filter:blur(14px);
+      border-top:1px solid var(--line);
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      z-index:50;
+    }
+
+    .nav a{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:10px;
+      color:var(--muted);
+      padding:6px 2px;
+      border-radius:10px;
+      min-width:0;
+    }
+
+    .nav a.active{
+      color:#fff;
+      background:rgba(255,255,255,.07);
+    }
+
+    .nav .icon{
+      font-size:15px;
+      line-height:1;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="back" href="ai-auto-post.html" aria-label="Back">‹</a>
+      <div class="title-wrap">
+        <div class="eyebrow">View • Auto Content Agent</div>
+        <h1>Create Automation</h1>
+      </div>
+    </header>
+
+    <div class="intro">
+      Set what to generate, how often it should run, and where it should post. Once saved, the rule can generate and publish automatically.
+    </div>
+
+    <form class="form" id="autoPostForm">
+      <div class="field">
+        <label class="label" for="title">Rule title</label>
+        <input class="input" id="title" name="title" type="text" maxlength="120" placeholder="Daily fashion inspiration" required />
+      </div>
+
+      <div class="field">
+        <span class="label">Content type</span>
+        <div class="choice-row">
+          <label class="chip">
+            <input type="radio" name="content_type" value="text" checked />
+            <span>Text</span>
+          </label>
+          <label class="chip">
+            <input type="radio" name="content_type" value="image" />
+            <span>Image + Caption</span>
+          </label>
+          <label class="chip">
+            <input type="radio" name="content_type" value="video" />
+            <span>Video</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="topic">Prompt or topic</label>
+        <textarea class="textarea" id="topic" name="topic" placeholder="Describe exactly what you want the AI to generate..." required></textarea>
+        <div class="hint">Example: Generate a clean premium product image for a logistics brand and add a short catchy caption.</div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="caption_style">Caption style</label>
+        <select class="select" id="caption_style" name="caption_style">
+          <option value="professional">Professional</option>
+          <option value="promotional">Promotional</option>
+          <option value="motivational">Motivational</option>
+          <option value="friendly">Friendly</option>
+          <option value="educational">Educational</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="label" for="visual_style">Visual style</label>
+        <select class="select" id="visual_style" name="visual_style">
+          <option value="clean">Clean</option>
+          <option value="premium">Premium</option>
+          <option value="realistic">Realistic</option>
+          <option value="social">Social media</option>
+          <option value="brand">Brand-focused</option>
+        </select>
+      </div>
+
+      <div class="field grid-2">
+        <div class="subfield">
+          <label class="label" for="frequency">Frequency</label>
+          <select class="select" id="frequency" name="frequency">
+            <option value="daily">Every day</option>
+            <option value="every_2_days">Every 2 days</option>
+            <option value="weekly">Every week</option>
+          </select>
+        </div>
+
+        <div class="subfield">
+          <label class="label" for="post_time">Time</label>
+          <input class="input" id="post_time" name="post_time" type="time" value="09:00" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="label">Post destinations</span>
+        <div class="choice-row">
+          <label class="chip"><input type="checkbox" name="platforms" value="view" checked /><span>View</span></label>
+          <label class="chip"><input type="checkbox" name="platforms" value="facebook" /><span>Facebook</span></label>
+          <label class="chip"><input type="checkbox" name="platforms" value="instagram" /><span>Instagram</span></label>
+          <label class="chip"><input type="checkbox" name="platforms" value="x" /><span>X</span></label>
+          <label class="chip"><input type="checkbox" name="platforms" value="youtube" /><span>YouTube</span></label>
+          <label class="chip"><input type="checkbox" name="platforms" value="tiktok" /><span>TikTok</span></label>
+          <label class="chip"><input type="checkbox" name="platforms" value="telegram" /><span>Telegram</span></label>
+          <label class="chip"><input type="checkbox" name="platforms" value="whatsapp" /><span>WhatsApp</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="switch-line">
+          <div class="text">
+            <div class="title">Auto post immediately after generation</div>
+            <div class="sub">Generated content will publish automatically on schedule.</div>
+          </div>
+          <label class="switch">
+            <input id="auto_post" name="auto_post" type="checkbox" checked />
+            <span></span>
+          </label>
+        </label>
+      </div>
+
+      <div class="field">
+        <label class="switch-line">
+          <div class="text">
+            <div class="title">Rule active</div>
+            <div class="sub">If turned on, this automation starts running after save.</div>
+          </div>
+          <label class="switch">
+            <input id="is_active" name="is_active" type="checkbox" checked />
+            <span></span>
+          </label>
+        </label>
+      </div>
+
+      <div class="actions">
+        <a class="btn secondary" href="ai-auto-post.html">Cancel</a>
+        <button class="btn primary" type="submit">Save rule</button>
+      </div>
+
+      <div class="status" id="formStatus"></div>
+    </form>
+  </main>
+
+  <nav class="nav">
+    <a href="ai-auto-post.html">
+      <span class="icon">⌂</span>
+      <span>Home</span>
+    </a>
+    <a href="ai-auto-post-create.html" class="active">
+      <span class="icon">＋</span>
+      <span>Create</span>
+    </a>
+    <a href="ai-auto-post-rules.html">
+      <span class="icon">≣</span>
+      <span>Rules</span>
+    </a>
+    <a href="ai-auto-post-history.html">
+      <span class="icon">↻</span>
+      <span>History</span>
+    </a>
+    <a href="dashboard.html">
+      <span class="icon">◉</span>
+      <span>Dashboard</span>
+    </a>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabaseClient = window.supabase?.createClient
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            flowType: "pkce"
+          }
+        })
+      : null;
+
+    async function ensureAuth() {
+      if (typeof window.protectPage === "function") {
+        await window.protectPage("ai-auto-post-create.html");
+      } else if (supabaseClient) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+          location.href = `login.html?next=${encodeURIComponent("ai-auto-post-create.html")}`;
+          return;
+        }
+      }
+      document.documentElement.classList.remove("auth-loading");
+    }
+
+    function computeNextRunISO(frequency, timeValue) {
+      const now = new Date();
+      const [hours, minutes] = (timeValue || "09:00").split(":").map(Number);
+
+      const next = new Date();
+      next.setSeconds(0, 0);
+      next.setHours(Number.isFinite(hours) ? hours : 9, Number.isFinite(minutes) ? minutes : 0, 0, 0);
+
+      if (next <= now) {
+        if (frequency === "every_2_days") next.setDate(next.getDate() + 2);
+        else if (frequency === "weekly") next.setDate(next.getDate() + 7);
+        else next.setDate(next.getDate() + 1);
+      }
+
+      return next.toISOString();
+    }
+
+    function platformsLabel(platforms) {
+      return platforms.length ? platforms.join(", ") : "view";
+    }
+
+    async function maybeLoadTemplate() {
+      const templateId = new URLSearchParams(location.search).get("template_id");
+      if (!templateId) return;
+
+      try {
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+        if (!currentUser) return;
+
+        const { data, error } = await supabaseClient
+          .from("auto_post_templates")
+          .select("*")
+          .eq("id", templateId)
+          .eq("user_id", currentUser.id)
+          .single();
+
+        if (error || !data) return;
+
+        document.getElementById("title").value = data.title || "";
+        document.getElementById("topic").value = data.prompt_template || "";
+        document.getElementById("caption_style").value = data.caption_style || "professional";
+        document.getElementById("visual_style").value = data.visual_style || "clean";
+
+        if (data.content_type) {
+          const radio = document.querySelector(`input[name="content_type"][value="${data.content_type}"]`);
+          if (radio) radio.checked = true;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    async function handleSubmit(e) {
+      e.preventDefault();
+
+      const status = document.getElementById("formStatus");
+      status.className = "status";
+      status.textContent = "Saving rule...";
+
+      try {
+        const form = e.target;
+
+        if (!(form instanceof HTMLFormElement)) {
+          throw new Error("Form not found.");
+        }
+
+        const formData = new FormData(form);
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+
+        if (!currentUser) {
+          location.href = `login.html?next=${encodeURIComponent("ai-auto-post-create.html")}`;
+          return;
+        }
+
+        const title = String(formData.get("title") || "").trim();
+        const topic = String(formData.get("topic") || "").trim();
+        const contentType = String(formData.get("content_type") || "text");
+        const captionStyle = String(formData.get("caption_style") || "professional");
+        const visualStyle = String(formData.get("visual_style") || "clean");
+        const frequency = String(formData.get("frequency") || "daily");
+        const postTime = String(formData.get("post_time") || "09:00");
+        const autoPost = formData.get("auto_post") === "on";
+        const isActive = formData.get("is_active") === "on";
+        const platforms = formData.getAll("platforms").map(String);
+
+        if (!title || !topic) {
+          status.className = "status error";
+          status.textContent = "Title and prompt are required.";
+          return;
+        }
+
+        if (!platforms.length) {
+          status.className = "status error";
+          status.textContent = "Choose at least one destination.";
+          return;
+        }
+
+        const payload = {
+          user_id: currentUser.id,
+          title,
+          topic,
+          prompt_template: topic,
+          content_type: contentType,
+          caption_style: captionStyle,
+          visual_style: visualStyle,
+          frequency,
+          post_time: postTime,
+          auto_post: autoPost,
+          is_active: isActive,
+          selected_platforms: platforms,
+          platforms_label: platformsLabel(platforms),
+          next_run_at: computeNextRunISO(frequency, postTime),
+          updated_at: new Date().toISOString()
+        };
+
+        const { data, error } = await supabaseClient
+          .from("auto_post_rules")
+          .insert(payload)
+          .select("id")
+          .single();
+
+        if (error) throw error;
+
+        status.className = "status success";
+        status.textContent = "Automation saved successfully.";
+
+        setTimeout(() => {
+          location.href = `ai-auto-post-rule-details.html?id=${encodeURIComponent(data.id)}`;
+        }, 350);
+      } catch (error) {
+        console.error(error);
+        status.className = "status error";
+        status.textContent = error?.message || "Unable to save rule right now.";
+      }
+    }
+
+    (async function init() {
+      try {
+        await ensureAuth();
+        await maybeLoadTemplate();
+
+        const form = document.getElementById("autoPostForm");
+        if (form) {
+          form.addEventListener("submit", handleSubmit);
+        }
+      } catch (error) {
+        console.error(error);
+        document.documentElement.classList.remove("auth-loading");
+      }
+    })();
+  </script>
+</body>
+</html>

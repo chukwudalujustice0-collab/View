@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Rule Details | View</title>
+  <meta name="theme-color" content="#08145c" />
+  <script>document.documentElement.classList.add("auth-loading");</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/auth-guard.js"></script>
+  <style>
+    html.auth-loading,html.auth-loading body{visibility:hidden;opacity:0}
+    :root{
+      --bg:#08145c;--bg2:#0b1b78;--bg3:#061041;--line:rgba(255,255,255,.15);--line2:rgba(255,255,255,.24);
+      --text:#fff;--muted:rgba(255,255,255,.73);--muted2:rgba(255,255,255,.55);--red:#ff3b57;--max:760px;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);min-height:100vh}
+    a{color:inherit;text-decoration:none} button{font:inherit}
+    .app{width:min(100%,var(--max));margin:0 auto;padding:14px 14px 100px}
+    .topbar{display:flex;align-items:center;gap:10px;padding:6px 0 10px}
+    .back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:18px;flex:0 0 auto}
+    .head{min-width:0;flex:1}
+    .head .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)}
+    .head h1{margin:2px 0 0;font-size:20px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meta{
+      padding:10px 0 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12px;line-height:1.6;color:var(--muted);
+    }
+    .pill{
+      display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 12px;border-radius:999px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;
+      border:1px solid var(--line2);margin-right:8px;margin-bottom:8px;
+    }
+    .pill.green{background:rgba(22,212,123,.14);color:#dcffed;border-color:rgba(22,212,123,.28)}
+    .pill.red{background:rgba(255,59,87,.14);color:#ffd7dd;border-color:rgba(255,59,87,.28)}
+    .pill.blue{background:rgba(90,160,255,.14);color:#dcebff;border-color:rgba(90,160,255,.28)}
+    .pill.yellow{background:rgba(255,184,77,.14);color:#fff2dc;border-color:rgba(255,184,77,.28)}
+    .section{margin-top:16px}
+    .section h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2)}
+    .line-list{border-top:1px solid var(--line)}
+    .line{padding:11px 0;border-bottom:1px solid var(--line)}
+    .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:4px;font-weight:700}
+    .v{font-size:13px;line-height:1.55;word-break:break-word}
+    .recent-list{border-top:1px solid var(--line)}
+    .recent-item{display:block;padding:12px 0;border-bottom:1px solid var(--line)}
+    .recent-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .recent-sub{margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.45}
+    .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+    .btn{height:42px;border:none;border-radius:999px;cursor:pointer;font-size:12px;font-weight:700}
+    .btn.primary{background:var(--red);color:#fff}
+    .btn.secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--line)}
+    .btn.danger{background:rgba(255,59,87,.18);color:#fff;border:1px solid rgba(255,59,87,.28)}
+    .status{margin-top:12px;font-size:12px;color:var(--muted);min-height:18px}
+    .nav{
+      position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,var(--max));display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:rgba(6,16,65,.95);
+      backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+    }
+    .nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;color:var(--muted);padding:6px 2px;border-radius:10px}
+    .nav a.active{color:#fff;background:rgba(255,255,255,.07)}
+    .nav .icon{font-size:15px;line-height:1}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="back" href="ai-auto-post-rules.html">‹</a>
+      <div class="head">
+        <div class="eyebrow">View • Auto Content Agent</div>
+        <h1 id="pageTitle">Rule Details</h1>
+      </div>
+    </header>
+
+    <div class="meta">
+      <span id="statusPill" class="pill blue">Loading</span>
+      <span id="typePill" class="pill blue">Type</span>
+      <span id="frequencyPill" class="pill blue">Schedule</span>
+      <div id="metaText" style="margin-top:4px;">Loading rule information…</div>
+    </div>
+
+    <section class="section">
+      <h3>Rule information</h3>
+      <div class="line-list" id="ruleInfo">
+        <div class="line"><div class="k">Status</div><div class="v">Loading…</div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h3>Recent generated content</h3>
+      <div class="recent-list" id="recentContent">
+        <div class="line"><div class="v" style="color:var(--muted);">Loading recent content…</div></div>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button class="btn secondary" id="toggleBtn" type="button">Pause</button>
+      <button class="btn primary" id="runNowBtn" type="button">Run now</button>
+      <button class="btn danger" id="deleteBtn" type="button">Delete</button>
+    </div>
+
+    <div class="status" id="statusText"></div>
+  </main>
+
+  <nav class="nav">
+    <a href="ai-auto-post.html"><span class="icon">⌂</span><span>Home</span></a>
+    <a href="ai-auto-post-create.html"><span class="icon">＋</span><span>Create</span></a>
+    <a href="ai-auto-post-rules.html" class="active"><span class="icon">≣</span><span>Rules</span></a>
+    <a href="ai-auto-post-history.html"><span class="icon">↻</span><span>History</span></a>
+    <a href="dashboard.html"><span class="icon">◉</span><span>Dashboard</span></a>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const supabaseClient = window.supabase?.createClient
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:"pkce" }
+        })
+      : null;
+
+    let currentRule = null;
+    const ruleId = new URLSearchParams(location.search).get("id");
+
+    async function ensureAuth(){
+      if (typeof window.protectPage === "function") await window.protectPage("ai-auto-post-rule-details.html");
+      else if (supabaseClient) {
+        const { data:{ session } } = await supabaseClient.auth.getSession();
+        if (!session) { location.href = `login.html?next=${encodeURIComponent(location.pathname + location.search)}`; return; }
+      }
+      document.documentElement.classList.remove("auth-loading");
+    }
+
+    function formatDateTime(value){
+      if (!value) return "Not set";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "Invalid date";
+      return d.toLocaleString([], { year:"numeric", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+    }
+
+    async function loadDetails(){
+      const statusText = document.getElementById("statusText");
+      if (!ruleId) {
+        statusText.textContent = "No rule selected.";
+        return;
+      }
+
+      try{
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+        if (!currentUser) {
+          location.href = `login.html?next=${encodeURIComponent(location.pathname + location.search)}`;
+          return;
+        }
+
+        const [ruleRes, recentRes] = await Promise.all([
+          supabaseClient.from("auto_post_rules").select("*").eq("id", ruleId).eq("user_id", currentUser.id).single(),
+          supabaseClient.from("auto_generated_contents").select("id,title,status,created_at,posted_at,content_type").eq("rule_id", ruleId).eq("user_id", currentUser.id).order("created_at", { ascending:false }).limit(5)
+        ]);
+
+        if (ruleRes.error) throw ruleRes.error;
+        currentRule = ruleRes.data;
+        const recents = recentRes.data || [];
+
+        document.getElementById("pageTitle").textContent = currentRule.title || "Rule Details";
+
+        const statusPill = document.getElementById("statusPill");
+        statusPill.textContent = currentRule.is_active ? "Active" : "Paused";
+        statusPill.className = `pill ${currentRule.is_active ? "green" : "red"}`;
+        document.getElementById("typePill").textContent = currentRule.content_type || "content";
+        document.getElementById("frequencyPill").textContent = currentRule.frequency || "scheduled";
+        document.getElementById("metaText").textContent = `Next run: ${formatDateTime(currentRule.next_run_at)} • Destinations: ${currentRule.platforms_label || "View"}`;
+
+        document.getElementById("ruleInfo").innerHTML = `
+          <div class="line"><div class="k">Prompt</div><div class="v">${currentRule.topic || currentRule.prompt_template || "No prompt"}</div></div>
+          <div class="line"><div class="k">Caption style</div><div class="v">${currentRule.caption_style || "Not set"}</div></div>
+          <div class="line"><div class="k">Visual style</div><div class="v">${currentRule.visual_style || "Not set"}</div></div>
+          <div class="line"><div class="k">Post time</div><div class="v">${currentRule.post_time || "Not set"}</div></div>
+          <div class="line"><div class="k">Destinations</div><div class="v">${currentRule.platforms_label || "View"}</div></div>
+          <div class="line"><div class="k">Created</div><div class="v">${formatDateTime(currentRule.created_at)}</div></div>
+        `;
+
+        document.getElementById("recentContent").innerHTML = recents.length ? recents.map(item => `
+          <a class="recent-item" href="ai-auto-post-history-details.html?id=${encodeURIComponent(item.id)}">
+            <div class="recent-title">${item.title || item.content_type || "Generated content"}</div>
+            <div class="recent-sub">${item.status || "saved"} • ${formatDateTime(item.posted_at || item.created_at)}</div>
+          </a>
+        `).join("") : `<div class="line"><div class="v" style="color:var(--muted);">No content generated yet for this rule.</div></div>`;
+
+        document.getElementById("toggleBtn").textContent = currentRule.is_active ? "Pause" : "Resume";
+      }catch(error){
+        console.error(error);
+        statusText.textContent = "Unable to load this rule right now.";
+      }
+    }
+
+    document.getElementById("toggleBtn").addEventListener("click", async () => {
+      if (!currentRule) return;
+      const statusText = document.getElementById("statusText");
+      statusText.textContent = "Updating rule...";
+      try{
+        const { error } = await supabaseClient
+          .from("auto_post_rules")
+          .update({ is_active: !currentRule.is_active, updated_at:new Date().toISOString() })
+          .eq("id", currentRule.id);
+
+        if (error) throw error;
+        statusText.textContent = "Rule updated.";
+        await loadDetails();
+      }catch(error){
+        console.error(error);
+        statusText.textContent = "Unable to update this rule.";
+      }
+    });
+
+    document.getElementById("runNowBtn").addEventListener("click", async () => {
+      if (!currentRule) return;
+      const statusText = document.getElementById("statusText");
+      statusText.textContent = "Queueing manual run...";
+      try{
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+        const payload = {
+          user_id: currentUser.id,
+          rule_id: currentRule.id,
+          title: currentRule.title,
+          content_type: currentRule.content_type,
+          status: "queued",
+          created_at: new Date().toISOString(),
+          platforms_label: currentRule.platforms_label || "view"
+        };
+
+        const { error } = await supabaseClient.from("auto_generated_contents").insert(payload);
+        if (error) throw error;
+
+        statusText.textContent = "Manual run queued.";
+        setTimeout(() => { location.href = "ai-auto-post-history.html"; }, 350);
+      }catch(error){
+        console.error(error);
+        statusText.textContent = "Unable to queue a manual run.";
+      }
+    });
+
+    document.getElementById("deleteBtn").addEventListener("click", async () => {
+      if (!currentRule) return;
+      if (!confirm("Delete this rule?")) return;
+      const statusText = document.getElementById("statusText");
+      statusText.textContent = "Deleting rule...";
+      try{
+        const { error } = await supabaseClient.from("auto_post_rules").delete().eq("id", currentRule.id);
+        if (error) throw error;
+        location.href = "ai-auto-post-rules.html";
+      }catch(error){
+        console.error(error);
+        statusText.textContent = "Unable to delete this rule.";
+      }
+    });
+
+    (async function init(){
+      try{
+        await ensureAuth();
+        await loadDetails();
+      }catch(error){
+        console.error(error);
+        document.documentElement.classList.remove("auth-loading");
+      }
+    })();
+  </script>
+</body>
+</html>

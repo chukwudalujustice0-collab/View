@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Test Auto Post | View</title>
+  <meta name="theme-color" content="#08145c" />
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/auth-guard.js"></script>
+
+  <style>
+    html.auth-loading,
+    html.auth-loading body{
+      visibility:hidden;
+      opacity:0;
+    }
+
+    :root{
+      --bg:#08145c;
+      --bg2:#0b1b78;
+      --bg3:#061041;
+      --line:rgba(255,255,255,.14);
+      --line2:rgba(255,255,255,.22);
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.74);
+      --muted2:rgba(255,255,255,.56);
+      --red:#ff3b57;
+      --red2:#ff4d6a;
+      --green:#16d47b;
+      --nav:rgba(6,16,65,.96);
+      --max:760px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,
+    input,
+    select,
+    textarea{
+      font:inherit;
+    }
+
+    input,
+    select{
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:var(--text);
+      padding:0;
+      appearance:none;
+      -webkit-appearance:none;
+    }
+
+    select option{
+      color:#111827;
+    }
+
+    .app{
+      width:min(100%, var(--max));
+      margin:0 auto;
+      padding:14px 14px 104px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:6px 0 10px;
+    }
+
+    .back{
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      font-size:18px;
+      flex:0 0 auto;
+    }
+
+    .head{
+      min-width:0;
+      flex:1;
+    }
+
+    .head .eyebrow{
+      font-size:10px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--muted2);
+    }
+
+    .head h1{
+      margin:2px 0 0;
+      font-size:20px;
+      line-height:1.1;
+    }
+
+    .intro{
+      padding:12px 0 14px;
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      font-size:12.5px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+
+    .field{
+      padding:12px 0;
+      border-bottom:1px solid var(--line);
+    }
+
+    .label{
+      display:block;
+      margin-bottom:8px;
+      font-size:11px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted2);
+    }
+
+    .input,
+    .select{
+      min-height:22px;
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    .hint{
+      margin-top:8px;
+      font-size:11.5px;
+      line-height:1.45;
+      color:var(--muted);
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .btn{
+      height:46px;
+      border:none;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .btn.secondary{
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      border:1px solid var(--line);
+    }
+
+    .btn.primary{
+      background:linear-gradient(180deg,var(--red2) 0%, var(--red) 100%);
+      color:#fff;
+      box-shadow:0 10px 24px rgba(255,59,87,.22);
+    }
+
+    .status{
+      margin-top:12px;
+      min-height:22px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+      word-break:break-word;
+    }
+
+    .status.error{
+      color:#ffd7dd;
+    }
+
+    .status.success{
+      color:#d9ffeb;
+    }
+
+    .section{
+      margin-top:18px;
+    }
+
+    .section h3{
+      margin:0 0 10px;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted2);
+    }
+
+    .list{
+      border-top:1px solid var(--line);
+    }
+
+    .row{
+      padding:12px 0;
+      border-bottom:1px solid var(--line);
+    }
+
+    .row-title{
+      font-size:13px;
+      font-weight:700;
+      line-height:1.4;
+    }
+
+    .row-sub{
+      margin-top:4px;
+      font-size:11.5px;
+      color:var(--muted);
+      line-height:1.5;
+      word-break:break-word;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:28px;
+      padding:0 12px;
+      border-radius:999px;
+      font-size:10.5px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      border:1px solid var(--line2);
+      margin-top:8px;
+    }
+
+    .pill.green{
+      color:#dcffed;
+      background:rgba(22,212,123,.14);
+      border-color:rgba(22,212,123,.28);
+    }
+
+    .pill.red{
+      color:#ffd7dd;
+      background:rgba(255,59,87,.14);
+      border-color:rgba(255,59,87,.28);
+    }
+
+    .pill.blue{
+      color:#dcebff;
+      background:rgba(90,160,255,.14);
+      border-color:rgba(90,160,255,.28);
+    }
+
+    .nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:0;
+      width:min(100%, var(--max));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:4px;
+      background:var(--nav);
+      backdrop-filter:blur(14px);
+      border-top:1px solid var(--line);
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      z-index:50;
+    }
+
+    .nav a{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:10px;
+      color:var(--muted);
+      padding:6px 2px;
+      border-radius:10px;
+      min-width:0;
+    }
+
+    .nav a.active{
+      color:#fff;
+      background:rgba(255,255,255,.07);
+    }
+
+    .nav .icon{
+      font-size:15px;
+      line-height:1;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="back" href="ai-auto-post.html">‹</a>
+      <div class="head">
+        <div class="eyebrow">View • Auto Content Agent</div>
+        <h1>Test Auto Post Rule</h1>
+      </div>
+    </header>
+
+    <div class="intro">
+      Use this page to manually trigger one automation rule instantly without waiting for cron. This is useful for testing text, image, and video generation.
+    </div>
+
+    <form id="testRuleForm">
+      <div class="field">
+        <label class="label" for="ruleSelect">Select rule</label>
+        <select class="select" id="ruleSelect" name="rule_id" required>
+          <option value="">Loading rules...</option>
+        </select>
+        <div class="hint">Only your existing auto post rules will appear here.</div>
+      </div>
+
+      <div class="actions">
+        <a class="btn secondary" href="ai-auto-post.html">Back</a>
+        <button class="btn primary" type="submit">Run rule now</button>
+      </div>
+
+      <div class="status" id="formStatus"></div>
+    </form>
+
+    <section class="section">
+      <h3>Last test result</h3>
+      <div class="list" id="resultBox">
+        <div class="row">
+          <div class="row-title">No test has been run yet.</div>
+          <div class="row-sub">Select a rule and tap “Run rule now”.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav">
+    <a href="ai-auto-post.html">
+      <span class="icon">⌂</span>
+      <span>Home</span>
+    </a>
+    <a href="ai-auto-post-create.html">
+      <span class="icon">＋</span>
+      <span>Create</span>
+    </a>
+    <a href="ai-auto-post-rules.html">
+      <span class="icon">≣</span>
+      <span>Rules</span>
+    </a>
+    <a href="ai-auto-post-history.html">
+      <span class="icon">↻</span>
+      <span>History</span>
+    </a>
+    <a href="ai-auto-post-test.html" class="active">
+      <span class="icon">▶</span>
+      <span>Test</span>
+    </a>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const AUTO_POST_CRON_SECRET = "alwaysusemysecretkey";
+
+    const supabaseClient = window.supabase?.createClient
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            flowType: "pkce"
+          }
+        })
+      : null;
+
+    async function ensureAuth() {
+      if (typeof window.protectPage === "function") {
+        await window.protectPage("ai-auto-post-test.html");
+      } else if (supabaseClient) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+          location.href = `login.html?next=${encodeURIComponent("ai-auto-post-test.html")}`;
+          return;
+        }
+      }
+      document.documentElement.classList.remove("auth-loading");
+    }
+
+    async function loadRules() {
+      const select = document.getElementById("ruleSelect");
+
+      try {
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+        if (!currentUser) return;
+
+        const { data, error } = await supabaseClient
+          .from("auto_post_rules")
+          .select("id,title,content_type,is_active")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const rules = data || [];
+
+        if (!rules.length) {
+          select.innerHTML = `<option value="">No rules found</option>`;
+          return;
+        }
+
+        select.innerHTML = `
+          <option value="">Choose a rule</option>
+          ${rules.map(rule => `
+            <option value="${rule.id}">
+              ${rule.title || "Untitled rule"} • ${rule.content_type || "content"} • ${rule.is_active ? "Active" : "Paused"}
+            </option>
+          `).join("")}
+        `;
+      } catch (error) {
+        console.error(error);
+        select.innerHTML = `<option value="">Unable to load rules</option>`;
+      }
+    }
+
+    function renderResult(result, ok) {
+      const box = document.getElementById("resultBox");
+
+      if (!result) {
+        box.innerHTML = `
+          <div class="row">
+            <div class="row-title">No result returned.</div>
+            <div class="row-sub">Check your backend route and environment variables.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const response = result.result || {};
+      const first = Array.isArray(response.results) ? response.results[0] : null;
+
+      box.innerHTML = `
+        <div class="row">
+          <div class="row-title">Rule ID</div>
+          <div class="row-sub">${result.triggered_rule_id || "-"}</div>
+          <span class="pill ${ok ? "green" : "red"}">${ok ? "Success" : "Failed"}</span>
+        </div>
+
+        <div class="row">
+          <div class="row-title">Run status</div>
+          <div class="row-sub">${first?.status || response.status || result.error || "No status returned"}</div>
+        </div>
+
+        <div class="row">
+          <div class="row-title">Generated content ID</div>
+          <div class="row-sub">${first?.generated_content_id || "-"}</div>
+        </div>
+
+        <div class="row">
+          <div class="row-title">Post ID</div>
+          <div class="row-sub">${first?.post_id || "-"}</div>
+        </div>
+
+        <div class="row">
+          <div class="row-title">Message</div>
+          <div class="row-sub">${first?.message || response.message || result.error || "No message returned"}</div>
+        </div>
+      `;
+    }
+
+    document.getElementById("testRuleForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const status = document.getElementById("formStatus");
+      const ruleId = document.getElementById("ruleSelect").value;
+
+      if (!ruleId) {
+        status.className = "status error";
+        status.textContent = "Select a rule first.";
+        return;
+      }
+
+      status.className = "status";
+      status.textContent = "Running selected rule...";
+
+      try {
+        const response = await fetch(`/api/auto-post/test-run-rule?rule_id=${encodeURIComponent(ruleId)}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${AUTO_POST_CRON_SECRET}`
+          }
+        });
+
+        const json = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          status.className = "status error";
+          status.textContent = json?.error || "Test run failed.";
+          renderResult(json, false);
+          return;
+        }
+
+        status.className = "status success";
+        status.textContent = "Rule triggered successfully.";
+        renderResult(json, true);
+      } catch (error) {
+        console.error(error);
+        status.className = "status error";
+        status.textContent = error?.message || "Unable to trigger test run.";
+        renderResult({ error: error?.message || "Unknown error" }, false);
+      }
+    });
+
+    (async function init() {
+      try {
+        await ensureAuth();
+        await loadRules();
+      } catch (error) {
+        console.error(error);
+        document.documentElement.classList.remove("auth-loading");
+      }
+    })();
+  </script>
+</body>
+</html>

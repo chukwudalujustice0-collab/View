@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Automation Rules | View</title>
+  <meta name="theme-color" content="#08145c" />
+  <script>document.documentElement.classList.add("auth-loading");</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/auth-guard.js"></script>
+  <style>
+    html.auth-loading,html.auth-loading body{visibility:hidden;opacity:0}
+    :root{
+      --bg:#08145c;--bg2:#0b1b78;--bg3:#061041;--line:rgba(255,255,255,.15);--line2:rgba(255,255,255,.24);
+      --text:#fff;--muted:rgba(255,255,255,.73);--muted2:rgba(255,255,255,.55);--red:#ff3b57;--max:760px;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);min-height:100vh}
+    a{color:inherit;text-decoration:none} button,select{font:inherit}
+    .app{width:min(100%,var(--max));margin:0 auto;padding:14px 14px 100px}
+    .topbar{display:flex;align-items:center;gap:10px;padding:6px 0 10px}
+    .back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:18px;flex:0 0 auto}
+    .head{min-width:0;flex:1}
+    .head .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)}
+    .head h1{margin:2px 0 0;font-size:20px;line-height:1.1}
+    .toolbar{
+      padding:10px 0 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;
+    }
+    .toolbar select{flex:1;min-width:0;border:none;outline:none;background:transparent;color:#fff;font-size:13px}
+    .toolbar select option{color:#111}
+    .toolbar a{
+      height:38px;padding:0 14px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:var(--red);font-size:12px;font-weight:700;white-space:nowrap;
+    }
+    .list{border-top:1px solid var(--line);margin-top:14px}
+    .rule{display:block;padding:12px 0;border-bottom:1px solid var(--line)}
+    .rule-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .rule-title{
+      min-width:0;flex:1;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .pill{
+      padding:6px 10px;border-radius:999px;font-size:10.5px;border:1px solid var(--line2);white-space:nowrap;text-transform:uppercase;letter-spacing:.08em;
+    }
+    .pill.red{background:rgba(255,59,87,.14);color:#ffd7dd;border-color:rgba(255,59,87,.28)}
+    .pill.green{background:rgba(22,212,123,.14);color:#dcffed;border-color:rgba(22,212,123,.28)}
+    .rule-meta{margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--muted)}
+    .rule-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .mini-btn{
+      min-height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.05);color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;
+    }
+    .mini-btn.red{background:var(--red);border-color:transparent}
+    .empty{padding:18px 0;font-size:12px;color:var(--muted);line-height:1.5}
+    .nav{
+      position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,var(--max));display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
+      background:rgba(6,16,65,.95);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+    }
+    .nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;color:var(--muted);padding:6px 2px;border-radius:10px}
+    .nav a.active{color:#fff;background:rgba(255,255,255,.07)}
+    .nav .icon{font-size:15px;line-height:1}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:80}
+    .overlay.show{display:flex}
+    .sheet{
+      width:100%;max-width:760px;margin:0 auto;background:linear-gradient(180deg,#0a1869 0%,#07124a 100%);border-top-left-radius:20px;border-top-right-radius:20px;
+      border:1px solid var(--line);border-bottom:none;padding:14px 14px calc(18px + env(safe-area-inset-bottom));
+    }
+    .sheet-handle{width:42px;height:4px;border-radius:999px;background:rgba(255,255,255,.22);margin:0 auto 14px}
+    .sheet h4{margin:0 0 8px;font-size:16px}
+    .sheet p{margin:0 0 16px;font-size:12.5px;line-height:1.5;color:var(--muted)}
+    .sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .sheet-actions button{height:42px;border:none;border-radius:999px;cursor:pointer;font-size:13px;font-weight:700}
+    .cancel{background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--line)}
+    .danger{background:var(--red);color:#fff}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="back" href="ai-auto-post.html">‹</a>
+      <div class="head">
+        <div class="eyebrow">View • Auto Content Agent</div>
+        <h1>Automation Rules</h1>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <select id="statusFilter" aria-label="Filter rules">
+        <option value="all">All rules</option>
+        <option value="active">Active only</option>
+        <option value="paused">Paused only</option>
+        <option value="text">Text only</option>
+        <option value="image">Image only</option>
+        <option value="video">Video only</option>
+      </select>
+      <a href="ai-auto-post-create.html">New rule</a>
+    </div>
+
+    <div class="list" id="rulesList">
+      <div class="empty">Loading rules…</div>
+    </div>
+  </main>
+
+  <nav class="nav">
+    <a href="ai-auto-post.html"><span class="icon">⌂</span><span>Home</span></a>
+    <a href="ai-auto-post-create.html"><span class="icon">＋</span><span>Create</span></a>
+    <a href="ai-auto-post-rules.html" class="active"><span class="icon">≣</span><span>Rules</span></a>
+    <a href="ai-auto-post-history.html"><span class="icon">↻</span><span>History</span></a>
+    <a href="dashboard.html"><span class="icon">◉</span><span>Dashboard</span></a>
+  </nav>
+
+  <div class="overlay" id="deleteOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h4>Delete this rule?</h4>
+      <p>This automation will be removed and will stop running. This action cannot be undone.</p>
+      <div class="sheet-actions">
+        <button class="cancel" id="cancelDeleteBtn" type="button">Cancel</button>
+        <button class="danger" id="confirmDeleteBtn" type="button">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const supabaseClient = window.supabase?.createClient
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:"pkce" }
+        })
+      : null;
+
+    let allRules = [];
+    let pendingDeleteId = null;
+
+    async function ensureAuth(){
+      if (typeof window.protectPage === "function") await window.protectPage("ai-auto-post-rules.html");
+      else if (supabaseClient) {
+        const { data:{ session } } = await supabaseClient.auth.getSession();
+        if (!session) { location.href = `login.html?next=${encodeURIComponent("ai-auto-post-rules.html")}`; return; }
+      }
+      document.documentElement.classList.remove("auth-loading");
+    }
+
+    function formatDateTime(value){
+      if (!value) return "No schedule";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "Invalid date";
+      return d.toLocaleString([], { year:"numeric", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+    }
+
+    function applyFilter(){
+      const filter = document.getElementById("statusFilter").value;
+      let rules = [...allRules];
+      if (filter === "active") rules = rules.filter(r => r.is_active);
+      if (filter === "paused") rules = rules.filter(r => !r.is_active);
+      if (filter === "text") rules = rules.filter(r => r.content_type === "text");
+      if (filter === "image") rules = rules.filter(r => r.content_type === "image");
+      if (filter === "video") rules = rules.filter(r => r.content_type === "video");
+      renderRules(rules);
+    }
+
+    function renderRules(rules){
+      const list = document.getElementById("rulesList");
+      if (!rules.length) {
+        list.innerHTML = `<div class="empty">No rules found for this filter.</div>`;
+        return;
+      }
+
+      list.innerHTML = rules.map(rule => `
+        <div class="rule">
+          <a href="ai-auto-post-rule-details.html?id=${encodeURIComponent(rule.id)}" class="rule-top">
+            <div class="rule-title">${rule.title || "Untitled rule"}</div>
+            <span class="pill ${rule.is_active ? "green" : "red"}">${rule.is_active ? "Active" : "Paused"}</span>
+          </a>
+
+          <div class="rule-meta">${rule.content_type || "content"} • ${rule.frequency || "scheduled"} • Next run: ${formatDateTime(rule.next_run_at)}</div>
+          <div class="rule-meta">${rule.platforms_label || "view"}${rule.topic ? ` • ${rule.topic}` : ""}</div>
+
+          <div class="rule-actions">
+            <a class="mini-btn" href="ai-auto-post-rule-details.html?id=${encodeURIComponent(rule.id)}" style="display:inline-flex;align-items:center;justify-content:center;">Open</a>
+            <button class="mini-btn" type="button" onclick="toggleRule('${rule.id}', ${rule.is_active ? 'false' : 'true'})">${rule.is_active ? "Pause" : "Resume"}</button>
+            <button class="mini-btn red" type="button" onclick="promptDelete('${rule.id}')">Delete</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function loadRules(){
+      try{
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+        if (!currentUser) {
+          location.href = `login.html?next=${encodeURIComponent("ai-auto-post-rules.html")}`;
+          return;
+        }
+
+        const { data, error } = await supabaseClient
+          .from("auto_post_rules")
+          .select("id,title,topic,content_type,frequency,is_active,next_run_at,platforms_label,created_at")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending:false });
+
+        if (error) throw error;
+        allRules = data || [];
+        applyFilter();
+      }catch(error){
+        console.error(error);
+        document.getElementById("rulesList").innerHTML = `<div class="empty">Unable to load rules right now.</div>`;
+      }
+    }
+
+    async function toggleRule(id, makeActive){
+      try{
+        const { error } = await supabaseClient
+          .from("auto_post_rules")
+          .update({ is_active: makeActive, updated_at:new Date().toISOString() })
+          .eq("id", id);
+
+        if (error) throw error;
+        await loadRules();
+      }catch(error){
+        console.error(error);
+        alert("Unable to update this rule right now.");
+      }
+    }
+
+    function promptDelete(id){
+      pendingDeleteId = id;
+      document.getElementById("deleteOverlay").classList.add("show");
+    }
+
+    document.getElementById("cancelDeleteBtn").addEventListener("click", () => {
+      pendingDeleteId = null;
+      document.getElementById("deleteOverlay").classList.remove("show");
+    });
+
+    document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
+      if (!pendingDeleteId) return;
+      try{
+        const { error } = await supabaseClient.from("auto_post_rules").delete().eq("id", pendingDeleteId);
+        if (error) throw error;
+        pendingDeleteId = null;
+        document.getElementById("deleteOverlay").classList.remove("show");
+        await loadRules();
+      }catch(error){
+        console.error(error);
+        alert("Unable to delete this rule right now.");
+      }
+    });
+
+    document.getElementById("statusFilter").addEventListener("change", applyFilter);
+    window.toggleRule = toggleRule;
+    window.promptDelete = promptDelete;
+
+    (async function init(){
+      try{
+        await ensureAuth();
+        await loadRules();
+      }catch(error){
+        console.error(error);
+        document.documentElement.classList.remove("auth-loading");
+      }
+    })();
+  </script>
+</body>
+</html>

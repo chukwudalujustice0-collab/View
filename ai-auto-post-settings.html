@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Settings | View</title>
+  <meta name="theme-color" content="#08145c" />
+  <script>document.documentElement.classList.add("auth-loading");</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/auth-guard.js"></script>
+  <style>
+    html.auth-loading,html.auth-loading body{visibility:hidden;opacity:0}
+    :root{
+      --bg:#08145c;--bg2:#0b1b78;--bg3:#061041;--line:rgba(255,255,255,.15);
+      --text:#fff;--muted:rgba(255,255,255,.73);--muted2:rgba(255,255,255,.55);--red:#ff3b57;--max:760px
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);min-height:100vh}
+    a{color:inherit;text-decoration:none} button,input,select{font:inherit}
+    .app{width:min(100%,var(--max));margin:0 auto;padding:14px 14px 100px}
+    .topbar{display:flex;align-items:center;gap:10px;padding:6px 0 10px}
+    .back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:18px;flex:0 0 auto}
+    .head{min-width:0;flex:1}.head .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)}
+    .head h1{margin:2px 0 0;font-size:20px;line-height:1.1}
+    .field{padding:12px 0;border-top:1px solid var(--line)}
+    .label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:7px;font-weight:700}
+    .input,.select{width:100%;border:none;outline:none;background:transparent;color:#fff;padding:0;min-height:22px;font-size:14px}
+    .select option{color:#111}
+    .switch-line{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    .switch-line .text{min-width:0;flex:1}
+    .switch-line .title{font-size:13px;font-weight:600}
+    .switch-line .sub{margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.45}
+    .switch{position:relative;width:50px;height:30px;flex:0 0 auto}
+    .switch input{position:absolute;opacity:0;pointer-events:none}
+    .switch span{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid var(--line);cursor:pointer;transition:.2s ease}
+    .switch span::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s ease}
+    .switch input:checked + span{background:var(--red);border-color:transparent}
+    .switch input:checked + span::after{transform:translateX(20px)}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+    .btn{height:44px;border:none;border-radius:999px;cursor:pointer;font-size:13px;font-weight:700}
+    .btn.secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--line)}
+    .btn.primary{background:var(--red);color:#fff}
+    .status{margin-top:12px;min-height:18px;font-size:12px;color:var(--muted)}
+    .status.error{color:#ffd5dc}.status.success{color:#d9ffeb}
+    .nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,var(--max));display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:rgba(6,16,65,.95);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+    .nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;color:var(--muted);padding:6px 2px;border-radius:10px}
+    .nav a.active{color:#fff;background:rgba(255,255,255,.07)}
+    .nav .icon{font-size:15px;line-height:1}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="back" href="ai-auto-post.html">‹</a>
+      <div class="head">
+        <div class="eyebrow">View • Auto Content Agent</div>
+        <h1>Settings</h1>
+      </div>
+    </header>
+
+    <form id="settingsForm">
+      <div class="field">
+        <label class="label" for="timezone">Timezone</label>
+        <input class="input" id="timezone" name="timezone" type="text" placeholder="Africa/Lagos" />
+      </div>
+
+      <div class="field">
+        <label class="label" for="default_post_time">Default post time</label>
+        <input class="input" id="default_post_time" name="default_post_time" type="time" value="09:00" />
+      </div>
+
+      <div class="field">
+        <label class="label" for="retry_limit">Retry limit</label>
+        <select class="select" id="retry_limit" name="retry_limit">
+          <option value="1">1 retry</option>
+          <option value="2">2 retries</option>
+          <option value="3">3 retries</option>
+          <option value="5">5 retries</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="switch-line">
+          <div class="text">
+            <div class="title">Auto post by default</div>
+            <div class="sub">New rules will auto-publish after generation.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="default_auto_post" name="default_auto_post" checked />
+            <span></span>
+          </label>
+        </label>
+      </div>
+
+      <div class="field" style="border-bottom:1px solid var(--line);">
+        <label class="switch-line">
+          <div class="text">
+            <div class="title">Cross-post by default</div>
+            <div class="sub">New rules will target connected platforms when selected.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="default_cross_post" name="default_cross_post" checked />
+            <span></span>
+          </label>
+        </label>
+      </div>
+
+      <div class="actions">
+        <a class="btn secondary" href="ai-auto-post.html" style="display:flex;align-items:center;justify-content:center;">Cancel</a>
+        <button class="btn primary" type="submit">Save settings</button>
+      </div>
+
+      <div class="status" id="formStatus"></div>
+    </form>
+  </main>
+
+  <nav class="nav">
+    <a href="ai-auto-post.html"><span class="icon">⌂</span><span>Home</span></a>
+    <a href="ai-auto-post-create.html"><span class="icon">＋</span><span>Create</span></a>
+    <a href="ai-auto-post-rules.html"><span class="icon">≣</span><span>Rules</span></a>
+    <a href="ai-auto-post-settings.html" class="active"><span class="icon">⚙</span><span>Settings</span></a>
+    <a href="dashboard.html"><span class="icon">◉</span><span>Dashboard</span></a>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const supabaseClient = window.supabase?.createClient
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:"pkce" } })
+      : null;
+
+    async function ensureAuth(){
+      if (typeof window.protectPage === "function") await window.protectPage("ai-auto-post-settings.html");
+      else if (supabaseClient) {
+        const { data:{ session } } = await supabaseClient.auth.getSession();
+        if (!session) { location.href = `login.html?next=${encodeURIComponent("ai-auto-post-settings.html")}`; return; }
+      }
+      document.documentElement.classList.remove("auth-loading");
+    }
+
+    async function loadSettings(){
+      try{
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+        const { data } = await supabaseClient
+          .from("auto_post_settings")
+          .select("*")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (!data) return;
+
+        document.getElementById("timezone").value = data.timezone || "";
+        document.getElementById("default_post_time").value = data.default_post_time || "09:00";
+        document.getElementById("retry_limit").value = String(data.retry_limit || 3);
+        document.getElementById("default_auto_post").checked = !!data.default_auto_post;
+        document.getElementById("default_cross_post").checked = !!data.default_cross_post;
+      }catch(error){
+        console.error(error);
+      }
+    }
+
+    document.getElementById("settingsForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const status = document.getElementById("formStatus");
+      status.className = "status";
+      status.textContent = "Saving settings...";
+
+      try{
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+        const payload = {
+          user_id: currentUser.id,
+          timezone: document.getElementById("timezone").value.trim() || "Africa/Lagos",
+          default_post_time: document.getElementById("default_post_time").value || "09:00",
+          retry_limit: Number(document.getElementById("retry_limit").value || 3),
+          default_auto_post: document.getElementById("default_auto_post").checked,
+          default_cross_post: document.getElementById("default_cross_post").checked,
+          updated_at: new Date().toISOString()
+        };
+
+        const { error } = await supabaseClient
+          .from("auto_post_settings")
+          .upsert(payload, { onConflict:"user_id" });
+
+        if (error) throw error;
+
+        status.className = "status success";
+        status.textContent = "Settings saved successfully.";
+      }catch(error){
+        console.error(error);
+        status.className = "status error";
+        status.textContent = error?.message || "Unable to save settings.";
+      }
+    });
+
+    (async function init(){
+      try{
+        await ensureAuth();
+        await loadSettings();
+      }catch(error){
+        console.error(error);
+        document.documentElement.classList.remove("auth-loading");
+      }
+    })();
+  </script>
+</body>
+</html>

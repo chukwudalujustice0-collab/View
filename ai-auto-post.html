@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>AI Auto Post | View</title>
+  <meta name="theme-color" content="#08145c" />
+  <link rel="manifest" href="/manifest.json" />
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/auth-guard.js"></script>
+
+  <style>
+    html.auth-loading,
+    html.auth-loading body{
+      visibility:hidden;
+      opacity:0;
+    }
+
+    :root{
+      --bg:#08145c;
+      --bg2:#0b1b78;
+      --bg3:#061041;
+      --line:rgba(255,255,255,.15);
+      --line2:rgba(255,255,255,.24);
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.74);
+      --muted2:rgba(255,255,255,.56);
+      --red:#ff3b57;
+      --red2:#ff4d6a;
+      --red-soft:rgba(255,59,87,.14);
+      --blue-soft:rgba(90,160,255,.14);
+      --green-soft:rgba(22,212,123,.14);
+      --yellow-soft:rgba(255,184,77,.14);
+      --nav:rgba(6,16,65,.96);
+      --max:760px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);
+      min-height:100vh;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button{
+      font:inherit;
+    }
+
+    .app{
+      width:min(100%, var(--max));
+      margin:0 auto;
+      padding:14px 14px 104px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 0 12px;
+    }
+
+    .brand{
+      min-width:0;
+      flex:1;
+    }
+
+    .brand .eyebrow{
+      font-size:10px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--muted2);
+    }
+
+    .brand h1{
+      margin:2px 0 0;
+      font-size:20px;
+      line-height:1.1;
+    }
+
+    .mini-user{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .avatar{
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      border:1px solid var(--line2);
+      object-fit:cover;
+      background:rgba(255,255,255,.08);
+      flex:0 0 auto;
+    }
+
+    .mini-user-text{
+      min-width:0;
+      text-align:right;
+    }
+
+    .mini-user-text .name{
+      font-size:12px;
+      font-weight:600;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .mini-user-text .sub{
+      font-size:11px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .hero{
+      padding:12px 0 14px;
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+    }
+
+    .hero h2{
+      margin:0 0 6px;
+      font-size:18px;
+      line-height:1.2;
+    }
+
+    .hero p{
+      margin:0;
+      font-size:12.5px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin:14px 0 16px;
+    }
+
+    .action-btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      border-radius:999px;
+      border:1px solid var(--line2);
+      background:rgba(255,255,255,.06);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .action-btn.primary{
+      background:linear-gradient(180deg,var(--red2) 0%, var(--red) 100%);
+      border-color:transparent;
+      box-shadow:0 10px 24px rgba(255,59,87,.22);
+    }
+
+    .hub-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin:0 0 18px;
+    }
+
+    .hub-link{
+      min-height:50px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:0 10px;
+      font-size:13px;
+      font-weight:600;
+    }
+
+    .section{
+      margin-top:18px;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .section-head h3{
+      margin:0;
+      font-size:12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--muted2);
+    }
+
+    .section-head a{
+      font-size:12px;
+      color:#ffd7dd;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px 12px;
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      padding:10px 0;
+    }
+
+    .stat .label{
+      font-size:11px;
+      color:var(--muted2);
+      margin-bottom:4px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .stat .value{
+      font-size:20px;
+      font-weight:700;
+      line-height:1.1;
+    }
+
+    .stat .hint{
+      margin-top:4px;
+      font-size:11px;
+      color:var(--muted);
+    }
+
+    .list{
+      border-top:1px solid var(--line);
+    }
+
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 0;
+      border-bottom:1px solid var(--line);
+    }
+
+    .row-main{
+      min-width:0;
+      flex:1;
+    }
+
+    .row-title{
+      font-size:13px;
+      font-weight:600;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .row-sub{
+      margin-top:3px;
+      font-size:11.5px;
+      line-height:1.45;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:10.5px;
+      border:1px solid var(--line2);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      white-space:nowrap;
+    }
+
+    .pill.red{
+      background:var(--red-soft);
+      color:#ffd7dd;
+      border-color:rgba(255,59,87,.28);
+    }
+
+    .pill.blue{
+      background:var(--blue-soft);
+      color:#dcebff;
+      border-color:rgba(90,160,255,.28);
+    }
+
+    .pill.green{
+      background:var(--green-soft);
+      color:#dcffed;
+      border-color:rgba(22,212,123,.28);
+    }
+
+    .pill.yellow{
+      background:var(--yellow-soft);
+      color:#fff2dc;
+      border-color:rgba(255,184,77,.28);
+    }
+
+    .tiny-link{
+      font-size:12px;
+      opacity:.95;
+    }
+
+    .empty{
+      padding:18px 0 6px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .nav{
+      position:fixed;
+      left:50%;
+      bottom:0;
+      transform:translateX(-50%);
+      width:min(100%, var(--max));
+      background:var(--nav);
+      backdrop-filter:blur(14px);
+      border-top:1px solid var(--line);
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:4px;
+      z-index:50;
+    }
+
+    .nav a{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      padding:6px 2px;
+      border-radius:10px;
+      color:var(--muted);
+      font-size:10px;
+      min-width:0;
+    }
+
+    .nav a.active{
+      color:#fff;
+      background:rgba(255,255,255,.07);
+    }
+
+    .nav .icon{
+      font-size:15px;
+      line-height:1;
+    }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      display:none;
+      align-items:flex-end;
+      z-index:80;
+    }
+
+    .overlay.show{
+      display:flex;
+    }
+
+    .sheet{
+      width:100%;
+      max-width:760px;
+      margin:0 auto;
+      background:linear-gradient(180deg,#0a1869 0%,#07124a 100%);
+      border-top-left-radius:20px;
+      border-top-right-radius:20px;
+      border:1px solid var(--line);
+      border-bottom:none;
+      padding:14px 14px calc(18px + env(safe-area-inset-bottom));
+    }
+
+    .sheet-handle{
+      width:42px;
+      height:4px;
+      border-radius:999px;
+      background:rgba(255,255,255,.22);
+      margin:0 auto 14px;
+    }
+
+    .sheet h4{
+      margin:0 0 8px;
+      font-size:16px;
+    }
+
+    .sheet p{
+      margin:0 0 16px;
+      font-size:12.5px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+
+    .sheet-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+
+    .sheet-actions button{
+      height:42px;
+      border:none;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .cancel{
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      border:1px solid var(--line);
+    }
+
+    .danger{
+      background:linear-gradient(180deg,var(--red2) 0%, var(--red) 100%);
+      color:#fff;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="eyebrow">View • Auto Content Agent</div>
+        <h1>AI Auto Post</h1>
+      </div>
+
+      <div class="mini-user">
+        <img id="userAvatar" class="avatar" src="icons/view-logo.png" alt="User avatar" />
+        <div class="mini-user-text">
+          <div class="name" data-user-name>View User</div>
+          <div class="sub" data-user-email>Signed in</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h2>Set it once. Generate and post automatically.</h2>
+      <p>Create recurring AI rules for text, pictures with captions, or videos, then auto-publish to View and connected platforms.</p>
+    </section>
+
+    <section class="actions">
+      <a class="action-btn primary" href="ai-auto-post-create.html">＋ New automation</a>
+      <a class="action-btn" href="ai-auto-post-rules.html">Manage rules</a>
+    </section>
+
+    <section class="hub-grid">
+      <a class="hub-link" href="ai-auto-post-create.html">Create Automation</a>
+      <a class="hub-link" href="ai-auto-post-rules.html">Rules</a>
+      <a class="hub-link" href="ai-auto-post-history.html">History</a>
+      <a class="hub-link" href="ai-auto-post-templates.html">Templates</a>
+      <a class="hub-link" href="ai-auto-post-analytics.html">Analytics</a>
+      <a class="hub-link" href="ai-auto-post-run-log.html">Run Log</a>
+      <a class="hub-link" href="ai-auto-post-settings.html">Settings</a>
+      <a class="hub-link" href="dashboard.html">Main Dashboard</a>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>Overview</h3>
+        <a href="ai-auto-post-history.html">View history</a>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Active Rules</div>
+          <div class="value" id="statActiveRules">0</div>
+          <div class="hint">Running schedules</div>
+        </div>
+
+        <div class="stat">
+          <div class="label">Posted Today</div>
+          <div class="value" id="statPostedToday">0</div>
+          <div class="hint">Successful auto posts</div>
+        </div>
+
+        <div class="stat">
+          <div class="label">Queued</div>
+          <div class="value" id="statQueued">0</div>
+          <div class="hint">Waiting to run</div>
+        </div>
+
+        <div class="stat">
+          <div class="label">Failed</div>
+          <div class="value" id="statFailed">0</div>
+          <div class="hint">Needs attention</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>Next scheduled posts</h3>
+        <a href="ai-auto-post-rules.html">All rules</a>
+      </div>
+
+      <div class="list" id="nextRunsList">
+        <div class="empty">Loading upcoming runs…</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>Recent activity</h3>
+        <a href="ai-auto-post-history.html">Full history</a>
+      </div>
+
+      <div class="list" id="recentActivityList">
+        <div class="empty">Loading recent activity…</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h3>Quick actions</h3>
+      </div>
+
+      <div class="list">
+        <a class="row" href="ai-auto-post-create.html">
+          <div class="row-main">
+            <div class="row-title">Create new automation</div>
+            <div class="row-sub">Set schedule, content type, platforms, and prompt.</div>
+          </div>
+          <div class="tiny-link">Open</div>
+        </a>
+
+        <a class="row" href="ai-auto-post-templates.html">
+          <div class="row-main">
+            <div class="row-title">Open templates</div>
+            <div class="row-sub">Create, edit, and reuse AI content templates.</div>
+          </div>
+          <div class="tiny-link">Open</div>
+        </a>
+
+        <a class="row" href="ai-auto-post-analytics.html">
+          <div class="row-main">
+            <div class="row-title">View analytics</div>
+            <div class="row-sub">Check generated posts, success rate, and rule performance.</div>
+          </div>
+          <div class="tiny-link">Open</div>
+        </a>
+
+        <a class="row" href="ai-auto-post-run-log.html">
+          <div class="row-main">
+            <div class="row-title">Check run log</div>
+            <div class="row-sub">See processing, success, and failed automation runs.</div>
+          </div>
+          <div class="tiny-link">Open</div>
+        </a>
+
+        <a class="row" href="ai-auto-post-settings.html">
+          <div class="row-main">
+            <div class="row-title">Automation settings</div>
+            <div class="row-sub">Manage timezone, retry limits, and default behavior.</div>
+          </div>
+          <div class="tiny-link">Open</div>
+        </a>
+
+        <button class="row" id="pauseAllBtn" type="button" style="width:100%;background:none;border:none;color:inherit;text-align:left;cursor:pointer;">
+          <div class="row-main">
+            <div class="row-title">Pause all active rules</div>
+            <div class="row-sub">Temporarily stop all automations for this account.</div>
+          </div>
+          <span class="pill red">Pause</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav">
+    <a href="ai-auto-post.html" class="active">
+      <span class="icon">⌂</span>
+      <span>Home</span>
+    </a>
+    <a href="ai-auto-post-create.html">
+      <span class="icon">＋</span>
+      <span>Create</span>
+    </a>
+    <a href="ai-auto-post-rules.html">
+      <span class="icon">≣</span>
+      <span>Rules</span>
+    </a>
+    <a href="ai-auto-post-history.html">
+      <span class="icon">↻</span>
+      <span>History</span>
+    </a>
+    <a href="dashboard.html">
+      <span class="icon">◉</span>
+      <span>Dashboard</span>
+    </a>
+  </nav>
+
+  <div class="overlay" id="pauseOverlay" aria-hidden="true">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h4>Pause all active rules?</h4>
+      <p>This will set all your active automations to paused. You can re-enable them later from the Rules page.</p>
+      <div class="sheet-actions">
+        <button class="cancel" id="cancelPauseBtn" type="button">Cancel</button>
+        <button class="danger" id="confirmPauseBtn" type="button">Pause all</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+
+    const supabaseClient = window.supabase?.createClient
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth:{
+            persistSession:true,
+            autoRefreshToken:true,
+            detectSessionInUrl:true,
+            flowType:"pkce"
+          }
+        })
+      : null;
+
+    async function ensureAuth(){
+      if (typeof window.protectPage === "function") {
+        await window.protectPage("ai-auto-post.html");
+      } else if (supabaseClient) {
+        const { data:{ session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+          location.href = `login.html?next=${encodeURIComponent("ai-auto-post.html")}`;
+          return;
+        }
+      }
+      document.documentElement.classList.remove("auth-loading");
+    }
+
+    function formatDateTime(value){
+      if (!value) return "No time";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "Invalid time";
+      return d.toLocaleString([], {
+        year:"numeric",
+        month:"short",
+        day:"numeric",
+        hour:"numeric",
+        minute:"2-digit"
+      });
+    }
+
+    function getInitials(name){
+      return (name || "VU")
+        .split(" ")
+        .filter(Boolean)
+        .slice(0,2)
+        .map(v => v[0]?.toUpperCase() || "")
+        .join("") || "VU";
+    }
+
+    function setAvatar(profile){
+      const img = document.getElementById("userAvatar");
+      if (!img) return;
+
+      if (profile?.avatar_url) {
+        img.src = profile.avatar_url;
+        return;
+      }
+
+      const initials = encodeURIComponent(getInitials(profile?.full_name || profile?.username || "View User"));
+      img.src = `https://ui-avatars.com/api/?name=${initials}&background=08145c&color=ffffff&bold=true`;
+    }
+
+    function renderRows(container, items, mode){
+      if (!container) return;
+
+      if (!items?.length) {
+        container.innerHTML = `<div class="empty">${mode === "next" ? "No upcoming runs yet. Create your first automation to start scheduled posting." : "No recent activity yet. Auto-generated content will appear here after your first run."}</div>`;
+        return;
+      }
+
+      container.innerHTML = items.map(item => {
+        const isNext = mode === "next";
+        const title = item.title || item.content_type || "Automation";
+        const sub = isNext
+          ? `${item.content_type || "content"} • ${item.frequency || "scheduled"} • ${formatDateTime(item.next_run_at)}`
+          : `${item.status || "generated"} • ${item.platforms_label || "View"} • ${formatDateTime(item.posted_at || item.created_at)}`;
+
+        const pillClass =
+          item.status === "failed" ? "red" :
+          (item.status === "posted" || item.status === "success") ? "green" :
+          item.status === "queued" ? "yellow" : "blue";
+
+        const pillLabel = isNext ? (item.is_active ? "Active" : "Paused") : (item.status || "Saved");
+        const link = isNext
+          ? `ai-auto-post-rule-details.html?id=${encodeURIComponent(item.id || "")}`
+          : `ai-auto-post-history-details.html?id=${encodeURIComponent(item.id || "")}`;
+
+        return `
+          <a class="row" href="${link}">
+            <div class="row-main">
+              <div class="row-title">${title}</div>
+              <div class="row-sub">${sub}</div>
+            </div>
+            <span class="pill ${isNext ? (item.is_active ? "green" : "red") : pillClass}">${pillLabel}</span>
+          </a>
+        `;
+      }).join("");
+    }
+
+    async function loadDashboard(){
+      const nextRunsList = document.getElementById("nextRunsList");
+      const recentActivityList = document.getElementById("recentActivityList");
+
+      try{
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+        const currentProfile = window.currentProfile || null;
+
+        if (currentProfile) setAvatar(currentProfile);
+
+        if (!currentUser) {
+          location.href = `login.html?next=${encodeURIComponent("ai-auto-post.html")}`;
+          return;
+        }
+
+        const userId = currentUser.id;
+
+        const [rulesRes, historyRes] = await Promise.all([
+          supabaseClient
+            .from("auto_post_rules")
+            .select("id,title,content_type,frequency,is_active,next_run_at,created_at")
+            .eq("user_id", userId)
+            .order("next_run_at", { ascending:true }),
+          supabaseClient
+            .from("auto_generated_contents")
+            .select("id,rule_id,title,content_type,status,created_at,posted_at,platforms_label")
+            .eq("user_id", userId)
+            .order("created_at", { ascending:false })
+            .limit(8)
+        ]);
+
+        const rules = rulesRes.data || [];
+        const history = historyRes.data || [];
+
+        const activeRules = rules.filter(r => r.is_active).length;
+        const queued = history.filter(h => h.status === "queued" || h.status === "generated").length;
+        const failed = history.filter(h => h.status === "failed").length;
+
+        const today = new Date();
+        const sameDay = (a,b) =>
+          a.getFullYear() === b.getFullYear() &&
+          a.getMonth() === b.getMonth() &&
+          a.getDate() === b.getDate();
+
+        const postedToday = history.filter(h => {
+          const dt = h.posted_at || h.created_at;
+          return (h.status === "posted" || h.status === "success") && dt && sameDay(new Date(dt), today);
+        }).length;
+
+        document.getElementById("statActiveRules").textContent = activeRules;
+        document.getElementById("statPostedToday").textContent = postedToday;
+        document.getElementById("statQueued").textContent = queued;
+        document.getElementById("statFailed").textContent = failed;
+
+        renderRows(nextRunsList, rules.slice(0,5), "next");
+        renderRows(recentActivityList, history.slice(0,5), "recent");
+      }catch(error){
+        console.error(error);
+        nextRunsList.innerHTML = `<div class="empty">Unable to load upcoming runs right now.</div>`;
+        recentActivityList.innerHTML = `<div class="empty">Unable to load recent activity right now.</div>`;
+      }
+    }
+
+    function setupPauseAll(){
+      const overlay = document.getElementById("pauseOverlay");
+      const openBtn = document.getElementById("pauseAllBtn");
+      const cancelBtn = document.getElementById("cancelPauseBtn");
+      const confirmBtn = document.getElementById("confirmPauseBtn");
+
+      openBtn?.addEventListener("click", () => {
+        overlay.classList.add("show");
+      });
+
+      cancelBtn?.addEventListener("click", () => {
+        overlay.classList.remove("show");
+      });
+
+      overlay?.addEventListener("click", (e) => {
+        if (e.target === overlay) overlay.classList.remove("show");
+      });
+
+      confirmBtn?.addEventListener("click", async () => {
+        try{
+          const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+          if (!currentUser) return;
+
+          const { error } = await supabaseClient
+            .from("auto_post_rules")
+            .update({
+              is_active:false,
+              updated_at:new Date().toISOString()
+            })
+            .eq("user_id", currentUser.id)
+            .eq("is_active", true);
+
+          if (error) throw error;
+
+          overlay.classList.remove("show");
+          await loadDashboard();
+        }catch(error){
+          console.error(error);
+          alert("Unable to pause all rules right now.");
+        }
+      });
+    }
+
+    (async function init(){
+      try{
+        await ensureAuth();
+        setupPauseAll();
+        await loadDashboard();
+      }catch(error){
+        console.error(error);
+        document.documentElement.classList.remove("auth-loading");
+      }
+    })();
+  </script>
+</body>
+</html>

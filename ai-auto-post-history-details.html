@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>History Details | View</title>
+  <meta name="theme-color" content="#08145c" />
+  <script>document.documentElement.classList.add("auth-loading");</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/auth-guard.js"></script>
+  <style>
+    html.auth-loading,html.auth-loading body{visibility:hidden;opacity:0}
+    :root{
+      --bg:#08145c;--bg2:#0b1b78;--bg3:#061041;--line:rgba(255,255,255,.15);--line2:rgba(255,255,255,.24);
+      --text:#fff;--muted:rgba(255,255,255,.73);--muted2:rgba(255,255,255,.55);--red:#ff3b57;--max:760px;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);min-height:100vh}
+    a{color:inherit;text-decoration:none} button{font:inherit}
+    .app{width:min(100%,var(--max));margin:0 auto;padding:14px 14px 100px}
+    .topbar{display:flex;align-items:center;gap:10px;padding:6px 0 10px}
+    .back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:18px;flex:0 0 auto}
+    .head{min-width:0;flex:1}
+    .head .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)}
+    .head h1{margin:2px 0 0;font-size:20px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meta{padding:10px 0 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:12px;line-height:1.6;color:var(--muted)}
+    .pill{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 12px;border-radius:999px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line2);margin-right:8px;margin-bottom:8px}
+    .pill.green{background:rgba(22,212,123,.14);color:#dcffed;border-color:rgba(22,212,123,.28)}
+    .pill.red{background:rgba(255,59,87,.14);color:#ffd7dd;border-color:rgba(255,59,87,.28)}
+    .pill.blue{background:rgba(90,160,255,.14);color:#dcebff;border-color:rgba(90,160,255,.28)}
+    .pill.yellow{background:rgba(255,184,77,.14);color:#fff2dc;border-color:rgba(255,184,77,.28)}
+    .section{margin-top:16px}
+    .section h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2)}
+    .line-list{border-top:1px solid var(--line)}
+    .line{padding:11px 0;border-bottom:1px solid var(--line)}
+    .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:4px;font-weight:700}
+    .v{font-size:13px;line-height:1.55;word-break:break-word}
+    .preview{margin-top:8px}
+    .preview img,.preview video{
+      width:100%;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.06)
+    }
+    .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+    .btn{height:42px;border:none;border-radius:999px;cursor:pointer;font-size:12px;font-weight:700}
+    .btn.primary{background:var(--red);color:#fff}
+    .btn.secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--line)}
+    .btn.danger{background:rgba(255,59,87,.18);color:#fff;border:1px solid rgba(255,59,87,.28)}
+    .status{margin-top:12px;font-size:12px;color:var(--muted);min-height:18px}
+    .nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,var(--max));display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:rgba(6,16,65,.95);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+    .nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;color:var(--muted);padding:6px 2px;border-radius:10px}
+    .nav a.active{color:#fff;background:rgba(255,255,255,.07)}
+    .nav .icon{font-size:15px;line-height:1}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="back" href="ai-auto-post-history.html">‹</a>
+      <div class="head">
+        <div class="eyebrow">View • Auto Content Agent</div>
+        <h1 id="pageTitle">History Details</h1>
+      </div>
+    </header>
+
+    <div class="meta">
+      <span id="statusPill" class="pill blue">Loading</span>
+      <span id="typePill" class="pill blue">Type</span>
+      <div id="metaText" style="margin-top:4px;">Loading history item…</div>
+    </div>
+
+    <section class="section">
+      <h3>Generated content</h3>
+      <div class="line-list" id="contentInfo">
+        <div class="line"><div class="k">Status</div><div class="v">Loading…</div></div>
+      </div>
+    </section>
+
+    <section class="section" id="previewSection" style="display:none;">
+      <h3>Preview</h3>
+      <div class="preview" id="previewWrap"></div>
+    </section>
+
+    <div class="actions">
+      <button class="btn secondary" id="openRuleBtn" type="button">Open rule</button>
+      <button class="btn primary" id="retryBtn" type="button">Retry</button>
+      <button class="btn danger" id="deleteBtn" type="button">Delete</button>
+    </div>
+
+    <div class="status" id="statusText"></div>
+  </main>
+
+  <nav class="nav">
+    <a href="ai-auto-post.html"><span class="icon">⌂</span><span>Home</span></a>
+    <a href="ai-auto-post-create.html"><span class="icon">＋</span><span>Create</span></a>
+    <a href="ai-auto-post-rules.html"><span class="icon">≣</span><span>Rules</span></a>
+    <a href="ai-auto-post-history.html" class="active"><span class="icon">↻</span><span>History</span></a>
+    <a href="dashboard.html"><span class="icon">◉</span><span>Dashboard</span></a>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const supabaseClient = window.supabase?.createClient
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:"pkce" } })
+      : null;
+
+    let currentItem = null;
+    const itemId = new URLSearchParams(location.search).get("id");
+
+    async function ensureAuth(){
+      if (typeof window.protectPage === "function") await window.protectPage("ai-auto-post-history-details.html");
+      else if (supabaseClient) {
+        const { data:{ session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+          location.href = `login.html?next=${encodeURIComponent(location.pathname + location.search)}`;
+          return;
+        }
+      }
+      document.documentElement.classList.remove("auth-loading");
+    }
+
+    function formatDateTime(value){
+      if (!value) return "Not set";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "Invalid date";
+      return d.toLocaleString([], { year:"numeric", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+    }
+
+    function renderPreview(item){
+      const section = document.getElementById("previewSection");
+      const wrap = document.getElementById("previewWrap");
+      const url = item.media_url;
+      if (!url) return;
+
+      section.style.display = "";
+      if (item.content_type === "video") {
+        wrap.innerHTML = `<video src="${url}" controls playsinline></video>`;
+      } else {
+        wrap.innerHTML = `<img src="${url}" alt="Generated media preview" />`;
+      }
+    }
+
+    async function loadItem(){
+      const statusText = document.getElementById("statusText");
+      if (!itemId) {
+        statusText.textContent = "No history item selected.";
+        return;
+      }
+
+      try{
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+        const { data, error } = await supabaseClient
+          .from("auto_generated_contents")
+          .select("*")
+          .eq("id", itemId)
+          .eq("user_id", currentUser.id)
+          .single();
+
+        if (error) throw error;
+        currentItem = data;
+
+        document.getElementById("pageTitle").textContent = currentItem.title || "History Details";
+
+        const statusClass =
+          currentItem.status === "failed" ? "red" :
+          (currentItem.status === "posted" || currentItem.status === "success") ? "green" :
+          currentItem.status === "queued" ? "yellow" : "blue";
+
+        const pill = document.getElementById("statusPill");
+        pill.textContent = currentItem.status || "saved";
+        pill.className = `pill ${statusClass}`;
+        document.getElementById("typePill").textContent = currentItem.content_type || "content";
+        document.getElementById("metaText").textContent = `${formatDateTime(currentItem.posted_at || currentItem.created_at)} • ${currentItem.platforms_label || "View"}`;
+
+        document.getElementById("contentInfo").innerHTML = `
+          <div class="line"><div class="k">Title</div><div class="v">${currentItem.title || "Untitled content"}</div></div>
+          <div class="line"><div class="k">Caption / Text</div><div class="v">${currentItem.caption || currentItem.text_content || "No caption stored."}</div></div>
+          <div class="line"><div class="k">Prompt used</div><div class="v">${currentItem.prompt_used || "Not stored."}</div></div>
+          <div class="line"><div class="k">Media URL</div><div class="v">${currentItem.media_url || "No media saved."}</div></div>
+          <div class="line"><div class="k">Platforms</div><div class="v">${currentItem.platforms_label || "View"}</div></div>
+          <div class="line"><div class="k">Created</div><div class="v">${formatDateTime(currentItem.created_at)}</div></div>
+        `;
+
+        renderPreview(currentItem);
+      }catch(error){
+        console.error(error);
+        statusText.textContent = "Unable to load this history item.";
+      }
+    }
+
+    document.getElementById("openRuleBtn").addEventListener("click", () => {
+      if (!currentItem?.rule_id) return;
+      location.href = `ai-auto-post-rule-details.html?id=${encodeURIComponent(currentItem.rule_id)}`;
+    });
+
+    document.getElementById("retryBtn").addEventListener("click", async () => {
+      if (!currentItem) return;
+      const statusText = document.getElementById("statusText");
+      statusText.textContent = "Retrying item...";
+
+      try{
+        const { error } = await supabaseClient
+          .from("auto_generated_contents")
+          .update({ status:"queued", updated_at:new Date().toISOString() })
+          .eq("id", currentItem.id);
+
+        if (error) throw error;
+        statusText.textContent = "Item queued again.";
+        await loadItem();
+      }catch(error){
+        console.error(error);
+        statusText.textContent = "Unable to retry this item.";
+      }
+    });
+
+    document.getElementById("deleteBtn").addEventListener("click", async () => {
+      if (!currentItem) return;
+      if (!confirm("Delete this history item?")) return;
+
+      const statusText = document.getElementById("statusText");
+      statusText.textContent = "Deleting item...";
+
+      try{
+        const { error } = await supabaseClient
+          .from("auto_generated_contents")
+          .delete()
+          .eq("id", currentItem.id);
+
+        if (error) throw error;
+        location.href = "ai-auto-post-history.html";
+      }catch(error){
+        console.error(error);
+        statusText.textContent = "Unable to delete this item.";
+      }
+    });
+
+    (async function init(){
+      try{
+        await ensureAuth();
+        await loadItem();
+      }catch(error){
+        console.error(error);
+        document.documentElement.classList.remove("auth-loading");
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" class="auth-loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Analytics | View</title>
+  <meta name="theme-color" content="#08145c" />
+  <script>document.documentElement.classList.add("auth-loading");</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/auth-guard.js"></script>
+  <style>
+    html.auth-loading,html.auth-loading body{visibility:hidden;opacity:0}
+    :root{
+      --bg:#08145c;--bg2:#0b1b78;--bg3:#061041;--line:rgba(255,255,255,.15);
+      --text:#fff;--muted:rgba(255,255,255,.73);--muted2:rgba(255,255,255,.55);--max:760px
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);min-height:100vh}
+    a{color:inherit;text-decoration:none}
+    .app{width:min(100%,var(--max));margin:0 auto;padding:14px 14px 100px}
+    .topbar{display:flex;align-items:center;gap:10px;padding:6px 0 10px}
+    .back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:18px;flex:0 0 auto}
+    .head{min-width:0;flex:1}.head .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)}
+    .head h1{margin:2px 0 0;font-size:20px;line-height:1.1}
+    .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0}
+    .stat .label{font-size:11px;color:var(--muted2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em}
+    .stat .value{font-size:20px;font-weight:700;line-height:1.1}
+    .stat .hint{margin-top:4px;font-size:11px;color:var(--muted)}
+    .section{margin-top:18px}
+    .section h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2)}
+    .list{border-top:1px solid var(--line)}
+    .row{padding:12px 0;border-bottom:1px solid var(--line)}
+    .row-title{font-size:13px;font-weight:600}
+    .row-sub{margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.45}
+    .nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,var(--max));display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:rgba(6,16,65,.95);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+    .nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;color:var(--muted);padding:6px 2px;border-radius:10px}
+    .nav a.active{color:#fff;background:rgba(255,255,255,.07)}
+    .nav .icon{font-size:15px;line-height:1}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="back" href="ai-auto-post.html">‹</a>
+      <div class="head">
+        <div class="eyebrow">View • Auto Content Agent</div>
+        <h1>Analytics</h1>
+      </div>
+    </header>
+
+    <div class="stats">
+      <div class="stat"><div class="label">Total Rules</div><div class="value" id="totalRules">0</div><div class="hint">Created automations</div></div>
+      <div class="stat"><div class="label">Total Posts</div><div class="value" id="totalPosts">0</div><div class="hint">Generated content</div></div>
+      <div class="stat"><div class="label">Success Rate</div><div class="value" id="successRate">0%</div><div class="hint">Posted successfully</div></div>
+      <div class="stat"><div class="label">Failures</div><div class="value" id="totalFailed">0</div><div class="hint">Need review</div></div>
+    </div>
+
+    <section class="section">
+      <h3>Performance summary</h3>
+      <div class="list" id="summaryList">
+        <div class="row"><div class="row-title">Loading analytics…</div></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav">
+    <a href="ai-auto-post.html"><span class="icon">⌂</span><span>Home</span></a>
+    <a href="ai-auto-post-create.html"><span class="icon">＋</span><span>Create</span></a>
+    <a href="ai-auto-post-rules.html"><span class="icon">≣</span><span>Rules</span></a>
+    <a href="ai-auto-post-analytics.html" class="active"><span class="icon">◔</span><span>Analytics</span></a>
+    <a href="dashboard.html"><span class="icon">◉</span><span>Dashboard</span></a>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
+    const supabaseClient = window.supabase?.createClient
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:"pkce" } })
+      : null;
+
+    async function ensureAuth(){
+      if (typeof window.protectPage === "function") await window.protectPage("ai-auto-post-analytics.html");
+      else if (supabaseClient) {
+        const { data:{ session } } = await supabaseClient.auth.getSession();
+        if (!session) { location.href = `login.html?next=${encodeURIComponent("ai-auto-post-analytics.html")}`; return; }
+      }
+      document.documentElement.classList.remove("auth-loading");
+    }
+
+    async function loadAnalytics(){
+      try{
+        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
+
+        const [rulesRes, postsRes] = await Promise.all([
+          supabaseClient.from("auto_post_rules").select("id,title,is_active").eq("user_id", currentUser.id),
+          supabaseClient.from("auto_generated_contents").select("id,rule_id,title,status").eq("user_id", currentUser.id)
+        ]);
+
+        const rules = rulesRes.data || [];
+        const posts = postsRes.data || [];
+        const successCount = posts.filter(p => p.status === "posted" || p.status === "success").length;
+        const failedCount = posts.filter(p => p.status === "failed").length;
+        const successRate = posts.length ? Math.round((successCount / posts.length) * 100) : 0;
+
+        document.getElementById("totalRules").textContent = rules.length;
+        document.getElementById("totalPosts").textContent = posts.length;
+        document.getElementById("successRate").textContent = `${successRate}%`;
+        document.getElementById("totalFailed").textContent = failedCount;
+
+        const byRule = rules.map(rule => {
+          const count = posts.filter(p => p.rule_id === rule.id).length;
+          return { title: rule.title || "Untitled rule", count, active: rule.is_active };
+        }).sort((a,b) => b.count - a.count);
+
+        document.getElementById("summaryList").innerHTML = byRule.length
+          ? byRule.map(item => `
+            <div class="row">
+              <div class="row-title">${item.title}</div>
+              <div class="row-sub">${item.count} generated posts • ${item.active ? "Active" : "Paused"}</div>
+            </div>
+          `).join("")
+          : `<div class="row"><div class="row-title">No analytics data yet.</div><div class="row-sub">Create automations and let them run to see metrics here.</div></div>`;
+      }catch(error){
+        console.error(error);
+        document.getElementById("summaryList").innerHTML = `<div class="row"><div class="row-title">Unable to load analytics.</div></div>`;
+      }
+    }
+
+    (async function init(){
+      try{
+        await ensureAuth();
+        await loadAnalytics();
+      }catch(error){
+        console.error(error);
+        document.documentElement.classList.remove("auth-loading");
+      }
+    })();
+  </script>
+</body>
+</html>
