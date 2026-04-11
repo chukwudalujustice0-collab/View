@@ -25,7 +25,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 module.exports = async function handler(req, res) {
-  // CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-cron-secret");
@@ -330,7 +329,7 @@ async function processRule(rule, options = {}) {
       })
       .eq("id", generatedContentId);
 
-    await queueCrossPostJobs({
+    const publishQueueResult = await queueCrossPostJobs({
       user_id: rule.user_id,
       post_id: postId,
       platforms: normalizedPlatforms
@@ -338,7 +337,7 @@ async function processRule(rule, options = {}) {
 
     await finalizeRunLog(runId, {
       status: "success",
-      message: "Rule processed successfully.",
+      message: buildRunMessage("Rule processed successfully.", publishQueueResult),
       completed_at: new Date().toISOString(),
       generated_content_id: generatedContentId
     });
@@ -350,7 +349,8 @@ async function processRule(rule, options = {}) {
       run_id: runId,
       generated_content_id: generatedContentId,
       post_id: postId,
-      status: "success"
+      status: "success",
+      publish_queue: publishQueueResult
     };
   } catch (error) {
     console.error("processRule error:", rule.id, error);
@@ -502,7 +502,7 @@ async function checkOneKlingTask(item) {
       })
     });
 
-    await queueCrossPostJobs({
+    const publishQueueResult = await queueCrossPostJobs({
       user_id: item.user_id,
       post_id: postId,
       platforms: normalizePlatforms(item.selected_platforms, item.platforms_label)
@@ -511,7 +511,7 @@ async function checkOneKlingTask(item) {
     if (runId) {
       await finalizeRunLog(runId, {
         status: "success",
-        message: "Kling video completed and post created.",
+        message: buildRunMessage("Kling video completed and post created.", publishQueueResult),
         completed_at: new Date().toISOString(),
         generated_content_id: item.id
       });
@@ -533,7 +533,8 @@ async function checkOneKlingTask(item) {
       generated_content_id: item.id,
       task_id: item.provider_task_id,
       post_id: postId,
-      status: "success"
+      status: "success",
+      publish_queue: publishQueueResult
     };
   } catch (error) {
     console.error("checkOneKlingTask error:", item.id, error);
@@ -811,10 +812,21 @@ async function createViewPost({
   selected_platforms
 }) {
   const content = text_content || caption || title || "";
-  const mediaType =
-    content_type === "image" ? "image" :
-    content_type === "video" ? "video" :
-    "text";
+
+  let mediaType = "text";
+  if (content_type === "image") {
+    mediaType = "image";
+  } else if (content_type === "video") {
+    mediaType = "video";
+  } else if (content_type === "text") {
+    mediaType = "text";
+  } else if (media_url) {
+    mediaType = "image";
+  }
+
+  if (!["text", "image", "video"].includes(mediaType)) {
+    mediaType = "text";
+  }
 
   const payload = {
     user_id,
@@ -837,20 +849,82 @@ async function createViewPost({
 }
 
 async function queueCrossPostJobs({ user_id, post_id, platforms }) {
-  const externalPlatforms = platforms.filter(p => p !== "view");
-  if (!externalPlatforms.length) return;
+  const selectedPlatforms = (platforms || [])
+    .map(p => String(p).trim().toLowerCase())
+    .filter(Boolean)
+    .filter(p => p !== "view");
 
-  const rows = externalPlatforms.map(platform => ({
-    user_id,
-    post_id,
-    platform,
-    status: "queued",
-    attempts: 0,
-    created_at: new Date().toISOString()
-  }));
+  if (!selectedPlatforms.length) {
+    return { queued: 0, skipped: [] };
+  }
 
-  const { error } = await supabase.from("post_publish_jobs").insert(rows);
-  if (error) throw error;
+  const { data: connectedAccounts, error: connectedError } = await supabase
+    .from("connected_accounts")
+    .select("id, platform, provider, status, is_connected, account_name, account_handle")
+    .eq("user_id", user_id);
+
+  if (connectedError) throw connectedError;
+
+  const connectedMap = new Map();
+
+  for (const acc of connectedAccounts || []) {
+    const rawPlatform = acc.platform || acc.provider || "";
+    const platform = String(rawPlatform).trim().toLowerCase();
+
+    const isActive =
+      acc.is_connected === true ||
+      String(acc.status || "").toLowerCase() === "connected";
+
+    if (!platform || !isActive) continue;
+
+    if (!connectedMap.has(platform)) {
+      connectedMap.set(platform, []);
+    }
+
+    connectedMap.get(platform).push(acc);
+  }
+
+  const jobs = [];
+  const skipped = [];
+
+  for (const platform of selectedPlatforms) {
+    const matchingAccounts = connectedMap.get(platform) || [];
+
+    if (!matchingAccounts.length) {
+      skipped.push({
+        platform,
+        reason: "No connected account found"
+      });
+      continue;
+    }
+
+    for (const account of matchingAccounts) {
+      jobs.push({
+        user_id,
+        post_id,
+        platform,
+        connected_account_id: account.id,
+        status: "queued",
+        attempts: 0,
+        created_at: new Date().toISOString()
+      });
+    }
+  }
+
+  if (!jobs.length) {
+    return { queued: 0, skipped };
+  }
+
+  const { error: insertError } = await supabase
+    .from("post_publish_jobs")
+    .insert(jobs);
+
+  if (insertError) throw insertError;
+
+  return {
+    queued: jobs.length,
+    skipped
+  };
 }
 
 async function findLatestRunIdForItem(item) {
@@ -1066,4 +1140,24 @@ function mergeGenerationMeta(existing, extra) {
     ...base,
     ...extra
   };
+}
+
+function buildRunMessage(baseMessage, publishQueueResult) {
+  if (!publishQueueResult) return baseMessage;
+
+  const queued = Number(publishQueueResult.queued || 0);
+  const skippedCount = Array.isArray(publishQueueResult.skipped)
+    ? publishQueueResult.skipped.length
+    : 0;
+
+  let text = `${baseMessage} Queued ${queued} external publish job${queued === 1 ? "" : "s"}.`;
+
+  if (skippedCount > 0) {
+    const skippedText = publishQueueResult.skipped
+      .map(item => `${item.platform}: ${item.reason}`)
+      .join("; ");
+    text += ` Skipped ${skippedCount}: ${skippedText}.`;
+  }
+
+  return text;
 }
