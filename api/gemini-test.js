@@ -1,37 +1,48 @@
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
+  if (req.method === "GET") {
+    return res.status(200).json({
+      ok: true,
+      message: "Gemini test route is working"
+    });
+  }
+
   if (req.method !== "POST") {
-    return res.status(405).json({ ok: false, error: "Method not allowed" });
+    return res.status(405).json({
+      ok: false,
+      error: "Method not allowed"
+    });
   }
 
   try {
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     const GEMINI_TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || "gemini-2.5-flash";
 
-    if (!GEMINI_API_KEY) {
-      return res.status(500).json({
-        ok: false,
-        error: "Missing GEMINI_API_KEY in environment variables."
-      });
-    }
-
-    const prompt = String(req.body?.prompt || "").trim();
+    const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
+    const prompt = String(body.prompt || "").trim();
 
     if (!prompt) {
       return res.status(400).json({
         ok: false,
-        error: "Prompt is required."
+        error: "No prompt provided"
       });
     }
 
-    const response = await fetch(
+    if (!GEMINI_API_KEY) {
+      return res.status(500).json({
+        ok: false,
+        error: "Missing GEMINI_API_KEY in Vercel environment variables"
+      });
+    }
+
+    const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_TEXT_MODEL)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
       {
         method: "POST",
@@ -44,7 +55,7 @@ module.exports = async function handler(req, res) {
               role: "user",
               parts: [
                 {
-                  text: `${prompt}\n\nReply directly with the final answer only.`
+                  text: prompt
                 }
               ]
             }
@@ -53,32 +64,34 @@ module.exports = async function handler(req, res) {
       }
     );
 
-    const json = await response.json().catch(() => ({}));
+    const rawText = await geminiRes.text();
+    let data = {};
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      data = { raw: rawText };
+    }
 
-    if (!response.ok) {
-      return res.status(response.status).json({
+    if (!geminiRes.ok) {
+      return res.status(geminiRes.status || 500).json({
         ok: false,
-        error: json?.error?.message || "Gemini request failed."
+        error: data?.error?.message || data?.message || "Gemini request failed",
+        raw: data
       });
     }
 
-    const parts = json?.candidates?.[0]?.content?.parts || [];
-    const text = parts
-      .map(part => part?.text || "")
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    const reply = parts
+      .map((part) => part?.text || "")
       .filter(Boolean)
       .join("\n")
       .trim();
 
-    if (!text) {
-      return res.status(500).json({
-        ok: false,
-        error: "Gemini returned empty text."
-      });
-    }
-
     return res.status(200).json({
       ok: true,
-      text
+      model: GEMINI_TEXT_MODEL,
+      reply: reply || "Gemini returned no text",
+      raw: data
     });
   } catch (error) {
     return res.status(500).json({
@@ -86,4 +99,4 @@ module.exports = async function handler(req, res) {
       error: error?.message || "Internal server error"
     });
   }
-};
+}
