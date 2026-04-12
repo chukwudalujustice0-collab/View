@@ -4,12 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Explore | View</title>
-  <meta name="theme-color" content="#081a8f" />
-  <meta
-    name="description"
-    content="Explore trending videos, status, people, groups, pages, marketplace, news, AI, and saved content on View by Ceetify."
-  />
+  <meta name="theme-color" content="#0a1670" />
   <link rel="manifest" href="/manifest.json" />
+
   <script>
     document.documentElement.classList.add("auth-loading");
   </script>
@@ -17,34 +14,34 @@
   <script src="/js/auth-guard.js"></script>
 
   <style>
-    html.auth-loading, html.auth-loading body{ visibility:hidden; }
+    html.auth-loading, html.auth-loading body{
+      visibility:hidden;
+    }
 
     :root{
-      --bg:#05093c;
-      --bg2:#07115f;
-      --bg3:#081a8f;
+      --bg:#06104d;
+      --bg2:#0a1670;
+      --bg3:#0d1f96;
       --panel:#ffffff;
-      --panel-2:#f7faff;
-      --line:#dbe7ff;
-      --text:#111827;
-      --muted:#5f6f95;
-      --soft:#7d8db2;
-      --blue:#2f7bff;
-      --blue2:#5ba0ff;
-      --red:#ff2f57;
-      --red2:#ff5a74;
-      --green:#22c55e;
-      --black:#060814;
-      --shadow:0 18px 46px rgba(0,0,0,.18);
-      --shadow-soft:0 10px 24px rgba(0,0,0,.10);
-      --safe-top:env(safe-area-inset-top,0px);
-      --safe-bottom:env(safe-area-inset-bottom,0px);
+      --panel-2:#f4f8ff;
+      --text:#0f172a;
+      --muted:#667085;
+      --line:#dbe6ff;
+      --blue:#2563eb;
+      --blue2:#4f7cff;
+      --red:#ef4444;
+      --red2:#ff5b6e;
+      --green:#16a34a;
+      --shadow:0 18px 44px rgba(2,6,23,.18);
+      --shadow-soft:0 10px 24px rgba(2,6,23,.10);
+      --safe-top:env(safe-area-inset-top, 0px);
+      --safe-bottom:env(safe-area-inset-bottom, 0px);
     }
 
     *{
+      box-sizing:border-box;
       margin:0;
       padding:0;
-      box-sizing:border-box;
       -webkit-tap-highlight-color:transparent;
       font-family:Arial,sans-serif;
     }
@@ -52,90 +49,163 @@
     html,body{
       min-height:100%;
       background:
-        radial-gradient(circle at top right, rgba(47,123,255,.18), transparent 24%),
-        radial-gradient(circle at top left, rgba(255,47,87,.08), transparent 18%),
-        linear-gradient(180deg,#081a8f 0%,#07115f 42%,#05093c 100%);
+        radial-gradient(circle at top left, rgba(79,124,255,.22), transparent 20%),
+        radial-gradient(circle at top right, rgba(255,91,110,.14), transparent 18%),
+        linear-gradient(180deg, var(--bg3) 0%, var(--bg2) 38%, var(--bg) 100%);
       color:#fff;
     }
 
     body{
       overflow-x:hidden;
-      padding-bottom:108px;
+      padding-bottom:102px;
     }
 
-    a{ color:inherit; text-decoration:none; }
-    button{
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,input{
+      font:inherit;
+      color:inherit;
       border:none;
       outline:none;
       background:none;
-      color:inherit;
-      font:inherit;
-      cursor:pointer;
     }
-    img{ display:block; max-width:100%; }
 
-    .explore-page{
-      width:min(100%,980px);
+    .page{
+      width:min(100%, 920px);
       margin:0 auto;
-      padding:calc(10px + var(--safe-top)) 12px 0;
-      overflow-x:hidden;
+      padding:calc(10px + var(--safe-top)) 10px 0;
     }
 
-    .page-notice{
+    .notice{
       display:none;
-      margin-bottom:12px;
-      padding:12px 14px;
-      border-radius:16px;
-      border:1px solid transparent;
+      margin-bottom:10px;
+      padding:11px 12px;
+      border-radius:14px;
       font-size:12px;
-      line-height:1.55;
-      backdrop-filter:blur(12px);
+      line-height:1.5;
       box-shadow:var(--shadow-soft);
     }
-    .page-notice.show{display:block}
-    .page-notice.error{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.24);color:#ffd9df}
-    .page-notice.success{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.24);color:#ddffea}
-    .page-notice.info{background:rgba(47,123,255,.14);border-color:rgba(47,123,255,.24);color:#dcebff}
+    .notice.show{display:block}
+    .notice.error{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.24);color:#ffe0e4}
+    .notice.success{background:rgba(22,163,74,.14);border:1px solid rgba(22,163,74,.24);color:#ddffea}
+    .notice.info{background:rgba(37,99,235,.14);border:1px solid rgba(37,99,235,.24);color:#dbe7ff}
 
     .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      margin-bottom:12px;
-      background:rgba(7,17,95,.35);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:24px;
+      margin-bottom:10px;
       padding:12px;
+      border-radius:24px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      backdrop-filter:blur(16px);
       box-shadow:var(--shadow);
-      backdrop-filter:blur(14px);
     }
 
-    .topbar-left,.topbar-right{
+    .top-left,.top-right{
       display:flex;
       align-items:center;
       gap:10px;
     }
 
-    .icon-btn{
-      width:44px;
-      height:44px;
-      min-width:44px;
-      border-radius:16px;
+    .brand{
+      min-width:0;
+      flex:1;
       display:flex;
       align-items:center;
-      justify-content:center;
+      gap:10px;
+    }
+
+    .brand-logo{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:16px;
+      overflow:hidden;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:var(--shadow-soft);
+      display:grid;
+      place-items:center;
+    }
+
+    .brand-logo img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .brand-fallback{
+      font-size:24px;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .brand-copy{
+      min-width:0;
+      flex:1;
+    }
+
+    .brand-title{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      flex-wrap:wrap;
+      line-height:1;
+    }
+
+    .brand-title strong{
+      font-size:18px;
+      letter-spacing:.08em;
+      font-weight:900;
+    }
+
+    .brand-title span{
+      font-size:10px;
+      color:#ffd6de;
+      font-weight:900;
+    }
+
+    .brand-line{
+      margin-top:6px;
+      width:88px;
+      height:3px;
+      border-radius:999px;
+      background:linear-gradient(90deg, var(--red), var(--red2));
+    }
+
+    .icon-btn{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:15px;
+      display:grid;
+      place-items:center;
       background:rgba(255,255,255,.10);
       border:1px solid rgba(255,255,255,.10);
       color:#fff;
-      font-size:18px;
+      font-size:17px;
       box-shadow:var(--shadow-soft);
-      backdrop-filter:blur(12px);
       position:relative;
+      cursor:pointer;
+    }
+
+    .profile-btn{
       overflow:hidden;
     }
 
-    .icon-badge{
+    .profile-btn img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .badge{
       position:absolute;
       top:-3px;
       right:-3px;
@@ -143,205 +213,76 @@
       height:18px;
       padding:0 4px;
       border-radius:999px;
-      background:linear-gradient(135deg,var(--red),var(--red2));
-      color:#fff;
-      display:flex;
+      display:none;
       align-items:center;
       justify-content:center;
+      background:linear-gradient(135deg,var(--red),var(--red2));
+      color:#fff;
       font-size:10px;
       font-weight:900;
-      border:2px solid rgba(7,17,95,.9);
+      border:2px solid rgba(10,22,112,.96);
     }
+    .badge.show{display:flex}
 
-    .hidden{display:none !important}
-    .topbar-brand{ min-width:0; flex:1; }
-
-    .brand-wrap{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
-    .brand-logo,.drawer-brand-logo{
-      width:50px;
-      height:50px;
-      min-width:50px;
-      border-radius:18px;
-      overflow:hidden;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
-      display:grid;
-      place-items:center;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .brand-logo img,.drawer-brand-logo img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-    }
-
-    .brand-fallback{
-      font-size:28px;
-      font-weight:900;
-      color:#fff;
-    }
-
-    .brand-copy{ min-width:0; flex:1; }
-
-    .brand-title-row{
-      display:flex;
-      align-items:center;
-      gap:7px;
-      line-height:1;
-      flex-wrap:wrap;
-    }
-
-    .brand-title-main{
-      font-size:19px;
-      font-weight:900;
-      letter-spacing:.06em;
-      color:#fff;
-    }
-
-    .brand-title-sep{
-      font-size:12px;
-      font-weight:900;
-      color:#fff;
-      opacity:.7;
-    }
-
-    .brand-title-sub{
-      font-size:11px;
-      font-weight:900;
-      color:#ffd4de;
-    }
-
-    .brand-tagline{
-      margin-top:5px;
-      color:#dbe5ff;
-      font-size:11px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .search-panel{ margin-bottom:12px; }
-
-    .search-box{
+    .searchbar{
+      margin-bottom:10px;
       min-height:50px;
       display:flex;
       align-items:center;
       gap:10px;
       padding:0 14px;
       border-radius:22px;
-      background:rgba(255,255,255,.07);
+      background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.10);
       box-shadow:var(--shadow);
-      backdrop-filter:blur(12px);
+      backdrop-filter:blur(14px);
     }
 
-    .search-icon{
+    .searchbar span{
       font-size:16px;
       color:#dbe7ff;
     }
 
-    .search-input{
+    .searchbar input{
       flex:1;
-      border:none;
-      outline:none;
       background:transparent;
       color:#fff;
       font-size:14px;
+      min-width:0;
     }
 
-    .search-input::placeholder{ color:#c8b8ef; }
+    .searchbar input::placeholder{
+      color:#c9d7ff;
+    }
 
-    .search-voice-btn{
+    .voice-btn{
       width:34px;
       height:34px;
+      min-width:34px;
       border-radius:50%;
       display:grid;
       place-items:center;
-      background:rgba(255,255,255,.08);
+      background:rgba(255,255,255,.10);
       border:1px solid rgba(255,255,255,.10);
       font-size:14px;
-      position:relative;
-      color:#fff;
+      cursor:pointer;
     }
 
-    .search-voice-btn.listening{
+    .voice-btn.listening{
       background:linear-gradient(135deg,var(--red),var(--red2));
       border-color:transparent;
     }
 
-    .main-tabs-wrap{ margin-bottom:12px; }
-
-    .main-tabs,.sub-tabs{
+    .hero{
       display:flex;
-      gap:8px;
-      overflow:auto hidden;
-      scrollbar-width:none;
-    }
-    .main-tabs::-webkit-scrollbar,.sub-tabs::-webkit-scrollbar{ display:none; }
-
-    .main-tab,.sub-tab{
-      min-height:38px;
-      padding:0 13px;
-      border-radius:999px;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.10);
-      color:#fff;
-      font-size:12px;
-      font-weight:800;
-      white-space:nowrap;
-      flex:0 0 auto;
-    }
-
-    .main-tab.active,.sub-tab.active{
-      background:linear-gradient(135deg, rgba(47,123,255,.30), rgba(255,47,87,.18));
-      border-color:rgba(255,255,255,.14);
-    }
-
-    .page-content{ display:grid; gap:14px; }
-
-    .explore-hero-card{
-      border-radius:24px;
-      padding:16px;
-      background:
-        radial-gradient(circle at top right, rgba(47,123,255,.14), transparent 26%),
-        radial-gradient(circle at bottom left, rgba(255,47,87,.12), transparent 24%),
-        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(16px);
-    }
-
-    .explore-hero-copy h1{
-      font-size:19px;
-      font-weight:900;
-      margin-bottom:8px;
-      letter-spacing:-.02em;
-    }
-
-    .explore-hero-copy p{
-      color:#dce7ff;
-      font-size:12px;
-      line-height:1.65;
-      max-width:720px;
-    }
-
-    .explore-hero-stats{
-      display:flex;
+      gap:10px;
       flex-wrap:wrap;
-      gap:8px;
-      margin-top:12px;
+      margin-bottom:10px;
     }
 
-    .hero-stat-pill{
-      min-height:28px;
-      padding:0 10px;
+    .hero-pill{
+      min-height:34px;
+      padding:0 12px;
       border-radius:999px;
       display:inline-flex;
       align-items:center;
@@ -350,216 +291,179 @@
       border:1px solid rgba(255,255,255,.10);
       color:#fff;
       font-size:11px;
-      font-weight:800;
+      font-weight:900;
+      box-shadow:var(--shadow-soft);
     }
 
-    .content-section{
-      background:var(--panel);
-      border:1px solid rgba(255,255,255,.08);
+    .section{
+      margin-bottom:10px;
       border-radius:24px;
-      padding:14px;
+      background:var(--panel);
+      border:1px solid var(--line);
       box-shadow:var(--shadow);
-      backdrop-filter:blur(16px);
       overflow:hidden;
     }
 
     .section-head{
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       justify-content:space-between;
-      gap:12px;
-      margin-bottom:12px;
+      gap:10px;
+      padding:14px 14px 0;
       flex-wrap:wrap;
     }
 
     .section-head h2{
+      color:var(--text);
       font-size:16px;
       font-weight:900;
-      margin-bottom:4px;
       letter-spacing:-.02em;
-      color:#fff;
     }
 
-    .section-head p{
-      color:#dce7ff;
-      font-size:11px;
-      line-height:1.6;
-    }
-
-    .section-head-actions{
+    .section-actions{
       display:flex;
       align-items:center;
-      gap:10px;
+      gap:8px;
       flex-wrap:wrap;
     }
 
-    .section-link,.section-mini-link,.feature-panel-btn{
+    .mini-btn{
       min-height:34px;
       padding:0 12px;
       border-radius:12px;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.10);
       display:inline-flex;
       align-items:center;
       justify-content:center;
+      background:#fff;
+      border:1px solid var(--line);
+      color:var(--text);
       font-size:11px;
       font-weight:800;
+      cursor:pointer;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .mini-btn.red{
+      background:linear-gradient(135deg,var(--red),var(--red2));
+      border-color:transparent;
       color:#fff;
     }
 
-    .section-icon-actions{ display:flex; gap:8px; }
-
-    .section-icon-btn{
-      width:34px;
-      height:34px;
-      border-radius:12px;
-      display:grid;
-      place-items:center;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.10);
-      font-size:12px;
-      color:#fff;
+    .section-body{
+      padding:14px;
     }
 
-    .scroll-viewport{
-      width:100%;
-      overflow:hidden;
-    }
-
-    .h-scroll{
+    .scroll{
       display:flex;
       gap:10px;
       overflow-x:auto;
       overflow-y:hidden;
-      width:100%;
-      max-width:100%;
-      padding-bottom:2px;
       scrollbar-width:none;
       -webkit-overflow-scrolling:touch;
     }
-    .h-scroll::-webkit-scrollbar{ display:none; }
+    .scroll::-webkit-scrollbar{display:none}
 
-    .slide-card{
-      flex:0 0 260px;
-      min-width:260px;
-      max-width:260px;
-      border-radius:22px;
-      overflow:hidden;
+    .card{
+      flex:0 0 250px;
+      min-width:250px;
+      max-width:250px;
+      border-radius:20px;
       background:#fff;
       border:1px solid var(--line);
       box-shadow:var(--shadow-soft);
-      position:relative;
+      overflow:hidden;
       color:var(--text);
     }
 
-    .slide-card.large{ flex-basis:320px; min-width:320px; max-width:320px; }
-    .slide-card.small{ flex-basis:240px; min-width:240px; max-width:240px; }
-    .slide-card.market-card{ flex-basis:240px; min-width:240px; max-width:240px; }
-    .slide-card.status-card{
-      flex-basis:110px;
-      min-width:110px;
-      max-width:110px;
+    .card.wide{
+      flex-basis:300px;
+      min-width:300px;
+      max-width:300px;
+    }
+
+    .card.media-card .thumb{
+      height:160px;
+      background:linear-gradient(135deg,#dde8ff,#eef4ff);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .card.media-card .thumb img,
+    .card.media-card .thumb video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .chip{
+      position:absolute;
+      left:10px;
+      top:10px;
+      min-height:22px;
+      padding:0 8px;
+      border-radius:999px;
+      background:rgba(255,255,255,.92);
+      border:1px solid #e6ecff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#18264b;
+      font-size:10px;
+      font-weight:900;
+      z-index:2;
+    }
+
+    .play{
+      position:absolute;
+      right:10px;
+      bottom:10px;
+      width:40px;
+      height:40px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:rgba(10,22,112,.86);
+      border:1px solid rgba(255,255,255,.16);
+      color:#fff;
+      font-size:16px;
+      z-index:2;
+    }
+
+    .card-body{
+      padding:12px;
+    }
+
+    .title{
+      color:var(--text);
+      font-size:13px;
+      font-weight:900;
+      line-height:1.45;
+      margin-bottom:5px;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    .meta{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.5;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .status-card{
+      flex:0 0 106px;
+      min-width:106px;
+      max-width:106px;
       background:transparent;
       border:none;
       box-shadow:none;
       overflow:visible;
       color:#fff;
-    }
-
-    .trend-media,.market-media{
-      position:relative;
-      height:170px;
-      background:linear-gradient(135deg,#e6efff,#f4f7ff);
-      overflow:hidden;
-    }
-
-    .market-media{ height:185px; }
-
-    .trend-media img,.market-media img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-    }
-
-    .trend-overlay{
-      position:absolute;
-      inset:0;
-      background:linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.18));
-    }
-
-    .trend-chip{
-      position:absolute;
-      left:12px;
-      top:12px;
-      z-index:2;
-      min-height:24px;
-      padding:0 8px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.92);
-      border:1px solid #e5ecff;
-      font-size:10px;
-      font-weight:900;
-      color:#1c2952;
-    }
-
-    .trend-play{
-      position:absolute;
-      right:12px;
-      bottom:12px;
-      width:42px;
-      height:42px;
-      border-radius:50%;
-      display:grid;
-      place-items:center;
-      background:rgba(7,17,95,.84);
-      border:1px solid rgba(255,255,255,.18);
-      z-index:2;
-      font-size:16px;
-      color:#fff;
-    }
-
-    .slide-body{
-      padding:12px;
-    }
-
-    .slide-title{
-      font-size:13px;
-      font-weight:900;
-      line-height:1.45;
-      margin-bottom:5px;
-      color:#111827;
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-    }
-
-    .slide-sub{
-      color:var(--muted);
-      font-size:11px;
-      line-height:1.55;
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-      word-break:break-word;
-    }
-
-    .slide-meta{
-      margin-top:8px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      font-size:10px;
-      color:#42527d;
-      font-weight:800;
-    }
-
-    .status-card-inner{
-      text-align:center;
     }
 
     .status-preview{
@@ -568,7 +472,7 @@
       border-radius:20px;
       overflow:hidden;
       margin:0 auto 8px;
-      border:2px solid rgba(255,255,255,.30);
+      border:2px solid rgba(255,255,255,.26);
       background:#fff;
       box-shadow:var(--shadow-soft);
       position:relative;
@@ -577,13 +481,15 @@
       justify-content:center;
     }
 
-    .status-preview img,.status-preview video{
+    .status-preview img,
+    .status-preview video{
       width:100%;
       height:100%;
       object-fit:cover;
+      display:block;
     }
 
-    .status-text-preview{
+    .status-text{
       width:100%;
       height:100%;
       display:flex;
@@ -591,7 +497,7 @@
       justify-content:center;
       text-align:center;
       padding:10px;
-      color:#111827;
+      color:var(--text);
       font-size:12px;
       font-weight:900;
       line-height:1.45;
@@ -599,81 +505,45 @@
       word-break:break-word;
     }
 
-    .status-tag{
-      position:absolute;
-      left:7px;
-      top:7px;
-      min-height:22px;
-      padding:0 7px;
-      border-radius:999px;
-      background:rgba(7,17,95,.85);
-      border:1px solid rgba(255,255,255,.10);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#fff;
-      font-size:9px;
-      font-weight:900;
-      z-index:2;
-    }
-
     .status-name{
-      font-size:11px;
-      font-weight:800;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
       color:#fff;
-    }
-
-    .status-sub{
-      margin-top:2px;
-      color:#dbe5ff;
-      font-size:10px;
+      font-size:11px;
+      font-weight:900;
+      text-align:center;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
-    .people-grid,.groups-grid,.page-cards-grid{
+    .status-time{
+      color:#dbe7ff;
+      font-size:10px;
+      text-align:center;
+      margin-top:2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .people-grid{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
       gap:10px;
     }
 
-    .empty-state-card{
-      min-width:100%;
-      width:100%;
-      padding:28px 16px;
-      text-align:center;
+    .person{
       border-radius:20px;
-      background:#fff;
-      border:1px dashed #dbe7ff;
-      color:#516180;
-      font-size:12px;
-      line-height:1.6;
-    }
-
-    .empty-state-card strong{
-      display:block;
-      color:#111827;
-      font-size:14px;
-      margin-bottom:4px;
-    }
-
-    .person-card{
-      border-radius:22px;
-      padding:12px;
       background:#fff;
       border:1px solid var(--line);
       box-shadow:var(--shadow-soft);
+      padding:12px;
       text-align:center;
       color:var(--text);
     }
 
     .person-avatar-wrap{
-      width:74px;
-      height:74px;
+      width:72px;
+      height:72px;
       margin:0 auto 8px;
       border-radius:50%;
       padding:2px;
@@ -685,14 +555,14 @@
       height:100%;
       border-radius:50%;
       overflow:hidden;
+      background:#fff;
       display:flex;
       align-items:center;
       justify-content:center;
-      background:#fff;
-      border:2px solid #fff;
-      color:#1b1241;
+      color:#0f172a;
       font-size:20px;
       font-weight:900;
+      border:2px solid #fff;
     }
 
     .person-avatar img{
@@ -702,29 +572,22 @@
     }
 
     .person-name{
+      color:var(--text);
       font-size:12px;
       font-weight:900;
-      margin-bottom:2px;
+      margin-bottom:3px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      color:#111827;
     }
 
-    .person-username{
+    .person-sub{
       color:var(--muted);
       font-size:10px;
-      margin-bottom:6px;
+      margin-bottom:8px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-    }
-
-    .person-meta{
-      color:#42527d;
-      font-size:10px;
-      margin-bottom:8px;
-      min-height:14px;
     }
 
     .person-actions{
@@ -733,115 +596,9 @@
       justify-content:center;
     }
 
-    .mini-btn{
-      min-height:30px;
-      padding:0 10px;
-      border-radius:12px;
-      background:#fff;
-      border:1px solid var(--line);
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-size:10px;
-      font-weight:800;
-      color:#111827;
-    }
-
-    .mini-btn.primary{
-      background:linear-gradient(135deg,var(--blue),var(--blue2));
-      border:none;
-      color:#fff;
-    }
-
-    .group-card,.page-card,.news-card{
-      border-radius:20px;
-      overflow:hidden;
-      background:#fff;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow-soft);
-      color:var(--text);
-    }
-
-    .group-cover,.news-card-thumb{
-      height:92px;
-      background:linear-gradient(135deg,#d8e6ff,#e8efff);
-    }
-
-    .group-cover-blue,.news-thumb-blue{background:linear-gradient(135deg,#cfe0ff,#e7efff)}
-    .group-cover-red,.news-thumb-red{background:linear-gradient(135deg,#ffd7df,#fff1f5)}
-    .group-cover-mix{background:linear-gradient(135deg,#ffdbe5,#dde9ff)}
-    .group-cover-dark{background:linear-gradient(135deg,#dde6f8,#eef2ff)}
-
-    .group-body,.page-card-body,.news-card-body{
-      padding:12px;
-    }
-
-    .group-body h3,.page-card-body h3,.news-card-body h3{
-      font-size:12px;
-      font-weight:900;
-      margin-bottom:4px;
-      line-height:1.45;
-      color:#111827;
-    }
-
-    .group-body p,.page-card-body p,.news-card-body p{
-      color:var(--muted);
-      font-size:11px;
-      line-height:1.55;
-    }
-
-    .page-card{
-      display:flex;
-      align-items:flex-start;
-      gap:10px;
-      padding:12px;
-    }
-
-    .page-card-icon,.feature-panel-icon{
-      width:46px;
-      height:46px;
-      min-width:46px;
-      border-radius:16px;
-      display:grid;
-      place-items:center;
-      background:linear-gradient(135deg,#eef4ff,#fff1f5);
-      border:1px solid var(--line);
-      font-size:20px;
-    }
-
-    .feature-panel{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:12px;
-      border-radius:20px;
-      background:#fff;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow-soft);
-      color:var(--text);
-    }
-
-    .feature-panel-copy{
-      min-width:0;
-      flex:1;
-    }
-
-    .feature-panel-copy h3{
-      font-size:12px;
-      font-weight:900;
-      margin-bottom:4px;
-      color:#111827;
-    }
-
-    .feature-panel-copy p{
-      color:var(--muted);
-      font-size:11px;
-      line-height:1.55;
-    }
-
-    .headline-bar{
+    .headline{
       width:100%;
-      min-height:52px;
+      min-height:54px;
       border-radius:18px;
       background:#fff;
       border:1px solid var(--line);
@@ -858,9 +615,9 @@
       min-height:26px;
       padding:0 10px;
       border-radius:999px;
-      background:#fff1f5;
-      border:1px solid #ffd6df;
-      color:#b3123a;
+      background:#fff1f3;
+      border:1px solid #ffd8de;
+      color:#be123c;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -873,18 +630,30 @@
       min-width:0;
       flex:1;
       font-size:12px;
-      font-weight:800;
+      font-weight:900;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      color:#111827;
+      color:var(--text);
     }
 
     .headline-time{
       flex:0 0 auto;
-      font-size:10px;
       color:var(--muted);
+      font-size:10px;
       font-weight:800;
+    }
+
+    .empty{
+      width:100%;
+      padding:26px 16px;
+      border-radius:20px;
+      background:var(--panel-2);
+      border:1px dashed var(--line);
+      color:var(--muted);
+      text-align:center;
+      font-size:12px;
+      line-height:1.6;
     }
 
     .drawer-backdrop{
@@ -895,17 +664,16 @@
       backdrop-filter:blur(8px);
       display:none;
     }
-
     .drawer-backdrop.show{display:block}
 
-    .app-drawer{
+    .drawer{
       position:fixed;
       top:0;
       right:0;
       bottom:0;
-      width:min(86vw,340px);
+      width:min(86vw,330px);
       z-index:96;
-      background:linear-gradient(180deg,#13237f,#0d1861 58%,#09124c);
+      background:linear-gradient(180deg,#14237d,#0c175c 58%,#081147);
       border-left:1px solid rgba(255,255,255,.10);
       box-shadow:-20px 0 60px rgba(0,0,0,.34);
       transform:translateX(104%);
@@ -916,14 +684,15 @@
       gap:12px;
     }
 
-    .app-drawer.open{transform:translateX(0)}
+    .drawer.open{
+      transform:translateX(0);
+    }
 
     .drawer-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding:4px 4px 8px;
     }
 
     .drawer-brand{
@@ -933,21 +702,27 @@
       min-width:0;
     }
 
+    .drawer-brand-logo{
+      width:46px;
+      height:46px;
+      min-width:46px;
+      border-radius:16px;
+      overflow:hidden;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
+      display:grid;
+      place-items:center;
+    }
+
+    .drawer-brand-logo img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
     .drawer-brand-title{
-      font-size:16px;
+      font-size:15px;
       font-weight:900;
-    }
-
-    .drawer-brand-sub{
-      color:#dbe5ff;
-      font-size:11px;
-    }
-
-    .drawer-close{
-      width:40px;
-      height:40px;
-      min-width:40px;
-      border-radius:14px;
     }
 
     .drawer-nav{
@@ -971,19 +746,12 @@
       font-weight:800;
     }
 
-    .drawer-link-left{
+    .drawer-left{
       display:flex;
       align-items:center;
       gap:10px;
       min-width:0;
     }
-
-    .drawer-icon{
-      font-size:17px;
-      line-height:1;
-    }
-
-    .drawer-arrow{ opacity:.7; }
 
     .bottom-nav{
       position:fixed;
@@ -996,35 +764,29 @@
       border-top:1px solid rgba(255,255,255,.10);
       display:grid;
       grid-template-columns:repeat(6,1fr);
-      gap:0;
       padding:8px 4px calc(8px + var(--safe-bottom));
       box-shadow:0 -10px 34px rgba(0,0,0,.28);
     }
 
-    .bottom-nav-link{
+    .nav-link{
       min-height:64px;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
       gap:4px;
-      color:#90a5c7;
-      text-decoration:none;
+      color:#9fb1d1;
       font-size:11px;
       font-weight:800;
       text-align:center;
-      border:none;
-      background:none;
-      transition:none;
-      opacity:1;
-      transform:none;
-      visibility:visible;
     }
 
-    .bottom-nav-link.active{ color:#fff; }
+    .nav-link.active{
+      color:#fff;
+    }
 
     .nav-icon{
-      font-size:21px;
+      font-size:20px;
       line-height:1;
       width:24px;
       height:24px;
@@ -1032,23 +794,11 @@
       place-items:center;
     }
 
-    .create-nav{
-      position:relative;
-      color:#fff;
-    }
-
     .create-nav .nav-icon{
-      width:24px;
-      height:24px;
-      border-radius:0;
-      background:none;
       color:#fff;
-      font-size:21px;
-      box-shadow:none;
-      margin-bottom:0;
     }
 
-    .modal-backdrop{
+    .sheet-backdrop{
       position:fixed;
       inset:0;
       z-index:90;
@@ -1060,10 +810,12 @@
       padding:10px;
     }
 
-    .modal-backdrop.show{ display:flex; }
+    .sheet-backdrop.show{
+      display:flex;
+    }
 
     .sheet{
-      width:min(100%,720px);
+      width:min(100%, 720px);
       border-radius:28px 28px 0 0;
       background:linear-gradient(180deg,#1d2f9e,#101d73 55%,#0a1252);
       border:1px solid rgba(255,255,255,.10);
@@ -1114,49 +866,29 @@
       line-height:1;
     }
 
-    @media (max-width:900px){
-      .people-grid,.groups-grid,.page-cards-grid{
+    @media (max-width:760px){
+      .people-grid{
         grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+      .card.wide{
+        flex-basis:280px;
+        min-width:280px;
+        max-width:280px;
+      }
+      .card{
+        flex-basis:228px;
+        min-width:228px;
+        max-width:228px;
       }
     }
 
-    @media (max-width:640px){
-      .explore-page{
-        padding-left:10px;
-        padding-right:10px;
-      }
-
-      .brand-logo,.drawer-brand-logo{
-        width:46px;
-        height:46px;
-        min-width:46px;
-      }
-
-      .icon-btn{
-        width:42px;
-        height:42px;
-        min-width:42px;
-        border-radius:15px;
-      }
-
-      .brand-title-main{ font-size:18px; }
-      .brand-title-sub{ font-size:10px; }
-
-      .people-grid,.groups-grid,.page-cards-grid{
+    @media (max-width:520px){
+      .people-grid{
         grid-template-columns:1fr;
       }
-
-      .feature-panel{
-        align-items:flex-start;
-      }
-
       .sheet-grid{
         grid-template-columns:1fr 1fr;
       }
-
-      .slide-card.large{ flex-basis:286px; min-width:286px; max-width:286px; }
-      .slide-card.small{ flex-basis:220px; min-width:220px; max-width:220px; }
-      .slide-card.market-card{ flex-basis:220px; min-width:220px; max-width:220px; }
     }
   </style>
 
@@ -1175,542 +907,246 @@
   </script>
 </head>
 <body>
-  <div class="explore-page" id="explorePage">
-    <div id="pageNotice" class="page-notice" role="status" aria-live="polite"></div>
+  <div class="page">
+    <div id="notice" class="notice"></div>
 
     <header class="topbar">
-      <div class="topbar-left">
-        <a href="home.html" class="icon-btn" aria-label="Back to home">←</a>
+      <div class="top-left">
+        <a href="home.html" class="icon-btn" aria-label="Back">←</a>
       </div>
 
-      <div class="topbar-brand">
-        <a href="home.html" class="brand-wrap" aria-label="View home">
-          <div class="brand-logo">
-            <img
-              src="icons/view-logo.png"
-              alt="View logo"
-              onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;brand-fallback&quot;>V</span>';"
-            />
+      <a href="home.html" class="brand" aria-label="View home">
+        <div class="brand-logo">
+          <img src="icons/view-logo.png" alt="View logo" onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;brand-fallback&quot;>V</span>';" />
+        </div>
+        <div class="brand-copy">
+          <div class="brand-title">
+            <strong>VIEW</strong>
+            <span>by Ceetify</span>
           </div>
+          <div class="brand-line"></div>
+        </div>
+      </a>
 
-          <div class="brand-copy">
-            <div class="brand-title-row">
-              <span class="brand-title-main">VIEW</span>
-              <span class="brand-title-sep">|</span>
-              <span class="brand-title-sub">by Ceetify</span>
-            </div>
-            <div class="brand-tagline">Explore the ecosystem</div>
-          </div>
-        </a>
-      </div>
-
-      <div class="topbar-right">
+      <div class="top-right">
         <a href="notifications.html" class="icon-btn" aria-label="Notifications">
-          <span>🔔</span>
-          <span id="notificationBadge" class="icon-badge hidden">0</span>
+          🔔
+          <span id="notificationBadge" class="badge">0</span>
         </a>
 
-        <a id="myProfileBtn" href="profile.html" class="icon-btn" aria-label="My profile">
-          <img
-            id="myProfileAvatar"
-            src="icons/view-logo.png"
-            alt="My profile"
-            style="width:100%;height:100%;object-fit:cover;"
-            onerror="this.src='icons/view-logo.png';"
-          />
+        <a id="myProfileBtn" href="profile.html" class="icon-btn profile-btn" aria-label="Profile">
+          <img id="myProfileAvatar" src="icons/view-logo.png" alt="Profile" onerror="this.src='icons/view-logo.png';" />
         </a>
 
-        <button
-          id="drawerToggleBtn"
-          class="icon-btn"
-          type="button"
-          aria-label="Open menu"
-          aria-controls="exploreDrawer"
-          aria-expanded="false"
-        >
-          ☰
-        </button>
+        <button id="drawerToggleBtn" class="icon-btn" type="button" aria-label="Menu" aria-expanded="false">☰</button>
       </div>
     </header>
 
-    <section class="search-panel">
-      <div class="search-box">
-        <div class="search-icon" aria-hidden="true">⌕</div>
-        <input id="globalSearchInput" class="search-input" type="text" placeholder="Search View..." autocomplete="off" />
-        <button id="voiceSearchBtn" class="search-voice-btn" type="button" aria-label="Voice search">🎤</button>
+    <section class="searchbar">
+      <span>⌕</span>
+      <input id="searchInput" type="text" placeholder="Search View..." autocomplete="off" />
+      <button id="voiceBtn" class="voice-btn" type="button" aria-label="Voice search">🎤</button>
+    </section>
+
+    <section class="hero">
+      <div id="heroProfiles" class="hero-pill">Profiles 0</div>
+      <div id="heroOnline" class="hero-pill">Online 0</div>
+      <div id="heroSuggested" class="hero-pill">Suggested 0</div>
+      <div id="heroProducts" class="hero-pill">Products 0</div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Trending</h2>
+        <div class="section-actions">
+          <button id="refreshTrendingBtn" class="mini-btn red" type="button">Refresh</button>
+          <a href="Trendings.html" class="mini-btn">Open</a>
+        </div>
+      </div>
+      <div class="section-body">
+        <div id="trendingList" class="scroll"></div>
       </div>
     </section>
 
-    <section class="main-tabs-wrap">
-      <div class="main-tabs" id="mainTabs">
-        <button class="main-tab active" type="button" data-target="trendingSection">Trending</button>
-        <button class="main-tab" type="button" data-target="statusSection">Status</button>
-        <button class="main-tab" type="button" data-target="peopleSection">People</button>
-        <button class="main-tab" type="button" data-target="groupsSection">Groups</button>
-        <button class="main-tab" type="button" data-target="pagesSection">Pages</button>
-        <button class="main-tab" type="button" data-target="marketSection">Marketplace</button>
-        <button class="main-tab" type="button" data-target="newsSection">News</button>
-        <button class="main-tab" type="button" data-target="aiSection">AI</button>
-        <button class="main-tab" type="button" data-target="savedSection">Saved</button>
+    <section class="section">
+      <div class="section-head">
+        <h2>Status</h2>
+        <div class="section-actions">
+          <a href="status.html" class="mini-btn">All</a>
+          <a href="create-status.html" class="mini-btn red">Create</a>
+        </div>
+      </div>
+      <div class="section-body">
+        <div id="statusList" class="scroll"></div>
       </div>
     </section>
 
-    <main class="page-content">
-      <section class="explore-hero">
-        <div class="explore-hero-card">
-          <div class="explore-hero-copy">
-            <h1>Discover what matters now</h1>
-            <p>
-              Explore trending moments, real status previews, suggested people, groups, pages,
-              marketplace offers, news, AI tools, and saved content across the View ecosystem.
-            </p>
-          </div>
-
-          <div class="explore-hero-stats">
-            <div class="hero-stat-pill" id="heroProfilesCount">Profiles: 0</div>
-            <div class="hero-stat-pill" id="heroOnlineCount">Online: 0</div>
-            <div class="hero-stat-pill" id="heroSuggestedCount">Suggested: 0</div>
-            <div class="hero-stat-pill" id="heroMarketCount">Products: 0</div>
-          </div>
+    <section class="section">
+      <div class="section-head">
+        <h2>People</h2>
+        <div class="section-actions">
+          <button id="peopleRefreshBtn" class="mini-btn red" type="button">Refresh</button>
+          <a href="friends.html" class="mini-btn">Open</a>
         </div>
-      </section>
+      </div>
+      <div class="section-body">
+        <div id="peopleGrid" class="people-grid"></div>
+      </div>
+    </section>
 
-      <section id="trendingSection" class="content-section">
-        <div class="section-head">
-          <div>
-            <h2>Trending</h2>
-            <p>Real internet videos supplied from Trendings.html.</p>
-          </div>
-          <div class="section-head-actions">
-            <a href="trendings.html" class="section-link">See more ›</a>
-            <button id="refreshTrendingBtn" class="section-mini-link" type="button">Refresh</button>
-          </div>
+    <section class="section">
+      <div class="section-head">
+        <h2>Popular</h2>
+        <div class="section-actions">
+          <button id="refreshPopularBtn" class="mini-btn red" type="button">Refresh</button>
+          <a href="Popular-posts.html" class="mini-btn">Open</a>
         </div>
+      </div>
+      <div class="section-body">
+        <div id="popularList" class="scroll"></div>
+      </div>
+    </section>
 
-        <div class="scroll-viewport">
-          <div id="trendingScroller" class="h-scroll">
-            <div class="empty-state-card">
-              <strong>No trending videos yet</strong>
-              <span>Open Trendings.html to refresh internet trending videos.</span>
-            </div>
-          </div>
+    <section class="section">
+      <div class="section-head">
+        <h2>Market</h2>
+        <div class="section-actions">
+          <button id="refreshMarketBtn" class="mini-btn red" type="button">Refresh</button>
+          <a href="marketplace.html" class="mini-btn">Open</a>
         </div>
-      </section>
+      </div>
+      <div class="section-body">
+        <div id="marketList" class="scroll"></div>
+      </div>
+    </section>
 
-      <section id="statusSection" class="content-section">
-        <div class="section-head">
-          <div>
-            <h2>Status</h2>
-            <p>Your status first, then real previews from people with active status.</p>
-          </div>
-          <div class="section-head-actions">
-            <a href="status.html" class="section-link">See all ›</a>
-            <a href="create-status.html" class="section-mini-link">Create status</a>
-          </div>
+    <section class="section">
+      <div class="section-head">
+        <h2>News</h2>
+        <div class="section-actions">
+          <button id="refreshNewsBtn" class="mini-btn red" type="button">Refresh</button>
+          <a href="News.html" class="mini-btn">Open</a>
         </div>
-
-        <div class="scroll-viewport">
-          <div id="statusScroller" class="h-scroll"></div>
-        </div>
-      </section>
-
-      <section id="peopleSection" class="content-section">
-        <div class="section-head">
-          <div>
-            <h2>People</h2>
-            <p>Suggested by View so users can follow and discover more profiles.</p>
-          </div>
-          <div class="section-head-actions">
-            <a href="friends.html" class="section-link">See all ›</a>
-            <div class="section-icon-actions">
-              <button id="peopleRefreshBtn" class="section-icon-btn" type="button" aria-label="Refresh people">↻</button>
-              <button id="peopleSearchBtn" class="section-icon-btn" type="button" aria-label="Focus people search">⌕</button>
-              <button id="peopleMoreBtn" class="section-icon-btn" type="button" aria-label="Open people page">☰</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="sub-tabs-wrap">
-          <div class="sub-tabs" id="peopleTabs">
-            <button class="sub-tab active" type="button" data-filter="suggested">Suggested</button>
-            <button class="sub-tab" type="button" data-filter="online">Online</button>
-            <button class="sub-tab" type="button" data-filter="newest">Newest</button>
-          </div>
-        </div>
-
-        <div id="peopleGrid" class="people-grid">
-          <div class="empty-state-card">
-            <strong>Loading people</strong>
-            <span>Please wait while Explore loads profiles.</span>
-          </div>
-        </div>
-      </section>
-
-      <section id="groupsSection" class="content-section">
-        <div class="section-head">
-          <div>
-            <h2>Groups</h2>
-            <p>Join communities for creators, brands, trends, and interests.</p>
-          </div>
-          <a href="groups.html" class="section-link">See all ›</a>
-        </div>
-
-        <div class="groups-grid">
-          <a href="groups.html" class="group-card">
-            <div class="group-cover group-cover-blue"></div>
-            <div class="group-body">
-              <h3>Fitness Zone</h3>
-              <p>Open groups and discover active communities.</p>
-            </div>
-          </a>
-
-          <a href="groups.html" class="group-card">
-            <div class="group-cover group-cover-red"></div>
-            <div class="group-body">
-              <h3>Coding Enthusiasts</h3>
-              <p>Find creator and skill-based groups.</p>
-            </div>
-          </a>
-
-          <a href="groups.html" class="group-card">
-            <div class="group-cover group-cover-mix"></div>
-            <div class="group-body">
-              <h3>Manga Lovers</h3>
-              <p>Explore entertainment communities on View.</p>
-            </div>
-          </a>
-        </div>
-      </section>
-
-      <section id="pagesSection" class="content-section">
-        <div class="section-head">
-          <div>
-            <h2>Pages</h2>
-            <p>Discover brands, creators, businesses, and public communities.</p>
-          </div>
-          <a href="pages.html" class="section-link">See all ›</a>
-        </div>
-
-        <div class="page-cards-grid">
-          <a href="pages.html" class="page-card">
-            <div class="page-card-icon">📄</div>
-            <div class="page-card-body">
-              <h3>Business Pages</h3>
-              <p>Find verified public pages and communities.</p>
-            </div>
-          </a>
-
-          <a href="pages.html" class="page-card">
-            <div class="page-card-icon">⭐</div>
-            <div class="page-card-body">
-              <h3>Featured Pages</h3>
-              <p>Premium pages highlighted across the ecosystem.</p>
-            </div>
-          </a>
-
-          <a href="pages.html" class="page-card">
-            <div class="page-card-icon">📣</div>
-            <div class="page-card-body">
-              <h3>Creator Pages</h3>
-              <p>Follow public pages from your favorite creators.</p>
-            </div>
-          </a>
-        </div>
-      </section>
-
-      <section id="marketSection" class="content-section">
-        <div class="section-head">
-          <div>
-            <h2>Marketplace</h2>
-            <p>Real items fetched from marketplace data. Slide to see more.</p>
-          </div>
-          <div class="section-head-actions">
-            <a href="marketplace.html" class="section-link">Open marketplace ›</a>
-            <button id="refreshMarketBtn" class="section-mini-link" type="button">Refresh</button>
-          </div>
-        </div>
-
-        <div class="scroll-viewport">
-          <div id="marketScroller" class="h-scroll">
-            <div class="empty-state-card">
-              <strong>No marketplace items</strong>
-              <span>Products will appear here when marketplace items are available.</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="newsSection" class="content-section">
-        <div class="section-head">
-          <div>
-            <h2>News</h2>
-            <p>Headline rotates every 3 seconds using news data.</p>
-          </div>
-          <a href="news.html" class="section-link">See all ›</a>
-        </div>
-
-        <a href="news.html" id="headlineBar" class="headline-bar">
-          <div class="headline-label">Headline</div>
-          <div id="headlineText" class="headline-text">No headline available yet.</div>
+      </div>
+      <div class="section-body">
+        <a href="News.html" id="headlineBar" class="headline">
+          <div class="headline-label">News</div>
+          <div id="headlineText" class="headline-text">Loading...</div>
           <div id="headlineTime" class="headline-time">Now</div>
         </a>
-      </section>
-
-      <section id="aiSection" class="content-section">
-        <div class="section-head">
-          <div>
-            <h2>AI</h2>
-            <p>Use premium AI tools for creativity, posts, captions, and ideas.</p>
-          </div>
-          <a href="ask-ai.html" class="section-link">Open AI ›</a>
-        </div>
-
-        <div class="feature-panel">
-          <div class="feature-panel-icon">✨</div>
-          <div class="feature-panel-copy">
-            <h3>View AI</h3>
-            <p>Use View AI for captions, drafts, smart ideas, and premium creativity tools.</p>
-          </div>
-          <a href="ask-ai.html" class="feature-panel-btn">Launch</a>
-        </div>
-      </section>
-
-      <section id="savedSection" class="content-section">
-        <div class="section-head">
-          <div>
-            <h2>Saved Posts</h2>
-            <p>Open the content you bookmarked for later.</p>
-          </div>
-          <a href="saved-posts.html" class="section-link">Open saved ›</a>
-        </div>
-
-        <div class="feature-panel">
-          <div class="feature-panel-icon">🔖</div>
-          <div class="feature-panel-copy">
-            <h3>Saved content</h3>
-            <p>Find your bookmarked posts, ideas, and creator moments.</p>
-          </div>
-          <a href="saved-posts.html" class="feature-panel-btn">Open</a>
-        </div>
-      </section>
-
-      <section id="settingsSection" class="content-section">
-        <div class="section-head">
-          <div>
-            <h2>Settings</h2>
-            <p>Manage your account, preferences, and ecosystem controls.</p>
-          </div>
-          <a href="settings.html" class="section-link">Open settings ›</a>
-        </div>
-
-        <div class="feature-panel">
-          <div class="feature-panel-icon">⚙️</div>
-          <div class="feature-panel-copy">
-            <h3>Account and app settings</h3>
-            <p>Open settings to manage profile, privacy, notifications, and more.</p>
-          </div>
-          <a href="settings.html" class="feature-panel-btn">Open</a>
-        </div>
-      </section>
-    </main>
+      </div>
+    </section>
   </div>
 
   <div id="drawerBackdrop" class="drawer-backdrop"></div>
 
-  <aside id="exploreDrawer" class="app-drawer" aria-hidden="true">
+  <aside id="drawer" class="drawer" aria-hidden="true">
     <div class="drawer-head">
       <div class="drawer-brand">
         <div class="drawer-brand-logo">
-          <img
-            src="icons/view-logo.png"
-            alt="View logo"
-            onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;brand-fallback&quot;>V</span>';"
-          />
+          <img src="icons/view-logo.png" alt="View logo" onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;brand-fallback&quot;>V</span>';" />
         </div>
-        <div>
-          <div class="drawer-brand-title">View Menu</div>
-          <div class="drawer-brand-sub">Ceetify ecosystem</div>
-        </div>
+        <div class="drawer-brand-title">View Menu</div>
       </div>
-
-      <button id="drawerCloseBtn" class="icon-btn drawer-close" type="button" aria-label="Close menu">✕</button>
+      <button id="drawerCloseBtn" class="icon-btn" type="button" aria-label="Close">✕</button>
     </div>
 
     <nav class="drawer-nav">
-      <a href="dashboard.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">📊</span><span>Dashboard</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="groups.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">👥</span><span>Groups</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="pages.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">📄</span><span>Pages</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="trendings.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">🔥</span><span>Trendings</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="status.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">⭕</span><span>Status</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="live-score.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">🏟️</span><span>Live Score</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="jobs.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">💼</span><span>Jobs</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="friends.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">🤝</span><span>Friends</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="marketplace.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">🛍️</span><span>Marketplace</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="news.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">📰</span><span>News</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="ask-ai.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">✨</span><span>View AI</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="saved-posts.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">🔖</span><span>Saved Posts</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
-
-      <a href="settings.html" class="drawer-link">
-        <span class="drawer-link-left"><span class="drawer-icon">⚙️</span><span>Settings</span></span>
-        <span class="drawer-arrow">›</span>
-      </a>
+      <a href="dashboard.html" class="drawer-link"><span class="drawer-left"><span>📊</span><span>Dashboard</span></span><span>›</span></a>
+      <a href="ask-ai.html" class="drawer-link"><span class="drawer-left"><span>✨</span><span>View AI</span></span><span>›</span></a>
+      <a href="groups.html" class="drawer-link"><span class="drawer-left"><span>👥</span><span>Groups</span></span><span>›</span></a>
+      <a href="pages.html" class="drawer-link"><span class="drawer-left"><span>📄</span><span>Pages</span></span><span>›</span></a>
+      <a href="Trendings.html" class="drawer-link"><span class="drawer-left"><span>🔥</span><span>Trendings</span></span><span>›</span></a>
+      <a href="status.html" class="drawer-link"><span class="drawer-left"><span>⭕</span><span>Status</span></span><span>›</span></a>
+      <a href="marketplace.html" class="drawer-link"><span class="drawer-left"><span>🛍️</span><span>Marketplace</span></span><span>›</span></a>
+      <a href="News.html" class="drawer-link"><span class="drawer-left"><span>📰</span><span>News</span></span><span>›</span></a>
+      <a href="saved-posts.html" class="drawer-link"><span class="drawer-left"><span>🔖</span><span>Saved</span></span><span>›</span></a>
+      <a href="settings.html" class="drawer-link"><span class="drawer-left"><span>⚙️</span><span>Settings</span></span><span>›</span></a>
     </nav>
   </aside>
 
   <nav class="bottom-nav">
-    <a href="home.html" class="bottom-nav-link">
-      <span class="nav-icon">🏠</span>
-      <span class="nav-label">Home</span>
-    </a>
-
-    <a href="explore.html" class="bottom-nav-link active">
-      <span class="nav-icon">🧭</span>
-      <span class="nav-label">Explore</span>
-    </a>
-
-    <button id="createFooterBtn" class="bottom-nav-link create-nav" type="button">
-      <span class="nav-icon">➕</span>
-      <span class="nav-label">Create</span>
-    </button>
-
-    <a href="chats.html" class="bottom-nav-link">
-      <span class="nav-icon">💬</span>
-      <span class="nav-label">Chat</span>
-    </a>
-
-    <a href="video-feed.html" class="bottom-nav-link">
-      <span class="nav-icon">🎬</span>
-      <span class="nav-label">Video</span>
-    </a>
-
-    <a href="profile.html" class="bottom-nav-link">
-      <span class="nav-icon">👤</span>
-      <span class="nav-label">Profile</span>
-    </a>
+    <a href="home.html" class="nav-link"><span class="nav-icon">🏠</span><span>Home</span></a>
+    <a href="explore.html" class="nav-link active"><span class="nav-icon">🧭</span><span>Explore</span></a>
+    <button id="createBtn" class="nav-link create-nav" type="button"><span class="nav-icon">➕</span><span>Create</span></button>
+    <a href="chats.html" class="nav-link"><span class="nav-icon">💬</span><span>Chat</span></a>
+    <a href="video-feed.html" class="nav-link"><span class="nav-icon">🎬</span><span>Video</span></a>
+    <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span><span>Profile</span></a>
   </nav>
 
-  <div id="createSheetBackdrop" class="modal-backdrop">
+  <div id="createSheetBackdrop" class="sheet-backdrop">
     <div class="sheet">
       <div class="sheet-handle"></div>
       <div class="sheet-title">Create</div>
       <div class="sheet-grid">
-        <a class="sheet-btn" href="create-post.html">
-          <span class="big">✍️</span>
-          <span>Create Post</span>
-        </a>
-        <a class="sheet-btn" href="video-feed.html?create=reel">
-          <span class="big">🎬</span>
-          <span>Reels</span>
-        </a>
-        <a class="sheet-btn" href="go-live.html">
-          <span class="big">📺</span>
-          <span>Go Live</span>
-        </a>
-        <a class="sheet-btn" href="create-status.html">
-          <span class="big">⭕</span>
-          <span>Create Status</span>
-        </a>
+        <a class="sheet-btn" href="create-post.html"><span class="big">✍️</span><span>Create Post</span></a>
+        <a class="sheet-btn" href="create-status.html"><span class="big">⭕</span><span>Create Status</span></a>
+        <a class="sheet-btn" href="go-live.html"><span class="big">📺</span><span>Go Live</span></a>
+        <a class="sheet-btn" href="video-feed.html?create=reel"><span class="big">🎬</span><span>Reels</span></a>
       </div>
     </div>
   </div>
 
   <script>
-    const pageNotice = document.getElementById("pageNotice");
-    const drawer = document.getElementById("exploreDrawer");
+    const CACHE_TTL = 5 * 60 * 1000;
+    const LONG_CACHE_TTL = 10 * 60 * 1000;
+
+    const notice = document.getElementById("notice");
+    const searchInput = document.getElementById("searchInput");
+    const voiceBtn = document.getElementById("voiceBtn");
+    const heroProfiles = document.getElementById("heroProfiles");
+    const heroOnline = document.getElementById("heroOnline");
+    const heroSuggested = document.getElementById("heroSuggested");
+    const heroProducts = document.getElementById("heroProducts");
+    const myProfileAvatar = document.getElementById("myProfileAvatar");
+    const notificationBadge = document.getElementById("notificationBadge");
+    const trendingList = document.getElementById("trendingList");
+    const statusList = document.getElementById("statusList");
+    const peopleGrid = document.getElementById("peopleGrid");
+    const popularList = document.getElementById("popularList");
+    const marketList = document.getElementById("marketList");
+    const headlineText = document.getElementById("headlineText");
+    const headlineTime = document.getElementById("headlineTime");
+
+    const drawer = document.getElementById("drawer");
     const drawerBackdrop = document.getElementById("drawerBackdrop");
     const drawerToggleBtn = document.getElementById("drawerToggleBtn");
     const drawerCloseBtn = document.getElementById("drawerCloseBtn");
-    const notificationBadge = document.getElementById("notificationBadge");
-    const myProfileBtn = document.getElementById("myProfileBtn");
-    const myProfileAvatar = document.getElementById("myProfileAvatar");
-    const createFooterBtn = document.getElementById("createFooterBtn");
+    const createBtn = document.getElementById("createBtn");
     const createSheetBackdrop = document.getElementById("createSheetBackdrop");
-    const mainTabs = [...document.querySelectorAll(".main-tab")];
-    const peopleTabs = [...document.querySelectorAll(".sub-tab")];
-    const globalSearchInput = document.getElementById("globalSearchInput");
-    const voiceSearchBtn = document.getElementById("voiceSearchBtn");
-    const heroProfilesCount = document.getElementById("heroProfilesCount");
-    const heroOnlineCount = document.getElementById("heroOnlineCount");
-    const heroSuggestedCount = document.getElementById("heroSuggestedCount");
-    const heroMarketCount = document.getElementById("heroMarketCount");
-    const peopleGrid = document.getElementById("peopleGrid");
-    const statusScroller = document.getElementById("statusScroller");
-    const trendingScroller = document.getElementById("trendingScroller");
-    const marketScroller = document.getElementById("marketScroller");
+
     const refreshTrendingBtn = document.getElementById("refreshTrendingBtn");
     const refreshMarketBtn = document.getElementById("refreshMarketBtn");
+    const refreshPopularBtn = document.getElementById("refreshPopularBtn");
+    const refreshNewsBtn = document.getElementById("refreshNewsBtn");
     const peopleRefreshBtn = document.getElementById("peopleRefreshBtn");
-    const peopleSearchBtn = document.getElementById("peopleSearchBtn");
-    const peopleMoreBtn = document.getElementById("peopleMoreBtn");
-    const headlineText = document.getElementById("headlineText");
-    const headlineTime = document.getElementById("headlineTime");
 
     let currentUser = null;
     let currentProfile = null;
     let profilesCache = [];
     let followingIds = new Set();
-    let currentPeopleFilter = "suggested";
-    let voiceRecognition = null;
-    let voiceListening = false;
-    let headlineItems = [];
-    let headlineIndex = 0;
+    let marketItems = [];
+    let popularItems = [];
+    let newsItems = [];
     let headlineTimer = null;
+    let speechRecognition = null;
+    let loading = {
+      trending:false,
+      market:false,
+      popular:false,
+      people:false,
+      status:false,
+      news:false
+    };
 
-    function showNotice(message, type = "info") {
-      pageNotice.className = `page-notice show ${type}`;
-      pageNotice.textContent = message || "";
+    function showNotice(message, type = "info", duration = 2800) {
+      notice.className = `notice show ${type}`;
+      notice.textContent = message || "";
       clearTimeout(showNotice._t);
       showNotice._t = setTimeout(() => {
-        pageNotice.className = "page-notice";
-        pageNotice.textContent = "";
-      }, 3000);
+        notice.className = "notice";
+        notice.textContent = "";
+      }, duration);
     }
 
     function safeText(value, fallback = "") {
@@ -1718,31 +1154,13 @@
       return text || fallback;
     }
 
-    function getDisplayName(profile = {}) {
-      return (
-        safeText(profile.full_name) ||
-        safeText(profile.username) ||
-        safeText(profile.email) ||
-        "User"
-      );
-    }
-
-    function getInitial(name = "") {
-      return safeText(name, "U").charAt(0).toUpperCase();
-    }
-
-    function renderAvatar(url, name) {
-      if (url) return `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}">`;
-      return `<span>${escapeHtml(getInitial(name))}</span>`;
-    }
-
     function escapeHtml(value) {
       return String(value || "")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#39;");
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
     function formatCompact(num){
@@ -1750,16 +1168,6 @@
       if(n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(".0","") + "M";
       if(n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0","") + "K";
       return String(n);
-    }
-
-    function timeAgo(value) {
-      if (!value) return "Just now";
-      const date = new Date(value);
-      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-      if (diff < 60) return "Just now";
-      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-      return `${Math.floor(diff / 86400)}d ago`;
     }
 
     function formatPrice(value){
@@ -1775,36 +1183,42 @@
       }
     }
 
-    function getImages(item){
-      if(!item) return [];
-      if(Array.isArray(item.images) && item.images.length) return item.images.filter(Boolean);
-      if(typeof item.images === "string" && item.images.trim().startsWith("[")){
-        try{
-          const parsed = JSON.parse(item.images);
-          return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
-        }catch(_){}
-      }
-      if(typeof item.image_url === "string" && item.image_url.trim()) return [item.image_url.trim()];
-      if(typeof item.cover_url === "string" && item.cover_url.trim()) return [item.cover_url.trim()];
-      return [];
+    function timeAgo(value) {
+      if (!value) return "Now";
+      const date = new Date(value);
+      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+      if (diff < 60) return "Now";
+      if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+      return `${Math.floor(diff / 86400)}d`;
     }
 
-    function getStatusPreview(row){
-      const mediaUrl = safeText(row.media_url);
-      const thumb = safeText(row.thumbnail_url);
-      const kind = safeText(row.status_type || row.media_type).toLowerCase();
-      const text = safeText(row.text_content || row.content || row.caption || "Status");
+    function getDisplayName(profile = {}) {
+      return safeText(profile.full_name) || safeText(profile.username) || safeText(profile.email) || "User";
+    }
 
-      if (mediaUrl && (kind.includes("image") || /\.(png|jpg|jpeg|gif|webp)(\?|$)/i.test(mediaUrl))) {
-        return `<img src="${escapeHtml(mediaUrl)}" alt="Status preview">`;
+    function getInitial(name = "") {
+      return safeText(name, "U").charAt(0).toUpperCase();
+    }
+
+    function cacheSet(key, data, ttl = CACHE_TTL) {
+      try {
+        localStorage.setItem(key, JSON.stringify({
+          expiry: Date.now() + ttl,
+          data
+        }));
+      } catch (_) {}
+    }
+
+    function cacheGet(key) {
+      try {
+        const raw = JSON.parse(localStorage.getItem(key) || "null");
+        if (!raw || typeof raw !== "object") return null;
+        if (Date.now() > Number(raw.expiry || 0)) return null;
+        return raw.data;
+      } catch {
+        return null;
       }
-      if (thumb) {
-        return `<img src="${escapeHtml(thumb)}" alt="Status preview">`;
-      }
-      if (mediaUrl && (kind.includes("video") || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(mediaUrl))) {
-        return `<div class="status-text-preview">▶ Video Status</div>`;
-      }
-      return `<div class="status-text-preview">${escapeHtml(text.slice(0, 60))}</div>`;
     }
 
     function openDrawer() {
@@ -1832,88 +1246,470 @@
     drawerToggleBtn.addEventListener("click", openDrawer);
     drawerCloseBtn.addEventListener("click", closeDrawer);
     drawerBackdrop.addEventListener("click", closeDrawer);
-
-    createFooterBtn.addEventListener("click", openCreateSheet);
+    createBtn.addEventListener("click", openCreateSheet);
     createSheetBackdrop.addEventListener("click", (e) => {
       if (e.target === createSheetBackdrop) closeCreateSheet();
     });
 
-    mainTabs.forEach(tab => {
-      tab.addEventListener("click", () => {
-        mainTabs.forEach(x => x.classList.remove("active"));
-        tab.classList.add("active");
-        const target = document.getElementById(tab.dataset.target);
-        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#drawer") && !e.target.closest("#drawerToggleBtn")) {
+        closeDrawer();
+      }
     });
 
-    peopleTabs.forEach(tab => {
-      tab.addEventListener("click", () => {
-        peopleTabs.forEach(x => x.classList.remove("active"));
-        tab.classList.add("active");
-        currentPeopleFilter = tab.dataset.filter;
-        renderPeople();
-      });
-    });
+    function debounce(fn, delay = 260) {
+      let timer = null;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      };
+    }
 
-    globalSearchInput.addEventListener("input", () => {
-      renderPeople();
-      filterDynamicSections();
-    });
+    function renderEmpty(target, text) {
+      target.innerHTML = `<div class="empty">${escapeHtml(text)}</div>`;
+    }
 
-    peopleRefreshBtn.addEventListener("click", async () => {
-      await loadProfiles();
-      renderPeople();
-      showNotice("People refreshed.", "success");
-    });
+    function extractImageFromElement(el) {
+      const img = el.querySelector("img");
+      return img?.getAttribute("src") || img?.dataset?.src || "";
+    }
 
-    peopleSearchBtn.addEventListener("click", () => {
-      globalSearchInput.focus();
-      globalSearchInput.scrollIntoView({ behavior:"smooth", block:"center" });
-    });
+    function extractText(el, selectors) {
+      for (const selector of selectors) {
+        const node = el.querySelector(selector);
+        if (node && safeText(node.textContent)) return safeText(node.textContent);
+      }
+      return "";
+    }
 
-    peopleMoreBtn.addEventListener("click", () => {
-      window.location.href = "friends.html";
-    });
+    async function fetchHtmlDoc(url) {
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) throw new Error(`Could not load ${url}`);
+      const html = await response.text();
+      return new DOMParser().parseFromString(html, "text/html");
+    }
 
-    refreshTrendingBtn.addEventListener("click", () => {
-      renderTrending();
-      showNotice("Trending reloaded from Trendings.html cache.", "success");
-    });
+    async function loadTrending(force = false) {
+      if (loading.trending) return;
+      loading.trending = true;
 
-    refreshMarketBtn.addEventListener("click", async () => {
-      await loadMarket();
-      showNotice("Marketplace refreshed.", "success");
-    });
-
-    async function loadNotificationCount() {
       try {
-        const { count, error } = await window.supabaseClient
-          .from("notifications")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", currentUser.id);
+        let items = !force ? cacheGet("view_explore_trending_v2") : null;
 
-        if (error) throw error;
-        const total = Number(count || 0);
-        notificationBadge.textContent = total > 99 ? "99+" : String(total);
-        notificationBadge.classList.toggle("hidden", total < 1);
-      } catch {
-        notificationBadge.classList.add("hidden");
+        if (!items) {
+          const doc = await fetchHtmlDoc("Trendings.html");
+          const cards = [...doc.querySelectorAll("a, article, .trend-card, .video-card, .card")];
+          const parsed = cards.map((card, index) => {
+            const title = extractText(card, ["h1","h2","h3",".title",".card-title",".trend-title"]);
+            const meta = extractText(card, [".meta",".card-meta",".trend-meta","small",".sub"]);
+            const thumb = extractImageFromElement(card);
+            const href = card.getAttribute("href") || "Trendings.html";
+            if (!title && !thumb) return null;
+            return {
+              id: `tr-${index}`,
+              title: title || "Trending Video",
+              meta: meta || "Trending",
+              thumb,
+              href
+            };
+          }).filter(Boolean).slice(0, 8);
+
+          items = parsed;
+          cacheSet("view_explore_trending_v2", items, LONG_CACHE_TTL);
+        }
+
+        const term = safeText(searchInput.value).toLowerCase();
+        const rows = (items || []).filter(item => {
+          if (!term) return true;
+          return `${item.title} ${item.meta}`.toLowerCase().includes(term);
+        });
+
+        if (!rows.length) {
+          renderEmpty(trendingList, "No trending items.");
+          return;
+        }
+
+        trendingList.innerHTML = rows.map((item, index) => `
+          <a href="${escapeHtml(item.href || "Trendings.html")}" class="card media-card ${index === 0 ? "wide" : ""}">
+            <div class="thumb">
+              ${item.thumb ? `<img loading="lazy" decoding="async" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}" onerror="this.style.display='none';">` : `<div class="status-text">No Preview</div>`}
+              <div class="chip">Trending</div>
+              <div class="play">▶</div>
+            </div>
+            <div class="card-body">
+              <div class="title">${escapeHtml(item.title)}</div>
+              <div class="meta"><span>${escapeHtml(item.meta)}</span></div>
+            </div>
+          </a>
+        `).join("");
+      } catch (error) {
+        renderEmpty(trendingList, error.message || "Could not load trending.");
+      } finally {
+        loading.trending = false;
       }
     }
 
-    async function loadHeroStats() {
-      try {
-        const [{ count: profilesCount }, { count: onlineCount }] = await Promise.all([
-          window.supabaseClient.from("profiles").select("*", { count: "exact", head: true }),
-          window.supabaseClient.from("profiles").select("*", { count: "exact", head: true }).eq("is_online", true)
-        ]);
+    async function loadNews(force = false) {
+      if (loading.news) return;
+      loading.news = true;
 
-        heroProfilesCount.textContent = `Profiles: ${Number(profilesCount || 0)}`;
-        heroOnlineCount.textContent = `Online: ${Number(onlineCount || 0)}`;
-      } catch {
-        heroProfilesCount.textContent = "Profiles: 0";
-        heroOnlineCount.textContent = "Online: 0";
+      try {
+        let items = !force ? cacheGet("view_explore_news_v2") : null;
+
+        if (!items) {
+          const doc = await fetchHtmlDoc("News.html");
+          const cards = [...doc.querySelectorAll("a, article, .news-card, .headline, .card")];
+          items = cards.map((card, index) => {
+            const title = extractText(card, ["h1","h2","h3",".title",".headline",".news-title"]);
+            const time = extractText(card, [".time",".date",".meta","small"]);
+            const href = card.getAttribute("href") || "News.html";
+            if (!title) return null;
+            return { id:`n-${index}`, title, time: time || "Now", href };
+          }).filter(Boolean).slice(0, 12);
+
+          cacheSet("view_explore_news_v2", items, LONG_CACHE_TTL);
+        }
+
+        newsItems = items || [];
+        startHeadlineRotation();
+      } catch (error) {
+        newsItems = [];
+        headlineText.textContent = "No headline";
+        headlineTime.textContent = "Now";
+      } finally {
+        loading.news = false;
+      }
+    }
+
+    function startHeadlineRotation() {
+      stopHeadlineRotation();
+
+      const term = safeText(searchInput.value).toLowerCase();
+      const filtered = newsItems.filter(item => {
+        if (!term) return true;
+        return item.title.toLowerCase().includes(term);
+      });
+
+      if (!filtered.length) {
+        headlineText.textContent = "No headline";
+        headlineTime.textContent = "Now";
+        return;
+      }
+
+      let index = 0;
+      const render = () => {
+        const item = filtered[index] || filtered[0];
+        headlineText.textContent = item.title;
+        headlineTime.textContent = item.time || "Now";
+      };
+
+      render();
+      headlineTimer = setInterval(() => {
+        index = (index + 1) % filtered.length;
+        render();
+      }, 3000);
+    }
+
+    function stopHeadlineRotation() {
+      if (headlineTimer) {
+        clearInterval(headlineTimer);
+        headlineTimer = null;
+      }
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopHeadlineRotation();
+      else startHeadlineRotation();
+    });
+
+    window.addEventListener("beforeunload", stopHeadlineRotation);
+
+    async function loadPopular(force = false) {
+      if (loading.popular) return;
+      loading.popular = true;
+
+      try {
+        let items = !force ? cacheGet("view_explore_popular_v2") : null;
+
+        if (!items) {
+          const doc = await fetchHtmlDoc("Popular-posts.html");
+          const cards = [...doc.querySelectorAll("a, article, .post, .showcase-card, .card")];
+          items = cards.map((card, index) => {
+            const title = extractText(card, [".post-content",".showcase-content",".content","h3",".title"]);
+            const meta = extractText(card, [".showcase-name",".post-name",".author",".meta"]);
+            const thumb = extractImageFromElement(card);
+            const href = card.getAttribute("href") || "Popular-posts.html";
+            if (!title && !thumb) return null;
+            return {
+              id:`p-${index}`,
+              title: title || "Popular Post",
+              meta: meta || "Popular",
+              thumb,
+              href
+            };
+          }).filter(Boolean).slice(0, 8);
+
+          cacheSet("view_explore_popular_v2", items, LONG_CACHE_TTL);
+        }
+
+        popularItems = items || [];
+        const term = safeText(searchInput.value).toLowerCase();
+        const rows = popularItems.filter(item => {
+          if (!term) return true;
+          return `${item.title} ${item.meta}`.toLowerCase().includes(term);
+        });
+
+        if (!rows.length) {
+          renderEmpty(popularList, "No popular posts.");
+          return;
+        }
+
+        popularList.innerHTML = rows.map(item => `
+          <a href="${escapeHtml(item.href || "Popular-posts.html")}" class="card media-card">
+            <div class="thumb">
+              ${item.thumb ? `<img loading="lazy" decoding="async" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}" onerror="this.style.display='none';">` : `<div class="status-text">No Preview</div>`}
+              <div class="chip">Popular</div>
+            </div>
+            <div class="card-body">
+              <div class="title">${escapeHtml(item.title)}</div>
+              <div class="meta"><span>${escapeHtml(item.meta)}</span></div>
+            </div>
+          </a>
+        `).join("");
+      } catch (error) {
+        renderEmpty(popularList, error.message || "Could not load popular posts.");
+      } finally {
+        loading.popular = false;
+      }
+    }
+
+    function getImages(item){
+      if(!item) return [];
+      if(Array.isArray(item.images) && item.images.length) return item.images.filter(Boolean);
+      if(typeof item.images === "string" && item.images.trim().startsWith("[")){
+        try{
+          const parsed = JSON.parse(item.images);
+          return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+        }catch(_){}
+      }
+      if(typeof item.image_url === "string" && item.image_url.trim()) return [item.image_url.trim()];
+      if(typeof item.cover_url === "string" && item.cover_url.trim()) return [item.cover_url.trim()];
+      return [];
+    }
+
+    async function loadMarket(force = false) {
+      if (loading.market) return;
+      loading.market = true;
+
+      try {
+        let items = !force ? cacheGet("view_explore_market_v2") : null;
+
+        if (!items) {
+          try {
+            const { data, error } = await window.supabaseClient
+              .from("marketplace_items")
+              .select("*")
+              .order("created_at", { ascending:false })
+              .limit(12);
+
+            if (error) throw error;
+            items = data || [];
+          } catch {
+            const doc = await fetchHtmlDoc("marketplace.html");
+            const cards = [...doc.querySelectorAll("a, article, .market-card, .product-card, .card")];
+            items = cards.map((card, index) => {
+              const title = extractText(card, ["h1","h2","h3",".title",".product-title",".card-title"]);
+              const price = extractText(card, [".price",".amount",".card-price"]);
+              const category = extractText(card, [".category",".tag",".chip"]);
+              const location = extractText(card, [".location",".meta","small"]);
+              const image_url = extractImageFromElement(card);
+              const href = card.getAttribute("href") || "marketplace.html";
+              if (!title && !image_url) return null;
+              return { id:`m-${index}`, title, price, category, location, image_url, href };
+            }).filter(Boolean).slice(0, 8);
+          }
+
+          cacheSet("view_explore_market_v2", items, LONG_CACHE_TTL);
+        }
+
+        marketItems = items || [];
+        heroProducts.textContent = `Products ${marketItems.length}`;
+
+        const term = safeText(searchInput.value).toLowerCase();
+        const rows = marketItems.filter(item => {
+          if (!term) return true;
+          return `${safeText(item.title)} ${safeText(item.description)} ${safeText(item.category)} ${safeText(item.location)}`.toLowerCase().includes(term);
+        });
+
+        if (!rows.length) {
+          renderEmpty(marketList, "No market items.");
+          return;
+        }
+
+        marketList.innerHTML = rows.map(item => {
+          const image = getImages(item)[0] || item.image_url || "";
+          const price = item.price ? formatPrice(item.price) : safeText(item.price, "Open");
+          const href = item.href || `product-details.html?id=${encodeURIComponent(item.id || "")}`;
+          return `
+            <a href="${escapeHtml(href)}" class="card media-card">
+              <div class="thumb">
+                ${image ? `<img loading="lazy" decoding="async" src="${escapeHtml(image)}" alt="${escapeHtml(item.title || "Item")}" onerror="this.style.display='none';">` : `<div class="status-text">No Image</div>`}
+                <div class="chip">${escapeHtml(safeText(item.category, "Market"))}</div>
+              </div>
+              <div class="card-body">
+                <div class="title">${escapeHtml(safeText(item.title, "Item"))}</div>
+                <div class="meta"><span>${escapeHtml(price)}</span><span>${escapeHtml(safeText(item.location, ""))}</span></div>
+              </div>
+            </a>
+          `;
+        }).join("");
+      } catch (error) {
+        renderEmpty(marketList, error.message || "Could not load market.");
+      } finally {
+        loading.market = false;
+      }
+    }
+
+    function getStatusPreview(row){
+      const mediaUrl = safeText(row.media_url);
+      const thumb = safeText(row.thumbnail_url);
+      const kind = safeText(row.status_type || row.media_type).toLowerCase();
+      const text = safeText(row.text_content || row.content || row.caption || "Status");
+
+      if (mediaUrl && (kind.includes("image") || /\.(png|jpg|jpeg|gif|webp)(\?|$)/i.test(mediaUrl))) {
+        return `<img loading="lazy" decoding="async" src="${escapeHtml(mediaUrl)}" alt="Status">`;
+      }
+      if (thumb) {
+        return `<img loading="lazy" decoding="async" src="${escapeHtml(thumb)}" alt="Status">`;
+      }
+      if (mediaUrl && (kind.includes("video") || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(mediaUrl))) {
+        return `<div class="status-text">▶ Video</div>`;
+      }
+      return `<div class="status-text">${escapeHtml(text.slice(0, 40))}</div>`;
+    }
+
+    async function loadStatuses(force = false) {
+      if (loading.status) return;
+      loading.status = true;
+
+      try {
+        let payload = !force ? cacheGet("view_explore_status_v2") : null;
+
+        if (!payload) {
+          const nowIso = new Date().toISOString();
+
+          const [myRes, othersRes] = await Promise.all([
+            window.supabaseClient
+              .from("statuses")
+              .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,thumbnail_url,created_at,expires_at")
+              .eq("user_id", currentUser.id)
+              .gt("expires_at", nowIso)
+              .order("created_at", { ascending: false })
+              .limit(1),
+            window.supabaseClient
+              .from("statuses")
+              .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,thumbnail_url,created_at,expires_at")
+              .neq("user_id", currentUser.id)
+              .gt("expires_at", nowIso)
+              .order("created_at", { ascending: false })
+              .limit(20)
+          ]);
+
+          const myStatus = (myRes.data || []).filter(row => new Date(row.expires_at) > new Date())[0] || null;
+          const others = (othersRes.data || []).filter(row => row.expires_at && new Date(row.expires_at) > new Date());
+
+          const uniqueUserIds = [...new Set(others.map(row => row.user_id).filter(Boolean))];
+          const profileMap = new Map();
+
+          if (uniqueUserIds.length) {
+            const { data: people } = await window.supabaseClient
+              .from("profiles")
+              .select("id,full_name,username,avatar_url")
+              .in("id", uniqueUserIds);
+
+            (people || []).forEach(row => profileMap.set(row.id, row));
+          }
+
+          const byUser = new Map();
+          others.forEach(row => {
+            if (!byUser.has(row.user_id) && new Date(row.expires_at) > new Date()) {
+              byUser.set(row.user_id, row);
+            }
+          });
+
+          payload = {
+            myStatus,
+            others: [...byUser.values()].map(row => ({
+              ...row,
+              profile: profileMap.get(row.user_id) || {}
+            }))
+          };
+
+          cacheSet("view_explore_status_v2", payload, CACHE_TTL);
+        }
+
+        let html = `
+          <a href="create-status.html" class="status-card">
+            <div class="status-preview">
+              <div class="status-text">Create</div>
+              <div class="chip">ME</div>
+            </div>
+            <div class="status-name">My Status</div>
+            <div class="status-time">Create</div>
+          </a>
+        `;
+
+        if (payload.myStatus && payload.myStatus.expires_at && new Date(payload.myStatus.expires_at) > new Date()) {
+          html = `
+            <a href="status-viewer.html?id=${encodeURIComponent(payload.myStatus.id)}" class="status-card">
+              <div class="status-preview">
+                ${getStatusPreview(payload.myStatus)}
+                <div class="chip">MY</div>
+              </div>
+              <div class="status-name">My Status</div>
+              <div class="status-time">${escapeHtml(timeAgo(payload.myStatus.created_at))}</div>
+            </a>
+            <a href="create-status.html" class="status-card">
+              <div class="status-preview">
+                <div class="status-text">Add</div>
+                <div class="chip">+</div>
+              </div>
+              <div class="status-name">Add</div>
+              <div class="status-time">Create</div>
+            </a>
+          `;
+        }
+
+        const term = safeText(searchInput.value).toLowerCase();
+        const others = (payload.others || []).filter(row => {
+          const name = getDisplayName(row.profile || {});
+          if (!row.expires_at || new Date(row.expires_at) <= new Date()) return false;
+          if (!term) return true;
+          return name.toLowerCase().includes(term);
+        });
+
+        if (!others.length && !payload.myStatus) {
+          statusList.innerHTML = `${html}<div class="empty" style="min-width:220px;">No active status.</div>`;
+          return;
+        }
+
+        statusList.innerHTML = html + others.map(row => {
+          const name = getDisplayName(row.profile || {});
+          return `
+            <a href="status-viewer.html?id=${encodeURIComponent(row.id)}" class="status-card">
+              <div class="status-preview">
+                ${getStatusPreview(row)}
+                <div class="chip">${escapeHtml(safeText(row.status_type || row.media_type, "status").slice(0, 8))}</div>
+              </div>
+              <div class="status-name">${escapeHtml(name)}</div>
+              <div class="status-time">${escapeHtml(timeAgo(row.created_at))}</div>
+            </a>
+          `;
+        }).join("");
+      } catch (error) {
+        renderEmpty(statusList, error.message || "Could not load status.");
+      } finally {
+        loading.status = false;
       }
     }
 
@@ -1931,56 +1727,55 @@
       }
     }
 
-    async function loadProfiles() {
-      try {
-        const { data, error } = await window.supabaseClient
-          .from("profiles")
-          .select("id,full_name,username,avatar_url,is_online,created_at,email")
-          .neq("id", currentUser.id)
-          .limit(60);
+    async function loadProfiles(force = false) {
+      if (loading.people) return;
+      loading.people = true;
 
-        if (error) throw error;
-        profilesCache = data || [];
+      try {
+        let rows = !force ? cacheGet("view_explore_profiles_v2") : null;
+
+        if (!rows) {
+          const { data, error } = await window.supabaseClient
+            .from("profiles")
+            .select("id,full_name,username,avatar_url,is_online,created_at,email")
+            .neq("id", currentUser.id)
+            .limit(60);
+
+          if (error) throw error;
+          rows = data || [];
+          cacheSet("view_explore_profiles_v2", rows, CACHE_TTL);
+        }
+
+        profilesCache = rows;
+        renderPeople();
       } catch (error) {
         profilesCache = [];
-        showNotice(error.message || "Could not load people.", "error");
+        renderEmpty(peopleGrid, error.message || "Could not load people.");
+      } finally {
+        loading.people = false;
       }
-    }
-
-    function getFilteredPeople() {
-      const term = safeText(globalSearchInput.value).toLowerCase();
-      let rows = [...profilesCache];
-
-      if (currentPeopleFilter === "online") {
-        rows = rows.filter(row => !!row.is_online);
-      } else if (currentPeopleFilter === "newest") {
-        rows.sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-      } else {
-        rows = rows.filter(row => !followingIds.has(row.id));
-      }
-
-      if (term) {
-        rows = rows.filter(row => {
-          const blob = `${safeText(row.full_name)} ${safeText(row.username)} ${safeText(row.email)}`.toLowerCase();
-          return blob.includes(term);
-        });
-      }
-
-      return rows.slice(0, 12);
     }
 
     function renderPeople() {
-      const rows = getFilteredPeople();
+      const term = safeText(searchInput.value).toLowerCase();
+      const rows = profilesCache
+        .filter(row => {
+          if (!term) return true;
+          const blob = `${safeText(row.full_name)} ${safeText(row.username)} ${safeText(row.email)}`.toLowerCase();
+          return blob.includes(term);
+        })
+        .sort((a, b) => {
+          const aScore = (a.is_online ? 2 : 0) + (followingIds.has(a.id) ? 0 : 1);
+          const bScore = (b.is_online ? 2 : 0) + (followingIds.has(b.id) ? 0 : 1);
+          return bScore - aScore;
+        })
+        .slice(0, 6);
+
       const suggestedCount = profilesCache.filter(row => !followingIds.has(row.id)).length;
-      heroSuggestedCount.textContent = `Suggested: ${suggestedCount}`;
+      heroSuggested.textContent = `Suggested ${suggestedCount}`;
 
       if (!rows.length) {
-        peopleGrid.innerHTML = `
-          <div class="empty-state-card">
-            <strong>No people found</strong>
-            <span>Try another filter or search term.</span>
-          </div>
-        `;
+        renderEmpty(peopleGrid, "No people found.");
         return;
       }
 
@@ -1990,24 +1785,23 @@
         const isFollowing = followingIds.has(profile.id);
 
         return `
-          <div class="person-card">
-            <a href="public-profile.html?id=${encodeURIComponent(profile.id)}" aria-label="Open ${escapeHtml(name)} profile">
+          <div class="person">
+            <a href="public-profile.html?id=${encodeURIComponent(profile.id)}">
               <div class="person-avatar-wrap">
                 <div class="person-avatar">
-                  ${renderAvatar(profile.avatar_url, name)}
+                  ${
+                    profile.avatar_url
+                      ? `<img loading="lazy" decoding="async" src="${escapeHtml(profile.avatar_url)}" alt="${escapeHtml(name)}">`
+                      : `<span>${escapeHtml(getInitial(name))}</span>`
+                  }
                 </div>
               </div>
             </a>
-
             <div class="person-name">${escapeHtml(name)}</div>
-            <div class="person-username">${escapeHtml(username)}</div>
-            <div class="person-meta">${profile.is_online ? "Online now" : "Suggested by View"}</div>
-
+            <div class="person-sub">${escapeHtml(username)}</div>
             <div class="person-actions">
               <a class="mini-btn" href="public-profile.html?id=${encodeURIComponent(profile.id)}">View</a>
-              <button class="mini-btn primary" type="button" onclick="toggleFollow('${profile.id}')">
-                ${isFollowing ? "Following" : "Follow"}
-              </button>
+              <button class="mini-btn red" type="button" onclick="toggleFollow('${profile.id}')">${isFollowing ? "Following" : "Follow"}</button>
             </div>
           </div>
         `;
@@ -2025,7 +1819,7 @@
 
           if (error) throw error;
           followingIds.delete(userId);
-          showNotice("Unfollowed successfully.", "success");
+          showNotice("Unfollowed.", "success");
         } else {
           const { error } = await window.supabaseClient
             .from("follows")
@@ -2036,7 +1830,7 @@
 
           if (error) throw error;
           followingIds.add(userId);
-          showNotice("Followed successfully.", "success");
+          showNotice("Followed.", "success");
         }
 
         renderPeople();
@@ -2046,341 +1840,135 @@
     }
     window.toggleFollow = toggleFollow;
 
-    async function loadStatuses() {
-      statusScroller.innerHTML = `
-        <a href="create-status.html" class="slide-card status-card">
-          <div class="status-card-inner">
-            <div class="status-preview">
-              <div class="status-text-preview">Create Status</div>
-              <div class="status-tag">ME</div>
-            </div>
-            <div class="status-name">My Status</div>
-            <div class="status-sub">Tap to create</div>
-          </div>
-        </a>
-      `;
-
+    async function loadUnreadNotifications() {
       try {
-        const nowIso = new Date().toISOString();
+        const { count, error } = await window.supabaseClient
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", currentUser.id)
+          .eq("is_read", false);
 
-        const [myRes, othersRes] = await Promise.all([
-          window.supabaseClient
-            .from("statuses")
-            .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,thumbnail_url,created_at,expires_at")
-            .eq("user_id", currentUser.id)
-            .gt("expires_at", nowIso)
-            .order("created_at", { ascending: false })
-            .limit(1),
-          window.supabaseClient
-            .from("statuses")
-            .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,thumbnail_url,created_at,expires_at")
-            .gt("expires_at", nowIso)
-            .neq("user_id", currentUser.id)
-            .order("created_at", { ascending: false })
-            .limit(20)
+        if (error) throw error;
+        const total = Number(count || 0);
+        notificationBadge.textContent = total > 99 ? "99+" : String(total);
+        notificationBadge.classList.toggle("show", total > 0);
+      } catch {
+        notificationBadge.classList.remove("show");
+      }
+    }
+
+    async function loadHeroStats() {
+      try {
+        const cached = cacheGet("view_explore_hero_stats_v2");
+        if (cached) {
+          heroProfiles.textContent = `Profiles ${Number(cached.profiles || 0)}`;
+          heroOnline.textContent = `Online ${Number(cached.online || 0)}`;
+          return;
+        }
+
+        const [{ count: profilesCount }, { count: onlineCount }] = await Promise.all([
+          window.supabaseClient.from("profiles").select("*", { count: "exact", head: true }),
+          window.supabaseClient.from("profiles").select("*", { count: "exact", head: true }).eq("is_online", true)
         ]);
 
-        const myStatus = (myRes.data || [])[0] || null;
-        const otherRows = othersRes.data || [];
+        const stats = {
+          profiles: Number(profilesCount || 0),
+          online: Number(onlineCount || 0)
+        };
 
-        if (myStatus) {
-          statusScroller.innerHTML = `
-            <a href="status-viewer.html?id=${encodeURIComponent(myStatus.id)}" class="slide-card status-card">
-              <div class="status-card-inner">
-                <div class="status-preview">
-                  ${getStatusPreview(myStatus)}
-                  <div class="status-tag">MY</div>
-                </div>
-                <div class="status-name">My Status</div>
-                <div class="status-sub">${escapeHtml(timeAgo(myStatus.created_at))}</div>
-              </div>
-            </a>
-            <a href="create-status.html" class="slide-card status-card">
-              <div class="status-card-inner">
-                <div class="status-preview">
-                  <div class="status-text-preview">Add More</div>
-                  <div class="status-tag">+</div>
-                </div>
-                <div class="status-name">Add</div>
-                <div class="status-sub">Create status</div>
-              </div>
-            </a>
-          `;
-        }
-
-        if (!otherRows.length) {
-          if (!myStatus) {
-            statusScroller.insertAdjacentHTML("beforeend", `
-              <div class="empty-state-card" style="min-width:260px;">
-                <strong>No active status yet</strong>
-                <span>Create a status or wait for updates.</span>
-              </div>
-            `);
-          }
-          return;
-        }
-
-        const uniqueUserIds = [...new Set(otherRows.map(row => row.user_id).filter(Boolean))];
-        const profileMap = new Map();
-
-        if (uniqueUserIds.length) {
-          const { data: people } = await window.supabaseClient
-            .from("profiles")
-            .select("id,full_name,username,avatar_url")
-            .in("id", uniqueUserIds);
-
-          (people || []).forEach(row => profileMap.set(row.id, row));
-        }
-
-        const byUser = new Map();
-        otherRows.forEach(row => {
-          if (!byUser.has(row.user_id)) byUser.set(row.user_id, row);
-        });
-
-        const cards = [...byUser.values()].map(row => {
-          const profile = profileMap.get(row.user_id) || {};
-          const name = getDisplayName(profile);
-          return `
-            <a href="status-viewer.html?id=${encodeURIComponent(row.id)}" class="slide-card status-card">
-              <div class="status-card-inner">
-                <div class="status-preview">
-                  ${getStatusPreview(row)}
-                  <div class="status-tag">${escapeHtml((safeText(row.status_type || row.media_type) || "Status").slice(0,8))}</div>
-                </div>
-                <div class="status-name">${escapeHtml(name)}</div>
-                <div class="status-sub">${escapeHtml(timeAgo(row.created_at))}</div>
-              </div>
-            </a>
-          `;
-        }).join("");
-
-        statusScroller.insertAdjacentHTML("beforeend", cards);
-      } catch (error) {
-        statusScroller.insertAdjacentHTML("beforeend", `
-          <div class="empty-state-card" style="min-width:260px;">
-            <strong>Could not load status</strong>
-            <span>${escapeHtml(error.message || "Please try again.")}</span>
-          </div>
-        `);
+        cacheSet("view_explore_hero_stats_v2", stats, CACHE_TTL);
+        heroProfiles.textContent = `Profiles ${stats.profiles}`;
+        heroOnline.textContent = `Online ${stats.online}`;
+      } catch {
+        heroProfiles.textContent = "Profiles 0";
+        heroOnline.textContent = "Online 0";
       }
     }
 
-    function loadTrendingExport(){
-      try{
-        const raw = localStorage.getItem("view_trending_export_v1");
-        if(!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed?.items) ? parsed.items : [];
-      }catch{
-        return [];
-      }
-    }
-
-    function renderTrending(){
-      const items = loadTrendingExport();
-      const q = safeText(globalSearchInput.value).toLowerCase();
-      const rows = items.filter(item => {
-        if(!q) return true;
-        const blob = `${safeText(item.title)} ${safeText(item.author)} ${safeText(item.description)}`.toLowerCase();
-        return blob.includes(q);
-      });
-
-      if(!rows.length){
-        trendingScroller.innerHTML = `
-          <div class="empty-state-card">
-            <strong>No trending videos yet</strong>
-            <span>Open Trendings.html to refresh internet trending videos.</span>
-          </div>
-        `;
-        return;
-      }
-
-      trendingScroller.innerHTML = rows.slice(0, 12).map((item, index) => `
-        <a
-          href="trendings.html"
-          class="slide-card ${index === 0 ? "large" : "small"}"
-          onclick="localStorage.setItem('view_trending_selected_video', '${escapeHtml(item.videoId || "")}')"
-        >
-          <div class="trend-media">
-            <img src="${escapeHtml(item.thumbnail || '')}" alt="${escapeHtml(item.title || 'Trending video')}" onerror="this.style.display='none';" />
-            <div class="trend-overlay"></div>
-            <div class="trend-chip">${escapeHtml(item.derivedCategory || "trending")}</div>
-            <div class="trend-play">▶</div>
-          </div>
-          <div class="slide-body">
-            <div class="slide-title">${escapeHtml(item.title || "Untitled video")}</div>
-            <div class="slide-sub">${escapeHtml(item.author || "Internet source")}</div>
-            <div class="slide-meta">
-              <span>${escapeHtml(formatCompact(item.viewCount || 0))} views</span>
-              <span>${escapeHtml(item.publishedText || "Trending now")}</span>
-            </div>
-          </div>
-        </a>
-      `).join("");
-    }
-
-    async function loadMarket(){
-      try{
-        const { data, error } = await window.supabaseClient
-          .from("marketplace_items")
-          .select("*")
-          .order("created_at", { ascending:false })
-          .limit(12);
-
-        if(error) throw error;
-        const items = data || [];
-        heroMarketCount.textContent = `Products: ${items.length}`;
-
-        const q = safeText(globalSearchInput.value).toLowerCase();
-        const rows = items.filter(item => {
-          if(!q) return true;
-          const blob = `${safeText(item.title)} ${safeText(item.description)} ${safeText(item.category)} ${safeText(item.location)}`.toLowerCase();
-          return blob.includes(q);
-        });
-
-        if(!rows.length){
-          marketScroller.innerHTML = `
-            <div class="empty-state-card">
-              <strong>No marketplace items</strong>
-              <span>Products will appear here when marketplace items are available.</span>
-            </div>
-          `;
-          return;
-        }
-
-        marketScroller.innerHTML = rows.map(item => {
-          const image = getImages(item)[0] || "";
-          const status = safeText(item.status, "active");
-          return `
-            <a href="product-details.html?id=${encodeURIComponent(item.id)}" class="slide-card market-card">
-              <div class="market-media">
-                ${
-                  image
-                    ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(item.title || "Item")}" onerror="this.style.display='none';">`
-                    : `<div class="status-text-preview">No Image</div>`
-                }
-                <div class="trend-chip">${escapeHtml(item.category || "Market")}</div>
-              </div>
-              <div class="slide-body">
-                <div class="slide-title">${escapeHtml(item.title || "Untitled Item")}</div>
-                <div class="slide-sub">${escapeHtml(item.location || "No location")}</div>
-                <div class="slide-meta">
-                  <span>${escapeHtml(formatPrice(item.price || 0))}</span>
-                  <span>${escapeHtml(status)}</span>
-                </div>
-              </div>
-            </a>
-          `;
-        }).join("");
-      }catch(error){
-        marketScroller.innerHTML = `
-          <div class="empty-state-card">
-            <strong>Could not load marketplace</strong>
-            <span>${escapeHtml(error.message || "Please try again.")}</span>
-          </div>
-        `;
-      }
-    }
-
-    function loadNewsExport(){
-      try{
-        const raw = localStorage.getItem("view_news_export_v1");
-        if(!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed?.items) ? parsed.items : [];
-      }catch{
-        return [];
-      }
-    }
-
-    function renderHeadlines(){
-      headlineItems = loadNewsExport();
-      if(!headlineItems.length){
-        headlineText.textContent = "No headline available yet.";
-        headlineTime.textContent = "Now";
-        return;
-      }
-
-      headlineIndex = 0;
-      updateHeadline();
-      clearInterval(headlineTimer);
-      headlineTimer = setInterval(() => {
-        headlineIndex = (headlineIndex + 1) % headlineItems.length;
-        updateHeadline();
-      }, 3000);
-    }
-
-    function updateHeadline(){
-      if(!headlineItems.length) return;
-      const item = headlineItems[headlineIndex] || {};
-      headlineText.textContent = safeText(item.title, "News headline");
-      headlineTime.textContent = safeText(item.time, "Now");
-    }
-
-    function filterDynamicSections(){
-      renderTrending();
-      loadMarket();
-    }
-
-    function setupVoiceSearch(){
+    function setupVoiceSearch() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if(!SpeechRecognition){
-        voiceSearchBtn.addEventListener("click", () => {
-          showNotice("Voice search is not supported on this device browser.", "info");
+      if (!SpeechRecognition) {
+        voiceBtn.addEventListener("click", () => {
+          showNotice("Voice search not supported.", "info");
         });
         return;
       }
 
-      voiceRecognition = new SpeechRecognition();
-      voiceRecognition.lang = "en-US";
-      voiceRecognition.continuous = false;
-      voiceRecognition.interimResults = true;
-      voiceRecognition.maxAlternatives = 1;
+      speechRecognition = new SpeechRecognition();
+      speechRecognition.lang = "en-US";
+      speechRecognition.interimResults = true;
+      speechRecognition.continuous = false;
 
-      voiceRecognition.onstart = () => {
-        voiceListening = true;
-        voiceSearchBtn.classList.add("listening");
-        showNotice("Listening... speak now.", "info");
+      speechRecognition.onstart = () => {
+        voiceBtn.classList.add("listening");
       };
 
-      voiceRecognition.onend = () => {
-        voiceListening = false;
-        voiceSearchBtn.classList.remove("listening");
+      speechRecognition.onend = () => {
+        voiceBtn.classList.remove("listening");
       };
 
-      voiceRecognition.onerror = () => {
-        voiceListening = false;
-        voiceSearchBtn.classList.remove("listening");
-        showNotice("Voice search could not complete. Try again.", "error");
+      speechRecognition.onerror = () => {
+        voiceBtn.classList.remove("listening");
+        showNotice("Voice search failed.", "error");
       };
 
-      voiceRecognition.onresult = (event) => {
+      speechRecognition.onresult = (event) => {
         const transcript = [...event.results].map(r => r[0]?.transcript || "").join(" ").trim();
-        if(transcript){
-          globalSearchInput.value = transcript;
-          renderPeople();
-          filterDynamicSections();
+        if (transcript) {
+          searchInput.value = transcript;
+          runSearchRender();
           showNotice(`Search: ${transcript}`, "success");
         }
       };
 
-      voiceSearchBtn.addEventListener("click", () => {
-        try{
-          if(voiceListening){
-            voiceRecognition.stop();
-          }else{
-            voiceRecognition.start();
-          }
-        }catch{
-          showNotice("Voice search could not start. Try again.", "error");
+      voiceBtn.addEventListener("click", () => {
+        try {
+          speechRecognition.start();
+        } catch {
+          showNotice("Voice search could not start.", "error");
         }
       });
     }
 
-    async function initExplore() {
+    const runSearchRender = debounce(() => {
+      renderPeople();
+      loadTrending();
+      loadPopular();
+      loadMarket();
+      startHeadlineRotation();
+    }, 260);
+
+    searchInput.addEventListener("input", runSearchRender);
+
+    refreshTrendingBtn.addEventListener("click", async () => {
+      await loadTrending(true);
+      showNotice("Trending refreshed.", "success");
+    });
+
+    refreshPopularBtn.addEventListener("click", async () => {
+      await loadPopular(true);
+      showNotice("Popular refreshed.", "success");
+    });
+
+    refreshMarketBtn.addEventListener("click", async () => {
+      await loadMarket(true);
+      showNotice("Market refreshed.", "success");
+    });
+
+    refreshNewsBtn.addEventListener("click", async () => {
+      await loadNews(true);
+      showNotice("News refreshed.", "success");
+    });
+
+    peopleRefreshBtn.addEventListener("click", async () => {
+      await loadProfiles(true);
+      showNotice("People refreshed.", "success");
+    });
+
+    async function init() {
       try {
-        if (typeof protectPage === "function") {
-          await protectPage("explore.html");
+        if (typeof window.protectPage === "function") {
+          await window.protectPage("explore.html");
         } else {
           const { data } = await window.supabaseClient.auth.getSession();
           if (!data?.session?.user) {
@@ -2397,42 +1985,37 @@
           return;
         }
 
-        if (myProfileBtn) {
-          myProfileBtn.href = "profile.html";
+        myProfileAvatar.src =
+          currentProfile?.avatar_url ||
+          currentUser?.user_metadata?.avatar_url ||
+          "icons/view-logo.png";
+
+        if (!navigator.onLine) {
+          showNotice("Offline. Showing cached data where available.", "info");
         }
 
-        if (myProfileAvatar) {
-          myProfileAvatar.src =
-            currentProfile?.avatar_url ||
-            currentUser?.user_metadata?.avatar_url ||
-            "icons/view-logo.png";
-        }
-
-        document.documentElement.classList.remove("auth-loading");
         setupVoiceSearch();
-        renderHeadlines();
 
         await Promise.all([
-          loadNotificationCount(),
+          loadUnreadNotifications(),
           loadHeroStats(),
           loadFollowing(),
-          loadProfiles()
+          loadProfiles(),
+          loadTrending(),
+          loadPopular(),
+          loadMarket(),
+          loadNews(),
+          loadStatuses()
         ]);
 
-        renderPeople();
-        renderTrending();
-        await Promise.all([
-          loadStatuses(),
-          loadMarket()
-        ]);
-
+        document.documentElement.classList.remove("auth-loading");
       } catch (error) {
         document.documentElement.classList.remove("auth-loading");
-        showNotice(error.message || "Could not load Explore.", "error");
+        showNotice(error.message || "Could not load Explore.", "error", 4200);
       }
     }
 
-    initExplore();
+    init();
   </script>
 </body>
-</html>ask-ai.html
+</html>
