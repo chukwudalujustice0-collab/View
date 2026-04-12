@@ -7,19 +7,21 @@
   <meta name="theme-color" content="#0b1454" />
 
   <style>
-    html.auth-loading, html.auth-loading body{
+    html.auth-loading,
+    html.auth-loading body{
       visibility:hidden;
     }
 
     :root{
-      --bg:#08114c;
-      --bg2:#0b1454;
-      --bg3:#0a1b6f;
+      --bg:#eef4ff;
+      --bg2:#ffffff;
+      --bg3:#f8fbff;
       --panel:#ffffff;
       --panel2:#f8fbff;
       --text:#111827;
       --muted:#667085;
       --line:#dbe4ff;
+      --line2:#c7d8ff;
       --white:#ffffff;
       --primary:#2563eb;
       --primary2:#4f46e5;
@@ -27,7 +29,7 @@
       --red2:#ff5f7a;
       --success:#10b981;
       --danger:#ef4444;
-      --shadow:0 16px 40px rgba(8,17,76,.14);
+      --shadow:0 16px 40px rgba(8,17,76,.12);
       --shadow-soft:0 10px 24px rgba(15,23,42,.08);
       --safe-top:env(safe-area-inset-top);
       --safe-bottom:env(safe-area-inset-bottom);
@@ -44,10 +46,8 @@
     html,body{
       min-height:100%;
       background:
-        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 22%),
-        radial-gradient(circle at top right, rgba(239,68,68,.12), transparent 18%),
-        radial-gradient(circle at bottom right, rgba(79,70,229,.12), transparent 20%),
-        linear-gradient(180deg,#edf4ff 0%, #f7faff 100%);
+        linear-gradient(135deg, rgba(37,99,235,.10) 0%, rgba(255,255,255,1) 28%, rgba(255,255,255,1) 65%, rgba(239,68,68,.08) 100%),
+        linear-gradient(180deg,var(--bg) 0%, var(--bg2) 55%, var(--bg3) 100%);
       color:var(--text);
     }
 
@@ -72,7 +72,7 @@
     }
 
     .wrap{
-      width:min(100%, 860px);
+      width:min(100%, 900px);
       margin:0 auto;
     }
 
@@ -170,9 +170,8 @@
     }
 
     .section{
-      background:rgba(255,255,255,.95);
-      backdrop-filter:blur(10px);
-      border:1px solid rgba(219,228,255,.9);
+      background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+      border:1px solid rgba(219,228,255,.92);
       border-radius:22px;
       box-shadow:var(--shadow);
       overflow:hidden;
@@ -294,23 +293,143 @@
       background:#fff;
       padding:12px;
       display:grid;
-      gap:12px;
+      gap:10px;
+    }
+
+    .toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .toolbar-left,
+    .toolbar-right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .tool-btn{
+      min-width:36px;
+      height:36px;
+      padding:0 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg,#fff 0%,#f8fbff 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      color:#1f2937;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .tool-btn.active{
+      border-color:#93c5fd;
+      background:#eef4ff;
+    }
+
+    .emoji-panel{
+      display:none;
+      gap:8px;
+      flex-wrap:wrap;
+      padding:10px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#f8fbff;
+    }
+
+    .emoji-panel.show{
+      display:flex;
+    }
+
+    .emoji-btn{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      border:1px solid #dbe4ff;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+    }
+
+    .voice-state{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .voice-state.listening{
+      color:#b91c1c;
+      font-weight:700;
+    }
+
+    .ai-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .ai-card{
+      border:1px solid #dbeafe;
+      background:linear-gradient(135deg, rgba(37,99,235,.08), rgba(79,70,229,.05), rgba(239,68,68,.08));
+      border-radius:16px;
+      padding:12px;
+      display:grid;
+      gap:10px;
+    }
+
+    .ai-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .ai-head-left{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .ai-title{
+      font-size:14px;
+      font-weight:800;
+      color:#0b1454;
+    }
+
+    .ai-sub{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .ai-balance{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
     }
 
     .file-wrap{
+      display:none;
       padding:10px 12px;
+    }
+
+    .file-wrap.show{
+      display:block;
     }
 
     .file-wrap input[type="file"]{
       width:100%;
       color:var(--muted);
-    }
-
-    .hint{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.5;
-      word-break:break-word;
     }
 
     .upload-row{
@@ -412,53 +531,11 @@
       max-width:100%;
     }
 
-    .ai-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .ai-card{
-      border:1px solid #dbeafe;
-      background:linear-gradient(135deg, rgba(37,99,235,.06), rgba(79,70,229,.05), rgba(239,68,68,.05));
-      border-radius:16px;
-      padding:12px;
-      display:grid;
-      gap:10px;
-    }
-
-    .ai-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .ai-head-left{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-
-    .ai-title{
-      font-size:14px;
-      font-weight:800;
-      color:#0b1454;
-    }
-
-    .ai-sub{
-      font-size:12px;
+    .media-note{
       color:var(--muted);
-      line-height:1.45;
-    }
-
-    .ai-balance{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
+      font-size:12px;
+      line-height:1.5;
+      word-break:break-word;
     }
 
     .platforms-head{
@@ -476,19 +553,19 @@
 
     .platform-grid{
       display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
     }
 
     .platform{
-      min-height:70px;
-      padding:12px;
-      border-radius:18px;
+      min-height:58px;
+      padding:9px;
+      border-radius:16px;
       border:1px solid var(--line);
       background:#fff;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:8px;
       cursor:pointer;
       transition:.18s ease;
       text-align:left;
@@ -505,19 +582,19 @@
     }
 
     .platform.disabled{
-      opacity:.6;
+      opacity:.62;
     }
 
     .platform-icon{
-      width:42px;
-      height:42px;
-      min-width:42px;
-      border-radius:14px;
+      width:34px;
+      height:34px;
+      min-width:34px;
+      border-radius:12px;
       display:flex;
       align-items:center;
       justify-content:center;
       color:#fff;
-      font-size:18px;
+      font-size:14px;
       font-weight:800;
     }
 
@@ -536,27 +613,27 @@
     }
 
     .platform-name{
-      font-size:14px;
+      font-size:12px;
       font-weight:800;
-      margin-bottom:4px;
+      margin-bottom:2px;
     }
 
     .platform-sub{
       color:var(--muted);
-      font-size:12px;
+      font-size:10px;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
 
     .platform-check{
-      min-width:24px;
-      height:24px;
+      min-width:20px;
+      height:20px;
       border-radius:999px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:12px;
+      font-size:10px;
       font-weight:800;
       background:#f8fafc;
       border:1px solid var(--line);
@@ -686,7 +763,7 @@
     }
 
     .drawer-link{
-      min-height:58px;
+      min-height:56px;
       border-radius:16px;
       border:1px solid var(--line);
       background:#fff;
@@ -694,6 +771,8 @@
       display:flex;
       align-items:center;
       gap:12px;
+      width:100%;
+      text-align:left;
     }
 
     .drawer-link-icon{
@@ -711,7 +790,7 @@
     .drawer-link-title{
       font-size:14px;
       font-weight:800;
-      margin-bottom:4px;
+      margin-bottom:2px;
     }
 
     .drawer-link-sub{
@@ -797,7 +876,45 @@
 
     @media (max-width:720px){
       .platform-grid{
-        grid-template-columns:repeat(2,1fr);
+        grid-template-columns:repeat(4,1fr);
+      }
+      .platform{
+        min-height:54px;
+        padding:8px;
+      }
+      .platform-name{
+        font-size:11px;
+      }
+      .platform-sub{
+        display:none;
+      }
+      .platform-icon{
+        width:32px;
+        height:32px;
+        min-width:32px;
+      }
+    }
+
+    @media (max-width:520px){
+      .platform-grid{
+        grid-template-columns:repeat(4,1fr);
+      }
+      .platform{
+        justify-content:center;
+      }
+      .platform-meta{
+        display:none;
+      }
+      .platform-check{
+        position:absolute;
+        top:4px;
+        right:4px;
+        min-width:16px;
+        height:16px;
+        font-size:9px;
+      }
+      .platform{
+        position:relative;
       }
     }
   </style>
@@ -854,7 +971,7 @@
         <div class="drawer-link-icon">🔴</div>
         <div>
           <div class="drawer-link-title">Go Live</div>
-          <div class="drawer-link-sub">Start a live broadcast</div>
+          <div class="drawer-link-sub">Broadcast</div>
         </div>
       </a>
 
@@ -862,23 +979,31 @@
         <div class="drawer-link-icon">🟣</div>
         <div>
           <div class="drawer-link-title">Create Story</div>
-          <div class="drawer-link-sub">Post a quick story update</div>
+          <div class="drawer-link-sub">Story update</div>
         </div>
       </a>
+
+      <button class="drawer-link" id="drawerDraftBtn" type="button">
+        <div class="drawer-link-icon">💾</div>
+        <div>
+          <div class="drawer-link-title">Save Draft</div>
+          <div class="drawer-link-sub">Keep for later</div>
+        </div>
+      </button>
 
       <a class="drawer-link" href="saved-post.html">
         <div class="drawer-link-icon">📌</div>
         <div>
-          <div class="drawer-link-title">Saved Post</div>
-          <div class="drawer-link-sub">Open your saved drafts and posts</div>
+          <div class="drawer-link-title">Saved Posts</div>
+          <div class="drawer-link-sub">Your drafts</div>
         </div>
       </a>
 
       <button class="drawer-link" id="drawerCreateAiBtn" type="button">
         <div class="drawer-link-icon">✨</div>
         <div style="text-align:left">
-          <div class="drawer-link-title">Create with AI</div>
-          <div class="drawer-link-sub">Generate content for your post</div>
+          <div class="drawer-link-title">Create with View AI</div>
+          <div class="drawer-link-sub">Generate post</div>
         </div>
       </button>
 
@@ -886,7 +1011,7 @@
         <div class="drawer-link-icon">🔗</div>
         <div>
           <div class="drawer-link-title">Accounts</div>
-          <div class="drawer-link-sub">Manage linked platforms</div>
+          <div class="drawer-link-sub">Manage platforms</div>
         </div>
       </a>
     </div>
@@ -896,8 +1021,8 @@
     <div class="modal">
       <div class="modal-head">
         <div>
-          <div class="modal-title">Create with AI</div>
-          <div class="modal-sub">Tell AI what you want to post and it will generate the content for you.</div>
+          <div class="modal-title">Create with View AI</div>
+          <div class="modal-sub">Generate a ready-to-post caption</div>
         </div>
         <button id="closeAiModalBtn" class="drawer-close" type="button">×</button>
       </div>
@@ -905,8 +1030,8 @@
       <div class="modal-body">
         <div class="ai-head">
           <div class="ai-head-left">
-            <div class="ai-title">AI Status</div>
-            <div class="ai-sub" id="aiStatusText">Checking your plan and credits...</div>
+            <div class="ai-title">View AI</div>
+            <div class="ai-sub" id="aiStatusText">Checking plan and credits...</div>
           </div>
           <div class="ai-balance">
             <div class="tiny-pill" id="aiPlanPill">Plan: --</div>
@@ -915,8 +1040,8 @@
         </div>
 
         <div class="field">
-          <label class="label" for="aiPromptInput">What do you want to post?</label>
-          <textarea id="aiPromptInput" class="ai-input" style="min-height:120px;resize:vertical" placeholder="Example: Write a catchy post to promote my fashion business in Owerri with a confident and professional tone."></textarea>
+          <label class="label" for="aiPromptInput">Prompt</label>
+          <textarea id="aiPromptInput" class="ai-input" style="min-height:120px;resize:vertical" placeholder="Describe the post you want"></textarea>
         </div>
 
         <div class="field">
@@ -986,15 +1111,39 @@
         </div>
 
         <div class="field">
-          <label class="label" for="postBody">Write something</label>
+          <label class="label" for="postBody">Post</label>
           <div class="composer-box">
+            <div class="toolbar">
+              <div class="toolbar-left">
+                <button id="openEmojiBtn" class="tool-btn" type="button" title="Emoji">😊</button>
+                <button id="mediaPickBtn" class="tool-btn" type="button" title="Add media">🖼️</button>
+                <button id="micBtn" class="tool-btn" type="button" title="Voice typing">🎤</button>
+              </div>
+              <div class="toolbar-right">
+                <div id="voiceState" class="voice-state">Ready</div>
+              </div>
+            </div>
+
+            <div id="emojiPanel" class="emoji-panel">
+              <button class="emoji-btn" type="button" data-emoji="😀">😀</button>
+              <button class="emoji-btn" type="button" data-emoji="😍">😍</button>
+              <button class="emoji-btn" type="button" data-emoji="🔥">🔥</button>
+              <button class="emoji-btn" type="button" data-emoji="❤️">❤️</button>
+              <button class="emoji-btn" type="button" data-emoji="🎉">🎉</button>
+              <button class="emoji-btn" type="button" data-emoji="🚀">🚀</button>
+              <button class="emoji-btn" type="button" data-emoji="💼">💼</button>
+              <button class="emoji-btn" type="button" data-emoji="📢">📢</button>
+              <button class="emoji-btn" type="button" data-emoji="✨">✨</button>
+              <button class="emoji-btn" type="button" data-emoji="🙏">🙏</button>
+            </div>
+
             <textarea id="postBody" class="textarea" placeholder="What's new in your world?"></textarea>
 
             <div class="ai-card">
               <div class="ai-head">
                 <div class="ai-head-left">
-                  <div class="ai-title">Post with AI</div>
-                  <div class="ai-sub">Generate your caption with AI if you don’t want to type it manually.</div>
+                  <div class="ai-title">Post with View AI</div>
+                  <div class="ai-sub" id="inlineAiStatus">1 credit per generation</div>
                 </div>
                 <div class="ai-balance">
                   <div class="tiny-pill">Cost: 1 credit</div>
@@ -1002,9 +1151,13 @@
               </div>
 
               <div class="ai-row">
-                <button id="openAiBtn" class="btn ai" type="button">✨ Post with AI</button>
+                <button id="openAiBtn" class="btn ai" type="button">✨ View AI</button>
                 <a href="ai-upgrade.html?from=create-post" class="btn ghost" style="display:flex;align-items:center;justify-content:center;flex:1">Upgrade / Top Up</a>
               </div>
+            </div>
+
+            <div class="file-wrap" id="fileWrap">
+              <input id="postMedia" type="file" accept="image/*,video/*" />
             </div>
 
             <div class="upload-row">
@@ -1013,17 +1166,9 @@
                 <div id="mediaPreviewImage" class="media-preview-image"></div>
                 <video id="mediaPreviewVideo" class="media-preview-video" muted playsinline preload="metadata"></video>
               </div>
-              <div class="hint" id="mediaNote">No media selected.</div>
+              <div class="media-note" id="mediaNote">No media selected.</div>
             </div>
           </div>
-        </div>
-
-        <div class="field">
-          <label class="label" for="postMedia">Photo / Video</label>
-          <div class="file-wrap">
-            <input id="postMedia" type="file" accept="image/*,video/*" />
-          </div>
-          <div class="hint">Media is uploaded only when you publish. AI images can also be inserted automatically.</div>
         </div>
       </div>
     </section>
@@ -1052,7 +1197,9 @@
     const POST_BUCKET = "post-media";
     const PUBLISH_JOBS_TABLE = "post_publish_jobs";
     const PROCESS_WORKER_URL = "https://view-psi-lac.vercel.app/api/process-publish-jobs";
-    const GENERATE_POST_FUNCTION_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co/functions/v1/generate-post";
+    const OPENROUTER_GENERATE_POST_API_URL = "https://view-psi-lac.vercel.app/api/openrouter-create-post";
+    const GEMINI_GENERATE_POST_API_URL = "https://view-psi-lac.vercel.app/api/gemini-create-post";
+    const AI_COST_PER_GENERATION = 1;
 
     const PLATFORMS = [
       { key: "view", name: "View", icon: "V", iconClass: "viewapp", always: true },
@@ -1081,12 +1228,15 @@
     const mediaPreviewImage = document.getElementById("mediaPreviewImage");
     const mediaPreviewVideo = document.getElementById("mediaPreviewVideo");
     const removeMediaBtn = document.getElementById("removeMediaBtn");
+    const fileWrap = document.getElementById("fileWrap");
+    const mediaPickBtn = document.getElementById("mediaPickBtn");
 
     const drawerBackdrop = document.getElementById("drawerBackdrop");
     const sideDrawer = document.getElementById("sideDrawer");
     const openDrawerBtn = document.getElementById("openDrawerBtn");
     const closeDrawerBtn = document.getElementById("closeDrawerBtn");
     const drawerCreateAiBtn = document.getElementById("drawerCreateAiBtn");
+    const drawerDraftBtn = document.getElementById("drawerDraftBtn");
 
     const openAiBtn = document.getElementById("openAiBtn");
     const aiModalBackdrop = document.getElementById("aiModalBackdrop");
@@ -1102,6 +1252,12 @@
     const aiStatusText = document.getElementById("aiStatusText");
     const currentPlanPill = document.getElementById("currentPlanPill");
     const currentCreditPill = document.getElementById("currentCreditPill");
+    const inlineAiStatus = document.getElementById("inlineAiStatus");
+
+    const openEmojiBtn = document.getElementById("openEmojiBtn");
+    const emojiPanel = document.getElementById("emojiPanel");
+    const micBtn = document.getElementById("micBtn");
+    const voiceState = document.getElementById("voiceState");
 
     let currentUser = null;
     let connections = {};
@@ -1111,6 +1267,8 @@
     let currentCredits = 0;
     let aiResultText = "";
     let lastAiPrompt = "";
+    let recognition = null;
+    let isListening = false;
 
     function showNotice(message, type = "info", duration = 3200) {
       noticeBox.className = `notice show ${type}`;
@@ -1172,7 +1330,7 @@
       }
 
       cachedMedia = file;
-      mediaNote.textContent = `${file.name} ready to upload.`;
+      mediaNote.textContent = `${file.name} ready.`;
       showMediaPreview(file);
     }
 
@@ -1183,7 +1341,7 @@
 
         if (!imageUrl) return;
 
-        showNotice("Loading AI generated image...", "info", 1800);
+        showNotice("Loading AI image...", "info", 1600);
 
         const response = await fetch(imageUrl, { cache: "no-store" });
         if (!response.ok) throw new Error("Could not fetch generated image.");
@@ -1204,17 +1362,17 @@
         sessionStorage.removeItem("view_ai_generated_image_url");
         sessionStorage.removeItem("view_ai_generated_image_prompt");
 
-        showNotice("AI generated image inserted into your post.", "success");
+        showNotice("AI image inserted.", "success");
       } catch (error) {
         console.error(error);
-        showNotice(error.message || "Could not load AI generated image.", "error");
+        showNotice(error.message || "Could not load AI image.", "error");
       }
     }
 
     function isPlatformConnected(platformKey) {
       if (platformKey === "view") return true;
       const row = connections[platformKey];
-      return !!(row && row.status === "connected");
+      return !!(row && String(row.status || "").toLowerCase() === "connected");
     }
 
     function getPlatformDisplay(row, fallbackName) {
@@ -1238,16 +1396,17 @@
             type="button"
             class="platform ${selected ? "active" : ""} ${item.always ? "locked" : ""} ${connected ? "" : "disabled"}"
             data-platform="${item.key}"
+            title="${item.name}"
           >
             <div class="platform-icon ${item.iconClass}">${item.icon}</div>
             <div class="platform-meta">
               <div class="platform-name">${item.name}</div>
               <div class="platform-sub">${
                 item.key === "view"
-                  ? "Always included"
+                  ? "Included"
                   : connected
                     ? getPlatformDisplay(connections[item.key], item.name)
-                    : "Tap to connect"
+                    : "Connect"
               }</div>
             </div>
             <div class="platform-check">${selected ? "✓" : item.always ? "✓" : connected ? "+" : "!"}</div>
@@ -1387,6 +1546,7 @@
 
     async function saveDraft() {
       draftBtn.disabled = true;
+      drawerDraftBtn.disabled = true;
 
       try {
         const payload = getPostPayload();
@@ -1412,11 +1572,13 @@
           });
 
         if (error) throw error;
+        closeDrawer();
         showNotice("Draft saved.", "success");
       } catch (error) {
         showNotice(error.message || "Could not save draft.", "error");
       } finally {
         draftBtn.disabled = false;
+        drawerDraftBtn.disabled = false;
       }
     }
 
@@ -1460,11 +1622,11 @@
 
         await triggerWorkerSilently();
 
-        showNotice("Post published successfully. Redirecting to Home...", "success");
+        showNotice("Post published successfully. Redirecting...", "success");
 
         setTimeout(() => {
           window.location.href = "home.html";
-        }, 1400);
+        }, 1200);
       } catch (error) {
         showNotice(error.message || "Could not publish post.", "error", 4200);
       } finally {
@@ -1496,7 +1658,8 @@
       aiCreditPill.textContent = `Credits: ${currentCredits}`;
       currentPlanPill.textContent = `Plan: ${currentPlan || "Free"}`;
       currentCreditPill.textContent = `AI Credits: ${currentCredits}`;
-      aiStatusText.textContent = `${currentPlan || "Free"} plan • ${currentCredits} credits available`;
+      aiStatusText.textContent = `${currentPlan || "Free"} plan • ${currentCredits} credits`;
+      inlineAiStatus.textContent = `${currentPlan || "Free"} • ${currentCredits} credits`;
     }
 
     async function loadAiAccess() {
@@ -1533,92 +1696,142 @@
       updateAiDisplay();
     }
 
-    function planSupportsAi() {
-      return ["Plus", "Pro", "Enterprise"].includes(String(currentPlan || "").trim());
+    function canUseAi() {
+      return Number(currentCredits || 0) >= AI_COST_PER_GENERATION;
     }
 
-    async function goToAiUpgrade(message) {
-      if (message) showNotice(message, "error", 2600);
-      setTimeout(() => {
-        window.location.href = "ai-upgrade.html?from=create-post";
-      }, 700);
+    async function maybeDeductAiCreditOnFrontend() {
+      if (!currentUser || currentCredits < AI_COST_PER_GENERATION) return;
+      try {
+        const nextBalance = Math.max(0, currentCredits - AI_COST_PER_GENERATION);
+
+        const { error } = await supabaseClient
+          .from("ai_credits")
+          .update({
+            balance: nextBalance,
+            updated_at: new Date().toISOString()
+          })
+          .eq("user_id", currentUser.id)
+          .eq("balance", currentCredits);
+
+        if (!error) {
+          currentCredits = nextBalance;
+          updateAiDisplay();
+        } else {
+          await loadAiAccess();
+        }
+      } catch (_) {
+        await loadAiAccess();
+      }
     }
 
-    async function generateAiPost() {
-      const prompt = aiPromptInput.value.trim();
+    async function tryGenerateWithEndpoint(url, payload) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const message = data?.error || data?.message || `Request failed (${response.status})`;
+        const error = new Error(message);
+        error.responseData = data;
+        error.status = response.status;
+        throw error;
+      }
+
+      const generatedText = String(data?.text || "").trim();
+      if (!generatedText) {
+        const error = new Error("AI returned empty output.");
+        error.responseData = data;
+        throw error;
+      }
+
+      return { data, text: generatedText };
+    }
+
+    async function generateAiPost(promptOverride = "") {
+      const prompt = (promptOverride || aiPromptInput.value || "").trim();
       const tone = aiToneSelect.value;
 
       if (!prompt) {
-        showNotice("Tell AI what you want to post.", "error");
+        showNotice("Tell View AI what you want to post.", "error");
+        return;
+      }
+
+      if (!canUseAi()) {
+        showNotice("You do not have enough AI credits.", "error");
+        setTimeout(() => {
+          window.location.href = "ai-upgrade.html?from=create-post";
+        }, 700);
         return;
       }
 
       generateAiBtn.disabled = true;
       regenerateAiBtn.disabled = true;
       useAiBtn.disabled = true;
-      aiStatusText.textContent = "Generating post...";
+      aiStatusText.textContent = "Generating...";
 
       try {
-        const { data: sessionData } = await supabaseClient.auth.getSession();
-        const token = sessionData?.session?.access_token;
+        lastAiPrompt = prompt;
 
-        if (!token) {
-          throw new Error("Session expired. Please login again.");
-        }
+        const payload = {
+          prompt: `Write a polished social media post for View. Tone: ${tone}. Keep it ready to paste as a final post.\n\nUser request:\n${prompt}`,
+          mode: "caption",
+          tone,
+          platform: "view"
+        };
 
-        const res = await fetch(GENERATE_POST_FUNCTION_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            prompt,
-            tone,
-            mode: "post"
-          })
-        });
+        let finalResult = null;
+        let lastError = null;
 
-        const data = await res.json().catch(() => ({}));
-
-        if (!res.ok) {
-          if (data?.code === "PLAN_NOT_SUPPORTED") {
-            showNotice("Upgrade your plan to use AI.", "error");
-            setTimeout(() => {
-              window.location.href = "ai-upgrade.html?from=create-post";
-            }, 800);
-            return;
+        for (let i = 0; i < 2; i++) {
+          try {
+            finalResult = await tryGenerateWithEndpoint(OPENROUTER_GENERATE_POST_API_URL, payload);
+            break;
+          } catch (error) {
+            lastError = error;
+            await new Promise(resolve => setTimeout(resolve, 1200));
           }
+        }
 
-          if (data?.code === "NO_AI_CREDIT") {
-            showNotice("No AI credit left. Top up now.", "error");
-            setTimeout(() => {
-              window.location.href = "ai-upgrade.html?from=create-post";
-            }, 800);
-            return;
+        if (!finalResult) {
+          for (let i = 0; i < 2; i++) {
+            try {
+              finalResult = await tryGenerateWithEndpoint(GEMINI_GENERATE_POST_API_URL, payload);
+              break;
+            } catch (error) {
+              lastError = error;
+              await new Promise(resolve => setTimeout(resolve, 1200));
+            }
           }
-
-          throw new Error(data?.error || "AI failed.");
         }
 
-        const generatedText = data.text || "";
-        if (!generatedText) {
-          throw new Error("Empty AI response.");
+        if (!finalResult) {
+          throw lastError || new Error("AI generation failed.");
         }
 
-        aiResultText = generatedText;
-        aiResultBox.textContent = generatedText;
+        aiResultText = finalResult.text;
+        aiResultBox.textContent = finalResult.text;
         aiResultBox.classList.add("show");
-
-        currentCredits = data.remaining_credits ?? currentCredits;
-        updateAiDisplay();
-
         useAiBtn.disabled = false;
-        aiStatusText.textContent = `Generated successfully • 1 credit used • ${currentCredits} left`;
 
+        if (typeof finalResult.data?.remaining_credits !== "undefined") {
+          currentCredits = Number(finalResult.data.remaining_credits || 0);
+          updateAiDisplay();
+        } else {
+          await maybeDeductAiCreditOnFrontend();
+        }
+
+        aiStatusText.textContent = `Generated successfully • ${currentCredits} credits left`;
+        inlineAiStatus.textContent = `${currentPlan || "Free"} • ${currentCredits} credits`;
       } catch (error) {
-        showNotice(error.message || "AI generation failed.", "error");
-        aiStatusText.textContent = "AI failed. Try again.";
+        showNotice(error.message || "View AI failed.", "error");
+        aiStatusText.textContent = "View AI failed. Try again.";
       } finally {
         generateAiBtn.disabled = false;
         regenerateAiBtn.disabled = false;
@@ -1632,7 +1845,90 @@
       }
       postBody.value = aiResultText;
       closeAiModal();
-      showNotice("AI result inserted into your post.", "success");
+      showNotice("View AI result inserted.", "success");
+    }
+
+    function insertAtCursor(textarea, text) {
+      const start = textarea.selectionStart || 0;
+      const end = textarea.selectionEnd || 0;
+      const original = textarea.value;
+      textarea.value = original.slice(0, start) + text + original.slice(end);
+      const next = start + text.length;
+      textarea.focus();
+      textarea.setSelectionRange(next, next);
+    }
+
+    function setupEmojiPicker() {
+      openEmojiBtn.addEventListener("click", () => {
+        emojiPanel.classList.toggle("show");
+        openEmojiBtn.classList.toggle("active", emojiPanel.classList.contains("show"));
+      });
+
+      emojiPanel.addEventListener("click", (e) => {
+        const btn = e.target.closest(".emoji-btn");
+        if (!btn) return;
+        insertAtCursor(postBody, btn.dataset.emoji || "");
+      });
+    }
+
+    function setupVoiceTyping() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        voiceState.textContent = "Mic unavailable";
+        micBtn.disabled = true;
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      let finalTranscript = "";
+
+      recognition.onstart = () => {
+        isListening = true;
+        micBtn.classList.add("active");
+        voiceState.textContent = "Listening...";
+        voiceState.classList.add("listening");
+      };
+
+      recognition.onresult = (event) => {
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0]?.transcript || "";
+          if (event.results[i].isFinal) finalTranscript += transcript + " ";
+          else interim += transcript;
+        }
+        postBody.value = `${postBody.value.replace(/\s+$/, "")}${postBody.value.trim() ? " " : ""}${(finalTranscript + interim).trim()}`.trim();
+      };
+
+      recognition.onerror = () => {
+        isListening = false;
+        micBtn.classList.remove("active");
+        voiceState.textContent = "Mic error";
+        voiceState.classList.remove("listening");
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        micBtn.classList.remove("active");
+        voiceState.textContent = "Ready";
+        voiceState.classList.remove("listening");
+        finalTranscript = "";
+      };
+
+      micBtn.addEventListener("click", () => {
+        try {
+          if (isListening) {
+            recognition.stop();
+            return;
+          }
+          recognition.start();
+        } catch (_) {
+          showNotice("Voice typing could not start.", "error");
+        }
+      });
     }
 
     function bindStaticActions() {
@@ -1647,6 +1943,11 @@
 
       mediaPreviewWrap.addEventListener("contextmenu", (e) => {
         e.preventDefault();
+      });
+
+      mediaPickBtn.addEventListener("click", () => {
+        fileWrap.classList.add("show");
+        postMedia.click();
       });
 
       postMedia.addEventListener("change", async (e) => {
@@ -1672,13 +1973,14 @@
           await loadConnections();
           await loadAiAccess();
           await loadAiGeneratedImageFromSession();
-          showNotice("Page data refreshed.", "success");
+          showNotice("Page refreshed.", "success");
         } catch (error) {
           showNotice(error.message || "Could not refresh.", "error");
         }
       });
 
       draftBtn.addEventListener("click", saveDraft);
+      drawerDraftBtn.addEventListener("click", saveDraft);
       publishBtn.addEventListener("click", publishPost);
 
       openDrawerBtn.addEventListener("click", openDrawer);
@@ -1696,15 +1998,23 @@
         if (e.target === aiModalBackdrop) closeAiModal();
       });
 
-      generateAiBtn.addEventListener("click", generateAiPost);
+      generateAiBtn.addEventListener("click", () => generateAiPost());
       regenerateAiBtn.addEventListener("click", async () => {
-        if (!lastAiPrompt && !aiPromptInput.value.trim()) {
+        const promptToUse = lastAiPrompt || aiPromptInput.value.trim();
+        if (!promptToUse) {
           showNotice("Enter what you want to post first.", "error");
           return;
         }
-        await generateAiPost();
+        await generateAiPost(promptToUse);
       });
       useAiBtn.addEventListener("click", useAiResult);
+
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest("#openEmojiBtn") && !e.target.closest("#emojiPanel")) {
+          emojiPanel.classList.remove("show");
+          openEmojiBtn.classList.remove("active");
+        }
+      });
     }
 
     async function init() {
@@ -1713,6 +2023,8 @@
         if (!ready) return;
 
         bindStaticActions();
+        setupEmojiPicker();
+        setupVoiceTyping();
         renderPlatforms();
         await loadConnections();
         await loadAiAccess();
