@@ -1064,27 +1064,79 @@ async function queueJobsLikeCreatePost({ postId, userId, selectedPlatforms }) {
   return { queued: jobs.length };
 }
 
-async function triggerWorkerLikeCreatePost() {
+async function triggerWorkerLikeCreatePost({ postId = null, userId = null } = {}) {
+  const payload = {
+    limit: 20,
+    concurrency: 4
+  };
+
+  if (postId) payload.post_id = postId;
+  if (userId) payload.user_id = userId;
+
+  const errors = [];
+
+  try {
+    const response = await fetch(PROCESS_WORKER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      cache: "no-store",
+      body: JSON.stringify(payload)
+    });
+
+    const raw = await response.text();
+    let json = {};
+    try {
+      json = raw ? JSON.parse(raw) : {};
+    } catch {
+      json = { raw };
+    }
+
+    if (response.ok) {
+      return {
+        triggered: true,
+        method: "POST",
+        response: json
+      };
+    }
+
+    errors.push(`POST ${response.status}: ${json?.error || raw || "Worker failed"}`);
+  } catch (error) {
+    errors.push(`POST failed: ${sanitizeErrorMessage(error)}`);
+  }
+
   try {
     const response = await fetch(PROCESS_WORKER_URL, {
       method: "GET",
       cache: "no-store"
     });
 
-    if (!response.ok) {
+    const raw = await response.text();
+    let json = {};
+    try {
+      json = raw ? JSON.parse(raw) : {};
+    } catch {
+      json = { raw };
+    }
+
+    if (response.ok) {
       return {
-        triggered: false,
-        error: `Worker responded with ${response.status}`
+        triggered: true,
+        method: "GET",
+        response: json
       };
     }
 
-    return { triggered: true };
+    errors.push(`GET ${response.status}: ${json?.error || raw || "Worker failed"}`);
   } catch (error) {
-    return {
-      triggered: false,
-      error: sanitizeErrorMessage(error)
-    };
+    errors.push(`GET failed: ${sanitizeErrorMessage(error)}`);
   }
+
+  return {
+    triggered: false,
+    error: errors.join(" | ")
+  };
 }
 
 function mergeGenerationMeta(existing, extra) {
@@ -1248,12 +1300,29 @@ async function processRule(rule, options = {}) {
     });
 
     const publishQueueResult = await queueJobsLikeCreatePost({
-      postId,
-      userId: rule.user_id,
-      selectedPlatforms: normalizedPlatforms
-    });
+  postId,
+  userId: rule.user_id,
+  selectedPlatforms: normalizedPlatforms
+});
 
-    const workerTriggerResult = await triggerWorkerLikeCreatePost();
+let workerTriggerResult = await triggerWorkerLikeCreatePost({
+  postId,
+  userId: rule.user_id
+});
+
+if (!workerTriggerResult.triggered) {
+  await new Promise(resolve => setTimeout(resolve, 1500));
+
+  const retryResult = await triggerWorkerLikeCreatePost({
+    postId,
+    userId: rule.user_id
+  });
+
+  workerTriggerResult = {
+    ...workerTriggerResult,
+    retry: retryResult
+  };
+}
 
     await finalizeRunLog(runId, {
       status: "success",
@@ -1453,12 +1522,29 @@ async function checkOneKlingTask(item) {
     });
 
     const publishQueueResult = await queueJobsLikeCreatePost({
-      postId,
-      userId: item.user_id,
-      selectedPlatforms
-    });
+  postId,
+  userId: item.user_id,
+  selectedPlatforms
+});
 
-    const workerTriggerResult = await triggerWorkerLikeCreatePost();
+let workerTriggerResult = await triggerWorkerLikeCreatePost({
+  postId,
+  userId: item.user_id
+});
+
+if (!workerTriggerResult.triggered) {
+  await new Promise(resolve => setTimeout(resolve, 1500));
+
+  const retryResult = await triggerWorkerLikeCreatePost({
+    postId,
+    userId: item.user_id
+  });
+
+  workerTriggerResult = {
+    ...workerTriggerResult,
+    retry: retryResult
+  };
+}
 
     if (runId) {
       await finalizeRunLog(runId, {
