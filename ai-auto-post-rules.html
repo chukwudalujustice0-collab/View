@@ -5,93 +5,585 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Automation Rules | View</title>
   <meta name="theme-color" content="#08145c" />
-  <script>document.documentElement.classList.add("auth-loading");</script>
+
+  <script>
+    document.documentElement.classList.add("auth-loading");
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/auth-guard.js"></script>
+
   <style>
-    html.auth-loading,html.auth-loading body{visibility:hidden;opacity:0}
+    html.auth-loading,
+    html.auth-loading body{
+      visibility:hidden;
+      opacity:0;
+    }
+
     :root{
-      --bg:#08145c;--bg2:#0b1b78;--bg3:#061041;--line:rgba(255,255,255,.15);--line2:rgba(255,255,255,.24);
-      --text:#fff;--muted:rgba(255,255,255,.73);--muted2:rgba(255,255,255,.55);--red:#ff3b57;--max:760px;
+      --bg:#08145c;
+      --bg2:#0b1b78;
+      --bg3:#061041;
+      --line:rgba(255,255,255,.15);
+      --line2:rgba(255,255,255,.24);
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.73);
+      --muted2:rgba(255,255,255,.55);
+      --red:#ff3b57;
+      --green:#16d47b;
+      --amber:#f59e0b;
+      --nav:rgba(6,16,65,.95);
+      --card:rgba(255,255,255,.06);
+      --card2:rgba(255,255,255,.09);
+      --max:760px;
+      --shadow:0 18px 50px rgba(0,0,0,.22);
     }
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);min-height:100vh}
-    a{color:inherit;text-decoration:none} button,select{font:inherit}
-    .app{width:min(100%,var(--max));margin:0 auto;padding:14px 14px 100px}
-    .topbar{display:flex;align-items:center;gap:10px;padding:6px 0 10px}
-    .back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:18px;flex:0 0 auto}
-    .head{min-width:0;flex:1}
-    .head .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)}
-    .head h1{margin:2px 0 0;font-size:20px;line-height:1.1}
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Arial,Helvetica,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(255,59,87,.14), transparent 28%),
+        radial-gradient(circle at top left, rgba(59,130,246,.18), transparent 34%),
+        linear-gradient(180deg,var(--bg) 0%,var(--bg2) 58%,var(--bg3) 100%);
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    button,
+    select,
+    input{
+      font:inherit;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      cursor:pointer;
+    }
+
+    select{
+      border:none;
+      outline:none;
+      background:transparent;
+      color:#fff;
+      width:100%;
+      padding:0;
+      appearance:none;
+      -webkit-appearance:none;
+    }
+
+    select option{
+      color:#111827;
+    }
+
+    .app{
+      width:min(100%,var(--max));
+      margin:0 auto;
+      padding:14px 14px 104px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:6px 0 12px;
+    }
+
+    .back{
+      width:38px;
+      height:38px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      font-size:18px;
+      flex:0 0 auto;
+    }
+
+    .head{
+      min-width:0;
+      flex:1;
+    }
+
+    .head .eyebrow{
+      font-size:10px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--muted2);
+    }
+
+    .head h1{
+      margin:3px 0 0;
+      font-size:20px;
+      line-height:1.1;
+    }
+
+    .summary{
+      margin:6px 0 14px;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(180deg,var(--card2) 0%,var(--card) 100%);
+      box-shadow:var(--shadow);
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+    }
+
+    .summary-item{
+      min-width:0;
+      border-right:1px solid var(--line);
+      padding-right:8px;
+    }
+
+    .summary-item:last-child{
+      border-right:none;
+      padding-right:0;
+    }
+
+    .summary-label{
+      font-size:10px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted2);
+      margin-bottom:6px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .summary-value{
+      font-size:17px;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
     .toolbar{
-      padding:10px 0 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;
+      padding:12px 0 14px;
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      gap:10px;
     }
-    .toolbar select{flex:1;min-width:0;border:none;outline:none;background:transparent;color:#fff;font-size:13px}
-    .toolbar select option{color:#111}
+
+    .toolbar-filter{
+      flex:1;
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:0 12px;
+      height:40px;
+      border-radius:999px;
+      border:1px solid var(--line2);
+      background:rgba(255,255,255,.05);
+    }
+
+    .toolbar-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:0 0 auto;
+    }
+
+    .toolbar-btn,
     .toolbar a{
-      height:38px;padding:0 14px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:var(--red);font-size:12px;font-weight:700;white-space:nowrap;
+      height:40px;
+      padding:0 14px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+      flex:0 0 auto;
+      border:1px solid transparent;
     }
-    .list{border-top:1px solid var(--line);margin-top:14px}
-    .rule{display:block;padding:12px 0;border-bottom:1px solid var(--line)}
-    .rule-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+    .toolbar a{
+      background:var(--red);
+      color:#fff;
+    }
+
+    .toolbar-btn{
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      border-color:var(--line2);
+    }
+
+    .status{
+      display:none;
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      font-size:12.5px;
+      line-height:1.5;
+      background:rgba(255,255,255,.06);
+    }
+
+    .status.show{
+      display:block;
+    }
+
+    .status.error{
+      background:rgba(255,59,87,.12);
+      border-color:rgba(255,59,87,.25);
+      color:#ffe1e6;
+    }
+
+    .status.success{
+      background:rgba(22,212,123,.12);
+      border-color:rgba(22,212,123,.24);
+      color:#dfffee;
+    }
+
+    .list{
+      margin-top:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .rule{
+      display:block;
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(180deg,var(--card2) 0%,var(--card) 100%);
+      box-shadow:var(--shadow);
+    }
+
+    .rule-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .rule-title-wrap{
+      min-width:0;
+      flex:1;
+    }
+
     .rule-title{
-      min-width:0;flex:1;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      min-width:0;
+      font-size:14px;
+      font-weight:700;
+      line-height:1.35;
+      word-break:break-word;
     }
+
+    .rule-topic{
+      margin-top:4px;
+      font-size:11.5px;
+      color:var(--muted);
+      line-height:1.45;
+      word-break:break-word;
+    }
+
     .pill{
-      padding:6px 10px;border-radius:999px;font-size:10.5px;border:1px solid var(--line2);white-space:nowrap;text-transform:uppercase;letter-spacing:.08em;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:10.5px;
+      border:1px solid var(--line2);
+      white-space:nowrap;
+      text-transform:uppercase;
+      letter-spacing:.08em;
     }
-    .pill.red{background:rgba(255,59,87,.14);color:#ffd7dd;border-color:rgba(255,59,87,.28)}
-    .pill.green{background:rgba(22,212,123,.14);color:#dcffed;border-color:rgba(22,212,123,.28)}
-    .rule-meta{margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--muted)}
-    .rule-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+
+    .pill.red{
+      background:rgba(255,59,87,.14);
+      color:#ffd7dd;
+      border-color:rgba(255,59,87,.28);
+    }
+
+    .pill.green{
+      background:rgba(22,212,123,.14);
+      color:#dcffed;
+      border-color:rgba(22,212,123,.28);
+    }
+
+    .pill.amber{
+      background:rgba(245,158,11,.16);
+      color:#fff0c7;
+      border-color:rgba(245,158,11,.30);
+    }
+
+    .rule-grid{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:8px;
+    }
+
+    .rule-info{
+      padding:10px 11px;
+      border-radius:14px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      min-width:0;
+    }
+
+    .rule-info-label{
+      font-size:10px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted2);
+      margin-bottom:5px;
+    }
+
+    .rule-info-value{
+      font-size:12px;
+      line-height:1.45;
+      color:#fff;
+      word-break:break-word;
+    }
+
+    .rule-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
     .mini-btn{
-      min-height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.05);color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;
+      min-height:34px;
+      padding:0 12px;
+      border-radius:999px;
+      border:1px solid var(--line2);
+      background:rgba(255,255,255,.05);
+      color:#fff;
+      font-size:11.5px;
+      font-weight:700;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
     }
-    .mini-btn.red{background:var(--red);border-color:transparent}
-    .empty{padding:18px 0;font-size:12px;color:var(--muted);line-height:1.5}
-    .nav{
-      position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,var(--max));display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
-      background:rgba(6,16,65,.95);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+
+    .mini-btn.red{
+      background:var(--red);
+      border-color:transparent;
     }
-    .nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;color:var(--muted);padding:6px 2px;border-radius:10px}
-    .nav a.active{color:#fff;background:rgba(255,255,255,.07)}
-    .nav .icon{font-size:15px;line-height:1}
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:80}
-    .overlay.show{display:flex}
+
+    .mini-btn.green{
+      background:rgba(22,212,123,.12);
+      border-color:rgba(22,212,123,.28);
+      color:#dcffed;
+    }
+
+    .empty{
+      padding:18px 0;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.6;
+    }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.48);
+      display:none;
+      align-items:flex-end;
+      z-index:80;
+    }
+
+    .overlay.show{
+      display:flex;
+    }
+
     .sheet{
-      width:100%;max-width:760px;margin:0 auto;background:linear-gradient(180deg,#0a1869 0%,#07124a 100%);border-top-left-radius:20px;border-top-right-radius:20px;
-      border:1px solid var(--line);border-bottom:none;padding:14px 14px calc(18px + env(safe-area-inset-bottom));
+      width:100%;
+      max-width:760px;
+      margin:0 auto;
+      background:linear-gradient(180deg,#0a1869 0%,#07124a 100%);
+      border-top-left-radius:20px;
+      border-top-right-radius:20px;
+      border:1px solid var(--line);
+      border-bottom:none;
+      padding:14px 14px calc(18px + env(safe-area-inset-bottom));
     }
-    .sheet-handle{width:42px;height:4px;border-radius:999px;background:rgba(255,255,255,.22);margin:0 auto 14px}
-    .sheet h4{margin:0 0 8px;font-size:16px}
-    .sheet p{margin:0 0 16px;font-size:12.5px;line-height:1.5;color:var(--muted)}
-    .sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .sheet-actions button{height:42px;border:none;border-radius:999px;cursor:pointer;font-size:13px;font-weight:700}
-    .cancel{background:rgba(255,255,255,.08);color:#fff;border:1px solid var(--line)}
-    .danger{background:var(--red);color:#fff}
+
+    .sheet-handle{
+      width:42px;
+      height:4px;
+      border-radius:999px;
+      background:rgba(255,255,255,.22);
+      margin:0 auto 14px;
+    }
+
+    .sheet h4{
+      margin:0 0 8px;
+      font-size:16px;
+    }
+
+    .sheet p{
+      margin:0 0 16px;
+      font-size:12.5px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+
+    .sheet-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+
+    .sheet-actions button{
+      height:42px;
+      border:none;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .cancel{
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      border:1px solid var(--line);
+    }
+
+    .danger{
+      background:var(--red);
+      color:#fff;
+    }
+
+    .nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:0;
+      width:min(100%,var(--max));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:4px;
+      background:var(--nav);
+      backdrop-filter:blur(14px);
+      border-top:1px solid var(--line);
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      z-index:50;
+    }
+
+    .nav a{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      font-size:10px;
+      color:var(--muted);
+      padding:6px 2px;
+      border-radius:10px;
+      min-width:0;
+    }
+
+    .nav a.active{
+      color:#fff;
+      background:rgba(255,255,255,.07);
+    }
+
+    .nav .icon{
+      font-size:15px;
+      line-height:1;
+    }
+
+    @media (max-width:560px){
+      .summary{
+        grid-template-columns:repeat(2,1fr);
+      }
+
+      .summary-item{
+        border-right:none;
+        padding-right:0;
+      }
+
+      .rule-grid{
+        grid-template-columns:1fr;
+      }
+
+      .toolbar{
+        flex-wrap:wrap;
+      }
+
+      .toolbar-actions{
+        width:100%;
+        justify-content:space-between;
+      }
+
+      .toolbar-actions .toolbar-btn,
+      .toolbar-actions a{
+        flex:1;
+      }
+    }
   </style>
 </head>
 <body>
   <main class="app">
     <header class="topbar">
-      <a class="back" href="ai-auto-post.html">‹</a>
+      <a class="back" href="ai-auto-post.html" aria-label="Back">‹</a>
       <div class="head">
         <div class="eyebrow">View • Auto Content Agent</div>
         <h1>Automation Rules</h1>
       </div>
     </header>
 
+    <section class="summary" id="summaryBox">
+      <div class="summary-item">
+        <div class="summary-label">Total</div>
+        <div class="summary-value" id="totalCount">0</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Active</div>
+        <div class="summary-value" id="activeCount">0</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Paused</div>
+        <div class="summary-value" id="pausedCount">0</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Due now</div>
+        <div class="summary-value" id="dueCount">0</div>
+      </div>
+    </section>
+
     <div class="toolbar">
-      <select id="statusFilter" aria-label="Filter rules">
-        <option value="all">All rules</option>
-        <option value="active">Active only</option>
-        <option value="paused">Paused only</option>
-        <option value="text">Text only</option>
-        <option value="image">Image only</option>
-        <option value="video">Video only</option>
-      </select>
-      <a href="ai-auto-post-create.html">New rule</a>
+      <div class="toolbar-filter">
+        <span>⌕</span>
+        <select id="statusFilter" aria-label="Filter rules">
+          <option value="all">All rules</option>
+          <option value="active">Active only</option>
+          <option value="paused">Paused only</option>
+          <option value="text">Text only</option>
+          <option value="image">Image only</option>
+          <option value="video">Video only</option>
+          <option value="due">Due now</option>
+        </select>
+      </div>
+
+      <div class="toolbar-actions">
+        <button class="toolbar-btn" id="refreshBtn" type="button">Refresh</button>
+        <a href="ai-auto-post-create.html">New rule</a>
+      </div>
     </div>
+
+    <div class="status" id="statusBox"></div>
 
     <div class="list" id="rulesList">
       <div class="empty">Loading rules…</div>
@@ -121,44 +613,106 @@
   <script>
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
-    const supabaseClient = window.supabase?.createClient
-      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-          auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:"pkce" }
-        })
-      : null;
+
+    const fallbackSupabase =
+      window.supabase?.createClient
+        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+              persistSession: true,
+              autoRefreshToken: true,
+              detectSessionInUrl: true,
+              flowType: "pkce"
+            }
+          })
+        : null;
 
     let allRules = [];
     let pendingDeleteId = null;
+    let busy = false;
 
-    async function ensureAuth(){
-      if (typeof window.protectPage === "function") await window.protectPage("ai-auto-post-rules.html");
-      else if (supabaseClient) {
-        const { data:{ session } } = await supabaseClient.auth.getSession();
-        if (!session) { location.href = `login.html?next=${encodeURIComponent("ai-auto-post-rules.html")}`; return; }
-      }
-      document.documentElement.classList.remove("auth-loading");
+    function getDbClient() {
+      return window.viewSupabase || fallbackSupabase;
     }
 
-    function formatDateTime(value){
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function showStatus(message, type = "success") {
+      const box = document.getElementById("statusBox");
+      box.className = `status show ${type}`;
+      box.textContent = message || "";
+      clearTimeout(showStatus._timer);
+      showStatus._timer = setTimeout(() => {
+        box.className = "status";
+        box.textContent = "";
+      }, 3500);
+    }
+
+    function formatDateTime(value) {
       if (!value) return "No schedule";
       const d = new Date(value);
       if (Number.isNaN(d.getTime())) return "Invalid date";
-      return d.toLocaleString([], { year:"numeric", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+      return d.toLocaleString([], {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
     }
 
-    function applyFilter(){
-      const filter = document.getElementById("statusFilter").value;
-      let rules = [...allRules];
-      if (filter === "active") rules = rules.filter(r => r.is_active);
-      if (filter === "paused") rules = rules.filter(r => !r.is_active);
-      if (filter === "text") rules = rules.filter(r => r.content_type === "text");
-      if (filter === "image") rules = rules.filter(r => r.content_type === "image");
-      if (filter === "video") rules = rules.filter(r => r.content_type === "video");
-      renderRules(rules);
+    function isDueNow(value) {
+      if (!value) return false;
+      const t = new Date(value).getTime();
+      if (Number.isNaN(t)) return false;
+      return t <= Date.now();
     }
 
-    function renderRules(rules){
+    function getContentTypeLabel(raw) {
+      const value = String(raw || "").toLowerCase();
+      if (["text", "text_only"].includes(value)) return "Text";
+      if (["image", "image_only", "image_with_caption"].includes(value)) return "Image";
+      if (["video", "video_only", "video_with_caption"].includes(value)) return "Video";
+      return raw || "Unknown";
+    }
+
+    function getFrequencyLabel(raw) {
+      const value = String(raw || "").replaceAll("_", " ").trim();
+      if (!value) return "Scheduled";
+      return value.replace(/\b\w/g, ch => ch.toUpperCase());
+    }
+
+    function getRuleStatusPill(rule) {
+      if (!rule.is_active) {
+        return `<span class="pill red">Paused</span>`;
+      }
+      if (isDueNow(rule.next_run_at)) {
+        return `<span class="pill amber">Due</span>`;
+      }
+      return `<span class="pill green">Active</span>`;
+    }
+
+    function updateSummary(rules) {
+      const total = rules.length;
+      const active = rules.filter(r => !!r.is_active).length;
+      const paused = rules.filter(r => !r.is_active).length;
+      const due = rules.filter(r => !!r.is_active && isDueNow(r.next_run_at)).length;
+
+      document.getElementById("totalCount").textContent = String(total);
+      document.getElementById("activeCount").textContent = String(active);
+      document.getElementById("pausedCount").textContent = String(paused);
+      document.getElementById("dueCount").textContent = String(due);
+    }
+
+    function renderRules(rules) {
       const list = document.getElementById("rulesList");
+
       if (!rules.length) {
         list.innerHTML = `<div class="empty">No rules found for this filter.</div>`;
         return;
@@ -166,95 +720,238 @@
 
       list.innerHTML = rules.map(rule => `
         <div class="rule">
-          <a href="ai-auto-post-rule-details.html?id=${encodeURIComponent(rule.id)}" class="rule-top">
-            <div class="rule-title">${rule.title || "Untitled rule"}</div>
-            <span class="pill ${rule.is_active ? "green" : "red"}">${rule.is_active ? "Active" : "Paused"}</span>
-          </a>
+          <div class="rule-top">
+            <a href="ai-auto-post-rule-details.html?id=${encodeURIComponent(rule.id)}" class="rule-title-wrap">
+              <div class="rule-title">${escapeHtml(rule.title || "Untitled rule")}</div>
+              <div class="rule-topic">${escapeHtml(rule.topic || "No topic added yet.")}</div>
+            </a>
+            ${getRuleStatusPill(rule)}
+          </div>
 
-          <div class="rule-meta">${rule.content_type || "content"} • ${rule.frequency || "scheduled"} • Next run: ${formatDateTime(rule.next_run_at)}</div>
-          <div class="rule-meta">${rule.platforms_label || "view"}${rule.topic ? ` • ${rule.topic}` : ""}</div>
+          <div class="rule-grid">
+            <div class="rule-info">
+              <div class="rule-info-label">Content</div>
+              <div class="rule-info-value">${escapeHtml(getContentTypeLabel(rule.content_type))}</div>
+            </div>
+
+            <div class="rule-info">
+              <div class="rule-info-label">Frequency</div>
+              <div class="rule-info-value">${escapeHtml(getFrequencyLabel(rule.frequency))}</div>
+            </div>
+
+            <div class="rule-info">
+              <div class="rule-info-label">Next Run</div>
+              <div class="rule-info-value">${escapeHtml(formatDateTime(rule.next_run_at))}</div>
+            </div>
+
+            <div class="rule-info">
+              <div class="rule-info-label">Platforms</div>
+              <div class="rule-info-value">${escapeHtml(rule.platforms_label || "view")}</div>
+            </div>
+          </div>
 
           <div class="rule-actions">
-            <a class="mini-btn" href="ai-auto-post-rule-details.html?id=${encodeURIComponent(rule.id)}" style="display:inline-flex;align-items:center;justify-content:center;">Open</a>
-            <button class="mini-btn" type="button" onclick="toggleRule('${rule.id}', ${rule.is_active ? 'false' : 'true'})">${rule.is_active ? "Pause" : "Resume"}</button>
+            <a class="mini-btn" href="ai-auto-post-rule-details.html?id=${encodeURIComponent(rule.id)}">Open</a>
+            <button class="mini-btn ${rule.is_active ? "" : "green"}" type="button" onclick="toggleRule('${rule.id}', ${rule.is_active ? "false" : "true"})">
+              ${rule.is_active ? "Pause" : "Resume"}
+            </button>
+            <a class="mini-btn" href="ai-auto-post-test.html?rule_id=${encodeURIComponent(rule.id)}">Test</a>
             <button class="mini-btn red" type="button" onclick="promptDelete('${rule.id}')">Delete</button>
           </div>
         </div>
       `).join("");
     }
 
-    async function loadRules(){
-      try{
-        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
-        if (!currentUser) {
-          location.href = `login.html?next=${encodeURIComponent("ai-auto-post-rules.html")}`;
-          return;
+    function applyFilter() {
+      const filter = document.getElementById("statusFilter").value;
+      let rules = [...allRules];
+
+      if (filter === "active") rules = rules.filter(r => !!r.is_active);
+      if (filter === "paused") rules = rules.filter(r => !r.is_active);
+      if (filter === "due") rules = rules.filter(r => !!r.is_active && isDueNow(r.next_run_at));
+
+      if (filter === "text") {
+        rules = rules.filter(r => ["text", "text_only"].includes(String(r.content_type || "").toLowerCase()));
+      }
+
+      if (filter === "image") {
+        rules = rules.filter(r => ["image", "image_only", "image_with_caption"].includes(String(r.content_type || "").toLowerCase()));
+      }
+
+      if (filter === "video") {
+        rules = rules.filter(r => ["video", "video_only", "video_with_caption"].includes(String(r.content_type || "").toLowerCase()));
+      }
+
+      renderRules(rules);
+    }
+
+    async function ensureAuthReady() {
+      const db = getDbClient();
+      if (!db) throw new Error("Supabase is not available.");
+
+      if (typeof window.protectPage === "function") {
+        await window.protectPage("ai-auto-post-rules.html");
+      } else {
+        const { data: { session }, error } = await db.auth.getSession();
+        if (error) throw error;
+
+        if (!session?.user) {
+          window.location.href = `login.html?next=${encodeURIComponent("ai-auto-post-rules.html")}`;
+          throw new Error("No active session.");
         }
 
-        const { data, error } = await supabaseClient
+        window.currentUser = session.user;
+      }
+
+      if (window.currentUser?.id) {
+        return window.currentUser;
+      }
+
+      const { data, error } = await db.auth.getUser();
+      if (error) throw error;
+
+      if (!data?.user) {
+        window.location.href = `login.html?next=${encodeURIComponent("ai-auto-post-rules.html")}`;
+        throw new Error("No active user session found.");
+      }
+
+      window.currentUser = data.user;
+      return data.user;
+    }
+
+    async function loadRules(showRefreshMessage = false) {
+      const list = document.getElementById("rulesList");
+      const db = getDbClient();
+
+      try {
+        const currentUser = await ensureAuthReady();
+        if (!db) throw new Error("Supabase is not available.");
+
+        list.innerHTML = `<div class="empty">Loading rules…</div>`;
+
+        const { data, error } = await db
           .from("auto_post_rules")
           .select("id,title,topic,content_type,frequency,is_active,next_run_at,platforms_label,created_at")
           .eq("user_id", currentUser.id)
-          .order("created_at", { ascending:false });
+          .order("created_at", { ascending: false });
 
         if (error) throw error;
+
         allRules = data || [];
+        updateSummary(allRules);
         applyFilter();
-      }catch(error){
-        console.error(error);
-        document.getElementById("rulesList").innerHTML = `<div class="empty">Unable to load rules right now.</div>`;
+
+        if (showRefreshMessage) {
+          showStatus("Rules refreshed.", "success");
+        }
+      } catch (error) {
+        console.error("loadRules error:", error);
+        list.innerHTML = `<div class="empty">${escapeHtml(error?.message || "Unable to load rules right now.")}</div>`;
       }
     }
 
-    async function toggleRule(id, makeActive){
-      try{
-        const { error } = await supabaseClient
+    async function toggleRule(id, makeActive) {
+      if (busy) return;
+      const db = getDbClient();
+
+      try {
+        busy = true;
+        const currentUser = await ensureAuthReady();
+        if (!db) throw new Error("Supabase is not available.");
+
+        const updatePayload = {
+          is_active: !!makeActive,
+          updated_at: new Date().toISOString()
+        };
+
+        if (makeActive) {
+          const now = new Date().toISOString();
+          updatePayload.last_status = "queued";
+          updatePayload.next_run_at = now;
+        } else {
+          updatePayload.last_status = "paused";
+        }
+
+        const { error } = await db
           .from("auto_post_rules")
-          .update({ is_active: makeActive, updated_at:new Date().toISOString() })
-          .eq("id", id);
+          .update(updatePayload)
+          .eq("id", id)
+          .eq("user_id", currentUser.id);
 
         if (error) throw error;
+
+        showStatus(makeActive ? "Rule resumed." : "Rule paused.", "success");
         await loadRules();
-      }catch(error){
-        console.error(error);
-        alert("Unable to update this rule right now.");
+      } catch (error) {
+        console.error("toggleRule error:", error);
+        showStatus(error?.message || "Unable to update this rule right now.", "error");
+      } finally {
+        busy = false;
       }
     }
 
-    function promptDelete(id){
+    function promptDelete(id) {
       pendingDeleteId = id;
       document.getElementById("deleteOverlay").classList.add("show");
     }
+
+    async function deleteRule() {
+      if (!pendingDeleteId || busy) return;
+
+      const db = getDbClient();
+
+      try {
+        busy = true;
+        const currentUser = await ensureAuthReady();
+        if (!db) throw new Error("Supabase is not available.");
+
+        const { error } = await db
+          .from("auto_post_rules")
+          .delete()
+          .eq("id", pendingDeleteId)
+          .eq("user_id", currentUser.id);
+
+        if (error) throw error;
+
+        pendingDeleteId = null;
+        document.getElementById("deleteOverlay").classList.remove("show");
+        showStatus("Rule deleted.", "success");
+        await loadRules();
+      } catch (error) {
+        console.error("deleteRule error:", error);
+        showStatus(error?.message || "Unable to delete this rule right now.", "error");
+      } finally {
+        busy = false;
+      }
+    }
+
+    document.getElementById("statusFilter").addEventListener("change", applyFilter);
+    document.getElementById("refreshBtn").addEventListener("click", () => loadRules(true));
 
     document.getElementById("cancelDeleteBtn").addEventListener("click", () => {
       pendingDeleteId = null;
       document.getElementById("deleteOverlay").classList.remove("show");
     });
 
-    document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
-      if (!pendingDeleteId) return;
-      try{
-        const { error } = await supabaseClient.from("auto_post_rules").delete().eq("id", pendingDeleteId);
-        if (error) throw error;
+    document.getElementById("confirmDeleteBtn").addEventListener("click", deleteRule);
+
+    document.getElementById("deleteOverlay").addEventListener("click", (e) => {
+      if (e.target.id === "deleteOverlay") {
         pendingDeleteId = null;
         document.getElementById("deleteOverlay").classList.remove("show");
-        await loadRules();
-      }catch(error){
-        console.error(error);
-        alert("Unable to delete this rule right now.");
       }
     });
 
-    document.getElementById("statusFilter").addEventListener("change", applyFilter);
     window.toggleRule = toggleRule;
     window.promptDelete = promptDelete;
 
-    (async function init(){
-      try{
-        await ensureAuth();
+    (async function init() {
+      try {
         await loadRules();
-      }catch(error){
-        console.error(error);
+      } catch (error) {
+        console.error("init error:", error);
+        document.getElementById("rulesList").innerHTML = `<div class="empty">${escapeHtml(error?.message || "Page failed to initialize.")}</div>`;
+      } finally {
         document.documentElement.classList.remove("auth-loading");
       }
     })();
