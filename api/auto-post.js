@@ -1019,15 +1019,18 @@ async function createViewPost({
   }
 
   const payload = {
-    user_id,
-    content: content || null,
-    media_url: media_url || null,
-    media_type: media_type || (media_url ? "image" : "text"),
-    selected_platforms,
-    publish_status: "queued",
-    status: "queued",
-    created_at: nowIso()
-  };
+  user_id,
+  content: content || null,
+  privacy: "public",
+  selected_platforms,
+  publish_status: "queued",
+  status: "queued",
+  media_url: media_url || null,
+  media_type: media_type || (media_url ? "image" : null),
+  media_path: null,
+  media_name: null,
+  created_at: nowIso()
+};
 
   const { data, error } = await supabase
     .from("posts")
@@ -1066,31 +1069,14 @@ async function queueJobsLikeCreatePost({ postId, userId, selectedPlatforms }) {
 
 async function triggerWorkerLikeCreatePost() {
   try {
-    const response = await fetch(PROCESS_WORKER_URL, {
+    await fetch(PROCESS_WORKER_URL, {
       method: "GET",
       cache: "no-store"
     });
 
-    const raw = await response.text();
-    let json = {};
-    try {
-      json = raw ? JSON.parse(raw) : {};
-    } catch {
-      json = { raw };
-    }
-
-    if (!response.ok) {
-      return {
-        triggered: false,
-        method: "GET",
-        error: json?.error || raw || `Worker failed (${response.status})`
-      };
-    }
-
     return {
       triggered: true,
-      method: "GET",
-      response: json
+      method: "GET"
     };
   } catch (error) {
     return {
@@ -1263,22 +1249,11 @@ async function processRule(rule, options = {}) {
 
     const publishQueueResult = await queueJobsLikeCreatePost({
   postId,
-  userId: rule.user_id,
-  selectedPlatforms: normalizedPlatforms
+  userId: item.user_id,
+  selectedPlatforms
 });
 
-let workerTriggerResult = await triggerWorkerLikeCreatePost();
-
-if (!workerTriggerResult.triggered) {
-  await new Promise(resolve => setTimeout(resolve, 1500));
-
-  const retryResult = await triggerWorkerLikeCreatePost();
-
-  workerTriggerResult = {
-    ...workerTriggerResult,
-    retry: retryResult
-  };
-}
+const workerTriggerResult = await triggerWorkerLikeCreatePost();
 
     await finalizeRunLog(runId, {
       status: "success",
@@ -1479,22 +1454,11 @@ async function checkOneKlingTask(item) {
 
     const publishQueueResult = await queueJobsLikeCreatePost({
   postId,
-  userId: item.user_id,
-  selectedPlatforms
+  userId: rule.user_id,
+  selectedPlatforms: normalizedPlatforms
 });
 
-let workerTriggerResult = await triggerWorkerLikeCreatePost();
-
-if (!workerTriggerResult.triggered) {
-  await new Promise(resolve => setTimeout(resolve, 1500));
-
-  const retryResult = await triggerWorkerLikeCreatePost();
-
-  workerTriggerResult = {
-    ...workerTriggerResult,
-    retry: retryResult
-  };
-}
+const workerTriggerResult = await triggerWorkerLikeCreatePost();
 
     if (runId) {
       await finalizeRunLog(runId, {
