@@ -960,7 +960,7 @@
         <h2>Trending</h2>
         <div class="section-actions">
           <button id="refreshTrendingBtn" class="mini-btn red" type="button">Refresh</button>
-          <a href="Trendings.html" class="mini-btn">Open</a>
+          <a href="trendings.html" class="mini-btn">Open</a>
         </div>
       </div>
       <div class="section-body">
@@ -1053,10 +1053,10 @@
 
     <nav class="drawer-nav">
       <a href="dashboard.html" class="drawer-link"><span class="drawer-left"><span>📊</span><span>Dashboard</span></span><span>›</span></a>
-      <a href="ask-ai.html" class="drawer-link"><span class="drawer-left"><span>✨</span><span>View AI</span></span><span>›</span></a>
+      <a href="view-ai.html" class="drawer-link"><span class="drawer-left"><span>✨</span><span>View AI</span></span><span>›</span></a>
       <a href="groups.html" class="drawer-link"><span class="drawer-left"><span>👥</span><span>Groups</span></span><span>›</span></a>
       <a href="pages.html" class="drawer-link"><span class="drawer-left"><span>📄</span><span>Pages</span></span><span>›</span></a>
-      <a href="Trendings.html" class="drawer-link"><span class="drawer-left"><span>🔥</span><span>Trendings</span></span><span>›</span></a>
+      <a href="trendings.html" class="drawer-link"><span class="drawer-left"><span>🔥</span><span>Trendings</span></span><span>›</span></a>
       <a href="status.html" class="drawer-link"><span class="drawer-left"><span>⭕</span><span>Status</span></span><span>›</span></a>
       <a href="marketplace.html" class="drawer-link"><span class="drawer-left"><span>🛍️</span><span>Marketplace</span></span><span>›</span></a>
       <a href="News.html" class="drawer-link"><span class="drawer-left"><span>📰</span><span>News</span></span><span>›</span></a>
@@ -1297,13 +1297,13 @@
         let items = !force ? cacheGet("view_explore_trending_v2") : null;
 
         if (!items) {
-          const doc = await fetchHtmlDoc("Trendings.html");
+          const doc = await fetchHtmlDoc("trendings.html");
           const cards = [...doc.querySelectorAll("a, article, .trend-card, .video-card, .card")];
           const parsed = cards.map((card, index) => {
             const title = extractText(card, ["h1","h2","h3",".title",".card-title",".trend-title"]);
             const meta = extractText(card, [".meta",".card-meta",".trend-meta","small",".sub"]);
             const thumb = extractImageFromElement(card);
-            const href = card.getAttribute("href") || "Trendings.html";
+            const href = card.getAttribute("href") || "trendings.html";
             if (!title && !thumb) return null;
             return {
               id: `tr-${index}`,
@@ -1330,7 +1330,7 @@
         }
 
         trendingList.innerHTML = rows.map((item, index) => `
-          <a href="${escapeHtml(item.href || "Trendings.html")}" class="card media-card ${index === 0 ? "wide" : ""}">
+          <a href="${escapeHtml(item.href || "trendings.html")}" class="card media-card ${index === 0 ? "wide" : ""}">
             <div class="thumb">
               ${item.thumb ? `<img loading="lazy" decoding="async" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}" onerror="this.style.display='none';">` : `<div class="status-text">No Preview</div>`}
               <div class="chip">Trending</div>
