@@ -26,12 +26,12 @@ const USE_GEMINI_IMAGE = String(process.env.USE_GEMINI_IMAGE || "true").toLowerC
 
 const VIEW_BASE_URL = (
   process.env.VIEW_BASE_URL ||
-  `https://${process.env.VERCEL_URL || "view-psi-lac.vercel.app"}`
+  "https://view-psi-lac.vercel.app"
 ).replace(/\/+$/, "");
 
 const PROCESS_WORKER_URL =
   process.env.PROCESS_WORKER_URL ||
-  `${VIEW_BASE_URL}/api/process-publish-jobs`;
+  "https://view-psi-lac.vercel.app/api/process-publish-jobs";
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error("Missing Supabase environment variables.");
@@ -1076,64 +1076,75 @@ async function triggerWorkerLikeCreatePost({ postId = null, userId = null } = {}
   if (postId) payload.post_id = postId;
   if (userId) payload.user_id = userId;
 
+  const primaryUrl =
+    process.env.PROCESS_WORKER_URL ||
+    `${VIEW_BASE_URL}/api/process-publish-jobs`;
+
+  const fallbackUrl = "https://view-psi-lac.vercel.app/api/process-publish-jobs";
+
+  const urls = [...new Set([primaryUrl, fallbackUrl].filter(Boolean))];
   const errors = [];
 
-  try {
-    const response = await fetch(PROCESS_WORKER_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      cache: "no-store",
-      body: JSON.stringify(payload)
-    });
-
-    const raw = await response.text();
-    let json = {};
+  for (const url of urls) {
     try {
-      json = raw ? JSON.parse(raw) : {};
-    } catch {
-      json = { raw };
-    }
-
-    if (response.ok) {
-      return {
-        triggered: true,
+      const postResponse = await fetch(url, {
         method: "POST",
-        response: json
-      };
+        headers: {
+          "Content-Type": "application/json"
+        },
+        cache: "no-store",
+        body: JSON.stringify(payload)
+      });
+
+      const postRaw = await postResponse.text();
+      let postJson = {};
+      try {
+        postJson = postRaw ? JSON.parse(postRaw) : {};
+      } catch {
+        postJson = { raw: postRaw };
+      }
+
+      if (postResponse.ok) {
+        return {
+          triggered: true,
+          method: "POST",
+          url,
+          response: postJson
+        };
+      }
+
+      errors.push(`POST ${url} -> ${postResponse.status}: ${postJson?.error || postRaw || "Worker failed"}`);
+    } catch (error) {
+      errors.push(`POST ${url} failed: ${sanitizeErrorMessage(error)}`);
     }
 
-    errors.push(`POST ${response.status}: ${json?.error || raw || "Worker failed"}`);
-  } catch (error) {
-    errors.push(`POST failed: ${sanitizeErrorMessage(error)}`);
-  }
-
-  try {
-    const response = await fetch(PROCESS_WORKER_URL, {
-      method: "GET",
-      cache: "no-store"
-    });
-
-    const raw = await response.text();
-    let json = {};
     try {
-      json = raw ? JSON.parse(raw) : {};
-    } catch {
-      json = { raw };
-    }
-
-    if (response.ok) {
-      return {
-        triggered: true,
+      const getResponse = await fetch(url, {
         method: "GET",
-        response: json
-      };
-    }
+        cache: "no-store"
+      });
 
-    errors.push(`GET ${response.status}: ${json?.error || raw || "Worker failed"}`);
-  } catch (error) {
-    errors.push(`GET failed: ${sanitizeErrorMessage(error)}`);
+      const getRaw = await getResponse.text();
+      let getJson = {};
+      try {
+        getJson = getRaw ? JSON.parse(getRaw) : {};
+      } catch {
+        getJson = { raw: getRaw };
+      }
+
+      if (getResponse.ok) {
+        return {
+          triggered: true,
+          method: "GET",
+          url,
+          response: getJson
+        };
+      }
+
+      errors.push(`GET ${url} -> ${getResponse.status}: ${getJson?.error || getRaw || "Worker failed"}`);
+    } catch (error) {
+      errors.push(`GET ${url} failed: ${sanitizeErrorMessage(error)}`);
+    }
   }
 
   return {
