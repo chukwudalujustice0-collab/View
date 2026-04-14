@@ -1019,18 +1019,18 @@ async function createViewPost({
   }
 
   const payload = {
-  user_id,
-  content: content || null,
-  privacy: "public",
-  selected_platforms,
-  publish_status: "queued",
-  status: "queued",
-  media_url: media_url || null,
-  media_type: media_type || (media_url ? "image" : null),
-  media_path: null,
-  media_name: null,
-  created_at: nowIso()
-};
+    user_id,
+    content: content || null,
+    privacy: "public",
+    selected_platforms,
+    publish_status: "queued",
+    status: "queued",
+    media_url: media_url || null,
+    media_type: media_type || (media_url ? "image" : null),
+    media_path: null,
+    media_name: null,
+    created_at: nowIso()
+  };
 
   const { data, error } = await supabase
     .from("posts")
@@ -1248,12 +1248,12 @@ async function processRule(rule, options = {}) {
     });
 
     const publishQueueResult = await queueJobsLikeCreatePost({
-  postId,
-  userId: item.user_id,
-  selectedPlatforms
-});
+      postId,
+      userId: rule.user_id,
+      selectedPlatforms: normalizedPlatforms
+    });
 
-const workerTriggerResult = await triggerWorkerLikeCreatePost();
+    const workerTriggerResult = await triggerWorkerLikeCreatePost();
 
     await finalizeRunLog(runId, {
       status: "success",
@@ -1453,12 +1453,12 @@ async function checkOneKlingTask(item) {
     });
 
     const publishQueueResult = await queueJobsLikeCreatePost({
-  postId,
-  userId: rule.user_id,
-  selectedPlatforms: normalizedPlatforms
-});
+      postId,
+      userId: item.user_id,
+      selectedPlatforms
+    });
 
-const workerTriggerResult = await triggerWorkerLikeCreatePost();
+    const workerTriggerResult = await triggerWorkerLikeCreatePost();
 
     if (runId) {
       await finalizeRunLog(runId, {
