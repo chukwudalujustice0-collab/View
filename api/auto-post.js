@@ -1327,6 +1327,16 @@ if (!workerTriggerResult.triggered) {
   };
 }
 
+const retryTriggered = !!workerTriggerResult?.retry?.triggered;
+
+if (!workerTriggerResult.triggered && !retryTriggered) {
+  throw new Error(
+    workerTriggerResult?.retry?.error ||
+    workerTriggerResult?.error ||
+    "Publish worker trigger failed"
+  );
+}
+
     await finalizeRunLog(runId, {
       status: "success",
       message: buildRunMessage("Rule processed successfully.", publishQueueResult),
@@ -1547,6 +1557,16 @@ if (!workerTriggerResult.triggered) {
     ...workerTriggerResult,
     retry: retryResult
   };
+}
+
+const retryTriggered = !!workerTriggerResult?.retry?.triggered;
+
+if (!workerTriggerResult.triggered && !retryTriggered) {
+  throw new Error(
+    workerTriggerResult?.retry?.error ||
+    workerTriggerResult?.error ||
+    "Publish worker trigger failed"
+  );
 }
 
     if (runId) {
