@@ -31,11 +31,9 @@
       --muted-2:rgba(255,255,255,.56);
       --red:#ff3b57;
       --red-2:#ff4d6a;
-      --red-soft:rgba(255,59,87,.12);
       --pill:rgba(255,255,255,.05);
       --nav:rgba(6,16,65,.96);
       --max:760px;
-      --radius:18px;
     }
 
     *{
@@ -124,17 +122,8 @@
       line-height:1.1;
     }
 
-    .intro{
-      padding:10px 0 14px;
-      border-top:1px solid var(--line);
-      border-bottom:1px solid var(--line);
-      font-size:12.5px;
-      line-height:1.5;
-      color:var(--muted);
-    }
-
     .form{
-      margin-top:14px;
+      margin-top:12px;
     }
 
     .field{
@@ -145,6 +134,12 @@
     .field.grid-2{
       display:grid;
       grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .field.grid-3{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
       gap:14px;
     }
 
@@ -162,7 +157,6 @@
       color:var(--muted-2);
     }
 
-    .text-value,
     .input,
     .select,
     .textarea{
@@ -173,55 +167,7 @@
 
     .textarea{
       resize:none;
-      min-height:88px;
-    }
-
-    .hint{
-      margin-top:8px;
-      font-size:11.5px;
-      line-height:1.45;
-      color:var(--muted);
-    }
-
-    .choice-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:2px;
-    }
-
-    .chip{
-      position:relative;
-      display:inline-flex;
-    }
-
-    .chip input{
-      position:absolute;
-      opacity:0;
-      pointer-events:none;
-    }
-
-    .chip span{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:40px;
-      padding:0 18px;
-      border-radius:999px;
-      border:1px solid var(--line-2);
-      background:var(--pill);
-      color:var(--muted);
-      cursor:pointer;
-      font-size:12px;
-      white-space:nowrap;
-      transition:.18s ease;
-    }
-
-    .chip input:checked + span{
-      background:linear-gradient(180deg,var(--red-2) 0%, var(--red) 100%);
-      border-color:transparent;
-      color:#fff;
-      box-shadow:0 8px 20px rgba(255,59,87,.20);
+      min-height:90px;
     }
 
     .switch-line{
@@ -240,13 +186,6 @@
       font-size:13px;
       font-weight:700;
       line-height:1.3;
-    }
-
-    .switch-line .sub{
-      margin-top:4px;
-      font-size:11.5px;
-      line-height:1.45;
-      color:var(--muted);
     }
 
     .switch{
@@ -291,6 +230,51 @@
 
     .switch input:checked + span::after{
       transform:translateX(26px);
+    }
+
+    .choice-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:2px;
+    }
+
+    .chip{
+      position:relative;
+      display:inline-flex;
+    }
+
+    .chip input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .chip span{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+      padding:0 18px;
+      border-radius:999px;
+      border:1px solid var(--line-2);
+      background:var(--pill);
+      color:var(--muted);
+      cursor:pointer;
+      font-size:12px;
+      white-space:nowrap;
+      transition:.18s ease;
+    }
+
+    .chip input:checked + span{
+      background:linear-gradient(180deg,var(--red-2) 0%, var(--red) 100%);
+      border-color:transparent;
+      color:#fff;
+      box-shadow:0 8px 20px rgba(255,59,87,.20);
+    }
+
+    .hidden{
+      display:none !important;
     }
 
     .actions{
@@ -378,6 +362,13 @@
       font-size:15px;
       line-height:1;
     }
+
+    @media (max-width:640px){
+      .field.grid-2,
+      .field.grid-3{
+        grid-template-columns:1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -390,10 +381,6 @@
       </div>
     </header>
 
-    <div class="intro">
-      Set what to generate, how often it should run, and where it should post. Once saved, the rule can generate and publish automatically.
-    </div>
-
     <form class="form" id="autoPostForm">
       <div class="field">
         <label class="label" for="title">Rule title</label>
@@ -401,30 +388,22 @@
       </div>
 
       <div class="field">
-        <span class="label">Content type</span>
-        <div class="choice-row">
-          <label class="chip">
-            <input type="radio" name="content_type" value="text" checked />
-            <span>Text</span>
-          </label>
-          <label class="chip">
-            <input type="radio" name="content_type" value="image" />
-            <span>Image + Caption</span>
-          </label>
-          <label class="chip">
-            <input type="radio" name="content_type" value="video" />
-            <span>Video</span>
-          </label>
-        </div>
+        <label class="label" for="content_type">Content type</label>
+        <select class="select" id="content_type" name="content_type" required>
+          <option value="text_only">Text only</option>
+          <option value="image_only">Image only</option>
+          <option value="image_with_caption">Image with caption</option>
+          <option value="video_only">Video only</option>
+          <option value="video_with_caption">Video with caption</option>
+        </select>
       </div>
 
       <div class="field">
         <label class="label" for="topic">Prompt or topic</label>
         <textarea class="textarea" id="topic" name="topic" placeholder="Describe exactly what you want the AI to generate..." required></textarea>
-        <div class="hint">Example: Generate a clean premium product image for a logistics brand and add a short catchy caption.</div>
       </div>
 
-      <div class="field">
+      <div class="field" id="captionStyleWrap">
         <label class="label" for="caption_style">Caption style</label>
         <select class="select" id="caption_style" name="caption_style">
           <option value="professional">Professional</option>
@@ -435,7 +414,7 @@
         </select>
       </div>
 
-      <div class="field">
+      <div class="field" id="visualStyleWrap">
         <label class="label" for="visual_style">Visual style</label>
         <select class="select" id="visual_style" name="visual_style">
           <option value="clean">Clean</option>
@@ -446,20 +425,56 @@
         </select>
       </div>
 
-      <div class="field grid-2">
-        <div class="subfield">
-          <label class="label" for="frequency">Frequency</label>
-          <select class="select" id="frequency" name="frequency">
-            <option value="daily">Every day</option>
-            <option value="every_2_days">Every 2 days</option>
-            <option value="weekly">Every week</option>
-          </select>
-        </div>
+      <div class="field">
+        <label class="label" for="frequency">Schedule</label>
+        <select class="select" id="frequency" name="frequency">
+          <option value="three_times_daily">3 times everyday</option>
+          <option value="twice_daily">2 times everyday</option>
+          <option value="daily">Once daily</option>
+          <option value="every_2_days">Every 2 days</option>
+          <option value="weekly_day">A particular day of the week</option>
+          <option value="weekly">Weekly</option>
+          <option value="biweekly">2 weeks</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
 
+      <div id="singleTimeWrap" class="field">
+        <label class="label" for="post_time">Time</label>
+        <input class="input" id="post_time" name="post_time" type="time" value="09:00" />
+      </div>
+
+      <div id="multiTimeWrap" class="field grid-3 hidden">
         <div class="subfield">
-          <label class="label" for="post_time">Time</label>
-          <input class="input" id="post_time" name="post_time" type="time" value="09:00" required />
+          <label class="label" for="post_time_1">First time</label>
+          <input class="input" id="post_time_1" name="post_time_1" type="time" value="09:00" />
         </div>
+        <div class="subfield">
+          <label class="label" for="post_time_2">Second time</label>
+          <input class="input" id="post_time_2" name="post_time_2" type="time" value="13:00" />
+        </div>
+        <div class="subfield" id="postTime3Wrap">
+          <label class="label" for="post_time_3">Third time</label>
+          <input class="input" id="post_time_3" name="post_time_3" type="time" value="18:00" />
+        </div>
+      </div>
+
+      <div id="dayOfWeekWrap" class="field hidden">
+        <label class="label" for="day_of_week">Day of the week</label>
+        <select class="select" id="day_of_week" name="day_of_week">
+          <option value="monday">Monday</option>
+          <option value="tuesday">Tuesday</option>
+          <option value="wednesday">Wednesday</option>
+          <option value="thursday">Thursday</option>
+          <option value="friday">Friday</option>
+          <option value="saturday">Saturday</option>
+          <option value="sunday">Sunday</option>
+        </select>
+      </div>
+
+      <div id="dayOfMonthWrap" class="field hidden">
+        <label class="label" for="day_of_month">Day of month</label>
+        <select class="select" id="day_of_month" name="day_of_month"></select>
       </div>
 
       <div class="field">
@@ -472,34 +487,32 @@
           <label class="chip"><input type="checkbox" name="platforms" value="youtube" /><span>YouTube</span></label>
           <label class="chip"><input type="checkbox" name="platforms" value="tiktok" /><span>TikTok</span></label>
           <label class="chip"><input type="checkbox" name="platforms" value="telegram" /><span>Telegram</span></label>
-          <label class="chip"><input type="checkbox" name="platforms" value="whatsapp" /><span>WhatsApp</span></label>
+          <label class="chip"><input type="checkbox" name="platforms" value="linkedin" /><span>LinkedIn</span></label>
         </div>
       </div>
 
       <div class="field">
-        <label class="switch-line">
+        <div class="switch-line">
           <div class="text">
             <div class="title">Auto post immediately after generation</div>
-            <div class="sub">Generated content will publish automatically on schedule.</div>
           </div>
           <label class="switch">
             <input id="auto_post" name="auto_post" type="checkbox" checked />
             <span></span>
           </label>
-        </label>
+        </div>
       </div>
 
       <div class="field">
-        <label class="switch-line">
+        <div class="switch-line">
           <div class="text">
             <div class="title">Rule active</div>
-            <div class="sub">If turned on, this automation starts running after save.</div>
           </div>
           <label class="switch">
             <input id="is_active" name="is_active" type="checkbox" checked />
             <span></span>
           </label>
-        </label>
+        </div>
       </div>
 
       <div class="actions">
@@ -549,6 +562,17 @@
         })
       : null;
 
+    const frequencySelect = document.getElementById("frequency");
+    const contentTypeSelect = document.getElementById("content_type");
+    const singleTimeWrap = document.getElementById("singleTimeWrap");
+    const multiTimeWrap = document.getElementById("multiTimeWrap");
+    const postTime3Wrap = document.getElementById("postTime3Wrap");
+    const dayOfWeekWrap = document.getElementById("dayOfWeekWrap");
+    const dayOfMonthWrap = document.getElementById("dayOfMonthWrap");
+    const dayOfMonthSelect = document.getElementById("day_of_month");
+    const captionStyleWrap = document.getElementById("captionStyleWrap");
+    const visualStyleWrap = document.getElementById("visualStyleWrap");
+
     async function ensureAuth() {
       if (typeof window.protectPage === "function") {
         await window.protectPage("ai-auto-post-create.html");
@@ -562,25 +586,185 @@
       document.documentElement.classList.remove("auth-loading");
     }
 
-    function computeNextRunISO(frequency, timeValue) {
+    function sortTimes(times) {
+      return [...times]
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
+    }
+
+    function platformsLabel(platforms) {
+      return platforms.length ? platforms.join(", ") : "view";
+    }
+
+    function mapContentType(rawType) {
+      const value = String(rawType || "").trim();
+
+      if (value === "text_only") {
+        return { content_type: "text", content_mode: "text_only" };
+      }
+      if (value === "image_only") {
+        return { content_type: "image", content_mode: "image_only" };
+      }
+      if (value === "image_with_caption") {
+        return { content_type: "image", content_mode: "image_with_caption" };
+      }
+      if (value === "video_only") {
+        return { content_type: "video", content_mode: "video_only" };
+      }
+      if (value === "video_with_caption") {
+        return { content_type: "video", content_mode: "video_with_caption" };
+      }
+
+      return { content_type: "text", content_mode: "text_only" };
+    }
+
+    function applyContentTypeVisibility() {
+      const selected = String(contentTypeSelect.value || "text_only");
+      const needsCaption = selected === "text_only" || selected === "image_with_caption" || selected === "video_with_caption";
+      const needsVisual = selected === "image_only" || selected === "image_with_caption" || selected === "video_only" || selected === "video_with_caption";
+
+      captionStyleWrap.classList.toggle("hidden", !needsCaption);
+      visualStyleWrap.classList.toggle("hidden", !needsVisual);
+    }
+
+    function fillDayOfMonthOptions() {
+      dayOfMonthSelect.innerHTML = Array.from({ length: 31 }, (_, i) => {
+        const day = i + 1;
+        return `<option value="${day}">${day}</option>`;
+      }).join("");
+    }
+
+    function applyScheduleVisibility() {
+      const value = frequencySelect.value;
+
+      singleTimeWrap.classList.add("hidden");
+      multiTimeWrap.classList.add("hidden");
+      postTime3Wrap.classList.remove("hidden");
+      dayOfWeekWrap.classList.add("hidden");
+      dayOfMonthWrap.classList.add("hidden");
+
+      if (value === "three_times_daily") {
+        multiTimeWrap.classList.remove("hidden");
+        postTime3Wrap.classList.remove("hidden");
+      } else if (value === "twice_daily") {
+        multiTimeWrap.classList.remove("hidden");
+        postTime3Wrap.classList.add("hidden");
+      } else if (value === "weekly_day") {
+        singleTimeWrap.classList.remove("hidden");
+        dayOfWeekWrap.classList.remove("hidden");
+      } else if (value === "monthly") {
+        singleTimeWrap.classList.remove("hidden");
+        dayOfMonthWrap.classList.remove("hidden");
+      } else {
+        singleTimeWrap.classList.remove("hidden");
+      }
+    }
+
+    function buildSchedulePayload(formData) {
+      const frequency = String(formData.get("frequency") || "daily");
+      const baseTime = String(formData.get("post_time") || "09:00");
+      const time1 = String(formData.get("post_time_1") || "09:00");
+      const time2 = String(formData.get("post_time_2") || "13:00");
+      const time3 = String(formData.get("post_time_3") || "18:00");
+      const dayOfWeek = String(formData.get("day_of_week") || "monday");
+      const dayOfMonth = Number(formData.get("day_of_month") || 1);
+
+      let schedule_times = [];
+      let schedule_day_of_week = null;
+      let schedule_day_of_month = null;
+
+      if (frequency === "three_times_daily") {
+        schedule_times = sortTimes([time1, time2, time3]);
+      } else if (frequency === "twice_daily") {
+        schedule_times = sortTimes([time1, time2]);
+      } else {
+        schedule_times = [baseTime];
+      }
+
+      if (frequency === "weekly_day") {
+        schedule_day_of_week = dayOfWeek;
+      }
+
+      if (frequency === "monthly") {
+        schedule_day_of_month = dayOfMonth;
+      }
+
+      return {
+        frequency,
+        post_time: schedule_times[0] || "09:00",
+        schedule_times,
+        schedule_day_of_week,
+        schedule_day_of_month
+      };
+    }
+
+    function nextWeekdayDate(targetWeekday) {
+      const map = {
+        sunday: 0,
+        monday: 1,
+        tuesday: 2,
+        wednesday: 3,
+        thursday: 4,
+        friday: 5,
+        saturday: 6
+      };
+
+      const target = map[targetWeekday] ?? 1;
       const now = new Date();
-      const [hours, minutes] = (timeValue || "09:00").split(":").map(Number);
+      const date = new Date(now);
+      const diff = (target - date.getDay() + 7) % 7;
+      date.setDate(date.getDate() + diff);
+      return date;
+    }
+
+    function computeNextRunISO(schedule) {
+      const now = new Date();
+      const firstTime = schedule.schedule_times?.[0] || schedule.post_time || "09:00";
+      const [hours, minutes] = String(firstTime).split(":").map(Number);
 
       const next = new Date();
       next.setSeconds(0, 0);
       next.setHours(Number.isFinite(hours) ? hours : 9, Number.isFinite(minutes) ? minutes : 0, 0, 0);
 
-      if (next <= now) {
-        if (frequency === "every_2_days") next.setDate(next.getDate() + 2);
-        else if (frequency === "weekly") next.setDate(next.getDate() + 7);
-        else next.setDate(next.getDate() + 1);
+      if (schedule.frequency === "weekly_day") {
+        const weekdayDate = nextWeekdayDate(schedule.schedule_day_of_week || "monday");
+        next.setFullYear(weekdayDate.getFullYear(), weekdayDate.getMonth(), weekdayDate.getDate());
+        if (next <= now) next.setDate(next.getDate() + 7);
+        return next.toISOString();
       }
 
-      return next.toISOString();
-    }
+      if (schedule.frequency === "weekly") {
+        if (next <= now) next.setDate(next.getDate() + 7);
+        return next.toISOString();
+      }
 
-    function platformsLabel(platforms) {
-      return platforms.length ? platforms.join(", ") : "view";
+      if (schedule.frequency === "biweekly") {
+        if (next <= now) next.setDate(next.getDate() + 14);
+        return next.toISOString();
+      }
+
+      if (schedule.frequency === "monthly") {
+        const day = Math.max(1, Math.min(31, Number(schedule.schedule_day_of_month || 1)));
+        next.setDate(day);
+        if (next <= now) {
+          next.setMonth(next.getMonth() + 1);
+          next.setDate(day);
+        }
+        return next.toISOString();
+      }
+
+      if (schedule.frequency === "every_2_days") {
+        if (next <= now) next.setDate(next.getDate() + 2);
+        return next.toISOString();
+      }
+
+      if (schedule.frequency === "three_times_daily" || schedule.frequency === "twice_daily" || schedule.frequency === "daily") {
+        if (next <= now) next.setDate(next.getDate() + 1);
+        return next.toISOString();
+      }
+
+      if (next <= now) next.setDate(next.getDate() + 1);
+      return next.toISOString();
     }
 
     async function maybeLoadTemplate() {
@@ -605,10 +789,17 @@
         document.getElementById("caption_style").value = data.caption_style || "professional";
         document.getElementById("visual_style").value = data.visual_style || "clean";
 
-        if (data.content_type) {
-          const radio = document.querySelector(`input[name="content_type"][value="${data.content_type}"]`);
-          if (radio) radio.checked = true;
+        if (data.content_mode) {
+          contentTypeSelect.value = data.content_mode;
+        } else if (data.content_type === "text") {
+          contentTypeSelect.value = "text_only";
+        } else if (data.content_type === "image") {
+          contentTypeSelect.value = "image_with_caption";
+        } else if (data.content_type === "video") {
+          contentTypeSelect.value = "video_with_caption";
         }
+
+        applyContentTypeVisibility();
       } catch (error) {
         console.error(error);
       }
@@ -638,11 +829,10 @@
 
         const title = String(formData.get("title") || "").trim();
         const topic = String(formData.get("topic") || "").trim();
-        const contentType = String(formData.get("content_type") || "text");
+        const contentTypeRaw = String(formData.get("content_type") || "text_only");
+        const mappedType = mapContentType(contentTypeRaw);
         const captionStyle = String(formData.get("caption_style") || "professional");
         const visualStyle = String(formData.get("visual_style") || "clean");
-        const frequency = String(formData.get("frequency") || "daily");
-        const postTime = String(formData.get("post_time") || "09:00");
         const autoPost = formData.get("auto_post") === "on";
         const isActive = formData.get("is_active") === "on";
         const platforms = formData.getAll("platforms").map(String);
@@ -659,21 +849,27 @@
           return;
         }
 
+        const schedule = buildSchedulePayload(formData);
+
         const payload = {
           user_id: currentUser.id,
           title,
           topic,
           prompt_template: topic,
-          content_type: contentType,
+          content_type: mappedType.content_type,
+          content_mode: mappedType.content_mode,
           caption_style: captionStyle,
           visual_style: visualStyle,
-          frequency,
-          post_time: postTime,
+          frequency: schedule.frequency,
+          post_time: schedule.post_time,
+          schedule_times: schedule.schedule_times,
+          schedule_day_of_week: schedule.schedule_day_of_week,
+          schedule_day_of_month: schedule.schedule_day_of_month,
           auto_post: autoPost,
           is_active: isActive,
           selected_platforms: platforms,
           platforms_label: platformsLabel(platforms),
-          next_run_at: computeNextRunISO(frequency, postTime),
+          next_run_at: computeNextRunISO(schedule),
           updated_at: new Date().toISOString()
         };
 
@@ -700,8 +896,15 @@
 
     (async function init() {
       try {
+        fillDayOfMonthOptions();
+        applyScheduleVisibility();
+        applyContentTypeVisibility();
+
         await ensureAuth();
         await maybeLoadTemplate();
+
+        frequencySelect.addEventListener("change", applyScheduleVisibility);
+        contentTypeSelect.addEventListener("change", applyContentTypeVisibility);
 
         const form = document.getElementById("autoPostForm");
         if (form) {
