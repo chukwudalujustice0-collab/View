@@ -16,7 +16,14 @@
       --danger:#dc2626;
       --success:#16a34a;
     }
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
     body{
       min-height:100vh;
       background:linear-gradient(180deg,#eef5ff 0%, #ffffff 100%);
@@ -26,7 +33,12 @@
       padding:20px;
       color:var(--text);
     }
-    .wrap{width:100%;max-width:460px}
+
+    .wrap{
+      width:100%;
+      max-width:460px;
+    }
+
     .card{
       background:var(--card);
       border:1px solid var(--border);
@@ -34,15 +46,52 @@
       padding:24px;
       box-shadow:0 10px 30px rgba(0,0,0,.06);
     }
-    .brand{text-align:center;margin-bottom:18px}
-    .brand h1{color:var(--primary);font-size:30px;margin-bottom:4px}
-    .brand p{font-size:12px;color:var(--soft)}
-    .head{text-align:center;margin-bottom:18px}
-    .head h2{font-size:24px;margin-bottom:6px}
-    .head p{font-size:13px;color:var(--soft);line-height:1.5}
-    .group{margin-bottom:14px}
-    .group label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
-    .group input,.group select{
+
+    .brand{
+      text-align:center;
+      margin-bottom:18px;
+    }
+
+    .brand h1{
+      color:var(--primary);
+      font-size:30px;
+      margin-bottom:4px;
+    }
+
+    .brand p{
+      font-size:12px;
+      color:var(--soft);
+    }
+
+    .head{
+      text-align:center;
+      margin-bottom:18px;
+    }
+
+    .head h2{
+      font-size:24px;
+      margin-bottom:6px;
+    }
+
+    .head p{
+      font-size:13px;
+      color:var(--soft);
+      line-height:1.5;
+    }
+
+    .group{
+      margin-bottom:14px;
+    }
+
+    .group label{
+      display:block;
+      font-size:14px;
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    .group input,
+    .group select{
       width:100%;
       height:48px;
       border:1px solid var(--border);
@@ -51,12 +100,21 @@
       font-size:14px;
       background:#fff;
     }
-    .group input:focus,.group select:focus{
+
+    .group input:focus,
+    .group select:focus{
       outline:none;
       border-color:var(--primary);
     }
-    .password-wrap{position:relative}
-    .password-wrap input{padding-right:58px}
+
+    .password-wrap{
+      position:relative;
+    }
+
+    .password-wrap input{
+      padding-right:58px;
+    }
+
     .toggle{
       position:absolute;
       right:12px;
@@ -68,6 +126,7 @@
       cursor:pointer;
       user-select:none;
     }
+
     .terms{
       display:flex;
       align-items:flex-start;
@@ -76,7 +135,11 @@
       color:var(--soft);
       margin:12px 0 14px;
     }
-    .terms input{margin-top:2px}
+
+    .terms input{
+      margin-top:2px;
+    }
+
     .btn{
       width:100%;
       height:48px;
@@ -86,19 +149,34 @@
       font-weight:700;
       cursor:pointer;
     }
-    .btn-primary{background:var(--primary);color:#fff}
-    .btn-primary:hover{background:var(--primary-dark)}
+
+    .btn:disabled{
+      opacity:.7;
+      cursor:not-allowed;
+    }
+
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .btn-primary:hover:not(:disabled){
+      background:var(--primary-dark);
+    }
+
     .btn-google{
       background:#fff;
       color:var(--text);
       border:1px solid var(--border);
     }
+
     .divider{
       text-align:center;
       color:var(--soft);
       font-size:12px;
       margin:12px 0;
     }
+
     .message{
       display:none;
       margin-top:12px;
@@ -107,42 +185,50 @@
       line-height:1.5;
       padding:10px;
       border-radius:10px;
+      white-space:pre-wrap;
     }
+
     .message.error{
       display:block;
       color:var(--danger);
       background:#fff5f5;
       border:1px solid #fecaca;
     }
+
     .message.success{
       display:block;
       color:var(--success);
       background:#f0fdf4;
       border:1px solid #bbf7d0;
     }
+
     .message.info{
       display:block;
       color:#0b5ed7;
       background:#eff6ff;
       border:1px solid #bfdbfe;
     }
+
     .error{
       display:none;
       font-size:12px;
       color:var(--danger);
       margin-top:6px;
     }
+
     .bottom{
       text-align:center;
       margin-top:16px;
       color:var(--soft);
       font-size:14px;
     }
+
     .bottom a{
       color:var(--primary);
       font-weight:700;
       text-decoration:none;
     }
+
     .debug{
       margin-top:14px;
       font-size:12px;
@@ -153,6 +239,7 @@
       padding:10px;
       white-space:pre-wrap;
       display:none;
+      line-height:1.5;
     }
   </style>
 </head>
@@ -242,9 +329,16 @@
     const SUPABASE_URL = "https://ezarjrxzkqqsbyirxttg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6YXJqcnh6a3Fxc2J5aXJ4dHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzAzODcsImV4cCI6MjA4OTg0NjM4N30.ERyM_zVPU5jUx9ROrbLnY-jYsHzCD8O0lzAeuzEr0oI";
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      }
+    });
 
-    function togglePassword(inputId, toggleElement){
+    function togglePassword(inputId, toggleElement) {
       const input = document.getElementById(inputId);
       if (!input) return;
       const show = input.type === "password";
@@ -255,94 +349,103 @@
     function showMessage(message, type = "error") {
       const box = document.getElementById("signupMessage");
       box.className = "message " + type;
-      box.textContent = message;
+      box.textContent = message || "";
+    }
+
+    function clearMessage() {
+      const box = document.getElementById("signupMessage");
+      box.className = "message";
+      box.textContent = "";
     }
 
     function showDebug(message) {
       const box = document.getElementById("debugBox");
+      if (!message) {
+        box.style.display = "none";
+        box.textContent = "";
+        return;
+      }
       box.style.display = "block";
       box.textContent = message;
     }
 
     async function usernameExists(username) {
-      const { data, error } = await supabaseClient
-        .from("profiles")
-        .select("id")
-        .eq("username", username)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabaseClient
+          .from("profiles")
+          .select("id")
+          .eq("username", username)
+          .limit(1);
 
-      if (error) throw error;
-      return !!data;
-    }
+        if (error) {
+          console.warn("Username check skipped:", error.message);
+          return false;
+        }
 
-    async function saveProfile(userId, fullName, username, email, phone, accountType) {
-      const payload = {
-        id: userId,
-        email,
-        full_name: fullName,
-        username,
-        phone,
-        account_type: accountType,
-        updated_at: new Date().toISOString()
-      };
-
-      const { error } = await supabaseClient
-        .from("profiles")
-        .upsert(payload, { onConflict: "id" });
-
-      if (error) throw error;
+        return Array.isArray(data) && data.length > 0;
+      } catch (error) {
+        console.warn("Username check failed:", error);
+        return false;
+      }
     }
 
     async function ensureWallet(userId) {
-      const { error } = await supabaseClient
-        .from("wallets")
-        .upsert({
-          user_id: userId,
-          balance: 0,
-          currency: "NGN"
-        }, { onConflict: "user_id" });
+      try {
+        const { error } = await supabaseClient
+          .from("wallets")
+          .upsert({
+            user_id: userId,
+            balance: 0,
+            currency: "NGN"
+          }, { onConflict: "user_id" });
 
-      if (error) console.error("Wallet upsert error:", error.message);
+        if (error) {
+          console.error("Wallet upsert error:", error.message);
+        }
+      } catch (error) {
+        console.error("Wallet upsert crash:", error);
+      }
     }
 
     async function ensureStarterSubscription(userId) {
-      const { data: existing, error: checkError } = await supabaseClient
-        .from("subscriptions")
-        .select("id")
-        .eq("user_id", userId)
-        .maybeSingle();
+      try {
+        const { data: existing, error: checkError } = await supabaseClient
+          .from("subscriptions")
+          .select("id")
+          .eq("user_id", userId)
+          .limit(1);
 
-      if (checkError) {
-        console.error("Subscription check error:", checkError.message);
-        return;
-      }
+        if (checkError) {
+          console.error("Subscription check error:", checkError.message);
+          return;
+        }
 
-      if (existing) return;
+        if (Array.isArray(existing) && existing.length > 0) return;
 
-      const { error } = await supabaseClient
-        .from("subscriptions")
-        .insert({
-          user_id: userId,
-          plan_name: "Starter",
-          billing_cycle: "monthly",
-          amount: 0,
-          status: "active",
-          start_date: new Date().toISOString()
-        });
+        const { error } = await supabaseClient
+          .from("subscriptions")
+          .insert({
+            user_id: userId,
+            plan_name: "Starter",
+            billing_cycle: "monthly",
+            amount: 0,
+            status: "active",
+            start_date: new Date().toISOString()
+          });
 
-      if (error) {
-        console.error("Subscription insert error:", error.message);
+        if (error) {
+          console.error("Subscription insert error:", error.message);
+        }
+      } catch (error) {
+        console.error("Subscription setup crash:", error);
       }
     }
 
-    document.getElementById("signupForm").addEventListener("submit", async function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-
+    async function createAccount() {
       const submitBtn = document.getElementById("submitBtn");
       const passwordError = document.getElementById("passwordError");
       passwordError.style.display = "none";
-      showMessage("Checking form...", "info");
+      clearMessage();
       showDebug("");
 
       const fullName = document.getElementById("fullName").value.trim();
@@ -385,11 +488,10 @@
 
       try {
         showMessage("Checking username...", "info");
+
         const exists = await usernameExists(username);
         if (exists) {
           showMessage("Username already exists.");
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Create Account";
           return;
         }
 
@@ -401,7 +503,8 @@
           options: {
             data: {
               full_name: fullName,
-              username,
+              username: username,
+              phone: phone,
               account_type: accountType
             }
           }
@@ -410,19 +513,19 @@
         if (error) throw error;
         if (!data?.user?.id) throw new Error("User account was not created.");
 
-        await saveProfile(data.user.id, fullName, username, email, phone, accountType);
         await ensureWallet(data.user.id);
         await ensureStarterSubscription(data.user.id);
 
         const confirmationOff = !!data.session;
 
         if (confirmationOff) {
-          showMessage("Signup successful. Redirecting to dashboard...", "success");
+          showMessage("Signup successful. Redirecting...", "success");
           showDebug(
             "Signup finished.\n" +
             "User ID: " + data.user.id + "\n" +
-            "Email: " + data.user.email + "\n" +
-            "Phone saved: " + phone
+            "Email: " + (data.user.email || "") + "\n" +
+            "Phone sent in auth metadata: " + phone + "\n" +
+            "Account type: " + accountType
           );
 
           setTimeout(() => {
@@ -433,13 +536,22 @@
           showDebug(
             "Signup finished.\n" +
             "User ID: " + data.user.id + "\n" +
-            "Email: " + data.user.email + "\n" +
-            "Phone saved: " + phone
+            "Email: " + (data.user.email || "") + "\n" +
+            "Phone sent in auth metadata: " + phone + "\n" +
+            "Account type: " + accountType
           );
         }
       } catch (error) {
         console.error("Signup error:", error);
-        showMessage(error.message || "Signup failed.");
+
+        let message = error?.message || "Signup failed.";
+
+        if (/Database error saving new user/i.test(message)) {
+          message =
+            "Database error saving new user. Fix your Supabase profiles trigger or profile insert function first.";
+        }
+
+        showMessage(message);
         showDebug(
           "Exact error:\n" +
           (error && error.message ? error.message : JSON.stringify(error, null, 2))
@@ -448,11 +560,19 @@
         submitBtn.disabled = false;
         submitBtn.textContent = "Create Account";
       }
+    }
+
+    document.getElementById("signupForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      await createAccount();
     });
 
     document.getElementById("googleSignupBtn").addEventListener("click", async function() {
       try {
         showMessage("Starting Google signup...", "info");
+        showDebug("");
+
         const { error } = await supabaseClient.auth.signInWithOAuth({
           provider: "google",
           options: {
