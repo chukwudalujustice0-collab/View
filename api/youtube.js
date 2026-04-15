@@ -90,7 +90,7 @@ async function getAuthenticatedUser(req) {
 }
 
 function buildRedirectUri() {
-  return "https://view.ceetice.com/api/youtube?action=exchange";
+  return "https://view.ceetice.com/youtube-connect.html";
 }
 
 function buildFutureIso(expiresInSeconds) {
