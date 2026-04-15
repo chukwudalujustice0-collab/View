@@ -421,8 +421,8 @@
             <div class="feature-text">Requests a refresh token so your worker can renew expired access tokens.</div>
           </div>
           <div class="feature">
-            <div class="feature-kicker">State validation</div>
-            <div class="feature-text">Uses signed local state storage plus user validation before code exchange.</div>
+            <div class="feature-kicker">Backend controlled</div>
+            <div class="feature-text">OAuth start and token exchange are now controlled by one backend route.</div>
           </div>
         </div>
 
@@ -450,16 +450,16 @@
           <div class="status-value" id="frontendOrigin">-</div>
         </div>
         <div class="status-box">
-          <div class="status-label">Redirect URI</div>
-          <div class="status-value" id="redirectUri">-</div>
+          <div class="status-label">Backend route</div>
+          <div class="status-value" id="backendRoute">-</div>
         </div>
         <div class="status-box">
-          <div class="status-label">Exchange endpoint</div>
+          <div class="status-label">Exchange action</div>
           <div class="status-value" id="exchangeEndpoint">-</div>
         </div>
         <div class="status-box">
-          <div class="status-label">Requested scopes</div>
-          <div class="status-value" id="scopeText">-</div>
+          <div class="status-label">Status action</div>
+          <div class="status-value" id="statusEndpoint">-</div>
         </div>
       </div>
     </section>
@@ -478,27 +478,22 @@
       }
     });
 
-    const GOOGLE_CLIENT_ID = "1453516669-1heoa56uql9svtnm0abhoqu95nn6dpcb.apps.googleusercontent.com";
-    const EXCHANGE_ENDPOINT = "https://view-psi-lac.vercel.app/api/youtube-exchange-code";
-    const REDIRECT_URI = `${window.location.origin}/youtube-connect.html`;
-
-    const YOUTUBE_SCOPES = [
-      "https://www.googleapis.com/auth/youtube.upload",
-      "https://www.googleapis.com/auth/youtube.readonly",
-      "https://www.googleapis.com/auth/youtube"
-    ];
+    const API_BASE = `${window.location.origin}/api/youtube`;
+    const START_ENDPOINT = `${API_BASE}?action=start`;
+    const EXCHANGE_ENDPOINT = `${API_BASE}?action=exchange`;
+    const STATUS_ENDPOINT = `${API_BASE}?action=status`;
 
     const noticeEl = document.getElementById("notice");
     const connectBtn = document.getElementById("connectBtn");
     const frontendOriginEl = document.getElementById("frontendOrigin");
-    const redirectUriEl = document.getElementById("redirectUri");
+    const backendRouteEl = document.getElementById("backendRoute");
     const exchangeEndpointEl = document.getElementById("exchangeEndpoint");
-    const scopeTextEl = document.getElementById("scopeText");
+    const statusEndpointEl = document.getElementById("statusEndpoint");
 
     frontendOriginEl.textContent = window.location.origin;
-    redirectUriEl.textContent = REDIRECT_URI;
+    backendRouteEl.textContent = API_BASE;
     exchangeEndpointEl.textContent = EXCHANGE_ENDPOINT;
-    scopeTextEl.textContent = YOUTUBE_SCOPES.join(" ");
+    statusEndpointEl.textContent = STATUS_ENDPOINT;
 
     function showNotice(message, type = "info") {
       noticeEl.className = `notice show ${type}`;
@@ -508,6 +503,12 @@
     function clearNotice() {
       noticeEl.className = "notice";
       noticeEl.textContent = "";
+    }
+
+    async function getSessionToken() {
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) throw error;
+      return data?.session?.access_token || "";
     }
 
     async function requireUser() {
@@ -522,57 +523,45 @@
       return data.user;
     }
 
-    function createOAuthState(userId) {
-      const raw = {
-        user_id: userId,
-        nonce: crypto.randomUUID(),
-        ts: Date.now()
-      };
-      localStorage.setItem("yt_oauth_state", JSON.stringify(raw));
-      return btoa(JSON.stringify(raw));
-    }
-
-    function parseOAuthState(value) {
-      try {
-        return JSON.parse(atob(value));
-      } catch {
-        return null;
-      }
-    }
-
-    function buildGoogleAuthUrl(userId) {
-      const state = createOAuthState(userId);
-
-      const params = new URLSearchParams({
-        client_id: GOOGLE_CLIENT_ID,
-        redirect_uri: REDIRECT_URI,
-        response_type: "code",
-        scope: YOUTUBE_SCOPES.join(" "),
-        access_type: "offline",
-        prompt: "consent",
-        include_granted_scopes: "true",
-        state
-      });
-
-      return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-    }
-
     async function startConnect() {
       try {
         clearNotice();
 
-        if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.trim().length < 20) {
-          throw new Error("Google Web Client ID is missing or invalid.");
-        }
-
         const user = await requireUser();
         if (!user) return;
+
+        const accessToken = await getSessionToken();
+        if (!accessToken) {
+          throw new Error("Missing user session. Please login again.");
+        }
 
         connectBtn.disabled = true;
         connectBtn.textContent = "Redirecting...";
 
-        const authUrl = buildGoogleAuthUrl(user.id);
-        window.location.href = authUrl;
+        const response = await fetch(START_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            redirect_to: `${window.location.origin}/youtube-connect.html`
+          })
+        });
+
+        const text = await response.text();
+        let data = {};
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch {
+          data = { raw: text };
+        }
+
+        if (!response.ok || !data?.ok || !data?.auth_url) {
+          throw new Error(data?.error || "Could not start YouTube connection.");
+        }
+
+        window.location.href = data.auth_url;
       } catch (error) {
         showNotice(error.message || "Could not start YouTube connection.", "error");
         connectBtn.disabled = false;
@@ -583,7 +572,6 @@
     async function handleCallbackIfPresent() {
       const url = new URL(window.location.href);
       const code = url.searchParams.get("code");
-      const state = url.searchParams.get("state");
       const oauthError = url.searchParams.get("error");
 
       if (oauthError) {
@@ -597,28 +585,24 @@
         const user = await requireUser();
         if (!user) return;
 
-        const saved = JSON.parse(localStorage.getItem("yt_oauth_state") || "null");
-        const decoded = parseOAuthState(state);
-
-        if (!decoded || !saved) {
-          throw new Error("State validation failed. Please restart the YouTube connection.");
-        }
-
-        if (decoded.user_id !== user.id || saved.user_id !== user.id || decoded.nonce !== saved.nonce) {
-          throw new Error("State mismatch. Please restart the YouTube connection.");
+        const accessToken = await getSessionToken();
+        if (!accessToken) {
+          throw new Error("Missing user session. Please login again.");
         }
 
         showNotice("Completing YouTube connection...", "info");
+        connectBtn.disabled = true;
+        connectBtn.textContent = "Connecting...";
 
         const response = await fetch(EXCHANGE_ENDPOINT, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${(await supabaseClient.auth.getSession()).data.session?.access_token || ""}`
+            "Authorization": `Bearer ${accessToken}`
           },
           body: JSON.stringify({
             code,
-            redirect_uri: REDIRECT_URI
+            redirect_uri: `${window.location.origin}/api/youtube?action=exchange`
           })
         });
 
@@ -630,15 +614,10 @@
           data = { raw: text };
         }
 
-        if (!response.ok) {
-          throw new Error(data.error || text || "YouTube exchange failed.");
+        if (!response.ok || !data?.ok) {
+          throw new Error(data?.error || "YouTube exchange failed.");
         }
 
-        if (!data.ok) {
-          throw new Error(data.error || "YouTube connection failed.");
-        }
-
-        localStorage.removeItem("yt_oauth_state");
         showNotice("YouTube connected successfully. Redirecting...", "success");
 
         const cleanUrl = `${window.location.origin}${window.location.pathname}`;
