@@ -601,10 +601,9 @@
             "Authorization": `Bearer ${accessToken}`
           },
           body: JSON.stringify({
-            code,
-            redirect_uri: `${window.location.origin}/api/youtube?action=exchange`
-          })
-        });
+  code,
+  redirect_uri: "https://view.ceetice.com/youtube-connect.html"
+})
 
         const text = await response.text();
         let data = {};
