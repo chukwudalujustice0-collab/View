@@ -20,9 +20,7 @@
       --line:rgba(255,255,255,.08);
       --line2:rgba(255,255,255,.12);
       --blue:#3b82f6;
-      --blue2:#60a5fa;
       --red:#ef4444;
-      --red2:#fb7185;
       --green:#10b981;
       --shadow:0 20px 60px rgba(0,0,0,.34);
       --safe-bottom:env(safe-area-inset-bottom);
@@ -369,14 +367,6 @@
       color:#edf4ff;
     }
 
-    code{
-      background:rgba(255,255,255,.08);
-      padding:2px 6px;
-      border-radius:6px;
-      font-size:11px;
-      color:#dbeafe;
-    }
-
     @media (max-width:720px){
       .feature-grid,.status-grid{grid-template-columns:1fr}
       .hero-top{flex-direction:column}
@@ -482,6 +472,7 @@
     const START_ENDPOINT = `${API_BASE}?action=start`;
     const EXCHANGE_ENDPOINT = `${API_BASE}?action=exchange`;
     const STATUS_ENDPOINT = `${API_BASE}?action=status`;
+    const REDIRECT_URI = "https://view.ceetice.com/youtube-connect.html";
 
     const noticeEl = document.getElementById("notice");
     const connectBtn = document.getElementById("connectBtn");
@@ -545,7 +536,7 @@
             "Authorization": `Bearer ${accessToken}`
           },
           body: JSON.stringify({
-            redirect_to: `${window.location.origin}/youtube-connect.html`
+            redirect_to: REDIRECT_URI
           })
         });
 
@@ -601,9 +592,10 @@
             "Authorization": `Bearer ${accessToken}`
           },
           body: JSON.stringify({
-  code,
-  redirect_uri: "https://view.ceetice.com/youtube-connect.html"
-})
+            code,
+            redirect_uri: REDIRECT_URI
+          })
+        });
 
         const text = await response.text();
         let data = {};
