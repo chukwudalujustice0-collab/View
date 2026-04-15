@@ -89,12 +89,8 @@ async function getAuthenticatedUser(req) {
   return data.user;
 }
 
-function buildRedirectUri(req) {
-  const proto =
-    req.headers["x-forwarded-proto"] ||
-    (String(req.headers.host || "").includes("localhost") ? "http" : "https");
-  const host = req.headers["x-forwarded-host"] || req.headers.host;
-  return `${proto}://${host}/api/youtube?action=exchange`;
+function buildRedirectUri() {
+  return "https://view.ceetice.com/api/youtube?action=exchange";
 }
 
 function buildFutureIso(expiresInSeconds) {
