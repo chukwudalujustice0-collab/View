@@ -26,11 +26,12 @@
       --bg3:#061041;
       --line:rgba(255,255,255,.14);
       --line2:rgba(255,255,255,.22);
-      --text:#ffffff;
+      --text:#fff;
       --muted:rgba(255,255,255,.74);
       --muted2:rgba(255,255,255,.56);
       --red:#ff3b57;
       --red2:#ff4d6a;
+      --green:#16d47b;
       --nav:rgba(6,16,65,.96);
       --max:760px;
     }
@@ -149,7 +150,6 @@
       color:var(--muted2);
     }
 
-    .input,
     .select{
       min-height:22px;
       font-size:14px;
@@ -189,7 +189,7 @@
     }
 
     .btn.primary{
-      background:linear-gradient(180deg,var(--red2) 0%, var(--red) 100%);
+      background:linear-gradient(180deg,var(--red2) 0%,var(--red) 100%);
       color:#fff;
       box-shadow:0 10px 24px rgba(255,59,87,.22);
     }
@@ -272,12 +272,6 @@
       border-color:rgba(255,59,87,.28);
     }
 
-    .pill.blue{
-      color:#dcebff;
-      background:rgba(90,160,255,.14);
-      border-color:rgba(90,160,255,.28);
-    }
-
     pre{
       white-space:pre-wrap;
       word-break:break-word;
@@ -293,12 +287,10 @@
 
     .nav{
       position:fixed;
-      left:0;
-      right:0;
+      left:50%;
+      transform:translateX(-50%);
       bottom:0;
-      width:100%;
-      max-width:760px;
-      margin:0 auto;
+      width:min(100%,var(--max));
       display:grid;
       grid-template-columns:repeat(5,1fr);
       gap:4px;
@@ -344,7 +336,7 @@
     </header>
 
     <div class="intro">
-      Use this page to manually trigger one automation rule instantly without waiting for cron. This is useful for testing text, image, and video generation.
+      Use this page to manually trigger one automation rule instantly without waiting for cron.
     </div>
 
     <form id="testRuleForm">
@@ -376,26 +368,11 @@
   </main>
 
   <nav class="nav">
-    <a href="ai-auto-post.html">
-      <span class="icon">⌂</span>
-      <span>Home</span>
-    </a>
-    <a href="ai-auto-post-create.html">
-      <span class="icon">＋</span>
-      <span>Create</span>
-    </a>
-    <a href="ai-auto-post-rules.html">
-      <span class="icon">≣</span>
-      <span>Rules</span>
-    </a>
-    <a href="ai-auto-post-history.html">
-      <span class="icon">↻</span>
-      <span>History</span>
-    </a>
-    <a href="ai-auto-post-test.html" class="active">
-      <span class="icon">▶</span>
-      <span>Test</span>
-    </a>
+    <a href="ai-auto-post.html"><span class="icon">⌂</span><span>Home</span></a>
+    <a href="ai-auto-post-create.html"><span class="icon">＋</span><span>Create</span></a>
+    <a href="ai-auto-post-rules.html"><span class="icon">≣</span><span>Rules</span></a>
+    <a href="ai-auto-post-history.html"><span class="icon">↻</span><span>History</span></a>
+    <a href="ai-auto-post-test.html" class="active"><span class="icon">▶</span><span>Test</span></a>
   </nav>
 
   <script>
@@ -404,70 +381,37 @@
     const AUTO_POST_CRON_SECRET = "alwaysusemysecretkey";
     const API_BASE_URL = "https://view-psi-lac.vercel.app";
 
-    const supabaseClient = window.supabase?.createClient
-      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-          auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true,
-            flowType: "pkce"
-          }
-        })
-      : null;
+    const fallbackSupabase =
+      window.supabase?.createClient
+        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+              persistSession: true,
+              autoRefreshToken: true,
+              detectSessionInUrl: true,
+              flowType: "pkce"
+            }
+          })
+        : null;
 
-    async function ensureAuth() {
-      if (typeof window.protectPage === "function") {
-        await window.protectPage("ai-auto-post-test.html");
-      } else if (supabaseClient) {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) {
-          location.href = `login.html?next=${encodeURIComponent("ai-auto-post-test.html")}`;
-          return;
-        }
-      }
-      document.documentElement.classList.remove("auth-loading");
+    function getDbClient() {
+      return window.viewSupabase || fallbackSupabase;
     }
 
-    async function loadRules() {
-      const select = document.getElementById("ruleSelect");
-
-      try {
-        const currentUser = window.currentUser || (await supabaseClient.auth.getUser()).data.user;
-        if (!currentUser) return;
-
-        const { data, error } = await supabaseClient
-          .from("auto_post_rules")
-          .select("id,title,content_type,is_active")
-          .eq("user_id", currentUser.id)
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-
-        const rules = data || [];
-
-        if (!rules.length) {
-          select.innerHTML = `<option value="">No rules found</option>`;
-          return;
-        }
-
-        select.innerHTML = `
-          <option value="">Choose a rule</option>
-          ${rules.map(rule => `
-            <option value="${rule.id}">
-              ${escapeHtml(rule.title || "Untitled rule")} • ${escapeHtml(rule.content_type || "content")} • ${rule.is_active ? "Active" : "Paused"}
-            </option>
-          `).join("")}
-        `;
-      } catch (error) {
-        console.error(error);
-        select.innerHTML = `<option value="">Unable to load rules</option>`;
-      }
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
     }
 
     function renderResult(result, ok, httpStatus, rawText) {
       const box = document.getElementById("resultBox");
       const response = result?.result || {};
-      const first = Array.isArray(response.results) ? response.results[0] : null;
+      const publishQueue = response?.publish_queue || {};
+      const skipped = Array.isArray(publishQueue?.skipped) ? publishQueue.skipped : [];
+      const workerTrigger = response?.worker_trigger || {};
 
       box.innerHTML = `
         <div class="row">
@@ -478,27 +422,42 @@
 
         <div class="row">
           <div class="row-title">Rule ID</div>
-          <div class="row-sub">${escapeHtml(result?.triggered_rule_id || first?.rule_id || "-")}</div>
+          <div class="row-sub">${escapeHtml(result?.triggered_rule_id || response?.rule_id || "-")}</div>
         </div>
 
         <div class="row">
           <div class="row-title">Run status</div>
-          <div class="row-sub">${escapeHtml(first?.status || response.status || result?.status || result?.error || "No status returned")}</div>
+          <div class="row-sub">${escapeHtml(response?.status || result?.status || result?.error || "No status returned")}</div>
         </div>
 
         <div class="row">
           <div class="row-title">Generated content ID</div>
-          <div class="row-sub">${escapeHtml(first?.generated_content_id || "-")}</div>
+          <div class="row-sub">${escapeHtml(response?.generated_content_id || "-")}</div>
         </div>
 
         <div class="row">
           <div class="row-title">Post ID</div>
-          <div class="row-sub">${escapeHtml(first?.post_id || "-")}</div>
+          <div class="row-sub">${escapeHtml(response?.post_id || "-")}</div>
+        </div>
+
+        <div class="row">
+          <div class="row-title">Publish jobs queued</div>
+          <div class="row-sub">${escapeHtml(String(publishQueue?.queued ?? 0))}</div>
+        </div>
+
+        <div class="row">
+          <div class="row-title">Worker triggered immediately</div>
+          <div class="row-sub">${workerTrigger?.triggered ? "Yes" : escapeHtml(workerTrigger?.reason || "No")}</div>
+        </div>
+
+        <div class="row">
+          <div class="row-title">Skipped platforms</div>
+          <div class="row-sub">${skipped.length ? escapeHtml(skipped.map(x => `${x.platform}: ${x.reason}`).join(" | ")) : "None"}</div>
         </div>
 
         <div class="row">
           <div class="row-title">Message</div>
-          <div class="row-sub">${escapeHtml(first?.message || response.message || result?.message || result?.error || "No message returned")}</div>
+          <div class="row-sub">${escapeHtml(response?.message || result?.message || result?.error || "No message returned")}</div>
         </div>
 
         <div class="row">
@@ -509,13 +468,109 @@
       `;
     }
 
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
+    async function ensureAuthReady() {
+      if (typeof window.protectPage === "function") {
+        await window.protectPage();
+      } else {
+        const db = getDbClient();
+        if (!db) throw new Error("Supabase is not available.");
+
+        const { data: { session }, error } = await db.auth.getSession();
+        if (error) throw error;
+
+        if (!session?.user) {
+          location.href = `login.html?next=${encodeURIComponent("ai-auto-post-test.html")}`;
+          throw new Error("No active session.");
+        }
+
+        window.currentUser = session.user;
+      }
+
+      const db = getDbClient();
+      if (!db) throw new Error("Supabase is not available.");
+
+      if (window.currentUser?.id) {
+        return window.currentUser;
+      }
+
+      const { data, error } = await db.auth.getUser();
+      if (error) throw error;
+
+      if (!data?.user) {
+        location.href = `login.html?next=${encodeURIComponent("ai-auto-post-test.html")}`;
+        throw new Error("No active user session found.");
+      }
+
+      window.currentUser = data.user;
+      return data.user;
+    }
+
+    async function loadRules() {
+      const select = document.getElementById("ruleSelect");
+      const status = document.getElementById("formStatus");
+      const db = getDbClient();
+
+      try {
+        const currentUser = await ensureAuthReady();
+        if (!db) throw new Error("Supabase is not available.");
+
+        const { data, error } = await db
+          .from("auto_post_rules")
+          .select("id,title,content_type,is_active,created_at")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const rules = data || [];
+        const preselectedRuleId = new URLSearchParams(window.location.search).get("rule_id");
+
+        if (!rules.length) {
+          select.innerHTML = `<option value="">No rules found</option>`;
+          status.className = "status";
+          status.textContent = "You have no auto post rules yet.";
+          return;
+        }
+
+        select.innerHTML =
+          `<option value="">Choose a rule</option>` +
+          rules.map(rule => `
+            <option value="${rule.id}" ${preselectedRuleId === rule.id ? "selected" : ""}>
+              ${escapeHtml(rule.title || "Untitled rule")} • ${escapeHtml(rule.content_type || "content")} • ${rule.is_active ? "Active" : "Paused"}
+            </option>
+          `).join("");
+
+        status.className = "status success";
+        status.textContent = `${rules.length} rule(s) loaded successfully.`;
+      } catch (error) {
+        console.error("loadRules error:", error);
+        select.innerHTML = `<option value="">Unable to load rules</option>`;
+        status.className = "status error";
+        status.textContent = error?.message || "Failed to load rules.";
+      }
+    }
+
+    async function runSelectedRule(ruleId) {
+      const response = await fetch(
+        `${API_BASE_URL}/api/auto-post?action=test&rule_id=${encodeURIComponent(ruleId)}`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${AUTO_POST_CRON_SECRET}`
+          }
+        }
+      );
+
+      const rawText = await response.text();
+      let json = {};
+
+      try {
+        json = rawText ? JSON.parse(rawText) : {};
+      } catch {
+        json = { error: rawText || "Non-JSON response returned" };
+      }
+
+      return { response, rawText, json };
     }
 
     document.getElementById("testRuleForm").addEventListener("submit", async (e) => {
@@ -534,24 +589,7 @@
       status.textContent = "Running selected rule...";
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/auto-post?action=test&rule_id=${encodeURIComponent(ruleId)}`,
-          {
-            method: "GET",
-            headers: {
-              "Authorization": `Bearer ${AUTO_POST_CRON_SECRET}`
-            }
-          }
-        );
-
-        const rawText = await response.text();
-        let json = {};
-
-        try {
-          json = rawText ? JSON.parse(rawText) : {};
-        } catch {
-          json = { error: rawText || "Non-JSON response returned" };
-        }
+        const { response, rawText, json } = await runSelectedRule(ruleId);
 
         if (!response.ok) {
           status.className = "status error";
@@ -564,7 +602,7 @@
         status.textContent = "Rule triggered successfully.";
         renderResult(json, true, response.status, rawText);
       } catch (error) {
-        console.error(error);
+        console.error("submit error:", error);
         status.className = "status error";
         status.textContent = error?.message || "Unable to trigger test run.";
         renderResult(
@@ -578,10 +616,13 @@
 
     (async function init() {
       try {
-        await ensureAuth();
         await loadRules();
       } catch (error) {
-        console.error(error);
+        console.error("init error:", error);
+        document.getElementById("formStatus").className = "status error";
+        document.getElementById("formStatus").textContent = error?.message || "Page failed to initialize.";
+        document.getElementById("ruleSelect").innerHTML = `<option value="">Unable to load rules</option>`;
+      } finally {
         document.documentElement.classList.remove("auth-loading");
       }
     })();
