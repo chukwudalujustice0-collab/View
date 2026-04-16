@@ -1,948 +1,483 @@
 const { createClient } = require("@supabase/supabase-js");
-const {
-  ensureFreshAccountToken,
-  normalizePlatform,
-  extractApiErrorMessage,
-  safeJsonParse,
-  trimText
-} = require("./token-manager");
-
-const JOB_STATUS = {
-  QUEUED: "queued",
-  PROCESSING: "processing",
-  RETRYING: "retrying",
-  COMPLETED: "completed",
-  FAILED: "failed",
-};
-
-const ALLOWED_JOB_STATUSES = new Set(Object.values(JOB_STATUS));
 
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-cron-secret");
   res.setHeader("Cache-Control", "no-store");
 }
 
-function getEnv(name, fallbackNames = []) {
-  return process.env[name] || fallbackNames.map((k) => process.env[k]).find(Boolean) || "";
+function isAuthorized(req) {
+  const secret = process.env.AUTO_POST_CRON_SECRET || "";
+  const authHeader = req.headers.authorization || "";
+  const xCronSecret = req.headers["x-cron-secret"] || "";
+
+  if (!secret) return true;
+  if (xCronSecret && xCronSecret === secret) return true;
+  if (authHeader === secret) return true;
+  if (authHeader.startsWith("Bearer ")) {
+    return authHeader.slice(7).trim() === secret;
+  }
+  return false;
 }
 
 function nowIso() {
   return new Date().toISOString();
 }
 
-function makePlatformPostId(platform, id) {
-  return `${platform}_${id}_${Date.now()}`;
-}
-
-function hasText(value) {
-  return String(value || "").trim().length > 0;
-}
-
-function clampNumber(value, min, max, fallback) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.max(min, Math.min(max, Math.floor(n)));
-}
-
-function sanitizeErrorMessage(errorLike, fallback = "Unknown publish error") {
-  if (!errorLike) return fallback;
-
-  if (typeof errorLike === "string") {
-    const cleaned = errorLike.replace(/\s+/g, " ").trim();
-    if (!cleaned) return fallback;
-    return trimText(cleaned, 500);
-  }
-
-  if (errorLike instanceof Error) {
-    return sanitizeErrorMessage(errorLike.message, fallback);
-  }
-
-  return trimText(JSON.stringify(errorLike), 500);
-}
-
-function trimPostText(value, max = 3000) {
-  return String(value || "").slice(0, max);
-}
-
-function isVideo(mediaType = "", mediaUrl = "") {
-  const mt = String(mediaType || "").toLowerCase();
-  const url = String(mediaUrl || "").toLowerCase();
-  return (
-    mt.startsWith("video/") ||
-    [".mp4", ".mov", ".m4v", ".webm", ".ogg"].some((ext) => url.includes(ext))
-  );
-}
-
-function isImage(mediaType = "", mediaUrl = "") {
-  const mt = String(mediaType || "").toLowerCase();
-  const url = String(mediaUrl || "").toLowerCase();
-  return (
-    mt.startsWith("image/") ||
-    [".jpg", ".jpeg", ".png", ".gif", ".webp"].some((ext) => url.includes(ext))
-  );
-}
-
-function getPostText(post) {
-  const title = String(post?.title || "").trim();
-  const content = String(post?.content || "").trim();
-  if (title && content) return `${title}\n\n${content}`.trim();
-  return title || content || "";
-}
-
-function getMediaUrl(post) {
-  return String(post?.media_url || post?.media_path || "").trim();
-}
-
-function getMediaType(post) {
-  return String(post?.media_type || "").trim();
-}
-
-function getSupabase() {
-  const url = getEnv("SUPABASE_URL", ["SUPABASE_URL_VALUE", "NEXT_PUBLIC_SUPABASE_URL"]);
-  const key = getEnv("SUPABASE_SERVICE_ROLE_KEY", ["SUPABASE_SERVICE_KEY"]);
-  if (!url || !key) throw new Error("Missing SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY");
-  return createClient(url, key);
-}
-
-async function addLog(supabase, payload) {
+function safeJsonParse(value, fallback = null) {
   try {
-    await supabase.from("post_publish_logs").insert(payload);
-  } catch (e) {
-    console.error("post_publish_logs insert failed:", e?.message || e);
+    return JSON.parse(value);
+  } catch {
+    return fallback;
   }
 }
 
-async function markJob(supabase, jobId, patch) {
-  if (patch?.status && !ALLOWED_JOB_STATUSES.has(patch.status)) {
-    throw new Error(`Refusing to write invalid job status: ${patch.status}`);
+function normalizeStoragePath(rawPath = "") {
+  let path = String(rawPath || "").trim();
+  if (!path) return "";
+
+  if (path.startsWith("/")) path = path.slice(1);
+
+  const bucket = process.env.POST_MEDIA_BUCKET || "post-media";
+  if (path.startsWith(bucket + "/")) {
+    path = path.slice(bucket.length + 1);
   }
+
+  if (path.startsWith("public/")) {
+    path = path.slice("public/".length);
+  }
+
+  return path;
+}
+
+async function updatePostSummary(supabase, postId) {
+  const { data: jobs, error } = await supabase
+    .from("post_publish_jobs")
+    .select("status")
+    .eq("post_id", postId);
+
+  if (error) {
+    throw new Error(`Post summary read failed: ${error.message}`);
+  }
+
+  if (!jobs || !jobs.length) return;
+
+  const statuses = jobs.map((j) => String(j.status || "").toLowerCase());
+
+  let publishStatus = "queued";
+
+  if (statuses.every((s) => s === "success" || s === "completed")) {
+    publishStatus = "published";
+  } else if (
+    statuses.some((s) => s === "failed") &&
+    statuses.some((s) => s === "success" || s === "completed")
+  ) {
+    publishStatus = "partial";
+  } else if (statuses.every((s) => s === "failed")) {
+    publishStatus = "failed";
+  } else if (statuses.some((s) => s === "processing")) {
+    publishStatus = "processing";
+  } else if (statuses.some((s) => s === "retrying")) {
+    publishStatus = "retrying";
+  } else if (statuses.some((s) => s === "queued")) {
+    publishStatus = "queued";
+  }
+
+  const payload = {
+    publish_status: publishStatus,
+    status: publishStatus,
+    updated_at: nowIso()
+  };
+
+  if (publishStatus === "published") {
+    payload.published_at = nowIso();
+  }
+
+  const { error: updateError } = await supabase
+    .from("posts")
+    .update(payload)
+    .eq("id", postId);
+
+  if (updateError) {
+    throw new Error(`Post summary update failed: ${updateError.message}`);
+  }
+}
+
+async function getConnectedAccount(supabase, userId, platform) {
+  const { data, error } = await supabase
+    .from("connected_accounts")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("platform", platform)
+    .eq("status", "connected")
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error(`${platform} account not connected`);
+  return data;
+}
+
+async function refreshGoogleToken(supabase, account) {
+  if (!account.refresh_token) {
+    throw new Error("YouTube token expired. Reconnect YouTube because no refresh token was found.");
+  }
+
+  const clientId = process.env.GOOGLE_CLIENT_ID || "";
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET || "";
+
+  if (!clientId || !clientSecret) {
+    throw new Error("Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in Vercel environment variables.");
+  }
+
+  const form = new URLSearchParams();
+  form.set("client_id", clientId);
+  form.set("client_secret", clientSecret);
+  form.set("refresh_token", account.refresh_token);
+  form.set("grant_type", "refresh_token");
+
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: form.toString()
+  });
+
+  const text = await response.text();
+
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { raw: text };
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Google token refresh failed: ${data.error_description || data.error || text || "Unknown error"}`
+    );
+  }
+
+  const tokenExpiresAt = new Date(
+    Date.now() + Number(data.expires_in || 3600) * 1000
+  ).toISOString();
 
   const { error } = await supabase
-    .from("post_publish_jobs")
-    .update({ ...patch, updated_at: nowIso() })
-    .eq("id", jobId);
+    .from("connected_accounts")
+    .update({
+      access_token: data.access_token,
+      token_type: data.token_type || "Bearer",
+      token_expires_at: tokenExpiresAt,
+      last_synced_at: nowIso(),
+      last_error: null
+    })
+    .eq("id", account.id);
 
-  if (error) throw new Error(error.message || "Failed updating job");
-}
+  if (error) throw new Error(error.message);
 
-async function fetchBinaryWithMeta(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch media: ${res.status}`);
-
-  const buffer = Buffer.from(await res.arrayBuffer());
   return {
-    buffer,
-    contentType: res.headers.get("content-type") || "application/octet-stream",
-    contentLength: buffer.length,
+    ...account,
+    access_token: data.access_token,
+    token_type: data.token_type || "Bearer",
+    token_expires_at: tokenExpiresAt
   };
 }
 
-function resolveConnectedAccountField(account, names) {
-  for (const name of names) {
-    if (account && account[name] != null && account[name] !== "") return account[name];
-  }
-  return null;
-}
-
-function resolveConnectedFlag(account) {
-  return (
-    account?.is_connected === true ||
-    account?.connected === true ||
-    account?.status === "connected" ||
-    account?.status === "active"
-  );
-}
-
-function resolveAccessToken(account) {
-  return (
-    resolveConnectedAccountField(account, [
-      "access_token",
-      "page_access_token",
-      "token",
-      "auth_token",
-      "oauth_token",
-    ]) || null
-  );
-}
-
-async function uploadToYouTube(post, account) {
-  const mediaUrl = getMediaUrl(post);
-  const mediaType = getMediaType(post);
-
-  if (!mediaUrl) throw new Error("YouTube requires media_url/media_path");
-  if (!isVideo(mediaType, mediaUrl)) {
-    throw new Error(`YouTube requires video media, got ${mediaType || "unknown"}`);
+async function ensureValidToken(supabase, account) {
+  if (!account.access_token) {
+    throw new Error(`No access token found for ${account.platform}. Reconnect the account.`);
   }
 
-  const accessToken = resolveAccessToken(account);
-  if (!accessToken) throw new Error("Missing YouTube access token");
+  if (!account.token_expires_at) return account;
 
-  const text = getPostText(post);
-  const title = hasText(text) ? trimPostText(text, 100) : "View Upload";
-  const description = hasText(text) ? trimPostText(text, 5000) : "";
-  const media = await fetchBinaryWithMeta(mediaUrl);
+  const expiresAt = new Date(account.token_expires_at).getTime();
+  const soon = Date.now() + 60 * 1000;
+
+  if (expiresAt > soon) return account;
+
+  if (account.platform === "youtube") {
+    return await refreshGoogleToken(supabase, account);
+  }
+
+  return account;
+}
+
+async function getMediaFromPost(supabase, post) {
+  if (post.media_path) {
+    const bucket = process.env.POST_MEDIA_BUCKET || "post-media";
+    const path = normalizeStoragePath(post.media_path);
+
+    if (!path) {
+      throw new Error("The saved media_path is invalid.");
+    }
+
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .download(path);
+
+    if (error || !data) {
+      throw new Error(error?.message || "Could not download media from Supabase Storage.");
+    }
+
+    const arrayBuffer = await data.arrayBuffer();
+
+    return {
+      buffer: Buffer.from(arrayBuffer),
+      contentType: post.media_type || data.type || "application/octet-stream",
+      source: "storage"
+    };
+  }
+
+  if (post.media_url) {
+    const fileRes = await fetch(post.media_url);
+
+    if (!fileRes.ok) {
+      throw new Error(`Failed to fetch media_url. HTTP ${fileRes.status}`);
+    }
+
+    const arrayBuffer = await fileRes.arrayBuffer();
+
+    return {
+      buffer: Buffer.from(arrayBuffer),
+      contentType: post.media_type || fileRes.headers.get("content-type") || "application/octet-stream",
+      source: "url"
+    };
+  }
+
+  throw new Error("This post has no media_path and no media_url.");
+}
+
+async function getYouTubeChannel(accessToken) {
+  const res = await fetch(
+    "https://www.googleapis.com/youtube/v3/channels?part=id,snippet&mine=true",
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+  );
+
+  const text = await res.text();
+
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { raw: text };
+  }
+
+  if (!res.ok) {
+    throw new Error(`YouTube channel check failed: ${text}`);
+  }
+
+  if (!data.items || !data.items.length) {
+    throw new Error(
+      "No YouTube channel was returned for this account. Make sure the connected Google account has a YouTube channel."
+    );
+  }
+
+  return data.items[0];
+}
+
+async function uploadToYouTube(supabase, post, account) {
+  if (!post.media_url && !post.media_path) {
+    throw new Error("No media file found for YouTube upload.");
+  }
+
+  if (!(post.media_type || "").startsWith("video/")) {
+    throw new Error(`YouTube requires a video file. Current media_type: ${post.media_type || "unknown"}`);
+  }
+
+  if (!account?.access_token) {
+    throw new Error("Missing YouTube access token.");
+  }
+
+  const { buffer, contentType, source } = await getMediaFromPost(supabase, post);
+  const channel = await getYouTubeChannel(account.access_token);
 
   const initRes = await fetch(
     "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${account.access_token}`,
         "Content-Type": "application/json; charset=UTF-8",
-        "X-Upload-Content-Type": mediaType || media.contentType || "video/mp4",
-        "X-Upload-Content-Length": String(media.contentLength),
+        "X-Upload-Content-Type": contentType,
+        "X-Upload-Content-Length": String(buffer.length)
       },
       body: JSON.stringify({
-        snippet: { title, description },
-        status: { privacyStatus: "public" },
-      }),
+        snippet: {
+          title: post.media_name || post.content || "View Upload",
+          description: post.content || "",
+          categoryId: "22"
+        },
+        status: {
+          privacyStatus: post.privacy === "public" ? "public" : "private"
+        }
+      })
     }
   );
 
   const initText = await initRes.text();
   const uploadUrl = initRes.headers.get("location");
-  if (!initRes.ok || !uploadUrl) {
-    throw new Error(`YouTube init failed: ${extractApiErrorMessage(initText, `HTTP ${initRes.status}`)}`);
+
+  if (!initRes.ok) {
+    throw new Error(
+      `YouTube upload session start failed. HTTP ${initRes.status}. Response: ${initText}`
+    );
+  }
+
+  if (!uploadUrl) {
+    throw new Error(
+      `YouTube did not return an upload URL. This usually means missing upload scope, invalid token, or channel permission issue. Response: ${initText}`
+    );
   }
 
   const uploadRes = await fetch(uploadUrl, {
     method: "PUT",
     headers: {
-      "Content-Type": mediaType || media.contentType || "video/mp4",
-      "Content-Length": String(media.contentLength),
+      "Content-Type": contentType,
+      "Content-Length": String(buffer.length)
     },
-    body: media.buffer,
+    body: buffer
   });
 
   const uploadText = await uploadRes.text();
-  const uploadJson = safeJsonParse(uploadText, {});
-  if (!uploadRes.ok) {
-    throw new Error(extractApiErrorMessage(uploadJson, uploadText || `YouTube upload failed: ${uploadRes.status}`));
+
+  let result = {};
+  try {
+    result = uploadText ? JSON.parse(uploadText) : {};
+  } catch {
+    result = { raw: uploadText };
   }
-
-  return uploadJson?.id || makePlatformPostId("youtube", post.id);
-}
-
-async function sendToTelegram(post, account) {
-  const botToken = getEnv("TELEGRAM_BOT_TOKEN");
-  if (!botToken) throw new Error("Missing TELEGRAM_BOT_TOKEN");
-
-  const chatId = resolveConnectedAccountField(account, [
-    "chat_id",
-    "telegram_chat_id",
-    "platform_user_id",
-    "external_id",
-    "account_id",
-    "page_id",
-  ]);
-
-  if (!chatId) throw new Error("Missing Telegram chat_id on connected account");
-
-  const text = getPostText(post);
-  const mediaUrl = getMediaUrl(post);
-  const mediaType = getMediaType(post);
-
-  let endpoint = "sendMessage";
-  let body = { chat_id: chatId, text: hasText(text) ? trimPostText(text, 4096) : " " };
-
-  if (mediaUrl && isImage(mediaType, mediaUrl)) {
-    endpoint = "sendPhoto";
-    body = { chat_id: chatId, photo: mediaUrl };
-    if (hasText(text)) body.caption = trimPostText(text, 1024);
-  } else if (mediaUrl && isVideo(mediaType, mediaUrl)) {
-    endpoint = "sendVideo";
-    body = { chat_id: chatId, video: mediaUrl };
-    if (hasText(text)) body.caption = trimPostText(text, 1024);
-  } else if (mediaUrl) {
-    endpoint = "sendDocument";
-    body = { chat_id: chatId, document: mediaUrl };
-    if (hasText(text)) body.caption = trimPostText(text, 1024);
-  }
-
-  const res = await fetch(`https://api.telegram.org/bot${botToken}/${endpoint}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  const textRes = await res.text();
-  const data = safeJsonParse(textRes, {});
-  if (!res.ok || data?.ok === false) {
-    throw new Error(extractApiErrorMessage(data, textRes || "Telegram publish failed"));
-  }
-
-  return String(data?.result?.message_id || makePlatformPostId("telegram", post.id));
-}
-
-async function sendToFacebook(post, account) {
-  const accessToken = account?.page_access_token || resolveAccessToken(account);
-  if (!accessToken) throw new Error("Missing Facebook Page access token");
-
-  const pageId = resolveConnectedAccountField(account, [
-    "page_id",
-    "platform_user_id",
-    "external_id",
-    "account_id",
-  ]);
-  if (!pageId) throw new Error("Missing Facebook page_id");
-
-  const mediaUrl = getMediaUrl(post);
-  const mediaType = getMediaType(post);
-  const text = getPostText(post);
-
-  let url = `https://graph.facebook.com/v23.0/${pageId}/feed`;
-  let body;
-
-  if (mediaUrl && isImage(mediaType, mediaUrl)) {
-    url = `https://graph.facebook.com/v23.0/${pageId}/photos`;
-    body = new URLSearchParams({ url: mediaUrl, access_token: accessToken });
-    if (hasText(text)) body.set("caption", trimPostText(text, 2200));
-  } else if (mediaUrl && isVideo(mediaType, mediaUrl)) {
-    url = `https://graph.facebook.com/v23.0/${pageId}/videos`;
-    body = new URLSearchParams({ file_url: mediaUrl, access_token: accessToken });
-    if (hasText(text)) body.set("description", trimPostText(text, 2200));
-    if (hasText(text)) body.set("title", trimPostText(text, 100));
-  } else {
-    if (!hasText(text)) throw new Error("Facebook text-only post requires content");
-    body = new URLSearchParams({ message: trimPostText(text, 5000), access_token: accessToken });
-  }
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
-  });
-
-  const textRes = await res.text();
-  const data = safeJsonParse(textRes, {});
-  if (!res.ok || data?.error) {
-    throw new Error(extractApiErrorMessage(data, textRes || "Facebook publish failed"));
-  }
-
-  return String(data?.post_id || data?.id || makePlatformPostId("facebook", post.id));
-}
-
-async function sendToInstagram(post, account) {
-  const accessToken = resolveAccessToken(account);
-  if (!accessToken) throw new Error("Missing Instagram access token");
-
-  const igUserId = resolveConnectedAccountField(account, [
-    "instagram_user_id",
-    "ig_user_id",
-    "external_user_id",
-    "platform_user_id",
-    "external_id",
-    "account_id",
-  ]);
-  if (!igUserId) throw new Error("Missing Instagram user id");
-
-  const mediaUrl = getMediaUrl(post);
-  const mediaType = getMediaType(post);
-  const caption = getPostText(post);
-
-  if (!mediaUrl) throw new Error("Instagram publishing requires media_url/media_path");
-
-  let createBody;
-  if (isImage(mediaType, mediaUrl)) {
-    createBody = new URLSearchParams({ image_url: mediaUrl, access_token: accessToken });
-    if (hasText(caption)) createBody.set("caption", trimPostText(caption, 2200));
-  } else if (isVideo(mediaType, mediaUrl)) {
-    createBody = new URLSearchParams({
-      media_type: "REELS",
-      video_url: mediaUrl,
-      access_token: accessToken,
-    });
-    if (hasText(caption)) createBody.set("caption", trimPostText(caption, 2200));
-  } else {
-    throw new Error(`Instagram unsupported media type: ${mediaType || "unknown"}`);
-  }
-
-  const createRes = await fetch(`https://graph.facebook.com/v23.0/${igUserId}/media`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: createBody,
-  });
-
-  const createText = await createRes.text();
-  const createData = safeJsonParse(createText, {});
-  if (!createRes.ok || createData?.error || !createData?.id) {
-    throw new Error(extractApiErrorMessage(createData, createText || "Instagram media container failed"));
-  }
-
-  const publishRes = await fetch(`https://graph.facebook.com/v23.0/${igUserId}/media_publish`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      creation_id: createData.id,
-      access_token: accessToken,
-    }),
-  });
-
-  const publishText = await publishRes.text();
-  const publishData = safeJsonParse(publishText, {});
-  if (!publishRes.ok || publishData?.error) {
-    throw new Error(extractApiErrorMessage(publishData, publishText || "Instagram publish failed"));
-  }
-
-  return String(publishData?.id || createData.id || makePlatformPostId("instagram", post.id));
-}
-
-function resolveLinkedInAuthorUrn(account) {
-  const explicitUrn = resolveConnectedAccountField(account, [
-    "linkedin_person_urn",
-    "linkedin_organization_urn",
-    "author_urn",
-  ]);
-  if (explicitUrn) return explicitUrn;
-
-  const orgId = resolveConnectedAccountField(account, [
-    "organization_id",
-    "linkedin_organization_id",
-    "company_id",
-    "page_id",
-  ]);
-  if (orgId) return `urn:li:organization:${orgId}`;
-
-  const personId = resolveConnectedAccountField(account, [
-    "external_user_id",
-    "linkedin_user_id",
-    "platform_user_id",
-    "external_id",
-    "account_id",
-  ]);
-  if (personId) return `urn:li:person:${personId}`;
-
-  throw new Error("Missing LinkedIn author identity");
-}
-
-function getLinkedInHeaders(accessToken) {
-  return {
-    Authorization: `Bearer ${accessToken}`,
-    "Content-Type": "application/json",
-    "LinkedIn-Version": "202602",
-    "X-Restli-Protocol-Version": "2.0.0",
-  };
-}
-
-async function registerLinkedInImage(mediaUrl, accessToken, ownerUrn) {
-  const initRes = await fetch("https://api.linkedin.com/rest/images?action=initializeUpload", {
-    method: "POST",
-    headers: getLinkedInHeaders(accessToken),
-    body: JSON.stringify({ initializeUploadRequest: { owner: ownerUrn } }),
-  });
-
-  const initText = await initRes.text();
-  const initData = safeJsonParse(initText, {});
-  const uploadUrl = initData?.value?.uploadUrl;
-  const imageUrn = initData?.value?.image;
-
-  if (!initRes.ok || !uploadUrl || !imageUrn) {
-    throw new Error(extractApiErrorMessage(initData, initText || "LinkedIn image initialize failed"));
-  }
-
-  const media = await fetchBinaryWithMeta(mediaUrl);
-  const uploadRes = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": media.contentType,
-      "Content-Length": String(media.contentLength),
-    },
-    body: media.buffer,
-  });
 
   if (!uploadRes.ok) {
-    const uploadText = await uploadRes.text();
-    throw new Error(extractApiErrorMessage(uploadText, "LinkedIn image upload failed"));
+    throw new Error(
+      `YouTube video upload failed. HTTP ${uploadRes.status}. Response: ${result?.error?.message || uploadText || "Unknown error"}`
+    );
   }
 
-  return imageUrn;
-}
-
-async function registerLinkedInVideo(mediaUrl, accessToken, ownerUrn) {
-  const media = await fetchBinaryWithMeta(mediaUrl);
-
-  const initRes = await fetch("https://api.linkedin.com/rest/videos?action=initializeUpload", {
-    method: "POST",
-    headers: getLinkedInHeaders(accessToken),
-    body: JSON.stringify({
-      initializeUploadRequest: {
-        owner: ownerUrn,
-        fileSizeBytes: media.contentLength,
-        uploadCaptions: false,
-        uploadThumbnail: false,
-      },
-    }),
-  });
-
-  const initText = await initRes.text();
-  const initData = safeJsonParse(initText, {});
-  const value = initData?.value || {};
-  const videoUrn = value.video;
-  const uploadInstructions = Array.isArray(value.uploadInstructions) ? value.uploadInstructions : [];
-  const hasUploadTokenKey = Object.prototype.hasOwnProperty.call(value, "uploadToken");
-  const uploadToken = hasUploadTokenKey ? String(value.uploadToken ?? "") : "";
-
-  if (!initRes.ok || !videoUrn || !uploadInstructions.length) {
-    throw new Error(extractApiErrorMessage(initData, initText || "LinkedIn video initialize failed"));
+  if (!result.id) {
+    throw new Error(
+      `YouTube upload finished but no video ID was returned. Response: ${uploadText}`
+    );
   }
-
-  const uploadedPartIds = [];
-  for (const part of uploadInstructions) {
-    const start = Number(part.firstByte || 0);
-    const end = Number(part.lastByte != null ? part.lastByte : media.contentLength - 1);
-    const chunk = media.buffer.subarray(start, end + 1);
-
-    const uploadRes = await fetch(part.uploadUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": media.contentType || "application/octet-stream",
-        "Content-Length": String(chunk.length),
-      },
-      body: chunk,
-    });
-
-    const uploadText = await uploadRes.text();
-    if (!uploadRes.ok) {
-      throw new Error(extractApiErrorMessage(uploadText, "LinkedIn video upload failed"));
-    }
-
-    const etagRaw = uploadRes.headers.get("etag") || uploadRes.headers.get("ETag");
-    if (!etagRaw) throw new Error("LinkedIn video upload missing ETag header");
-
-    const cleanEtag = etagRaw.replace(/^W\//, "").replace(/^"|"$/g, "");
-    uploadedPartIds.push(cleanEtag);
-  }
-
-  const finalizePayload = {
-    finalizeUploadRequest: {
-      video: videoUrn,
-      uploadedPartIds,
-    },
-  };
-
-  if (hasUploadTokenKey) {
-    finalizePayload.finalizeUploadRequest.uploadToken = uploadToken;
-  }
-
-  const finalizeRes = await fetch("https://api.linkedin.com/rest/videos?action=finalizeUpload", {
-    method: "POST",
-    headers: getLinkedInHeaders(accessToken),
-    body: JSON.stringify(finalizePayload),
-  });
-
-  const finalizeText = await finalizeRes.text();
-  const finalizeData = safeJsonParse(finalizeText, {});
-  if (!finalizeRes.ok) {
-    throw new Error(extractApiErrorMessage(finalizeData, finalizeText || "LinkedIn video finalize failed"));
-  }
-
-  return videoUrn;
-}
-
-async function sendToLinkedIn(post, account) {
-  const accessToken = resolveAccessToken(account);
-  if (!accessToken) throw new Error("Missing LinkedIn access token");
-
-  const author = resolveLinkedInAuthorUrn(account);
-  const commentary = getPostText(post);
-  const mediaUrl = getMediaUrl(post);
-  const mediaType = getMediaType(post);
-
-  const body = {
-    author,
-    visibility: "PUBLIC",
-    distribution: {
-      feedDistribution: "MAIN_FEED",
-      targetEntities: [],
-      thirdPartyDistributionChannels: [],
-    },
-    lifecycleState: "PUBLISHED",
-    isReshareDisabledByAuthor: false,
-  };
-
-  if (hasText(commentary)) body.commentary = trimPostText(commentary, 3000);
-
-  if (mediaUrl && isImage(mediaType, mediaUrl)) {
-    const imageUrn = await registerLinkedInImage(mediaUrl, accessToken, author);
-    body.content = { media: { id: imageUrn } };
-  } else if (mediaUrl && isVideo(mediaType, mediaUrl)) {
-    const videoUrn = await registerLinkedInVideo(mediaUrl, accessToken, author);
-    body.content = { media: { id: videoUrn } };
-  } else if (!hasText(commentary)) {
-    throw new Error("LinkedIn text-only post requires content when there is no media");
-  }
-
-  const res = await fetch("https://api.linkedin.com/rest/posts", {
-    method: "POST",
-    headers: getLinkedInHeaders(accessToken),
-    body: JSON.stringify(body),
-  });
-
-  const textRes = await res.text();
-  const idHeader = res.headers.get("x-restli-id");
-  const data = safeJsonParse(textRes, {});
-  if (!res.ok) {
-    throw new Error(extractApiErrorMessage(data, textRes || "LinkedIn publish failed"));
-  }
-
-  return String(idHeader || data?.id || makePlatformPostId("linkedin", post.id));
-}
-
-async function sendToX(post, account) {
-  const bearer = getEnv("X_BEARER_TOKEN", ["TWITTER_BEARER_TOKEN"]);
-  const accessToken = resolveAccessToken(account) || bearer;
-  if (!accessToken) throw new Error("Missing X access token/bearer token");
-
-  const text = getPostText(post);
-  if (!hasText(text)) throw new Error("X posting currently requires text content");
-
-  const res = await fetch("https://api.x.com/2/posts", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ text: trimPostText(text, 280) }),
-  });
-
-  const bodyText = await res.text();
-  const data = safeJsonParse(bodyText, {});
-  if (!res.ok || data?.errors) {
-    throw new Error(extractApiErrorMessage(data, bodyText || "X publish failed"));
-  }
-
-  return String(data?.data?.id || makePlatformPostId("x", post.id));
-}
-
-async function sendToTikTok(post, account) {
-  const accessToken = resolveAccessToken(account);
-  if (!accessToken) throw new Error("Missing TikTok access token");
-
-  const mediaUrl = getMediaUrl(post);
-  const mediaType = getMediaType(post);
-  const text = getPostText(post);
-
-  if (!mediaUrl) throw new Error("TikTok requires media_url/media_path");
-
-  let sourceInfo;
-  if (isVideo(mediaType, mediaUrl)) {
-    sourceInfo = { source: "PULL_FROM_URL", video_url: mediaUrl };
-  } else if (isImage(mediaType, mediaUrl)) {
-    sourceInfo = { source: "PULL_FROM_URL", photo_images: [mediaUrl] };
-  } else {
-    throw new Error(`TikTok unsupported media type: ${mediaType || "unknown"}`);
-  }
-
-  const privacyLevel = resolveConnectedAccountField(account, ["privacy_level"]) || "PUBLIC_TO_EVERYONE";
-  const postMode = resolveConnectedAccountField(account, ["post_mode"]) || "DIRECT_POST";
-
-  const body = {
-    post_info: {
-      title: hasText(text) ? trimPostText(text, 90) : "View post",
-      privacy_level: privacyLevel,
-      disable_comment: false,
-      disable_duet: false,
-      disable_stitch: false,
-      brand_content_toggle: false,
-      brand_organic_toggle: false,
-    },
-    source_info: sourceInfo,
-    post_mode: postMode,
-  };
-
-  const res = await fetch("https://open.tiktokapis.com/v2/post/publish/content/init/", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json; charset=UTF-8",
-    },
-    body: JSON.stringify(body),
-  });
-
-  const textRes = await res.text();
-  const data = safeJsonParse(textRes, {});
-  if (!res.ok || data?.error?.code) {
-    throw new Error(extractApiErrorMessage(data, textRes || "TikTok publish init failed"));
-  }
-
-  return String(
-    data?.data?.publish_id ||
-    data?.data?.task_id ||
-    data?.data?.share_id ||
-    makePlatformPostId("tiktok", post.id)
-  );
-}
-
-async function dispatchPlatform(post, account, platform) {
-  switch (platform) {
-    case "view":
-      return makePlatformPostId("view", post.id);
-    case "telegram":
-      return await sendToTelegram(post, account);
-    case "youtube":
-      return await uploadToYouTube(post, account);
-    case "facebook":
-      return await sendToFacebook(post, account);
-    case "instagram":
-      return await sendToInstagram(post, account);
-    case "linkedin":
-      return await sendToLinkedIn(post, account);
-    case "x":
-    case "twitter":
-      return await sendToX(post, account);
-    case "tiktok":
-      return await sendToTikTok(post, account);
-    default:
-      throw new Error(`${platform} delivery handler is not wired yet`);
-  }
-}
-
-async function loadConnectedAccountForJob(supabase, job) {
-  const normalizedJobPlatform = normalizePlatform(job.platform);
-
-  if (normalizedJobPlatform === "view") return null;
-
-  // 1. Prefer exact connected_account_id when available
-  if (job.connected_account_id) {
-    const { data: accountById, error: accountByIdError } = await supabase
-      .from("connected_accounts")
-      .select("*")
-      .eq("id", job.connected_account_id)
-      .eq("user_id", job.user_id)
-      .maybeSingle();
-
-    if (accountByIdError) {
-      throw new Error(accountByIdError.message || "Connected account lookup by id failed");
-    }
-
-    if (!accountById) {
-      throw new Error("Selected connected account not found");
-    }
-
-    const accountPlatform = normalizePlatform(accountById.platform || accountById.provider || "");
-    if (accountPlatform !== normalizedJobPlatform) {
-      throw new Error(`Connected account platform mismatch for job platform ${normalizedJobPlatform}`);
-    }
-
-    if (!resolveConnectedFlag(accountById)) {
-      throw new Error(`${normalizedJobPlatform} selected account is not active`);
-    }
-
-    return await ensureFreshAccountToken(supabase, accountById);
-  }
-
-  // 2. Fallback to old platform-based lookup so existing flow does not break
-  const { data: account, error: accountError } = await supabase
-    .from("connected_accounts")
-    .select("*")
-    .eq("user_id", job.user_id)
-    .eq("platform", normalizedJobPlatform)
-    .maybeSingle();
-
-  if (accountError) {
-    throw new Error(accountError.message || "Connected account lookup failed");
-  }
-
-  if (!account) {
-    throw new Error(`No connected ${normalizedJobPlatform} account found`);
-  }
-
-  if (!resolveConnectedFlag(account)) {
-    throw new Error(`${normalizedJobPlatform} account exists but is not active`);
-  }
-
-  return await ensureFreshAccountToken(supabase, account);
-}
-
-async function loadPostAndAccount(supabase, job) {
-  const { data: post, error: postError } = await supabase
-    .from("posts")
-    .select("*")
-    .eq("id", job.post_id)
-    .single();
-
-  if (postError || !post) {
-    throw new Error(postError?.message || "Post not found");
-  }
-
-  const account = await loadConnectedAccountForJob(supabase, job);
-  return { post, account };
-}
-
-async function updatePostAggregateStatus(supabase, postId) {
-  const { data: jobs, error } = await supabase
-    .from("post_publish_jobs")
-    .select("status")
-    .eq("post_id", postId);
-
-  if (error || !jobs) return;
-
-  const statuses = jobs.map((j) => String(j.status || "").toLowerCase());
-  let publishStatus = "queued";
-
-  if (statuses.length && statuses.every((s) => s === JOB_STATUS.COMPLETED)) {
-    publishStatus = "published";
-  } else if (
-    statuses.some((s) => s === JOB_STATUS.COMPLETED) &&
-    statuses.some((s) => s === JOB_STATUS.FAILED)
-  ) {
-    publishStatus = "partial";
-  } else if (
-    statuses.some((s) => s === JOB_STATUS.COMPLETED) &&
-    statuses.some((s) => s === JOB_STATUS.RETRYING || s === JOB_STATUS.QUEUED)
-  ) {
-    publishStatus = "partial";
-  } else if (statuses.some((s) => s === JOB_STATUS.PROCESSING)) {
-    publishStatus = "processing";
-  } else if (statuses.some((s) => s === JOB_STATUS.RETRYING || s === JOB_STATUS.QUEUED)) {
-    publishStatus = "queued";
-  } else if (statuses.length && statuses.every((s) => s === JOB_STATUS.FAILED)) {
-    publishStatus = "failed";
-  }
-
-  await supabase
-    .from("posts")
-    .update({ publish_status: publishStatus, updated_at: nowIso() })
-    .eq("id", postId);
-}
-
-async function processJob(supabase, job) {
-  const startedAt = nowIso();
-  const platform = normalizePlatform(job.platform);
-  const attempts = (job.attempts || 0) + 1;
-
-  await markJob(supabase, job.id, {
-    status: JOB_STATUS.PROCESSING,
-    attempts,
-    last_error: null,
-  });
-
-  const { post, account } = await loadPostAndAccount(supabase, job);
-  const platformPostId = await dispatchPlatform(post, account, platform);
-
-  await markJob(supabase, job.id, {
-    status: JOB_STATUS.COMPLETED,
-    platform_post_id: String(platformPostId),
-    delivered_at: startedAt,
-    next_retry_at: null,
-    last_error: null,
-  });
-
-  await addLog(supabase, {
-    post_id: job.post_id,
-    job_id: job.id,
-    platform,
-    status: JOB_STATUS.COMPLETED,
-    attempts,
-    platform_post_id: String(platformPostId),
-    connected_account_id: job.connected_account_id || null,
-    created_at: startedAt,
-  });
-
-  await updatePostAggregateStatus(supabase, job.post_id);
 
   return {
-    ok: true,
-    job_id: job.id,
-    platform,
-    connected_account_id: job.connected_account_id || null,
-    platform_post_id: String(platformPostId),
-    status: JOB_STATUS.COMPLETED,
-  };
-}
-
-async function failJob(supabase, job, message) {
-  const attempts = (job.attempts || 0) + 1;
-  const retryable = attempts < 3;
-  const nextRetryAt = retryable
-    ? new Date(Date.now() + attempts * 2 * 60 * 1000).toISOString()
-    : null;
-  const status = retryable ? JOB_STATUS.RETRYING : JOB_STATUS.FAILED;
-  const cleanMessage = sanitizeErrorMessage(message);
-
-  await markJob(supabase, job.id, {
-    status,
-    last_error: cleanMessage,
-    next_retry_at: nextRetryAt,
-    attempts,
-  });
-
-  await addLog(supabase, {
-    post_id: job.post_id,
-    job_id: job.id,
-    platform: normalizePlatform(job.platform),
-    status,
-    attempts,
-    connected_account_id: job.connected_account_id || null,
-    error_message: cleanMessage,
-    created_at: nowIso(),
-  });
-
-  await updatePostAggregateStatus(supabase, job.post_id);
-
-  return {
-    ok: false,
-    job_id: job.id,
-    platform: normalizePlatform(job.platform),
-    connected_account_id: job.connected_account_id || null,
-    error: cleanMessage,
-    status,
-  };
-}
-
-async function runWithConcurrency(items, limit, worker) {
-  const results = new Array(items.length);
-  let index = 0;
-
-  async function runner() {
-    while (true) {
-      const currentIndex = index++;
-      if (currentIndex >= items.length) return;
-      const current = items[currentIndex];
-      results[currentIndex] = await worker(current);
+    platform_post_id: result.id,
+    response_payload: {
+      youtube_video_id: result.id,
+      youtube_channel_id: channel.id,
+      youtube_channel_title: channel?.snippet?.title || null,
+      media_source: source,
+      raw: result
     }
+  };
+}
+
+async function publishToPlatform(supabase, post, job) {
+  if (job.platform === "youtube") {
+    const account = await getConnectedAccount(supabase, job.user_id, "youtube");
+    const validAccount = await ensureValidToken(supabase, account);
+    return await uploadToYouTube(supabase, post, validAccount);
   }
 
-  const workers = Array.from({ length: Math.min(limit, items.length) }, () => runner());
-  await Promise.all(workers);
-  return results;
+  if (job.platform === "view") {
+    return {
+      platform_post_id: post.id,
+      response_payload: {
+        ok: true,
+        platform: "view",
+        local: true
+      }
+    };
+  }
+
+  if (job.platform === "facebook") throw new Error("Facebook publishing is not added yet.");
+  if (job.platform === "x") throw new Error("X publishing is not added yet.");
+  if (job.platform === "instagram") throw new Error("Instagram publishing is not added yet.");
+  if (job.platform === "tiktok") throw new Error("TikTok publishing is not added yet.");
+  if (job.platform === "telegram") throw new Error("Telegram publishing is not added yet.");
+  if (job.platform === "whatsapp") throw new Error("WhatsApp publishing is not added yet.");
+
+  throw new Error(`Unsupported platform: ${job.platform}`);
 }
 
 module.exports = async function handler(req, res) {
   setCors(res);
 
-  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  if (!isAuthorized(req)) {
+    return res.status(401).json({
+      success: false,
+      error: "Unauthorized"
+    });
+  }
+
   if (req.method !== "GET" && req.method !== "POST") {
-    return res.status(405).json({ success: false, error: "Method not allowed" });
+    return res.status(405).json({
+      success: false,
+      error: "Method not allowed"
+    });
   }
 
   try {
-    const supabase = getSupabase();
-    const statuses = [JOB_STATUS.QUEUED, JOB_STATUS.RETRYING];
-    const now = new Date().toISOString();
+    const SUPABASE_URL =
+      process.env.SUPABASE_URL ||
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      process.env.SUPABASE_URL_VALUE;
+
+    const SUPABASE_KEY =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.SUPABASE_SERVICE_KEY;
+
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY."
+      });
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
     const body =
       req.method === "POST" && req.body
         ? typeof req.body === "string"
           ? safeJsonParse(req.body, {})
           : req.body
         : {};
-    const query = req.query || {};
-    const batchSize = clampNumber(query.limit || body.limit || 20, 1, 100, 20);
-    const concurrency = clampNumber(query.concurrency || body.concurrency || 4, 1, 10, 4);
 
-    const { data: jobs, error: jobsError } = await supabase
+    const requestedPostId = body?.post_id || req.query?.post_id || null;
+    const requestedUserId = body?.user_id || req.query?.user_id || null;
+    const requestedLimit = Number(body?.limit || req.query?.limit || 20);
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.max(1, Math.min(100, requestedLimit))
+      : 20;
+
+    let jobsQuery = supabase
       .from("post_publish_jobs")
       .select("*")
-      .in("status", statuses)
+      .in("status", ["queued", "retrying"])
       .order("created_at", { ascending: true })
-      .limit(batchSize);
+      .limit(limit);
 
-    if (jobsError) throw new Error(jobsError.message || "Failed to load publish jobs");
+    if (requestedPostId) {
+      jobsQuery = jobsQuery.eq("post_id", requestedPostId);
+    }
 
+    if (requestedUserId) {
+      jobsQuery = jobsQuery.eq("user_id", requestedUserId);
+    }
+
+    const { data: jobs, error } = await jobsQuery;
+
+    if (error) throw error;
+
+    const now = nowIso();
     const runnableJobs = (jobs || []).filter((job) => {
-      if (job.status !== JOB_STATUS.RETRYING) return true;
+      if (job.status !== "retrying") return true;
       if (!job.next_retry_at) return true;
       return job.next_retry_at <= now;
     });
@@ -951,33 +486,142 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({
         success: true,
         processed: 0,
-        results: [],
-        message: "No pending jobs",
+        details: [],
+        message: "No pending publish jobs found."
       });
     }
 
-    const results = await runWithConcurrency(runnableJobs, concurrency, async (job) => {
+    const processed = [];
+    const touchedPostIds = new Set();
+
+    for (const job of runnableJobs) {
+      touchedPostIds.add(job.post_id);
+
       try {
-        return await processJob(supabase, job);
+        const { data: post, error: postError } = await supabase
+          .from("posts")
+          .select("*")
+          .eq("id", job.post_id)
+          .single();
+
+        if (postError) throw postError;
+        if (!post) throw new Error("Post not found.");
+
+        const processingAt = nowIso();
+
+        const { error: markProcessingError } = await supabase
+          .from("post_publish_jobs")
+          .update({
+            status: "processing",
+            started_at: processingAt,
+            updated_at: processingAt
+          })
+          .eq("id", job.id);
+
+        if (markProcessingError) throw markProcessingError;
+
+        const result = await publishToPlatform(supabase, post, job);
+        const deliveredAt = nowIso();
+
+        const { error: updateJobError } = await supabase
+          .from("post_publish_jobs")
+          .update({
+            status: "success",
+            attempts: (job.attempts || 0) + 1,
+            delivered_at: deliveredAt,
+            finished_at: deliveredAt,
+            platform_post_id: result.platform_post_id || null,
+            response_payload: result.response_payload || null,
+            last_error: null,
+            next_retry_at: null,
+            updated_at: deliveredAt
+          })
+          .eq("id", job.id);
+
+        if (updateJobError) throw updateJobError;
+
+        await supabase
+          .from("post_publish_logs")
+          .insert({
+            post_id: job.post_id,
+            job_id: job.id,
+            user_id: job.user_id,
+            platform: job.platform,
+            status: "success",
+            platform_post_id: result.platform_post_id || null,
+            response_payload: result.response_payload || null,
+            attempts: (job.attempts || 0) + 1
+          });
+
+        await updatePostSummary(supabase, job.post_id);
+
+        processed.push({
+          job: job.id,
+          platform: job.platform,
+          status: "success",
+          platform_post_id: result.platform_post_id || null
+        });
       } catch (err) {
-        console.error(`Publish failed for job ${job.id}:`, err);
-        return await failJob(supabase, job, err?.message || "Unknown publish error");
+        const failedAt = nowIso();
+        const message = err.message || "Unknown error";
+        const attempts = (job.attempts || 0) + 1;
+        const retryable = attempts < 3;
+        const nextRetryAt = retryable
+          ? new Date(Date.now() + attempts * 2 * 60 * 1000).toISOString()
+          : null;
+
+        await supabase
+          .from("post_publish_jobs")
+          .update({
+            status: retryable ? "retrying" : "failed",
+            last_error: message,
+            attempts,
+            next_retry_at: nextRetryAt,
+            finished_at: retryable ? null : failedAt,
+            updated_at: failedAt
+          })
+          .eq("id", job.id);
+
+        await supabase
+          .from("post_publish_logs")
+          .insert({
+            post_id: job.post_id,
+            job_id: job.id,
+            user_id: job.user_id,
+            platform: job.platform,
+            status: retryable ? "retrying" : "failed",
+            error_message: message,
+            attempts
+          });
+
+        try {
+          await updatePostSummary(supabase, job.post_id);
+        } catch (_) {}
+
+        processed.push({
+          job: job.id,
+          platform: job.platform,
+          status: retryable ? "retrying" : "failed",
+          error: message
+        });
       }
-    });
+    }
+
+    for (const postId of touchedPostIds) {
+      try {
+        await updatePostSummary(supabase, postId);
+      } catch (_) {}
+    }
 
     return res.status(200).json({
       success: true,
-      processed: results.length,
-      success_count: results.filter((r) => r.ok).length,
-      failed_count: results.filter((r) => !r.ok).length,
-      results,
-      message: `Processed ${results.length} job(s) with concurrency ${Math.min(concurrency, runnableJobs.length)}`,
+      processed: processed.length,
+      details: processed
     });
   } catch (err) {
-    console.error("process-publish-jobs fatal:", err);
     return res.status(500).json({
       success: false,
-      error: sanitizeErrorMessage(err?.message || err || "Internal server error"),
+      error: err.message || "Unknown server error"
     });
   }
 };
