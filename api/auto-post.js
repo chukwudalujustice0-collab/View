@@ -15,7 +15,10 @@ const KLING_API_KEY = process.env.KLING_API_KEY || "";
 const KLING_BASE_URL = (process.env.KLING_BASE_URL || "https://api.klingapi.com").replace(/\/+$/, "");
 const KLING_VIDEO_MODEL = process.env.KLING_VIDEO_MODEL || "kling-v2.6-std";
 
-const AUTO_POST_CRON_SECRET = process.env.AUTO_POST_CRON_SECRET || "";
+const AUTO_POST_CRON_SECRET =
+  process.env.AUTO_POST_CRON_SECRET ||
+  process.env.CRON_SECRET ||
+  "";
 const POST_MEDIA_BUCKET = process.env.POST_MEDIA_BUCKET || "post-media";
 const AUTO_POST_BATCH_LIMIT = clampNumber(process.env.AUTO_POST_BATCH_LIMIT || 5, 1, 100, 5);
 const AUTO_POST_VIDEO_POLL_BATCH = clampNumber(process.env.AUTO_POST_VIDEO_POLL_BATCH || 10, 1, 100, 10);
@@ -26,12 +29,12 @@ const USE_GEMINI_IMAGE = String(process.env.USE_GEMINI_IMAGE || "true").toLowerC
 
 const VIEW_BASE_URL = (
   process.env.VIEW_BASE_URL ||
-  "https://view-psi-lac.vercel.app"
+  "https://view.ceetice.com"
 ).replace(/\/+$/, "");
 
 const PROCESS_WORKER_URL =
   process.env.PROCESS_WORKER_URL ||
-  "https://view-psi-lac.vercel.app/api/process-publish-jobs";
+  `${VIEW_BASE_URL}/api/process-publish-jobs`;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error("Missing Supabase environment variables.");
@@ -103,12 +106,21 @@ function isAuthorized(req) {
   const authHeader = req.headers.authorization || "";
   const xCronSecret = req.headers["x-cron-secret"] || "";
 
-  if (!AUTO_POST_CRON_SECRET) return true;
-  if (xCronSecret && xCronSecret === AUTO_POST_CRON_SECRET) return true;
-  if (authHeader === AUTO_POST_CRON_SECRET) return true;
+  const validSecrets = [
+    process.env.CRON_SECRET,
+    process.env.AUTO_POST_CRON_SECRET
+  ].filter(Boolean);
+
+  if (!validSecrets.length) return true;
+
+  if (xCronSecret && validSecrets.includes(xCronSecret)) return true;
+  if (validSecrets.includes(authHeader)) return true;
+
   if (authHeader.startsWith("Bearer ")) {
-    return authHeader.slice(7).trim() === AUTO_POST_CRON_SECRET;
+    const bearer = authHeader.slice(7).trim();
+    if (validSecrets.includes(bearer)) return true;
   }
+
   return false;
 }
 
