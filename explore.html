@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Explore | View</title>
-  <meta name="theme-color" content="#0a1670" />
+  <meta name="theme-color" content="#070b22" />
   <link rel="manifest" href="/manifest.json" />
 
   <script>
@@ -14,28 +14,34 @@
   <script src="/js/auth-guard.js"></script>
 
   <style>
-    html.auth-loading, html.auth-loading body{
+    html.auth-loading,
+    html.auth-loading body{
       visibility:hidden;
+      opacity:0;
     }
 
     :root{
-      --bg:#06104d;
-      --bg2:#0a1670;
-      --bg3:#0d1f96;
-      --panel:#ffffff;
-      --panel-2:#f4f8ff;
-      --text:#0f172a;
-      --muted:#667085;
-      --line:#dbe6ff;
-      --blue:#2563eb;
-      --blue2:#4f7cff;
-      --red:#ef4444;
-      --red2:#ff5b6e;
-      --green:#16a34a;
-      --shadow:0 18px 44px rgba(2,6,23,.18);
-      --shadow-soft:0 10px 24px rgba(2,6,23,.10);
+      --bg:#050814;
+      --bg2:#09112d;
+      --bg3:#0d183b;
+      --glass:rgba(255,255,255,.055);
+      --glass-2:rgba(255,255,255,.08);
+      --line:rgba(255,255,255,.085);
+      --line-2:rgba(255,255,255,.12);
+      --text:#ffffff;
+      --muted:#a8b2d8;
+      --muted-2:#8090c8;
+      --blue:#2b6cff;
+      --blue-2:#62a3ff;
+      --red:#ff4d67;
+      --shadow:0 16px 40px rgba(0,0,0,.34);
       --safe-top:env(safe-area-inset-top, 0px);
       --safe-bottom:env(safe-area-inset-bottom, 0px);
+      --radius-xl:24px;
+      --radius-lg:20px;
+      --radius-md:16px;
+      --radius-sm:13px;
+      --nav-h:82px;
     }
 
     *{
@@ -48,16 +54,17 @@
 
     html,body{
       min-height:100%;
+      color:var(--text);
       background:
-        radial-gradient(circle at top left, rgba(79,124,255,.22), transparent 20%),
-        radial-gradient(circle at top right, rgba(255,91,110,.14), transparent 18%),
-        linear-gradient(180deg, var(--bg3) 0%, var(--bg2) 38%, var(--bg) 100%);
-      color:#fff;
+        radial-gradient(circle at 0% 0%, rgba(66,110,255,.12), transparent 23%),
+        radial-gradient(circle at 100% 0%, rgba(255,77,103,.07), transparent 20%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.03), transparent 35%),
+        linear-gradient(180deg, #070b1d 0%, #050814 100%);
     }
 
     body{
       overflow-x:hidden;
-      padding-bottom:102px;
+      padding-bottom:calc(var(--nav-h) + var(--safe-bottom) + 12px);
     }
 
     a{
@@ -74,62 +81,129 @@
     }
 
     .page{
-      width:min(100%, 920px);
+      width:min(100%, 1120px);
       margin:0 auto;
-      padding:calc(10px + var(--safe-top)) 10px 0;
+      padding:calc(8px + var(--safe-top)) 8px 0;
+    }
+
+    .shell{
+      border:1px solid rgba(126,147,255,.16);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.028), rgba(255,255,255,.016)),
+        rgba(5,8,20,.92);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      position:relative;
+      min-height:calc(100vh - 20px - var(--safe-top));
+      backdrop-filter:blur(12px);
+    }
+
+    .shell::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
+      background-size:28px 28px;
+      opacity:.22;
+      mask-image:linear-gradient(180deg, rgba(0,0,0,.8), transparent 90%);
     }
 
     .notice{
       display:none;
-      margin-bottom:10px;
-      padding:11px 12px;
-      border-radius:14px;
+      margin:8px;
+      padding:12px 14px;
+      border-radius:16px;
       font-size:12px;
-      line-height:1.5;
-      box-shadow:var(--shadow-soft);
+      line-height:1.45;
+      position:relative;
+      z-index:5;
     }
     .notice.show{display:block}
-    .notice.error{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.24);color:#ffe0e4}
-    .notice.success{background:rgba(22,163,74,.14);border:1px solid rgba(22,163,74,.24);color:#ddffea}
-    .notice.info{background:rgba(37,99,235,.14);border:1px solid rgba(37,99,235,.24);color:#dbe7ff}
+    .notice.error{background:rgba(255,77,103,.12);border:1px solid rgba(255,77,103,.22);color:#ffd9df}
+    .notice.success{background:rgba(32,197,107,.12);border:1px solid rgba(32,197,107,.22);color:#d8ffe9}
+    .notice.info{background:rgba(54,111,255,.12);border:1px solid rgba(54,111,255,.22);color:#dcebff}
+
+    .desktop{
+      display:grid;
+      grid-template-columns:290px minmax(0,1fr);
+      min-height:calc(100vh - 20px - var(--safe-top));
+      position:relative;
+      z-index:1;
+    }
+
+    .sidebar{
+      border-right:1px solid var(--line);
+      padding:14px 12px 106px;
+      overflow:auto;
+      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+      scrollbar-width:none;
+    }
+    .sidebar::-webkit-scrollbar{display:none}
+
+    .content{
+      min-width:0;
+      padding:10px 10px 110px;
+    }
 
     .topbar{
       display:flex;
       align-items:center;
-      justify-content:space-between;
       gap:10px;
-      margin-bottom:10px;
-      padding:12px;
-      border-radius:24px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
-      backdrop-filter:blur(16px);
-      box-shadow:var(--shadow);
+      padding:8px 10px;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:linear-gradient(180deg, rgba(6,10,24,.98), rgba(6,10,24,.92));
+      backdrop-filter:blur(18px);
     }
 
-    .top-left,.top-right{
-      display:flex;
-      align-items:center;
-      gap:10px;
+    .icon-btn{
+      width:44px;
+      height:44px;
+      min-width:44px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      color:#fff;
+      font-size:21px;
+      cursor:pointer;
+      position:relative;
+      box-shadow:0 8px 20px rgba(0,0,0,.18);
+    }
+
+    .icon-btn:active{
+      transform:scale(.98);
     }
 
     .brand{
-      min-width:0;
-      flex:1;
       display:flex;
       align-items:center;
-      gap:10px;
+      gap:12px;
+      min-width:0;
+      margin-right:4px;
+    }
+
+    .brand strong{
+      font-size:27px;
+      letter-spacing:-.03em;
+      font-weight:900;
+      white-space:nowrap;
     }
 
     .brand-logo{
-      width:46px;
-      height:46px;
-      min-width:46px;
-      border-radius:16px;
+      width:44px;
+      height:44px;
+      border-radius:14px;
       overflow:hidden;
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:var(--shadow-soft);
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
       display:grid;
       place-items:center;
     }
@@ -141,62 +215,66 @@
     }
 
     .brand-fallback{
-      font-size:24px;
+      font-size:22px;
       font-weight:900;
       color:#fff;
     }
 
-    .brand-copy{
-      min-width:0;
+    .search-wrap{
       flex:1;
-    }
-
-    .brand-title{
+      min-width:0;
+      height:48px;
       display:flex;
       align-items:center;
-      gap:7px;
-      flex-wrap:wrap;
-      line-height:1;
+      gap:10px;
+      border-radius:24px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      padding:0 16px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
     }
 
-    .brand-title strong{
-      font-size:18px;
-      letter-spacing:.08em;
-      font-weight:900;
+    .search-wrap .search-ico{
+      color:#b4bfeb;
+      font-size:19px;
+      flex:0 0 auto;
     }
 
-    .brand-title span{
-      font-size:10px;
-      color:#ffd6de;
-      font-weight:900;
-    }
-
-    .brand-line{
-      margin-top:6px;
-      width:88px;
-      height:3px;
-      border-radius:999px;
-      background:linear-gradient(90deg, var(--red), var(--red2));
-    }
-
-    .icon-btn{
-      width:42px;
-      height:42px;
-      min-width:42px;
-      border-radius:15px;
-      display:grid;
-      place-items:center;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.10);
+    .search-wrap input{
+      flex:1;
+      min-width:0;
+      height:100%;
       color:#fff;
-      font-size:17px;
-      box-shadow:var(--shadow-soft);
-      position:relative;
-      cursor:pointer;
+      font-size:15px;
+      background:transparent;
     }
+
+    .search-wrap input::placeholder{
+      color:#9aa6d9;
+    }
+
+    .badge{
+      position:absolute;
+      top:-4px;
+      right:-2px;
+      min-width:20px;
+      height:20px;
+      padding:0 5px;
+      border-radius:999px;
+      background:linear-gradient(135deg,var(--red),#ff6d52);
+      color:#fff;
+      font-size:11px;
+      font-weight:900;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      border:2px solid #0b1025;
+    }
+    .badge.show{display:flex}
 
     .profile-btn{
       overflow:hidden;
+      padding:0;
     }
 
     .profile-btn img{
@@ -205,462 +283,687 @@
       object-fit:cover;
     }
 
-    .badge{
-      position:absolute;
-      top:-3px;
-      right:-3px;
-      min-width:18px;
-      height:18px;
-      padding:0 4px;
-      border-radius:999px;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      background:linear-gradient(135deg,var(--red),var(--red2));
-      color:#fff;
-      font-size:10px;
-      font-weight:900;
-      border:2px solid rgba(10,22,112,.96);
-    }
-    .badge.show{display:flex}
-
-    .searchbar{
-      margin-bottom:10px;
-      min-height:50px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:0 14px;
-      border-radius:22px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(14px);
-    }
-
-    .searchbar span{
-      font-size:16px;
-      color:#dbe7ff;
-    }
-
-    .searchbar input{
-      flex:1;
-      background:transparent;
-      color:#fff;
-      font-size:14px;
-      min-width:0;
-    }
-
-    .searchbar input::placeholder{
-      color:#c9d7ff;
-    }
-
-    .voice-btn{
-      width:34px;
-      height:34px;
-      min-width:34px;
-      border-radius:50%;
-      display:grid;
-      place-items:center;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.10);
-      font-size:14px;
-      cursor:pointer;
-    }
-
-    .voice-btn.listening{
-      background:linear-gradient(135deg,var(--red),var(--red2));
-      border-color:transparent;
-    }
-
-    .hero{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-
-    .hero-pill{
-      min-height:34px;
-      padding:0 12px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
-      color:#fff;
-      font-size:11px;
-      font-weight:900;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .section{
-      margin-bottom:10px;
-      border-radius:24px;
-      background:var(--panel);
+    .side-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
       border:1px solid var(--line);
-      box-shadow:var(--shadow);
-      overflow:hidden;
+      border-radius:22px;
+      padding:12px;
+      margin-bottom:12px;
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
     }
 
-    .section-head{
+    .ai-card{
+      padding:12px;
+    }
+
+    .ai-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding:14px 14px 0;
-      flex-wrap:wrap;
-    }
-
-    .section-head h2{
-      color:var(--text);
-      font-size:16px;
+      margin-bottom:10px;
+      font-size:14px;
       font-weight:900;
-      letter-spacing:-.02em;
     }
 
-    .section-actions{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .mini-btn{
-      min-height:34px;
-      padding:0 12px;
-      border-radius:12px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      background:#fff;
-      border:1px solid var(--line);
-      color:var(--text);
-      font-size:11px;
-      font-weight:800;
-      cursor:pointer;
-      box-shadow:var(--shadow-soft);
-    }
-
-    .mini-btn.red{
-      background:linear-gradient(135deg,var(--red),var(--red2));
-      border-color:transparent;
-      color:#fff;
-    }
-
-    .section-body{
-      padding:14px;
-    }
-
-    .scroll{
-      display:flex;
-      gap:10px;
-      overflow-x:auto;
-      overflow-y:hidden;
-      scrollbar-width:none;
-      -webkit-overflow-scrolling:touch;
-    }
-    .scroll::-webkit-scrollbar{display:none}
-
-    .card{
-      flex:0 0 250px;
-      min-width:250px;
-      max-width:250px;
-      border-radius:20px;
-      background:#fff;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow-soft);
-      overflow:hidden;
-      color:var(--text);
-    }
-
-    .card.wide{
-      flex-basis:300px;
-      min-width:300px;
-      max-width:300px;
-    }
-
-    .card.media-card .thumb{
-      height:160px;
-      background:linear-gradient(135deg,#dde8ff,#eef4ff);
-      position:relative;
-      overflow:hidden;
-    }
-
-    .card.media-card .thumb img,
-    .card.media-card .thumb video{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .chip{
-      position:absolute;
-      left:10px;
-      top:10px;
-      min-height:22px;
-      padding:0 8px;
-      border-radius:999px;
-      background:rgba(255,255,255,.92);
-      border:1px solid #e6ecff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#18264b;
-      font-size:10px;
-      font-weight:900;
-      z-index:2;
-    }
-
-    .play{
-      position:absolute;
-      right:10px;
-      bottom:10px;
-      width:40px;
-      height:40px;
-      border-radius:50%;
+    .ai-menu{
       display:grid;
-      place-items:center;
-      background:rgba(10,22,112,.86);
-      border:1px solid rgba(255,255,255,.16);
-      color:#fff;
-      font-size:16px;
-      z-index:2;
-    }
-
-    .card-body{
-      padding:12px;
-    }
-
-    .title{
-      color:var(--text);
-      font-size:13px;
-      font-weight:900;
-      line-height:1.45;
-      margin-bottom:5px;
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-    }
-
-    .meta{
-      color:var(--muted);
-      font-size:11px;
-      line-height:1.5;
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .status-card{
-      flex:0 0 106px;
-      min-width:106px;
-      max-width:106px;
-      background:transparent;
-      border:none;
-      box-shadow:none;
-      overflow:visible;
-      color:#fff;
-    }
-
-    .status-preview{
-      width:92px;
-      height:122px;
-      border-radius:20px;
-      overflow:hidden;
-      margin:0 auto 8px;
-      border:2px solid rgba(255,255,255,.26);
-      background:#fff;
-      box-shadow:var(--shadow-soft);
-      position:relative;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .status-preview img,
-    .status-preview video{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-
-    .status-text{
-      width:100%;
-      height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      padding:10px;
-      color:var(--text);
-      font-size:12px;
-      font-weight:900;
-      line-height:1.45;
-      background:#fff;
-      word-break:break-word;
-    }
-
-    .status-name{
-      color:#fff;
-      font-size:11px;
-      font-weight:900;
-      text-align:center;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .status-time{
-      color:#dbe7ff;
-      font-size:10px;
-      text-align:center;
-      margin-top:2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .people-grid{
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
       gap:10px;
     }
 
-    .person{
-      border-radius:20px;
-      background:#fff;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow-soft);
-      padding:12px;
-      text-align:center;
-      color:var(--text);
-    }
-
-    .person-avatar-wrap{
-      width:72px;
-      height:72px;
-      margin:0 auto 8px;
-      border-radius:50%;
-      padding:2px;
-      background:linear-gradient(135deg,var(--blue),var(--red));
-    }
-
-    .person-avatar{
-      width:100%;
-      height:100%;
-      border-radius:50%;
-      overflow:hidden;
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#0f172a;
-      font-size:20px;
-      font-weight:900;
-      border:2px solid #fff;
-    }
-
-    .person-avatar img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-    }
-
-    .person-name{
-      color:var(--text);
-      font-size:12px;
-      font-weight:900;
-      margin-bottom:3px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .person-sub{
-      color:var(--muted);
-      font-size:10px;
-      margin-bottom:8px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .person-actions{
-      display:flex;
-      gap:8px;
-      justify-content:center;
-    }
-
-    .headline{
-      width:100%;
-      min-height:54px;
-      border-radius:18px;
-      background:#fff;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow-soft);
+    .ai-link{
       display:flex;
       align-items:center;
       gap:12px;
-      padding:0 14px;
-      color:var(--text);
-      overflow:hidden;
+      min-width:0;
+      padding:8px 6px;
+      border-radius:14px;
     }
 
-    .headline-label{
-      min-height:26px;
-      padding:0 10px;
-      border-radius:999px;
-      background:#fff1f3;
-      border:1px solid #ffd8de;
-      color:#be123c;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:10px;
-      font-weight:900;
-      flex:0 0 auto;
+    .ai-link:active{
+      transform:scale(.995);
     }
 
-    .headline-text{
+    .ai-icon{
+      width:42px;
+      height:42px;
+      min-width:42px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      font-size:20px;
+      background:linear-gradient(135deg, rgba(86,125,255,.98), rgba(51,80,201,.98));
+      box-shadow:0 8px 18px rgba(34,58,158,.28);
+    }
+
+    .ai-icon.green{
+      background:linear-gradient(135deg,#d9e9ad,#76984d);
+    }
+
+    .ai-icon.cyan{
+      background:linear-gradient(135deg,#7ed7ff,#5380d8);
+    }
+
+    .ai-copy{
       min-width:0;
       flex:1;
+    }
+
+    .ai-title{
+      font-size:15px;
+      font-weight:800;
+      color:#fff;
+      line-height:1.1;
+    }
+
+    .ai-sub{
+      margin-top:4px;
+      color:#b1bce8;
       font-size:12px;
-      font-weight:900;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      color:var(--text);
     }
 
-    .headline-time{
+    .ai-arrow{
+      color:#c2ccf7;
+      font-size:20px;
       flex:0 0 auto;
-      color:var(--muted);
-      font-size:10px;
+    }
+
+    .ask-ai{
+      margin-top:12px;
+      height:50px;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:0 14px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      color:#b7c3f0;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .side-list{
+      display:grid;
+      gap:2px;
+    }
+
+    .side-row{
+      min-height:56px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:0 4px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .side-row:last-child{
+      border-bottom:none;
+    }
+
+    .side-row-left{
+      display:flex;
+      align-items:center;
+      gap:11px;
+      min-width:0;
+    }
+
+    .side-row .mini-ico{
+      width:20px;
+      text-align:center;
+      font-size:17px;
+      color:#e7edff;
+    }
+
+    .side-row .arrow{
+      color:#b8c4ee;
+      font-size:18px;
+    }
+
+    .social-row{
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+
+    .social-btn{
+      width:48px;
+      height:48px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      font-size:22px;
+      box-shadow:0 10px 20px rgba(0,0,0,.12);
+    }
+
+    .suggest-person{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 2px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .suggest-person:last-child{
+      border-bottom:none;
+      padding-bottom:0;
+    }
+
+    .suggest-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .avatar{
+      width:44px;
+      height:44px;
+      min-width:44px;
+      border-radius:50%;
+      overflow:hidden;
+      border:1px solid var(--line-2);
+      background:rgba(255,255,255,.07);
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .avatar.online::after{
+      content:"";
+      position:absolute;
+      width:11px;
+      height:11px;
+      border-radius:50%;
+      background:#34d399;
+      right:2px;
+      bottom:2px;
+      border:2px solid #0f1430;
+    }
+
+    .avatar-wrap{
+      position:relative;
+    }
+
+    .name{
+      font-size:14px;
+      font-weight:800;
+      color:#fff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sub{
+      margin-top:3px;
+      color:#afbbe7;
+      font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .follow-btn{
+      min-height:34px;
+      padding:0 12px;
+      border-radius:999px;
+      background:linear-gradient(135deg, rgba(60,110,255,.95), rgba(38,82,214,.95));
+      border:1px solid rgba(255,255,255,.07);
+      color:#fff;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+      flex:0 0 auto;
+    }
+
+    .tabs{
+      display:flex;
+      align-items:center;
+      gap:24px;
+      overflow:auto;
+      scrollbar-width:none;
+      border-bottom:1px solid var(--line);
+      padding:0 6px;
+    }
+    .tabs::-webkit-scrollbar{display:none}
+
+    .tab{
+      height:44px;
+      display:flex;
+      align-items:center;
+      color:#b8c3ef;
+      font-size:13px;
+      font-weight:800;
+      position:relative;
+      white-space:nowrap;
+    }
+
+    .tab.active{
+      color:#fff;
+    }
+
+    .tab.active::after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      height:4px;
+      border-radius:999px;
+      background:linear-gradient(90deg, var(--blue-2), var(--blue));
+      box-shadow:0 0 16px rgba(88,146,255,.4);
+    }
+
+    .stories{
+      display:flex;
+      gap:10px;
+      overflow:auto;
+      scrollbar-width:none;
+      padding:12px 4px 10px;
+      border-bottom:1px solid var(--line);
+    }
+    .stories::-webkit-scrollbar{display:none}
+
+    .story{
+      flex:0 0 auto;
+      width:88px;
+      text-align:center;
+    }
+
+    .story-ring{
+      width:74px;
+      height:74px;
+      margin:0 auto 8px;
+      border-radius:50%;
+      padding:3px;
+      background:linear-gradient(135deg, #7ab7ff, #2b6cff 50%, #a8cbff);
+      box-shadow:0 10px 18px rgba(0,0,0,.18);
+    }
+
+    .story-ring.yellow{
+      background:linear-gradient(135deg,#ffe87a,#d6a500);
+    }
+
+    .story-inner{
+      width:100%;
+      height:100%;
+      border-radius:50%;
+      overflow:hidden;
+      border:2px solid #070b1d;
+      background:#111735;
+      display:grid;
+      place-items:center;
+      color:#fff;
+      font-size:11px;
+      font-weight:900;
+    }
+
+    .story-inner img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .story-name{
+      font-size:11px;
+      font-weight:800;
+      color:#dfe7ff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .mid-row{
+      display:grid;
+      grid-template-columns:minmax(0,1fr);
+      border-bottom:1px solid var(--line);
+    }
+
+    .composer{
+      padding:12px 4px 8px;
+    }
+
+    .composer-box{
+      height:54px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:0 12px;
+    }
+
+    .composer-text{
+      min-width:0;
+      flex:1;
+      color:#b7c3ef;
+      font-size:15px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .composer-arrow{
+      font-size:22px;
+      color:#c3cef9;
+      flex:0 0 auto;
+    }
+
+    .feed-tabs-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 4px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .feed-tabs{
+      display:flex;
+      align-items:center;
+      gap:24px;
+      overflow:auto;
+      scrollbar-width:none;
+      min-width:0;
+    }
+    .feed-tabs::-webkit-scrollbar{display:none}
+
+    .round-add{
+      width:54px;
+      height:54px;
+      min-width:54px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:rgba(68,118,255,.15);
+      border:1px solid rgba(101,143,255,.22);
+      color:#dbe7ff;
+      font-size:34px;
+      box-shadow:0 10px 20px rgba(0,0,0,.12);
+    }
+
+    .post-people-row{
+      display:flex;
+      gap:12px;
+      overflow:auto;
+      scrollbar-width:none;
+      padding:12px 4px 10px;
+      border-bottom:1px solid var(--line);
+    }
+    .post-people-row::-webkit-scrollbar{display:none}
+
+    .mini-person{
+      flex:0 0 120px;
+      min-width:120px;
+    }
+
+    .mini-person-head{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+    }
+
+    .mini-person .avatar{
+      width:48px;
+      height:48px;
+      min-width:48px;
+    }
+
+    .mini-person .name{
+      font-size:13px;
+    }
+
+    .mini-person .sub{
+      font-size:11px;
+      color:#92a0d8;
+    }
+
+    .post-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:12px;
+      padding:12px 4px 10px;
+    }
+
+    .post-card{
+      border-radius:20px;
+      overflow:hidden;
+      background:linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.04));
+      border:1px solid var(--line);
+      box-shadow:0 12px 30px rgba(0,0,0,.2);
+    }
+
+    .post-media{
+      height:178px;
+      background:#11172d;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .post-media img,
+    .post-media video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .post-body{
+      padding:10px 10px 12px;
+    }
+
+    .post-name{
+      font-size:13px;
+      font-weight:900;
+      color:#fff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .post-tag{
+      margin-top:3px;
+      color:#88a0ff;
+      font-size:11px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .post-meta{
+      margin-top:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      color:#e7edff;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .post-meta .left,
+    .post-meta .right{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .section-block{
+      border-top:1px solid var(--line);
+      padding:10px 4px 4px;
+    }
+
+    .block-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .block-head h3{
+      font-size:13px;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .see-all{
+      color:#c8d4ff;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .popular-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .chip-row{
+      display:flex;
+      gap:10px;
+      overflow:auto;
+      scrollbar-width:none;
+      padding-bottom:2px;
+    }
+    .chip-row::-webkit-scrollbar{display:none}
+
+    .info-chip{
+      min-height:42px;
+      padding:0 16px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      white-space:nowrap;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      color:#dfe7ff;
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .tag-wrap{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .tag-chip{
+      min-height:40px;
+      padding:0 14px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      color:#dbe5ff;
+      font-size:12px;
       font-weight:800;
     }
 
     .empty{
       width:100%;
-      padding:26px 16px;
-      border-radius:20px;
-      background:var(--panel-2);
-      border:1px dashed var(--line);
-      color:var(--muted);
+      min-height:120px;
+      border-radius:18px;
+      border:1px dashed rgba(255,255,255,.14);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#aeb9e7;
+      font-size:13px;
       text-align:center;
-      font-size:12px;
-      line-height:1.6;
+      padding:18px;
+      background:rgba(255,255,255,.03);
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:0;
+      width:min(100%, 1120px);
+      z-index:80;
+      background:rgba(8,11,27,.96);
+      border-top:1px solid var(--line);
+      backdrop-filter:blur(16px);
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      padding:10px 6px calc(8px + var(--safe-bottom));
+      box-shadow:0 -14px 34px rgba(0,0,0,.28);
+    }
+
+    .nav-link{
+      min-height:62px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      color:#9aa8dd;
+      font-size:11px;
+      font-weight:800;
+      position:relative;
+    }
+
+    .nav-link.active{
+      color:#fff;
+    }
+
+    .nav-link.active .nav-icon{
+      color:#fff;
+    }
+
+    .nav-icon{
+      width:26px;
+      height:26px;
+      display:grid;
+      place-items:center;
+      font-size:25px;
+      line-height:1;
+      color:#c2cffd;
+      position:relative;
+    }
+
+    .nav-center{
+      display:grid;
+      place-items:center;
+    }
+
+    .nav-center .nav-icon{
+      width:58px;
+      height:58px;
+      border-radius:50%;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      font-size:32px;
+      box-shadow:0 10px 24px rgba(0,0,0,.22);
     }
 
     .drawer-backdrop{
       position:fixed;
       inset:0;
       z-index:95;
-      background:rgba(0,0,0,.42);
+      background:rgba(0,0,0,.5);
       backdrop-filter:blur(8px);
       display:none;
     }
@@ -669,19 +972,17 @@
     .drawer{
       position:fixed;
       top:0;
-      right:0;
+      left:0;
       bottom:0;
-      width:min(86vw,330px);
+      width:min(88vw, 360px);
       z-index:96;
-      background:linear-gradient(180deg,#14237d,#0c175c 58%,#081147);
-      border-left:1px solid rgba(255,255,255,.10);
-      box-shadow:-20px 0 60px rgba(0,0,0,.34);
-      transform:translateX(104%);
+      background:linear-gradient(180deg,#111a43,#0a1332 65%,#070d22);
+      border-right:1px solid var(--line);
+      box-shadow:24px 0 60px rgba(0,0,0,.38);
+      transform:translateX(-104%);
       transition:transform .28s ease;
       padding:calc(12px + var(--safe-top)) 12px 16px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
+      overflow:auto;
     }
 
     .drawer.open{
@@ -693,6 +994,7 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
+      margin-bottom:14px;
     }
 
     .drawer-brand{
@@ -706,10 +1008,10 @@
       width:46px;
       height:46px;
       min-width:46px;
-      border-radius:16px;
+      border-radius:14px;
       overflow:hidden;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.07);
+      border:1px solid var(--line);
       display:grid;
       place-items:center;
     }
@@ -721,26 +1023,26 @@
     }
 
     .drawer-brand-title{
-      font-size:15px;
+      font-size:17px;
       font-weight:900;
+      color:#fff;
     }
 
     .drawer-nav{
       display:grid;
       gap:10px;
-      overflow:auto;
     }
 
     .drawer-link{
-      min-height:50px;
+      min-height:52px;
       border-radius:16px;
       padding:0 14px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
       color:#fff;
       font-size:13px;
       font-weight:800;
@@ -753,61 +1055,16 @@
       min-width:0;
     }
 
-    .bottom-nav{
-      position:fixed;
-      left:0;
-      right:0;
-      bottom:0;
-      z-index:55;
-      background:rgba(5,9,60,.96);
-      backdrop-filter:blur(18px);
-      border-top:1px solid rgba(255,255,255,.10);
-      display:grid;
-      grid-template-columns:repeat(6,1fr);
-      padding:8px 4px calc(8px + var(--safe-bottom));
-      box-shadow:0 -10px 34px rgba(0,0,0,.28);
-    }
-
-    .nav-link{
-      min-height:64px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      color:#9fb1d1;
-      font-size:11px;
-      font-weight:800;
-      text-align:center;
-    }
-
-    .nav-link.active{
-      color:#fff;
-    }
-
-    .nav-icon{
-      font-size:20px;
-      line-height:1;
-      width:24px;
-      height:24px;
-      display:grid;
-      place-items:center;
-    }
-
-    .create-nav .nav-icon{
-      color:#fff;
-    }
-
     .sheet-backdrop{
       position:fixed;
       inset:0;
-      z-index:90;
-      background:rgba(0,0,0,.45);
+      z-index:98;
+      background:rgba(0,0,0,.48);
       backdrop-filter:blur(8px);
       display:none;
       align-items:flex-end;
       justify-content:center;
-      padding:10px;
+      padding:12px;
     }
 
     .sheet-backdrop.show{
@@ -815,41 +1072,41 @@
     }
 
     .sheet{
-      width:min(100%, 720px);
+      width:min(100%, 760px);
       border-radius:28px 28px 0 0;
-      background:linear-gradient(180deg,#1d2f9e,#101d73 55%,#0a1252);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:var(--shadow);
-      padding:10px 12px 14px;
+      background:linear-gradient(180deg,#152152,#0d1638 70%,#091027);
+      border:1px solid var(--line);
+      box-shadow:0 24px 60px rgba(0,0,0,.35);
+      padding:12px 12px 18px;
     }
 
     .sheet-handle{
-      width:58px;
+      width:62px;
       height:6px;
       border-radius:999px;
       background:rgba(255,255,255,.24);
-      margin:4px auto 12px;
+      margin:2px auto 14px;
     }
 
     .sheet-title{
       text-align:center;
-      font-size:16px;
+      font-size:17px;
       font-weight:900;
-      margin-bottom:12px;
       color:#fff;
+      margin-bottom:14px;
     }
 
     .sheet-grid{
       display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
+      grid-template-columns:repeat(2, minmax(0,1fr));
       gap:12px;
     }
 
     .sheet-btn{
-      min-height:88px;
+      min-height:92px;
       border-radius:20px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
       color:#fff;
       display:flex;
       align-items:center;
@@ -862,32 +1119,131 @@
     }
 
     .sheet-btn .big{
-      font-size:24px;
+      font-size:26px;
       line-height:1;
     }
 
-    @media (max-width:760px){
-      .people-grid{
-        grid-template-columns:repeat(2,minmax(0,1fr));
+    @media (max-width:980px){
+      .desktop{
+        grid-template-columns:1fr;
       }
-      .card.wide{
-        flex-basis:280px;
-        min-width:280px;
-        max-width:280px;
+
+      .sidebar{
+        display:none;
       }
-      .card{
-        flex-basis:228px;
-        min-width:228px;
-        max-width:228px;
+
+      .content{
+        padding:0 8px 110px;
+      }
+
+      .topbar{
+        padding-inline:8px;
+      }
+
+      .brand strong{
+        font-size:24px;
       }
     }
 
-    @media (max-width:520px){
-      .people-grid{
-        grid-template-columns:1fr;
+    @media (max-width:760px){
+      .post-grid,
+      .popular-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
       }
-      .sheet-grid{
-        grid-template-columns:1fr 1fr;
+
+      .search-wrap{
+        height:46px;
+      }
+
+      .story{
+        width:78px;
+      }
+
+      .story-ring{
+        width:66px;
+        height:66px;
+      }
+    }
+
+    @media (max-width:560px){
+      .page{
+        padding:0;
+      }
+
+      .shell{
+        border-radius:0;
+        min-height:100vh;
+        border-left:none;
+        border-right:none;
+      }
+
+      .topbar{
+        gap:8px;
+      }
+
+      .brand-logo{
+        display:none;
+      }
+
+      .brand strong{
+        font-size:22px;
+      }
+
+      .icon-btn{
+        width:42px;
+        height:42px;
+        min-width:42px;
+      }
+
+      .tabs,
+      .feed-tabs{
+        gap:18px;
+      }
+
+      .post-grid,
+      .popular-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
+
+      .post-media{
+        height:150px;
+      }
+
+      .post-body{
+        padding:8px 8px 10px;
+      }
+
+      .post-name{
+        font-size:12px;
+      }
+
+      .post-tag{
+        font-size:10px;
+      }
+
+      .post-meta{
+        font-size:11px;
+        margin-top:8px;
+      }
+    }
+
+    @media (max-width:440px){
+      .search-wrap{
+        padding:0 12px;
+      }
+
+      .post-grid,
+      .popular-grid{
+        gap:10px;
+      }
+
+      .post-media{
+        height:134px;
+      }
+
+      .mini-person{
+        flex-basis:112px;
+        min-width:112px;
       }
     }
   </style>
@@ -908,134 +1264,265 @@
 </head>
 <body>
   <div class="page">
-    <div id="notice" class="notice"></div>
+    <div class="shell">
+      <div id="notice" class="notice"></div>
 
-    <header class="topbar">
-      <div class="top-left">
-        <a href="home.html" class="icon-btn" aria-label="Back">←</a>
-      </div>
+      <div class="desktop">
+        <aside class="sidebar">
+          <div class="side-card ai-card">
+            <div class="ai-head">
+              <span>View AI</span>
+              <span>›</span>
+            </div>
 
-      <a href="home.html" class="brand" aria-label="View home">
-        <div class="brand-logo">
-          <img src="icons/view-logo.png" alt="View logo" onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;brand-fallback&quot;>V</span>';" />
-        </div>
-        <div class="brand-copy">
-          <div class="brand-title">
-            <strong>VIEW</strong>
-            <span>by Ceetify</span>
+            <div class="ai-menu">
+              <a href="view-ai.html" class="ai-link">
+                <div class="ai-icon">📝</div>
+                <div class="ai-copy">
+                  <div class="ai-title">Post Writer</div>
+                  <div class="ai-sub">Personal text generator</div>
+                </div>
+                <div class="ai-arrow">›</div>
+              </a>
+
+              <a href="image-maker.html" class="ai-link">
+                <div class="ai-icon green">🖼️</div>
+                <div class="ai-copy">
+                  <div class="ai-title">Image Maker</div>
+                  <div class="ai-sub">Photo generator</div>
+                </div>
+                <div class="ai-arrow">›</div>
+              </a>
+
+              <a href="ai-video-maker.html" class="ai-link">
+                <div class="ai-icon cyan">🎬</div>
+                <div class="ai-copy">
+                  <div class="ai-title">Video Maker</div>
+                  <div class="ai-sub">Video generator</div>
+                </div>
+                <div class="ai-arrow">›</div>
+              </a>
+
+              <a href="reply-assistant.html" class="ai-link">
+                <div class="ai-icon">💬</div>
+                <div class="ai-copy">
+                  <div class="ai-title">Reply Assistant</div>
+                  <div class="ai-sub">Smart replies</div>
+                </div>
+                <div class="ai-arrow">›</div>
+              </a>
+            </div>
+
+            <a href="askai.html" class="ask-ai">
+              <span>⌕</span>
+              <span>Ask AI Anything</span>
+            </a>
           </div>
-          <div class="brand-line"></div>
-        </div>
-      </a>
 
-      <div class="top-right">
-        <a href="notifications.html" class="icon-btn" aria-label="Notifications">
-          🔔
-          <span id="notificationBadge" class="badge">0</span>
-        </a>
+          <div class="side-card">
+            <div class="side-list">
+              <a href="trendings.html" class="side-row">
+                <span class="side-row-left"><span class="mini-ico">🔥</span><span>Trendings</span></span>
+                <span class="arrow">›</span>
+              </a>
+              <a href="Popular-posts.html" class="side-row">
+                <span class="side-row-left"><span class="mini-ico">⭐</span><span>Popular Posts</span></span>
+                <span class="arrow">›</span>
+              </a>
+            </div>
+          </div>
 
-        <a id="myProfileBtn" href="profile.html" class="icon-btn profile-btn" aria-label="Profile">
-          <img id="myProfileAvatar" src="icons/view-logo.png" alt="Profile" onerror="this.src='icons/view-logo.png';" />
-        </a>
+          <div class="side-card">
+            <div class="side-row" style="padding-top:0;min-height:34px;border-bottom:none;">
+              <span class="side-row-left"><span class="mini-ico">🔗</span><span>Connected Accounts</span></span>
+              <a href="connected-accounts.html" class="arrow">›</a>
+            </div>
 
-        <button id="drawerToggleBtn" class="icon-btn" type="button" aria-label="Menu" aria-expanded="false">☰</button>
-      </div>
-    </header>
+            <div class="social-row">
+              <a class="social-btn" href="facebook-connect.html" aria-label="Facebook">📘</a>
+              <a class="social-btn" href="x-connect.html" aria-label="X">🐦</a>
+              <a class="social-btn" href="instagram-connect.html" aria-label="Instagram">📸</a>
+              <a class="social-btn" href="youtube-connect.html" aria-label="YouTube">▶️</a>
+            </div>
+          </div>
 
-    <section class="searchbar">
-      <span>⌕</span>
-      <input id="searchInput" type="text" placeholder="Search View..." autocomplete="off" />
-      <button id="voiceBtn" class="voice-btn" type="button" aria-label="Voice search">🎤</button>
-    </section>
+          <div class="side-card">
+            <div class="side-list">
+              <a href="News.html" class="side-row">
+                <span class="side-row-left"><span class="mini-ico">🌐</span><span>News</span></span>
+                <span class="arrow">›</span>
+              </a>
+              <a href="live-score.html" class="side-row">
+                <span class="side-row-left"><span class="mini-ico">🏟️</span><span>Live Score</span></span>
+                <span class="arrow">›</span>
+              </a>
+              <a href="jobs.html" class="side-row">
+                <span class="side-row-left"><span class="mini-ico">💼</span><span>Jobs</span></span>
+                <span class="arrow">›</span>
+              </a>
+              <a href="marketplace.html" class="side-row">
+                <span class="side-row-left"><span class="mini-ico">🛒</span><span>Marketplace</span></span>
+                <span class="arrow">›</span>
+              </a>
+              <a href="friends.html" class="side-row">
+                <span class="side-row-left"><span class="mini-ico">👥</span><span>Suggested Friends</span></span>
+                <span class="arrow">›</span>
+              </a>
+            </div>
+          </div>
 
-    <section class="hero">
-      <div id="heroProfiles" class="hero-pill">Profiles 0</div>
-      <div id="heroOnline" class="hero-pill">Online 0</div>
-      <div id="heroSuggested" class="hero-pill">Suggested 0</div>
-      <div id="heroProducts" class="hero-pill">Products 0</div>
-    </section>
+          <div class="side-card">
+            <div class="side-list">
+              <a href="News.html" class="side-row">
+                <span class="side-row-left"><span class="mini-ico">📰</span><span>News</span></span>
+                <span class="arrow">›</span>
+              </a>
+              <a href="live-score.html" class="side-row">
+                <span class="side-row-left"><span class="mini-ico">⚽</span><span>Live Score</span></span>
+                <span class="arrow">›</span>
+              </a>
+              <a href="jobs.html" class="side-row">
+                <span class="side-row-left"><span class="mini-ico">💼</span><span>Jobs</span></span>
+                <span class="arrow">›</span>
+              </a>
+              <a href="marketplace.html" class="side-row">
+                <span class="side-row-left"><span class="mini-ico">🛍️</span><span>Marketplace</span></span>
+                <span class="arrow">›</span>
+              </a>
+            </div>
+          </div>
 
-    <section class="section">
-      <div class="section-head">
-        <h2>Trending</h2>
-        <div class="section-actions">
-          <button id="refreshTrendingBtn" class="mini-btn red" type="button">Refresh</button>
-          <a href="trendings.html" class="mini-btn">Open</a>
-        </div>
-      </div>
-      <div class="section-body">
-        <div id="trendingList" class="scroll"></div>
-      </div>
-    </section>
+          <div class="side-card">
+            <div class="side-row" style="padding-top:0;min-height:34px;border-bottom:none;">
+              <span class="side-row-left"><span class="mini-ico">👤</span><span>Suggested Friends</span></span>
+              <a href="friends.html" class="arrow">›</a>
+            </div>
+            <div id="suggestedFriendsList"></div>
+          </div>
+        </aside>
 
-    <section class="section">
-      <div class="section-head">
-        <h2>Status</h2>
-        <div class="section-actions">
-          <a href="status.html" class="mini-btn">All</a>
-          <a href="create-status.html" class="mini-btn red">Create</a>
-        </div>
-      </div>
-      <div class="section-body">
-        <div id="statusList" class="scroll"></div>
-      </div>
-    </section>
+        <main class="content">
+          <header class="topbar">
+            <button id="drawerToggleBtn" class="icon-btn" type="button" aria-label="Menu" aria-expanded="false">☰</button>
 
-    <section class="section">
-      <div class="section-head">
-        <h2>People</h2>
-        <div class="section-actions">
-          <button id="peopleRefreshBtn" class="mini-btn red" type="button">Refresh</button>
-          <a href="friends.html" class="mini-btn">Open</a>
-        </div>
-      </div>
-      <div class="section-body">
-        <div id="peopleGrid" class="people-grid"></div>
-      </div>
-    </section>
+            <a href="home.html" class="brand" aria-label="View home">
+              <div class="brand-logo">
+                <img src="icons/view-logo.png" alt="View logo" onerror="this.style.display='none'; this.parentNode.innerHTML='<span class=&quot;brand-fallback&quot;>V</span>';" />
+              </div>
+              <strong>View</strong>
+            </a>
 
-    <section class="section">
-      <div class="section-head">
-        <h2>Popular</h2>
-        <div class="section-actions">
-          <button id="refreshPopularBtn" class="mini-btn red" type="button">Refresh</button>
-          <a href="Popular-posts.html" class="mini-btn">Open</a>
-        </div>
-      </div>
-      <div class="section-body">
-        <div id="popularList" class="scroll"></div>
-      </div>
-    </section>
+            <div class="search-wrap">
+              <span class="search-ico">⌕</span>
+              <input id="searchInput" type="text" placeholder="Search..." autocomplete="off" />
+            </div>
 
-    <section class="section">
-      <div class="section-head">
-        <h2>Market</h2>
-        <div class="section-actions">
-          <button id="refreshMarketBtn" class="mini-btn red" type="button">Refresh</button>
-          <a href="marketplace.html" class="mini-btn">Open</a>
-        </div>
-      </div>
-      <div class="section-body">
-        <div id="marketList" class="scroll"></div>
-      </div>
-    </section>
+            <a href="messages.html" class="icon-btn" aria-label="Messages">
+              ✉️
+              <span id="messageBadge" class="badge">0</span>
+            </a>
 
-    <section class="section">
-      <div class="section-head">
-        <h2>News</h2>
-        <div class="section-actions">
-          <button id="refreshNewsBtn" class="mini-btn red" type="button">Refresh</button>
-          <a href="News.html" class="mini-btn">Open</a>
-        </div>
+            <a href="notifications.html" class="icon-btn" aria-label="Notifications">
+              👤
+              <span id="notificationBadge" class="badge">0</span>
+            </a>
+
+            <a id="myProfileBtn" href="profile.html" class="icon-btn profile-btn" aria-label="Profile">
+              <img id="myProfileAvatar" src="icons/view-logo.png" alt="Profile" onerror="this.src='icons/view-logo.png';" />
+            </a>
+          </header>
+
+          <section class="tabs">
+            <a href="explore.html?tab=for-you" class="tab active">For You</a>
+            <a href="trendings.html" class="tab">Trending</a>
+            <a href="explore.html?tab=latest" class="tab">Latest</a>
+            <a href="video-feed.html" class="tab">Videos</a>
+            <a href="photos.html" class="tab">Photos</a>
+          </section>
+
+          <section id="storyList" class="stories"></section>
+
+          <section class="mid-row">
+            <div class="feed-tabs-row" style="padding-top:12px;padding-bottom:12px;">
+              <div class="feed-tabs">
+                <a href="explore.html?tab=for-you" class="tab active" style="height:34px;">For You</a>
+                <a href="trendings.html" class="tab" style="height:34px;">Trending</a>
+                <a href="explore.html?tab=latest" class="tab" style="height:34px;">Latest</a>
+                <a href="video-feed.html" class="tab" style="height:34px;">Videos</a>
+              </div>
+              <a href="create-post.html" class="round-add" aria-label="Add">+</a>
+            </div>
+
+            <div class="composer">
+              <a href="askai.html" class="composer-box">
+                <div class="avatar-wrap">
+                  <div class="avatar">
+                    <img src="icons/view-logo.png" alt="AI" onerror="this.style.display='none'; this.parentNode.textContent='AI';" />
+                  </div>
+                </div>
+                <div class="composer-text">Ask AI Anything &nbsp;&nbsp; Search...</div>
+                <div class="composer-arrow">›</div>
+              </a>
+            </div>
+          </section>
+
+          <section class="feed-tabs-row">
+            <div class="feed-tabs">
+              <a href="explore.html?tab=for-you" class="tab active" style="height:34px;">For You</a>
+              <a href="trendings.html" class="tab" style="height:34px;">Trending</a>
+              <a href="explore.html?tab=latest" class="tab" style="height:34px;">Latest</a>
+              <a href="video-feed.html" class="tab" style="height:34px;">Videos</a>
+              <a href="photos.html" class="tab" style="height:34px;">Photos</a>
+            </div>
+            <a href="create-post.html" class="round-add" aria-label="Create">+</a>
+          </section>
+
+          <section id="peopleRow" class="post-people-row"></section>
+
+          <section id="forYouGrid" class="post-grid"></section>
+
+          <section class="section-block">
+            <div class="block-head">
+              <h3>Popular Posts</h3>
+              <a href="Popular-posts.html" class="see-all">See All ›</a>
+            </div>
+            <div id="popularGrid" class="popular-grid"></div>
+          </section>
+
+          <section class="section-block">
+            <div class="block-head">
+              <h3>News</h3>
+              <a href="News.html" class="see-all">›</a>
+            </div>
+            <div id="newsChipRow" class="chip-row"></div>
+          </section>
+
+          <section class="section-block">
+            <div class="block-head">
+              <h3>Jobs</h3>
+              <a href="jobs.html" class="see-all">›</a>
+            </div>
+            <div id="jobTags" class="tag-wrap"></div>
+          </section>
+
+          <section class="section-block">
+            <div class="block-head">
+              <h3>Marketplace</h3>
+              <a href="marketplace.html" class="see-all">See All ›</a>
+            </div>
+            <div id="marketGrid" class="popular-grid"></div>
+          </section>
+
+          <section class="section-block">
+            <div class="block-head">
+              <h3>Status</h3>
+              <a href="status.html" class="see-all">See All ›</a>
+            </div>
+            <div id="statusMiniRow" class="chip-row"></div>
+          </section>
+        </main>
       </div>
-      <div class="section-body">
-        <a href="News.html" id="headlineBar" class="headline">
-          <div class="headline-label">News</div>
-          <div id="headlineText" class="headline-text">Loading...</div>
-          <div id="headlineTime" class="headline-time">Now</div>
-        </a>
-      </div>
-    </section>
+    </div>
   </div>
 
   <div id="drawerBackdrop" class="drawer-backdrop"></div>
@@ -1052,26 +1539,30 @@
     </div>
 
     <nav class="drawer-nav">
+      <a href="home.html" class="drawer-link"><span class="drawer-left"><span>🏠</span><span>Home</span></span><span>›</span></a>
       <a href="dashboard.html" class="drawer-link"><span class="drawer-left"><span>📊</span><span>Dashboard</span></span><span>›</span></a>
       <a href="view-ai.html" class="drawer-link"><span class="drawer-left"><span>✨</span><span>View AI</span></span><span>›</span></a>
-      <a href="groups.html" class="drawer-link"><span class="drawer-left"><span>👥</span><span>Groups</span></span><span>›</span></a>
-      <a href="pages.html" class="drawer-link"><span class="drawer-left"><span>📄</span><span>Pages</span></span><span>›</span></a>
       <a href="trendings.html" class="drawer-link"><span class="drawer-left"><span>🔥</span><span>Trendings</span></span><span>›</span></a>
-      <a href="status.html" class="drawer-link"><span class="drawer-left"><span>⭕</span><span>Status</span></span><span>›</span></a>
-      <a href="marketplace.html" class="drawer-link"><span class="drawer-left"><span>🛍️</span><span>Marketplace</span></span><span>›</span></a>
+      <a href="Popular-posts.html" class="drawer-link"><span class="drawer-left"><span>⭐</span><span>Popular Posts</span></span><span>›</span></a>
+      <a href="connected-accounts.html" class="drawer-link"><span class="drawer-left"><span>🔗</span><span>Connected Accounts</span></span><span>›</span></a>
       <a href="News.html" class="drawer-link"><span class="drawer-left"><span>📰</span><span>News</span></span><span>›</span></a>
-      <a href="saved-posts.html" class="drawer-link"><span class="drawer-left"><span>🔖</span><span>Saved</span></span><span>›</span></a>
+      <a href="live-score.html" class="drawer-link"><span class="drawer-left"><span>⚽</span><span>Live Score</span></span><span>›</span></a>
+      <a href="jobs.html" class="drawer-link"><span class="drawer-left"><span>💼</span><span>Jobs</span></span><span>›</span></a>
+      <a href="marketplace.html" class="drawer-link"><span class="drawer-left"><span>🛍️</span><span>Marketplace</span></span><span>›</span></a>
+      <a href="friends.html" class="drawer-link"><span class="drawer-left"><span>👥</span><span>Suggested Friends</span></span><span>›</span></a>
+      <a href="groups.html" class="drawer-link"><span class="drawer-left"><span>👨‍👩‍👧‍👦</span><span>Groups</span></span><span>›</span></a>
+      <a href="pages.html" class="drawer-link"><span class="drawer-left"><span>📄</span><span>Pages</span></span><span>›</span></a>
+      <a href="status.html" class="drawer-link"><span class="drawer-left"><span>⭕</span><span>Status</span></span><span>›</span></a>
       <a href="settings.html" class="drawer-link"><span class="drawer-left"><span>⚙️</span><span>Settings</span></span><span>›</span></a>
     </nav>
   </aside>
 
   <nav class="bottom-nav">
-    <a href="home.html" class="nav-link"><span class="nav-icon">🏠</span><span>Home</span></a>
-    <a href="explore.html" class="nav-link active"><span class="nav-icon">🧭</span><span>Explore</span></a>
-    <button id="createBtn" class="nav-link create-nav" type="button"><span class="nav-icon">➕</span><span>Create</span></button>
-    <a href="chats.html" class="nav-link"><span class="nav-icon">💬</span><span>Chat</span></a>
-    <a href="video-feed.html" class="nav-link"><span class="nav-icon">🎬</span><span>Video</span></a>
-    <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span><span>Profile</span></a>
+    <a href="home.html" class="nav-link"><span class="nav-icon">⌂</span><span>Home</span></a>
+    <a href="explore.html" class="nav-link active"><span class="nav-icon">➤</span><span>Explore</span></a>
+    <button id="createBtn" class="nav-link nav-center" type="button"><span class="nav-icon">▶</span></button>
+    <a href="messages.html" class="nav-link"><span class="nav-icon">✉</span><span>Inbox</span></a>
+    <a href="profile.html" class="nav-link"><span class="nav-icon">○</span><span>Profile</span></a>
   </nav>
 
   <div id="createSheetBackdrop" class="sheet-backdrop">
@@ -1082,7 +1573,7 @@
         <a class="sheet-btn" href="create-post.html"><span class="big">✍️</span><span>Create Post</span></a>
         <a class="sheet-btn" href="create-status.html"><span class="big">⭕</span><span>Create Status</span></a>
         <a class="sheet-btn" href="go-live.html"><span class="big">📺</span><span>Go Live</span></a>
-        <a class="sheet-btn" href="video-feed.html?create=reel"><span class="big">🎬</span><span>Reels</span></a>
+        <a class="sheet-btn" href="video-feed.html?create=reel"><span class="big">🎬</span><span>Upload Media</span></a>
       </div>
     </div>
   </div>
@@ -1093,20 +1584,19 @@
 
     const notice = document.getElementById("notice");
     const searchInput = document.getElementById("searchInput");
-    const voiceBtn = document.getElementById("voiceBtn");
-    const heroProfiles = document.getElementById("heroProfiles");
-    const heroOnline = document.getElementById("heroOnline");
-    const heroSuggested = document.getElementById("heroSuggested");
-    const heroProducts = document.getElementById("heroProducts");
     const myProfileAvatar = document.getElementById("myProfileAvatar");
     const notificationBadge = document.getElementById("notificationBadge");
-    const trendingList = document.getElementById("trendingList");
-    const statusList = document.getElementById("statusList");
-    const peopleGrid = document.getElementById("peopleGrid");
-    const popularList = document.getElementById("popularList");
-    const marketList = document.getElementById("marketList");
-    const headlineText = document.getElementById("headlineText");
-    const headlineTime = document.getElementById("headlineTime");
+    const messageBadge = document.getElementById("messageBadge");
+
+    const storyList = document.getElementById("storyList");
+    const peopleRow = document.getElementById("peopleRow");
+    const forYouGrid = document.getElementById("forYouGrid");
+    const popularGrid = document.getElementById("popularGrid");
+    const marketGrid = document.getElementById("marketGrid");
+    const newsChipRow = document.getElementById("newsChipRow");
+    const jobTags = document.getElementById("jobTags");
+    const statusMiniRow = document.getElementById("statusMiniRow");
+    const suggestedFriendsList = document.getElementById("suggestedFriendsList");
 
     const drawer = document.getElementById("drawer");
     const drawerBackdrop = document.getElementById("drawerBackdrop");
@@ -1115,31 +1605,33 @@
     const createBtn = document.getElementById("createBtn");
     const createSheetBackdrop = document.getElementById("createSheetBackdrop");
 
-    const refreshTrendingBtn = document.getElementById("refreshTrendingBtn");
-    const refreshMarketBtn = document.getElementById("refreshMarketBtn");
-    const refreshPopularBtn = document.getElementById("refreshPopularBtn");
-    const refreshNewsBtn = document.getElementById("refreshNewsBtn");
-    const peopleRefreshBtn = document.getElementById("peopleRefreshBtn");
-
     let currentUser = null;
     let currentProfile = null;
-    let profilesCache = [];
     let followingIds = new Set();
-    let marketItems = [];
-    let popularItems = [];
-    let newsItems = [];
-    let headlineTimer = null;
-    let speechRecognition = null;
-    let loading = {
-      trending:false,
-      market:false,
-      popular:false,
-      people:false,
-      status:false,
-      news:false
-    };
+    let profilesCache = [];
+    let postsCache = [];
+    let popularCache = [];
+    let marketCache = [];
+    let newsCache = [];
+    let statusCache = [];
+    let trendingCache = [];
+    let searching = false;
 
-    function showNotice(message, type = "info", duration = 2800) {
+    function safeText(v, fallback = ""){
+      const s = String(v ?? "").trim();
+      return s || fallback;
+    }
+
+    function escapeHtml(v){
+      return String(v || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function showNotice(message, type = "info", duration = 2800){
       notice.className = `notice show ${type}`;
       notice.textContent = message || "";
       clearTimeout(showNotice._t);
@@ -1149,338 +1641,68 @@
       }, duration);
     }
 
-    function safeText(value, fallback = "") {
-      const text = String(value ?? "").trim();
-      return text || fallback;
-    }
-
-    function escapeHtml(value) {
-      return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
-
-    function formatCompact(num){
-      const n = Number(num || 0);
-      if(n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(".0","") + "M";
-      if(n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0","") + "K";
-      return String(n);
-    }
-
-    function formatPrice(value){
-      const num = Number(value || 0);
+    function cacheSet(key, data, ttl = CACHE_TTL){
       try{
-        return new Intl.NumberFormat("en-NG", {
-          style:"currency",
-          currency:"NGN",
-          maximumFractionDigits:0
-        }).format(num);
-      }catch{
-        return `₦${num.toLocaleString()}`;
-      }
+        localStorage.setItem(key, JSON.stringify({ expiry: Date.now() + ttl, data }));
+      }catch(_){}
     }
 
-    function timeAgo(value) {
-      if (!value) return "Now";
-      const date = new Date(value);
-      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-      if (diff < 60) return "Now";
-      if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-      if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-      return `${Math.floor(diff / 86400)}d`;
-    }
-
-    function getDisplayName(profile = {}) {
-      return safeText(profile.full_name) || safeText(profile.username) || safeText(profile.email) || "User";
-    }
-
-    function getInitial(name = "") {
-      return safeText(name, "U").charAt(0).toUpperCase();
-    }
-
-    function cacheSet(key, data, ttl = CACHE_TTL) {
-      try {
-        localStorage.setItem(key, JSON.stringify({
-          expiry: Date.now() + ttl,
-          data
-        }));
-      } catch (_) {}
-    }
-
-    function cacheGet(key) {
-      try {
+    function cacheGet(key){
+      try{
         const raw = JSON.parse(localStorage.getItem(key) || "null");
-        if (!raw || typeof raw !== "object") return null;
-        if (Date.now() > Number(raw.expiry || 0)) return null;
+        if(!raw || typeof raw !== "object") return null;
+        if(Date.now() > Number(raw.expiry || 0)) return null;
         return raw.data;
-      } catch {
+      }catch{
         return null;
       }
     }
 
-    function openDrawer() {
-      drawer.classList.add("open");
-      drawerBackdrop.classList.add("show");
-      drawer.setAttribute("aria-hidden", "false");
-      drawerToggleBtn.setAttribute("aria-expanded", "true");
-    }
-
-    function closeDrawer() {
-      drawer.classList.remove("open");
-      drawerBackdrop.classList.remove("show");
-      drawer.setAttribute("aria-hidden", "true");
-      drawerToggleBtn.setAttribute("aria-expanded", "false");
-    }
-
-    function openCreateSheet() {
-      createSheetBackdrop.classList.add("show");
-    }
-
-    function closeCreateSheet() {
-      createSheetBackdrop.classList.remove("show");
-    }
-
-    drawerToggleBtn.addEventListener("click", openDrawer);
-    drawerCloseBtn.addEventListener("click", closeDrawer);
-    drawerBackdrop.addEventListener("click", closeDrawer);
-    createBtn.addEventListener("click", openCreateSheet);
-    createSheetBackdrop.addEventListener("click", (e) => {
-      if (e.target === createSheetBackdrop) closeCreateSheet();
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!e.target.closest("#drawer") && !e.target.closest("#drawerToggleBtn")) {
-        closeDrawer();
-      }
-    });
-
-    function debounce(fn, delay = 260) {
-      let timer = null;
+    function debounce(fn, delay = 240){
+      let t = null;
       return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn(...args), delay);
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), delay);
       };
     }
 
-    function renderEmpty(target, text) {
-      target.innerHTML = `<div class="empty">${escapeHtml(text)}</div>`;
+    function formatCompact(num){
+      const n = Number(num || 0);
+      if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(".0","") + "M";
+      if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0","") + "K";
+      return String(Math.max(0, n));
     }
 
-    function extractImageFromElement(el) {
-      const img = el.querySelector("img");
-      return img?.getAttribute("src") || img?.dataset?.src || "";
+    function timeAgo(value){
+      if(!value) return "Now";
+      const date = new Date(value);
+      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+      if(diff < 60) return "Now";
+      if(diff < 3600) return `${Math.floor(diff / 60)}m`;
+      if(diff < 86400) return `${Math.floor(diff / 3600)}h`;
+      return `${Math.floor(diff / 86400)}d`;
     }
 
-    function extractText(el, selectors) {
-      for (const selector of selectors) {
-        const node = el.querySelector(selector);
-        if (node && safeText(node.textContent)) return safeText(node.textContent);
-      }
-      return "";
+    function getDisplayName(profile = {}){
+      return safeText(profile.full_name) || safeText(profile.username) || safeText(profile.email) || "User";
     }
 
-    async function fetchHtmlDoc(url) {
-      const response = await fetch(url, { cache: "no-store" });
-      if (!response.ok) throw new Error(`Could not load ${url}`);
-      const html = await response.text();
-      return new DOMParser().parseFromString(html, "text/html");
+    function getInitial(name = ""){
+      return safeText(name, "U").charAt(0).toUpperCase();
     }
 
-    async function loadTrending(force = false) {
-      if (loading.trending) return;
-      loading.trending = true;
-
-      try {
-        let items = !force ? cacheGet("view_explore_trending_v2") : null;
-
-        if (!items) {
-          const doc = await fetchHtmlDoc("trendings.html");
-          const cards = [...doc.querySelectorAll("a, article, .trend-card, .video-card, .card")];
-          const parsed = cards.map((card, index) => {
-            const title = extractText(card, ["h1","h2","h3",".title",".card-title",".trend-title"]);
-            const meta = extractText(card, [".meta",".card-meta",".trend-meta","small",".sub"]);
-            const thumb = extractImageFromElement(card);
-            const href = card.getAttribute("href") || "trendings.html";
-            if (!title && !thumb) return null;
-            return {
-              id: `tr-${index}`,
-              title: title || "Trending Video",
-              meta: meta || "Trending",
-              thumb,
-              href
-            };
-          }).filter(Boolean).slice(0, 8);
-
-          items = parsed;
-          cacheSet("view_explore_trending_v2", items, LONG_CACHE_TTL);
-        }
-
-        const term = safeText(searchInput.value).toLowerCase();
-        const rows = (items || []).filter(item => {
-          if (!term) return true;
-          return `${item.title} ${item.meta}`.toLowerCase().includes(term);
-        });
-
-        if (!rows.length) {
-          renderEmpty(trendingList, "No trending items.");
-          return;
-        }
-
-        trendingList.innerHTML = rows.map((item, index) => `
-          <a href="${escapeHtml(item.href || "trendings.html")}" class="card media-card ${index === 0 ? "wide" : ""}">
-            <div class="thumb">
-              ${item.thumb ? `<img loading="lazy" decoding="async" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}" onerror="this.style.display='none';">` : `<div class="status-text">No Preview</div>`}
-              <div class="chip">Trending</div>
-              <div class="play">▶</div>
-            </div>
-            <div class="card-body">
-              <div class="title">${escapeHtml(item.title)}</div>
-              <div class="meta"><span>${escapeHtml(item.meta)}</span></div>
-            </div>
-          </a>
-        `).join("");
-      } catch (error) {
-        renderEmpty(trendingList, error.message || "Could not load trending.");
-      } finally {
-        loading.trending = false;
-      }
-    }
-
-    async function loadNews(force = false) {
-      if (loading.news) return;
-      loading.news = true;
-
-      try {
-        let items = !force ? cacheGet("view_explore_news_v2") : null;
-
-        if (!items) {
-          const doc = await fetchHtmlDoc("News.html");
-          const cards = [...doc.querySelectorAll("a, article, .news-card, .headline, .card")];
-          items = cards.map((card, index) => {
-            const title = extractText(card, ["h1","h2","h3",".title",".headline",".news-title"]);
-            const time = extractText(card, [".time",".date",".meta","small"]);
-            const href = card.getAttribute("href") || "News.html";
-            if (!title) return null;
-            return { id:`n-${index}`, title, time: time || "Now", href };
-          }).filter(Boolean).slice(0, 12);
-
-          cacheSet("view_explore_news_v2", items, LONG_CACHE_TTL);
-        }
-
-        newsItems = items || [];
-        startHeadlineRotation();
-      } catch (error) {
-        newsItems = [];
-        headlineText.textContent = "No headline";
-        headlineTime.textContent = "Now";
-      } finally {
-        loading.news = false;
-      }
-    }
-
-    function startHeadlineRotation() {
-      stopHeadlineRotation();
-
-      const term = safeText(searchInput.value).toLowerCase();
-      const filtered = newsItems.filter(item => {
-        if (!term) return true;
-        return item.title.toLowerCase().includes(term);
-      });
-
-      if (!filtered.length) {
-        headlineText.textContent = "No headline";
-        headlineTime.textContent = "Now";
-        return;
-      }
-
-      let index = 0;
-      const render = () => {
-        const item = filtered[index] || filtered[0];
-        headlineText.textContent = item.title;
-        headlineTime.textContent = item.time || "Now";
-      };
-
-      render();
-      headlineTimer = setInterval(() => {
-        index = (index + 1) % filtered.length;
-        render();
-      }, 3000);
-    }
-
-    function stopHeadlineRotation() {
-      if (headlineTimer) {
-        clearInterval(headlineTimer);
-        headlineTimer = null;
-      }
-    }
-
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) stopHeadlineRotation();
-      else startHeadlineRotation();
-    });
-
-    window.addEventListener("beforeunload", stopHeadlineRotation);
-
-    async function loadPopular(force = false) {
-      if (loading.popular) return;
-      loading.popular = true;
-
-      try {
-        let items = !force ? cacheGet("view_explore_popular_v2") : null;
-
-        if (!items) {
-          const doc = await fetchHtmlDoc("Popular-posts.html");
-          const cards = [...doc.querySelectorAll("a, article, .post, .showcase-card, .card")];
-          items = cards.map((card, index) => {
-            const title = extractText(card, [".post-content",".showcase-content",".content","h3",".title"]);
-            const meta = extractText(card, [".showcase-name",".post-name",".author",".meta"]);
-            const thumb = extractImageFromElement(card);
-            const href = card.getAttribute("href") || "Popular-posts.html";
-            if (!title && !thumb) return null;
-            return {
-              id:`p-${index}`,
-              title: title || "Popular Post",
-              meta: meta || "Popular",
-              thumb,
-              href
-            };
-          }).filter(Boolean).slice(0, 8);
-
-          cacheSet("view_explore_popular_v2", items, LONG_CACHE_TTL);
-        }
-
-        popularItems = items || [];
-        const term = safeText(searchInput.value).toLowerCase();
-        const rows = popularItems.filter(item => {
-          if (!term) return true;
-          return `${item.title} ${item.meta}`.toLowerCase().includes(term);
-        });
-
-        if (!rows.length) {
-          renderEmpty(popularList, "No popular posts.");
-          return;
-        }
-
-        popularList.innerHTML = rows.map(item => `
-          <a href="${escapeHtml(item.href || "Popular-posts.html")}" class="card media-card">
-            <div class="thumb">
-              ${item.thumb ? `<img loading="lazy" decoding="async" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}" onerror="this.style.display='none';">` : `<div class="status-text">No Preview</div>`}
-              <div class="chip">Popular</div>
-            </div>
-            <div class="card-body">
-              <div class="title">${escapeHtml(item.title)}</div>
-              <div class="meta"><span>${escapeHtml(item.meta)}</span></div>
-            </div>
-          </a>
-        `).join("");
-      } catch (error) {
-        renderEmpty(popularList, error.message || "Could not load popular posts.");
-      } finally {
-        loading.popular = false;
-      }
+    function avatarMarkup(profile = {}, extraClass = ""){
+      const name = getDisplayName(profile);
+      const avatar = safeText(profile.avatar_url);
+      return `
+        <div class="avatar ${extraClass}">
+          ${
+            avatar
+              ? `<img loading="lazy" decoding="async" src="${escapeHtml(avatar)}" alt="${escapeHtml(name)}" onerror="this.style.display='none';this.parentNode.textContent='${escapeHtml(getInitial(name))}';">`
+              : `<span>${escapeHtml(getInitial(name))}</span>`
+          }
+        </div>
+      `;
     }
 
     function getImages(item){
@@ -1492,29 +1714,211 @@
           return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
         }catch(_){}
       }
-      if(typeof item.image_url === "string" && item.image_url.trim()) return [item.image_url.trim()];
-      if(typeof item.cover_url === "string" && item.cover_url.trim()) return [item.cover_url.trim()];
-      return [];
+      const list = [
+        item.image_url,
+        item.cover_url,
+        item.thumbnail_url,
+        item.media_url
+      ].filter(v => safeText(v));
+      return list;
     }
 
-    async function loadMarket(force = false) {
-      if (loading.market) return;
-      loading.market = true;
+    function getMediaPreview(item){
+      const src = getImages(item)[0] || "";
+      const type = safeText(item.media_type).toLowerCase();
+      if(src && (type.includes("video") || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(src))){
+        return `<video muted playsinline preload="metadata" src="${escapeHtml(src)}"></video>`;
+      }
+      if(src){
+        return `<img loading="lazy" decoding="async" src="${escapeHtml(src)}" alt="${escapeHtml(safeText(item.title || item.content || "media"))}" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=&quot;empty&quot; style=&quot;height:100%;min-height:100%;&quot;>No preview</div>';">`;
+      }
+      return `<div class="empty" style="height:100%;min-height:100%;">No preview</div>`;
+    }
 
-      try {
-        let items = !force ? cacheGet("view_explore_market_v2") : null;
+    function renderEmpty(target, text){
+      target.innerHTML = `<div class="empty">${escapeHtml(text)}</div>`;
+    }
 
-        if (!items) {
-          try {
+    function openDrawer(){
+      drawer.classList.add("open");
+      drawerBackdrop.classList.add("show");
+      drawer.setAttribute("aria-hidden", "false");
+      drawerToggleBtn.setAttribute("aria-expanded", "true");
+    }
+
+    function closeDrawer(){
+      drawer.classList.remove("open");
+      drawerBackdrop.classList.remove("show");
+      drawer.setAttribute("aria-hidden", "true");
+      drawerToggleBtn.setAttribute("aria-expanded", "false");
+    }
+
+    function openCreateSheet(){
+      createSheetBackdrop.classList.add("show");
+    }
+
+    function closeCreateSheet(){
+      createSheetBackdrop.classList.remove("show");
+    }
+
+    drawerToggleBtn.addEventListener("click", openDrawer);
+    drawerCloseBtn.addEventListener("click", closeDrawer);
+    drawerBackdrop.addEventListener("click", closeDrawer);
+    createBtn.addEventListener("click", openCreateSheet);
+    createSheetBackdrop.addEventListener("click", (e) => {
+      if(e.target === createSheetBackdrop) closeCreateSheet();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape"){
+        closeDrawer();
+        closeCreateSheet();
+      }
+    });
+
+    function extractImageFromElement(el){
+      const img = el.querySelector("img");
+      return img?.getAttribute("src") || img?.dataset?.src || "";
+    }
+
+    function extractText(el, selectors){
+      for(const selector of selectors){
+        const node = el.querySelector(selector);
+        if(node && safeText(node.textContent)) return safeText(node.textContent);
+      }
+      return "";
+    }
+
+    async function fetchHtmlDoc(url){
+      const response = await fetch(url, { cache: "no-store" });
+      if(!response.ok) throw new Error(`Could not load ${url}`);
+      const html = await response.text();
+      return new DOMParser().parseFromString(html, "text/html");
+    }
+
+    async function loadFollowing(){
+      try{
+        const { data, error } = await window.supabaseClient
+          .from("follows")
+          .select("following_id")
+          .eq("follower_id", currentUser.id);
+
+        if(error) throw error;
+        followingIds = new Set((data || []).map(row => row.following_id).filter(Boolean));
+      }catch{
+        followingIds = new Set();
+      }
+    }
+
+    async function loadProfiles(force = false){
+      try{
+        let rows = !force ? cacheGet("view_explore_profiles_exact_v1") : null;
+
+        if(!rows){
+          const { data, error } = await window.supabaseClient
+            .from("profiles")
+            .select("id,full_name,username,avatar_url,is_online,created_at,email")
+            .neq("id", currentUser.id)
+            .limit(60);
+
+          if(error) throw error;
+          rows = data || [];
+          cacheSet("view_explore_profiles_exact_v1", rows, CACHE_TTL);
+        }
+
+        profilesCache = rows;
+      }catch(error){
+        profilesCache = [];
+      }
+    }
+
+    async function loadPosts(force = false){
+      try{
+        let rows = !force ? cacheGet("view_explore_posts_exact_v1") : null;
+
+        if(!rows){
+          const { data, error } = await window.supabaseClient
+            .from("posts")
+            .select("id,user_id,content,media_url,media_type,created_at")
+            .order("created_at", { ascending:false })
+            .limit(24);
+
+          if(error) throw error;
+          rows = data || [];
+          cacheSet("view_explore_posts_exact_v1", rows, CACHE_TTL);
+        }
+
+        const ids = [...new Set(rows.map(r => r.user_id).filter(Boolean))];
+        const profileMap = new Map();
+
+        if(ids.length){
+          const { data: people } = await window.supabaseClient
+            .from("profiles")
+            .select("id,full_name,username,avatar_url,is_online")
+            .in("id", ids);
+
+          (people || []).forEach(row => profileMap.set(row.id, row));
+        }
+
+        postsCache = rows.map((row, idx) => ({
+          ...row,
+          profile: profileMap.get(row.user_id) || {},
+          likes_count: 1200 + ((idx + 1) * 320),
+          comments_count: 80 + ((idx + 1) * 15)
+        }));
+      }catch{
+        postsCache = [];
+      }
+    }
+
+    async function loadPopular(force = false){
+      try{
+        let items = !force ? cacheGet("view_explore_popular_exact_v1") : null;
+
+        if(!items){
+          const doc = await fetchHtmlDoc("Popular-posts.html");
+          const cards = [...doc.querySelectorAll("a, article, .post, .showcase-card, .card")];
+          items = cards.map((card, index) => {
+            const title = extractText(card, [".post-content",".showcase-content",".content",".title","h3"]);
+            const name = extractText(card, [".showcase-name",".post-name",".author",".meta"]);
+            const thumb = extractImageFromElement(card);
+            const href = card.getAttribute("href") || "Popular-posts.html";
+            if(!title && !thumb) return null;
+            return {
+              id:`pop-${index}`,
+              title:title || "Popular post",
+              name:name || "Popular",
+              thumb,
+              href,
+              likes:1900 + (index * 700),
+              comments:110 + (index * 19)
+            };
+          }).filter(Boolean).slice(0, 6);
+
+          cacheSet("view_explore_popular_exact_v1", items, LONG_CACHE_TTL);
+        }
+
+        popularCache = items || [];
+      }catch{
+        popularCache = [];
+      }
+    }
+
+    async function loadMarket(force = false){
+      try{
+        let items = !force ? cacheGet("view_explore_market_exact_v1") : null;
+
+        if(!items){
+          try{
             const { data, error } = await window.supabaseClient
               .from("marketplace_items")
               .select("*")
               .order("created_at", { ascending:false })
-              .limit(12);
+              .limit(9);
 
-            if (error) throw error;
+            if(error) throw error;
             items = data || [];
-          } catch {
+          }catch{
             const doc = await fetchHtmlDoc("marketplace.html");
             const cards = [...doc.querySelectorAll("a, article, .market-card, .product-card, .card")];
             items = cards.map((card, index) => {
@@ -1524,303 +1928,450 @@
               const location = extractText(card, [".location",".meta","small"]);
               const image_url = extractImageFromElement(card);
               const href = card.getAttribute("href") || "marketplace.html";
-              if (!title && !image_url) return null;
+              if(!title && !image_url) return null;
               return { id:`m-${index}`, title, price, category, location, image_url, href };
-            }).filter(Boolean).slice(0, 8);
+            }).filter(Boolean).slice(0, 6);
           }
 
-          cacheSet("view_explore_market_v2", items, LONG_CACHE_TTL);
+          cacheSet("view_explore_market_exact_v1", items, LONG_CACHE_TTL);
         }
 
-        marketItems = items || [];
-        heroProducts.textContent = `Products ${marketItems.length}`;
-
-        const term = safeText(searchInput.value).toLowerCase();
-        const rows = marketItems.filter(item => {
-          if (!term) return true;
-          return `${safeText(item.title)} ${safeText(item.description)} ${safeText(item.category)} ${safeText(item.location)}`.toLowerCase().includes(term);
-        });
-
-        if (!rows.length) {
-          renderEmpty(marketList, "No market items.");
-          return;
-        }
-
-        marketList.innerHTML = rows.map(item => {
-          const image = getImages(item)[0] || item.image_url || "";
-          const price = item.price ? formatPrice(item.price) : safeText(item.price, "Open");
-          const href = item.href || `product-details.html?id=${encodeURIComponent(item.id || "")}`;
-          return `
-            <a href="${escapeHtml(href)}" class="card media-card">
-              <div class="thumb">
-                ${image ? `<img loading="lazy" decoding="async" src="${escapeHtml(image)}" alt="${escapeHtml(item.title || "Item")}" onerror="this.style.display='none';">` : `<div class="status-text">No Image</div>`}
-                <div class="chip">${escapeHtml(safeText(item.category, "Market"))}</div>
-              </div>
-              <div class="card-body">
-                <div class="title">${escapeHtml(safeText(item.title, "Item"))}</div>
-                <div class="meta"><span>${escapeHtml(price)}</span><span>${escapeHtml(safeText(item.location, ""))}</span></div>
-              </div>
-            </a>
-          `;
-        }).join("");
-      } catch (error) {
-        renderEmpty(marketList, error.message || "Could not load market.");
-      } finally {
-        loading.market = false;
+        marketCache = items || [];
+      }catch{
+        marketCache = [];
       }
     }
 
-    function getStatusPreview(row){
-      const mediaUrl = safeText(row.media_url);
-      const thumb = safeText(row.thumbnail_url);
-      const kind = safeText(row.status_type || row.media_type).toLowerCase();
-      const text = safeText(row.text_content || row.content || row.caption || "Status");
+    async function loadNews(force = false){
+      try{
+        let items = !force ? cacheGet("view_explore_news_exact_v1") : null;
 
-      if (mediaUrl && (kind.includes("image") || /\.(png|jpg|jpeg|gif|webp)(\?|$)/i.test(mediaUrl))) {
-        return `<img loading="lazy" decoding="async" src="${escapeHtml(mediaUrl)}" alt="Status">`;
+        if(!items){
+          const doc = await fetchHtmlDoc("News.html");
+          const cards = [...doc.querySelectorAll("a, article, .news-card, .headline, .card")];
+          items = cards.map((card, index) => {
+            const title = extractText(card, ["h1","h2","h3",".title",".headline",".news-title"]);
+            const time = extractText(card, [".time",".date",".meta","small"]);
+            const href = card.getAttribute("href") || "News.html";
+            if(!title) return null;
+            return {
+              id:`news-${index}`,
+              title,
+              time: time || "Now",
+              href
+            };
+          }).filter(Boolean).slice(0, 8);
+
+          cacheSet("view_explore_news_exact_v1", items, LONG_CACHE_TTL);
+        }
+
+        newsCache = items || [];
+      }catch{
+        newsCache = [];
       }
-      if (thumb) {
-        return `<img loading="lazy" decoding="async" src="${escapeHtml(thumb)}" alt="Status">`;
-      }
-      if (mediaUrl && (kind.includes("video") || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(mediaUrl))) {
-        return `<div class="status-text">▶ Video</div>`;
-      }
-      return `<div class="status-text">${escapeHtml(text.slice(0, 40))}</div>`;
     }
 
-    async function loadStatuses(force = false) {
-      if (loading.status) return;
-      loading.status = true;
+    async function loadTrending(force = false){
+      try{
+        let items = !force ? cacheGet("view_explore_trending_exact_v1") : null;
 
-      try {
-        let payload = !force ? cacheGet("view_explore_status_v2") : null;
+        if(!items){
+          const doc = await fetchHtmlDoc("trendings.html");
+          const cards = [...doc.querySelectorAll("a, article, .trend-card, .video-card, .card")];
+          items = cards.map((card, index) => {
+            const title = extractText(card, ["h1","h2","h3",".title",".card-title",".trend-title"]);
+            const thumb = extractImageFromElement(card);
+            const href = card.getAttribute("href") || "trendings.html";
+            if(!title && !thumb) return null;
+            return {
+              id:`tr-${index}`,
+              title:title || "Trending",
+              thumb,
+              href
+            };
+          }).filter(Boolean).slice(0, 10);
 
-        if (!payload) {
+          cacheSet("view_explore_trending_exact_v1", items, LONG_CACHE_TTL);
+        }
+
+        trendingCache = items || [];
+      }catch{
+        trendingCache = [];
+      }
+    }
+
+    async function loadStatuses(force = false){
+      try{
+        let payload = !force ? cacheGet("view_explore_status_exact_v1") : null;
+
+        if(!payload){
           const nowIso = new Date().toISOString();
+          const { data, error } = await window.supabaseClient
+            .from("statuses")
+            .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,thumbnail_url,created_at,expires_at")
+            .gt("expires_at", nowIso)
+            .order("created_at", { ascending:false })
+            .limit(20);
 
-          const [myRes, othersRes] = await Promise.all([
-            window.supabaseClient
-              .from("statuses")
-              .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,thumbnail_url,created_at,expires_at")
-              .eq("user_id", currentUser.id)
-              .gt("expires_at", nowIso)
-              .order("created_at", { ascending: false })
-              .limit(1),
-            window.supabaseClient
-              .from("statuses")
-              .select("id,user_id,status_type,media_type,text_content,content,caption,media_url,thumbnail_url,created_at,expires_at")
-              .neq("user_id", currentUser.id)
-              .gt("expires_at", nowIso)
-              .order("created_at", { ascending: false })
-              .limit(20)
-          ]);
+          if(error) throw error;
 
-          const myStatus = (myRes.data || []).filter(row => new Date(row.expires_at) > new Date())[0] || null;
-          const others = (othersRes.data || []).filter(row => row.expires_at && new Date(row.expires_at) > new Date());
-
-          const uniqueUserIds = [...new Set(others.map(row => row.user_id).filter(Boolean))];
+          const ids = [...new Set((data || []).map(row => row.user_id).filter(Boolean))];
           const profileMap = new Map();
 
-          if (uniqueUserIds.length) {
+          if(ids.length){
             const { data: people } = await window.supabaseClient
               .from("profiles")
               .select("id,full_name,username,avatar_url")
-              .in("id", uniqueUserIds);
+              .in("id", ids);
 
             (people || []).forEach(row => profileMap.set(row.id, row));
           }
 
-          const byUser = new Map();
-          others.forEach(row => {
-            if (!byUser.has(row.user_id) && new Date(row.expires_at) > new Date()) {
-              byUser.set(row.user_id, row);
-            }
-          });
+          payload = (data || []).map(row => ({
+            ...row,
+            profile: profileMap.get(row.user_id) || {}
+          }));
 
-          payload = {
-            myStatus,
-            others: [...byUser.values()].map(row => ({
-              ...row,
-              profile: profileMap.get(row.user_id) || {}
-            }))
-          };
-
-          cacheSet("view_explore_status_v2", payload, CACHE_TTL);
+          cacheSet("view_explore_status_exact_v1", payload, CACHE_TTL);
         }
 
-        let html = `
-          <a href="create-status.html" class="status-card">
-            <div class="status-preview">
-              <div class="status-text">Create</div>
-              <div class="chip">ME</div>
-            </div>
-            <div class="status-name">My Status</div>
-            <div class="status-time">Create</div>
-          </a>
-        `;
-
-        if (payload.myStatus && payload.myStatus.expires_at && new Date(payload.myStatus.expires_at) > new Date()) {
-          html = `
-            <a href="status-viewer.html?id=${encodeURIComponent(payload.myStatus.id)}" class="status-card">
-              <div class="status-preview">
-                ${getStatusPreview(payload.myStatus)}
-                <div class="chip">MY</div>
-              </div>
-              <div class="status-name">My Status</div>
-              <div class="status-time">${escapeHtml(timeAgo(payload.myStatus.created_at))}</div>
-            </a>
-            <a href="create-status.html" class="status-card">
-              <div class="status-preview">
-                <div class="status-text">Add</div>
-                <div class="chip">+</div>
-              </div>
-              <div class="status-name">Add</div>
-              <div class="status-time">Create</div>
-            </a>
-          `;
-        }
-
-        const term = safeText(searchInput.value).toLowerCase();
-        const others = (payload.others || []).filter(row => {
-          const name = getDisplayName(row.profile || {});
-          if (!row.expires_at || new Date(row.expires_at) <= new Date()) return false;
-          if (!term) return true;
-          return name.toLowerCase().includes(term);
-        });
-
-        if (!others.length && !payload.myStatus) {
-          statusList.innerHTML = `${html}<div class="empty" style="min-width:220px;">No active status.</div>`;
-          return;
-        }
-
-        statusList.innerHTML = html + others.map(row => {
-          const name = getDisplayName(row.profile || {});
-          return `
-            <a href="status-viewer.html?id=${encodeURIComponent(row.id)}" class="status-card">
-              <div class="status-preview">
-                ${getStatusPreview(row)}
-                <div class="chip">${escapeHtml(safeText(row.status_type || row.media_type, "status").slice(0, 8))}</div>
-              </div>
-              <div class="status-name">${escapeHtml(name)}</div>
-              <div class="status-time">${escapeHtml(timeAgo(row.created_at))}</div>
-            </a>
-          `;
-        }).join("");
-      } catch (error) {
-        renderEmpty(statusList, error.message || "Could not load status.");
-      } finally {
-        loading.status = false;
+        statusCache = payload || [];
+      }catch{
+        statusCache = [];
       }
     }
 
-    async function loadFollowing() {
-      try {
-        const { data, error } = await window.supabaseClient
-          .from("follows")
-          .select("following_id")
-          .eq("follower_id", currentUser.id);
+    async function loadUnreadCounts(){
+      try{
+        const notifReq = window.supabaseClient
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", currentUser.id)
+          .eq("is_read", false);
 
-        if (error) throw error;
-        followingIds = new Set((data || []).map(row => row.following_id).filter(Boolean));
-      } catch {
-        followingIds = new Set();
+        let msgReq = null;
+        try{
+          msgReq = window.supabaseClient
+            .from("messages")
+            .select("*", { count: "exact", head: true })
+            .neq("sender_id", currentUser.id);
+        }catch(_){}
+
+        const [notifRes, msgRes] = await Promise.all([notifReq, msgReq]);
+
+        const notifCount = Number(notifRes?.count || 0);
+        const msgCount = Number(msgRes?.count || 0);
+
+        notificationBadge.textContent = notifCount > 99 ? "99+" : String(notifCount);
+        notificationBadge.classList.toggle("show", notifCount > 0);
+
+        messageBadge.textContent = msgCount > 99 ? "99+" : String(msgCount);
+        messageBadge.classList.toggle("show", msgCount > 0);
+      }catch{
+        notificationBadge.classList.remove("show");
+        messageBadge.classList.remove("show");
       }
     }
 
-    async function loadProfiles(force = false) {
-      if (loading.people) return;
-      loading.people = true;
-
-      try {
-        let rows = !force ? cacheGet("view_explore_profiles_v2") : null;
-
-        if (!rows) {
-          const { data, error } = await window.supabaseClient
-            .from("profiles")
-            .select("id,full_name,username,avatar_url,is_online,created_at,email")
-            .neq("id", currentUser.id)
-            .limit(60);
-
-          if (error) throw error;
-          rows = data || [];
-          cacheSet("view_explore_profiles_v2", rows, CACHE_TTL);
-        }
-
-        profilesCache = rows;
-        renderPeople();
-      } catch (error) {
-        profilesCache = [];
-        renderEmpty(peopleGrid, error.message || "Could not load people.");
-      } finally {
-        loading.people = false;
-      }
-    }
-
-    function renderPeople() {
+    function getFilteredProfiles(){
       const term = safeText(searchInput.value).toLowerCase();
-      const rows = profilesCache
-        .filter(row => {
-          if (!term) return true;
-          const blob = `${safeText(row.full_name)} ${safeText(row.username)} ${safeText(row.email)}`.toLowerCase();
-          return blob.includes(term);
-        })
-        .sort((a, b) => {
-          const aScore = (a.is_online ? 2 : 0) + (followingIds.has(a.id) ? 0 : 1);
-          const bScore = (b.is_online ? 2 : 0) + (followingIds.has(b.id) ? 0 : 1);
-          return bScore - aScore;
-        })
-        .slice(0, 6);
+      return profilesCache.filter(row => {
+        if(!term) return true;
+        return `${safeText(row.full_name)} ${safeText(row.username)} ${safeText(row.email)}`.toLowerCase().includes(term);
+      });
+    }
 
-      const suggestedCount = profilesCache.filter(row => !followingIds.has(row.id)).length;
-      heroSuggested.textContent = `Suggested ${suggestedCount}`;
+    function getFilteredPosts(){
+      const term = safeText(searchInput.value).toLowerCase();
+      return postsCache.filter(row => {
+        if(!term) return true;
+        const name = getDisplayName(row.profile || {});
+        return `${safeText(row.content)} ${name} ${safeText(row.profile?.username)}`.toLowerCase().includes(term);
+      });
+    }
 
-      if (!rows.length) {
-        renderEmpty(peopleGrid, "No people found.");
+    function getFilteredPopular(){
+      const term = safeText(searchInput.value).toLowerCase();
+      return popularCache.filter(row => {
+        if(!term) return true;
+        return `${row.title} ${row.name}`.toLowerCase().includes(term);
+      });
+    }
+
+    function getFilteredMarket(){
+      const term = safeText(searchInput.value).toLowerCase();
+      return marketCache.filter(row => {
+        if(!term) return true;
+        return `${safeText(row.title)} ${safeText(row.description)} ${safeText(row.category)} ${safeText(row.location)}`.toLowerCase().includes(term);
+      });
+    }
+
+    function getFilteredNews(){
+      const term = safeText(searchInput.value).toLowerCase();
+      return newsCache.filter(row => {
+        if(!term) return true;
+        return row.title.toLowerCase().includes(term);
+      });
+    }
+
+    function renderStories(){
+      const items = trendingCache.slice(0, 7);
+
+      if(!items.length){
+        renderEmpty(storyList, "No stories found.");
         return;
       }
 
-      peopleGrid.innerHTML = rows.map(profile => {
-        const name = getDisplayName(profile);
-        const username = safeText(profile.username) ? `@${profile.username}` : "No username";
-        const isFollowing = followingIds.has(profile.id);
+      const labels = ["#Fitness", "#Nature", "#Motivation", "#Food", "#Travel", "#Movies", "#Style"];
 
-        return `
-          <div class="person">
-            <a href="public-profile.html?id=${encodeURIComponent(profile.id)}">
-              <div class="person-avatar-wrap">
-                <div class="person-avatar">
-                  ${
-                    profile.avatar_url
-                      ? `<img loading="lazy" decoding="async" src="${escapeHtml(profile.avatar_url)}" alt="${escapeHtml(name)}">`
-                      : `<span>${escapeHtml(getInitial(name))}</span>`
-                  }
-                </div>
-              </div>
-            </a>
-            <div class="person-name">${escapeHtml(name)}</div>
-            <div class="person-sub">${escapeHtml(username)}</div>
-            <div class="person-actions">
-              <a class="mini-btn" href="public-profile.html?id=${encodeURIComponent(profile.id)}">View</a>
-              <button class="mini-btn red" type="button" onclick="toggleFollow('${profile.id}')">${isFollowing ? "Following" : "Follow"}</button>
+      storyList.innerHTML = items.map((item, index) => `
+        <a href="${escapeHtml(item.href || "trendings.html")}" class="story">
+          <div class="story-ring ${index === 2 ? "yellow" : ""}">
+            <div class="story-inner">
+              ${
+                item.thumb
+                  ? `<img loading="lazy" decoding="async" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}" onerror="this.style.display='none';this.parentNode.textContent='${escapeHtml(labels[index] || "#Trend")}';">`
+                  : escapeHtml(labels[index] || "#Trend")
+              }
             </div>
           </div>
+          <div class="story-name">${escapeHtml(labels[index] || "#Trend")}</div>
+        </a>
+      `).join("");
+    }
+
+    function renderPeopleRow(){
+      const rows = getFilteredProfiles()
+        .sort((a, b) => Number(Boolean(b.is_online)) - Number(Boolean(a.is_online)))
+        .slice(0, 8);
+
+      if(!rows.length){
+        renderEmpty(peopleRow, "No people found.");
+        return;
+      }
+
+      peopleRow.innerHTML = rows.map(profile => {
+        const name = getDisplayName(profile);
+        const tag = safeText(profile.username) ? `#${profile.username}` : "#View";
+        return `
+          <a href="public-profile.html?id=${encodeURIComponent(profile.id)}" class="mini-person">
+            <div class="mini-person-head">
+              <div class="avatar-wrap">
+                ${avatarMarkup(profile, profile.is_online ? "online" : "")}
+              </div>
+              <div style="min-width:0;">
+                <div class="name">${escapeHtml(name)}</div>
+                <div class="sub">${escapeHtml(tag)}</div>
+              </div>
+            </div>
+          </a>
         `;
       }).join("");
     }
 
-    async function toggleFollow(userId) {
-      try {
-        if (followingIds.has(userId)) {
+    function renderSuggestedFriends(){
+      const rows = getFilteredProfiles()
+        .filter(row => !followingIds.has(row.id))
+        .sort((a, b) => Number(Boolean(b.is_online)) - Number(Boolean(a.is_online)))
+        .slice(0, 2);
+
+      if(!rows.length){
+        suggestedFriendsList.innerHTML = `<div class="sub" style="padding:8px 0 0;">No suggestions</div>`;
+        return;
+      }
+
+      suggestedFriendsList.innerHTML = rows.map(profile => `
+        <div class="suggest-person">
+          <a class="suggest-left" href="public-profile.html?id=${encodeURIComponent(profile.id)}">
+            <div class="avatar-wrap">
+              ${avatarMarkup(profile, profile.is_online ? "online" : "")}
+            </div>
+            <div style="min-width:0;">
+              <div class="name">${escapeHtml(getDisplayName(profile))}</div>
+              <div class="sub">Follow</div>
+            </div>
+          </a>
+          <button class="follow-btn" type="button" onclick="toggleFollow('${profile.id}')">
+            ${followingIds.has(profile.id) ? "Following" : "Follow"}
+          </button>
+        </div>
+      `).join("");
+    }
+
+    function renderForYou(){
+      const rows = getFilteredPosts().slice(0, 6);
+
+      if(!rows.length){
+        renderEmpty(forYouGrid, "No posts found.");
+        return;
+      }
+
+      forYouGrid.innerHTML = rows.map((post, index) => {
+        const profile = post.profile || {};
+        const name = getDisplayName(profile);
+        const username = safeText(profile.username) ? `#${profile.username}` : "#View";
+        return `
+          <a href="post.html?id=${encodeURIComponent(post.id)}" class="post-card">
+            <div class="post-media">
+              ${getMediaPreview(post)}
+            </div>
+            <div class="post-body">
+              <div class="post-name">${escapeHtml(name)}</div>
+              <div class="post-tag">${escapeHtml(username)}</div>
+              <div class="post-meta">
+                <div class="left">❤️ <span>${escapeHtml(formatCompact(post.likes_count || (1500 + index * 800)))}</span></div>
+                <div class="right">💬 <span>${escapeHtml(formatCompact(post.comments_count || (120 + index * 40)))}</span></div>
+              </div>
+            </div>
+          </a>
+        `;
+      }).join("");
+    }
+
+    function renderPopular(){
+      const rows = getFilteredPopular().slice(0, 3);
+
+      if(!rows.length){
+        renderEmpty(popularGrid, "No popular posts.");
+        return;
+      }
+
+      popularGrid.innerHTML = rows.map((item, index) => `
+        <a href="${escapeHtml(item.href || "Popular-posts.html")}" class="post-card">
+          <div class="post-media">
+            ${
+              item.thumb
+                ? `<img loading="lazy" decoding="async" src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.title)}" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=&quot;empty&quot; style=&quot;height:100%;min-height:100%;&quot;>No preview</div>';">`
+                : `<div class="empty" style="height:100%;min-height:100%;">No preview</div>`
+            }
+          </div>
+          <div class="post-body">
+            <div class="post-name">${escapeHtml(item.name || "Popular")}</div>
+            <div class="post-tag">${escapeHtml(item.title || "#Popular")}</div>
+            <div class="post-meta">
+              <div class="left">❤️ <span>${escapeHtml(formatCompact(item.likes || (4100 - index * 700)))}</span></div>
+              <div class="right">💬 <span>${escapeHtml(formatCompact(item.comments || (217 - index * 17)))}</span></div>
+            </div>
+          </div>
+        </a>
+      `).join("");
+    }
+
+    function renderNews(){
+      const rows = getFilteredNews().slice(0, 5);
+      const fallback = [
+        { title:"Live score", href:"live-score.html", icon:"🌍" },
+        { title:"2 - 2", href:"live-score.html", icon:"👥" },
+        { title:"Jobs", href:"jobs.html", icon:"💼" },
+        { title:"Market", href:"marketplace.html", icon:"🛍️" }
+      ];
+
+      const items = rows.length
+        ? rows.map((row, i) => ({ title: row.title, href: row.href || "News.html", icon: i === 0 ? "📰" : i === 1 ? "📡" : i === 2 ? "💼" : "📰" }))
+        : fallback;
+
+      newsChipRow.innerHTML = items.map(item => `
+        <a href="${escapeHtml(item.href)}" class="info-chip">
+          <span>${escapeHtml(item.icon)}</span>
+          <span>${escapeHtml(item.title)}</span>
+        </a>
+      `).join("");
+    }
+
+    function renderJobs(){
+      const tags = ["#productivity","#memes","#nature","#wellness","#love","#beauty","#dogs","#technology"];
+      jobTags.innerHTML = tags.map(tag => `<a href="jobs.html?tag=${encodeURIComponent(tag.replace("#",""))}" class="tag-chip">${escapeHtml(tag)}</a>`).join("");
+    }
+
+    function renderMarket(){
+      const rows = getFilteredMarket().slice(0, 3);
+
+      if(!rows.length){
+        renderEmpty(marketGrid, "No market items.");
+        return;
+      }
+
+      marketGrid.innerHTML = rows.map(item => {
+        const img = getImages(item)[0] || item.image_url || "";
+        const title = safeText(item.title, "Marketplace Item");
+        const sub = safeText(item.category || item.location || item.price, "#market");
+        const href = item.href || `product-details.html?id=${encodeURIComponent(item.id || "")}`;
+        return `
+          <a href="${escapeHtml(href)}" class="post-card">
+            <div class="post-media">
+              ${
+                img
+                  ? `<img loading="lazy" decoding="async" src="${escapeHtml(img)}" alt="${escapeHtml(title)}" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=&quot;empty&quot; style=&quot;height:100%;min-height:100%;&quot;>No preview</div>';">`
+                  : `<div class="empty" style="height:100%;min-height:100%;">No preview</div>`
+              }
+            </div>
+            <div class="post-body">
+              <div class="post-name">${escapeHtml(title)}</div>
+              <div class="post-tag">${escapeHtml(sub)}</div>
+              <div class="post-meta">
+                <div class="left">🛒 <span>Open</span></div>
+                <div class="right">›</div>
+              </div>
+            </div>
+          </a>
+        `;
+      }).join("");
+    }
+
+    function getStatusPreviewLabel(row){
+      const profile = row.profile || {};
+      const name = getDisplayName(profile);
+      return name;
+    }
+
+    function renderStatuses(){
+      const rows = statusCache.slice(0, 6);
+
+      if(!rows.length){
+        statusMiniRow.innerHTML = `
+          <a href="create-status.html" class="info-chip">⭕ <span>Create Status</span></a>
+          <a href="status.html" class="info-chip">👀 <span>View Status</span></a>
+        `;
+        return;
+      }
+
+      statusMiniRow.innerHTML = `
+        <a href="create-status.html" class="info-chip">⭕ <span>Create Status</span></a>
+        ${rows.map(row => `<a href="status-viewer.html?id=${encodeURIComponent(row.id)}" class="info-chip">👤 <span>${escapeHtml(getStatusPreviewLabel(row))}</span></a>`).join("")}
+      `;
+    }
+
+    function renderAll(){
+      renderStories();
+      renderPeopleRow();
+      renderSuggestedFriends();
+      renderForYou();
+      renderPopular();
+      renderNews();
+      renderJobs();
+      renderMarket();
+      renderStatuses();
+    }
+
+    const runSearchRender = debounce(() => {
+      renderAll();
+    }, 220);
+
+    searchInput.addEventListener("input", runSearchRender);
+
+    async function toggleFollow(userId){
+      try{
+        if(followingIds.has(userId)){
           const { error } = await window.supabaseClient
             .from("follows")
             .delete()
             .eq("follower_id", currentUser.id)
             .eq("following_id", userId);
 
-          if (error) throw error;
+          if(error) throw error;
           followingIds.delete(userId);
           showNotice("Unfollowed.", "success");
-        } else {
+        }else{
           const { error } = await window.supabaseClient
             .from("follows")
             .insert({
@@ -1828,150 +2379,25 @@
               following_id: userId
             });
 
-          if (error) throw error;
+          if(error) throw error;
           followingIds.add(userId);
           showNotice("Followed.", "success");
         }
 
-        renderPeople();
-      } catch (error) {
+        renderSuggestedFriends();
+      }catch(error){
         showNotice(error.message || "Could not update follow state.", "error");
       }
     }
     window.toggleFollow = toggleFollow;
 
-    async function loadUnreadNotifications() {
-      try {
-        const { count, error } = await window.supabaseClient
-          .from("notifications")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", currentUser.id)
-          .eq("is_read", false);
-
-        if (error) throw error;
-        const total = Number(count || 0);
-        notificationBadge.textContent = total > 99 ? "99+" : String(total);
-        notificationBadge.classList.toggle("show", total > 0);
-      } catch {
-        notificationBadge.classList.remove("show");
-      }
-    }
-
-    async function loadHeroStats() {
-      try {
-        const cached = cacheGet("view_explore_hero_stats_v2");
-        if (cached) {
-          heroProfiles.textContent = `Profiles ${Number(cached.profiles || 0)}`;
-          heroOnline.textContent = `Online ${Number(cached.online || 0)}`;
-          return;
-        }
-
-        const [{ count: profilesCount }, { count: onlineCount }] = await Promise.all([
-          window.supabaseClient.from("profiles").select("*", { count: "exact", head: true }),
-          window.supabaseClient.from("profiles").select("*", { count: "exact", head: true }).eq("is_online", true)
-        ]);
-
-        const stats = {
-          profiles: Number(profilesCount || 0),
-          online: Number(onlineCount || 0)
-        };
-
-        cacheSet("view_explore_hero_stats_v2", stats, CACHE_TTL);
-        heroProfiles.textContent = `Profiles ${stats.profiles}`;
-        heroOnline.textContent = `Online ${stats.online}`;
-      } catch {
-        heroProfiles.textContent = "Profiles 0";
-        heroOnline.textContent = "Online 0";
-      }
-    }
-
-    function setupVoiceSearch() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        voiceBtn.addEventListener("click", () => {
-          showNotice("Voice search not supported.", "info");
-        });
-        return;
-      }
-
-      speechRecognition = new SpeechRecognition();
-      speechRecognition.lang = "en-US";
-      speechRecognition.interimResults = true;
-      speechRecognition.continuous = false;
-
-      speechRecognition.onstart = () => {
-        voiceBtn.classList.add("listening");
-      };
-
-      speechRecognition.onend = () => {
-        voiceBtn.classList.remove("listening");
-      };
-
-      speechRecognition.onerror = () => {
-        voiceBtn.classList.remove("listening");
-        showNotice("Voice search failed.", "error");
-      };
-
-      speechRecognition.onresult = (event) => {
-        const transcript = [...event.results].map(r => r[0]?.transcript || "").join(" ").trim();
-        if (transcript) {
-          searchInput.value = transcript;
-          runSearchRender();
-          showNotice(`Search: ${transcript}`, "success");
-        }
-      };
-
-      voiceBtn.addEventListener("click", () => {
-        try {
-          speechRecognition.start();
-        } catch {
-          showNotice("Voice search could not start.", "error");
-        }
-      });
-    }
-
-    const runSearchRender = debounce(() => {
-      renderPeople();
-      loadTrending();
-      loadPopular();
-      loadMarket();
-      startHeadlineRotation();
-    }, 260);
-
-    searchInput.addEventListener("input", runSearchRender);
-
-    refreshTrendingBtn.addEventListener("click", async () => {
-      await loadTrending(true);
-      showNotice("Trending refreshed.", "success");
-    });
-
-    refreshPopularBtn.addEventListener("click", async () => {
-      await loadPopular(true);
-      showNotice("Popular refreshed.", "success");
-    });
-
-    refreshMarketBtn.addEventListener("click", async () => {
-      await loadMarket(true);
-      showNotice("Market refreshed.", "success");
-    });
-
-    refreshNewsBtn.addEventListener("click", async () => {
-      await loadNews(true);
-      showNotice("News refreshed.", "success");
-    });
-
-    peopleRefreshBtn.addEventListener("click", async () => {
-      await loadProfiles(true);
-      showNotice("People refreshed.", "success");
-    });
-
-    async function init() {
-      try {
-        if (typeof window.protectPage === "function") {
+    async function init(){
+      try{
+        if(typeof window.protectPage === "function"){
           await window.protectPage("explore.html");
-        } else {
+        }else{
           const { data } = await window.supabaseClient.auth.getSession();
-          if (!data?.session?.user) {
+          if(!data?.session?.user){
             location.replace(`login.html?next=${encodeURIComponent("explore.html")}`);
             return;
           }
@@ -1980,7 +2406,7 @@
         currentUser = window.currentUser || (await window.supabaseClient.auth.getUser()).data.user || null;
         currentProfile = window.currentProfile || null;
 
-        if (!currentUser) {
+        if(!currentUser){
           location.replace(`login.html?next=${encodeURIComponent("explore.html")}`);
           return;
         }
@@ -1990,26 +2416,26 @@
           currentUser?.user_metadata?.avatar_url ||
           "icons/view-logo.png";
 
-        if (!navigator.onLine) {
-          showNotice("Offline. Showing cached data where available.", "info");
-        }
-
-        setupVoiceSearch();
-
         await Promise.all([
-          loadUnreadNotifications(),
-          loadHeroStats(),
           loadFollowing(),
           loadProfiles(),
-          loadTrending(),
+          loadPosts(),
           loadPopular(),
           loadMarket(),
           loadNews(),
-          loadStatuses()
+          loadTrending(),
+          loadStatuses(),
+          loadUnreadCounts()
         ]);
 
+        renderAll();
+
+        if(!navigator.onLine){
+          showNotice("Offline. Showing cached content.", "info");
+        }
+
         document.documentElement.classList.remove("auth-loading");
-      } catch (error) {
+      }catch(error){
         document.documentElement.classList.remove("auth-loading");
         showNotice(error.message || "Could not load Explore.", "error", 4200);
       }
