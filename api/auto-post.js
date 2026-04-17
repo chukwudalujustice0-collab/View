@@ -1,31 +1,59 @@
 const { createClient } = require("@supabase/supabase-js");
 const crypto = require("crypto");
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.SUPABASE_URL;
+
+const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini";
+const OPENROUTER_MODEL =
+  process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini";
+
 const CUSTOM_FALLBACK_API_URL =
   process.env.CUSTOM_FALLBACK_API_URL ||
   "https://throbbing-star-8cd8.chukwudalujustice0.workers.dev";
 
 const KLING_API_KEY = process.env.KLING_API_KEY || "";
-const KLING_BASE_URL = (process.env.KLING_BASE_URL || "https://api.klingapi.com").replace(/\/+$/, "");
-const KLING_VIDEO_MODEL = process.env.KLING_VIDEO_MODEL || "kling-v2.6-std";
+const KLING_BASE_URL = (
+  process.env.KLING_BASE_URL || "https://api.klingapi.com"
+).replace(/\/+$/, "");
+const KLING_VIDEO_MODEL =
+  process.env.KLING_VIDEO_MODEL || "kling-v2.6-std";
 
 const AUTO_POST_CRON_SECRET =
   process.env.AUTO_POST_CRON_SECRET ||
   process.env.CRON_SECRET ||
   "";
-const POST_MEDIA_BUCKET = process.env.POST_MEDIA_BUCKET || "post-media";
-const AUTO_POST_BATCH_LIMIT = clampNumber(process.env.AUTO_POST_BATCH_LIMIT || 5, 1, 100, 5);
-const AUTO_POST_VIDEO_POLL_BATCH = clampNumber(process.env.AUTO_POST_VIDEO_POLL_BATCH || 10, 1, 100, 10);
 
-const GEMINI_TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || "gemini-2.5-flash";
-const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
-const USE_GEMINI_IMAGE = String(process.env.USE_GEMINI_IMAGE || "true").toLowerCase() === "true";
+const POST_MEDIA_BUCKET =
+  process.env.POST_MEDIA_BUCKET || "post-media";
+
+const AUTO_POST_BATCH_LIMIT = clampNumber(
+  process.env.AUTO_POST_BATCH_LIMIT || 5,
+  1,
+  100,
+  5
+);
+
+const AUTO_POST_VIDEO_POLL_BATCH = clampNumber(
+  process.env.AUTO_POST_VIDEO_POLL_BATCH || 10,
+  1,
+  100,
+  10
+);
+
+const GEMINI_TEXT_MODEL =
+  process.env.GEMINI_TEXT_MODEL || "gemini-2.5-flash";
+
+const GEMINI_IMAGE_MODEL =
+  process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
+
+const USE_GEMINI_IMAGE =
+  String(process.env.USE_GEMINI_IMAGE || "true").toLowerCase() === "true";
 
 const VIEW_BASE_URL = (
   process.env.VIEW_BASE_URL ||
@@ -40,9 +68,16 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error("Missing Supabase environment variables.");
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false }
-});
+const supabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false
+    }
+  }
+);
 
 module.exports = async function handler(req, res) {
   setCors(res);
@@ -53,11 +88,17 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method !== "GET" && req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "Method not allowed" });
+      return res.status(405).json({
+        ok: false,
+        error: "Method not allowed"
+      });
     }
 
     if (!isAuthorized(req)) {
-      return res.status(401).json({ ok: false, error: "Unauthorized" });
+      return res.status(401).json({
+        ok: false,
+        error: "Unauthorized"
+      });
     }
 
     const body =
@@ -67,20 +108,28 @@ module.exports = async function handler(req, res) {
           : req.body
         : {};
 
-    const action = String(req.query?.action || body?.action || "")
+    let action = String(req.query?.action || body?.action || "")
       .trim()
       .toLowerCase();
 
+    // IMPORTANT:
+    // If cron calls /api/auto-post without action,
+    // default to "run" so due rules still execute.
     if (!action) {
-      return res.status(400).json({
-        ok: false,
-        error: "Missing action. Use action=test, action=run, or action=check"
-      });
+      action = "run";
     }
 
-    if (action === "test") return await handleTestRun(req, res, body);
-    if (action === "run") return await handleRunDueRules(req, res, body);
-    if (action === "check") return await handleCheckKlingTasks(req, res);
+    if (action === "test") {
+      return await handleTestRun(req, res, body);
+    }
+
+    if (action === "run") {
+      return await handleRunDueRules(req, res, body);
+    }
+
+    if (action === "check") {
+      return await handleCheckKlingTasks(req, res);
+    }
 
     return res.status(400).json({
       ok: false,
@@ -88,9 +137,12 @@ module.exports = async function handler(req, res) {
     });
   } catch (error) {
     console.error("auto-post fatal error:", error);
+
     return res.status(500).json({
       ok: false,
-      error: sanitizeErrorMessage(error?.message || error || "Internal server error")
+      error: sanitizeErrorMessage(
+        error?.message || error || "Internal server error"
+      )
     });
   }
 };
@@ -98,7 +150,10 @@ module.exports = async function handler(req, res) {
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-cron-secret");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, x-cron-secret"
+  );
   res.setHeader("Cache-Control", "no-store");
 }
 
@@ -146,21 +201,28 @@ function trimText(value, max = 5000) {
   return String(value || "").trim().slice(0, max);
 }
 
-function hasText(value) {
-  return trimText(value).length > 0;
-}
-
 function sanitizeErrorMessage(errorLike, fallback = "Unknown auto-post error") {
   if (!errorLike) return fallback;
-  if (typeof errorLike === "string") return trimText(errorLike.replace(/\s+/g, " "), 600) || fallback;
-  if (errorLike instanceof Error) return sanitizeErrorMessage(errorLike.message, fallback);
+
+  if (typeof errorLike === "string") {
+    return trimText(errorLike.replace(/\s+/g, " "), 600) || fallback;
+  }
+
+  if (errorLike instanceof Error) {
+    return sanitizeErrorMessage(errorLike.message, fallback);
+  }
+
   return trimText(JSON.stringify(errorLike), 600) || fallback;
 }
 
 function normalizePlatformKey(value) {
   const key = String(value || "").trim().toLowerCase();
+
   if (key === "twitter") return "x";
-  if (key === "whatsappbusiness" || key === "whatsapp_business") return "whatsapp";
+  if (key === "whatsappbusiness" || key === "whatsapp_business") {
+    return "whatsapp";
+  }
+
   return key;
 }
 
@@ -169,7 +231,10 @@ function normalizePlatforms(selectedPlatforms, platformsLabel) {
 
   if (Array.isArray(selectedPlatforms) && selectedPlatforms.length) {
     platforms = selectedPlatforms;
-  } else if (typeof selectedPlatforms === "string" && selectedPlatforms.trim()) {
+  } else if (
+    typeof selectedPlatforms === "string" &&
+    selectedPlatforms.trim()
+  ) {
     const parsed = safeJsonParse(selectedPlatforms, null);
     if (Array.isArray(parsed)) platforms = parsed;
   } else if (platformsLabel) {
@@ -242,7 +307,11 @@ function buildPollinationsUrl(prompt, aspect = "1:1") {
     "no watermark"
   ].join(", ");
 
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?seed=${seed}&model=flux&nologo=true&private=true&enhance=true&safe=true&aspect=${encodeURIComponent(aspect)}`;
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(
+    enhancedPrompt
+  )}?seed=${seed}&model=flux&nologo=true&private=true&enhance=true&safe=true&aspect=${encodeURIComponent(
+    aspect
+  )}`;
 }
 
 function buildPromptFromRule(rule) {
@@ -253,16 +322,27 @@ function buildPromptFromRule(rule) {
   else if (rule.topic) pieces.push(trimText(rule.topic, 3000));
   else if (rule.title) pieces.push(trimText(rule.title, 400));
 
-  if (rule.caption_style) pieces.push(`Caption style: ${rule.caption_style}.`);
-  if (rule.visual_style) pieces.push(`Visual style: ${rule.visual_style}.`);
+  if (rule.caption_style) {
+    pieces.push(`Caption style: ${rule.caption_style}.`);
+  }
+
+  if (rule.visual_style) {
+    pieces.push(`Visual style: ${rule.visual_style}.`);
+  }
 
   if (normalizedType === "text" || normalizedType === "text_only") {
     pieces.push("Create a polished social media text post.");
-  } else if (normalizedType === "image" || normalizedType === "image_with_caption") {
+  } else if (
+    normalizedType === "image" ||
+    normalizedType === "image_with_caption"
+  ) {
     pieces.push("Create a polished social media image and caption.");
   } else if (normalizedType === "image_only") {
     pieces.push("Create a polished social media image only. No long caption.");
-  } else if (normalizedType === "video" || normalizedType === "video_with_caption") {
+  } else if (
+    normalizedType === "video" ||
+    normalizedType === "video_with_caption"
+  ) {
     pieces.push("Create a polished short vertical social media video and caption.");
   } else if (normalizedType === "video_only") {
     pieces.push("Create a polished short vertical social media video only. No long caption.");
@@ -275,6 +355,7 @@ function buildPromptFromRule(rule) {
 
 function isTemporaryProviderError(message = "") {
   const text = String(message || "").toLowerCase();
+
   return (
     text.includes("high demand") ||
     text.includes("temporarily unavailable") ||
@@ -289,7 +370,11 @@ function isTemporaryProviderError(message = "") {
 
 function extractTextFromGemini(json) {
   const parts = json?.candidates?.[0]?.content?.parts || [];
-  return parts.map((part) => part?.text || "").filter(Boolean).join("\n").trim();
+  return parts
+    .map((part) => part?.text || "")
+    .filter(Boolean)
+    .join("\n")
+    .trim();
 }
 
 function extractInlineImagePart(json) {
@@ -302,6 +387,7 @@ function extractInlineImagePart(json) {
         mimeType: part.inlineData.mimeType || "image/png"
       };
     }
+
     if (part?.inline_data?.data) {
       return {
         data: part.inline_data.data,
@@ -337,16 +423,25 @@ function buildLocalFallbackText(rule) {
   };
 }
 
-async function callGeminiGenerateContent({ model, contents, responseMimeType }) {
-  if (!GEMINI_API_KEY) throw new Error("Missing GEMINI_API_KEY.");
+async function callGeminiGenerateContent({
+  model,
+  contents,
+  responseMimeType
+}) {
+  if (!GEMINI_API_KEY) {
+    throw new Error("Missing GEMINI_API_KEY.");
+  }
 
   const body = { contents };
+
   if (responseMimeType) {
     body.generationConfig = { responseMimeType };
   }
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+      model
+    )}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -355,6 +450,7 @@ async function callGeminiGenerateContent({ model, contents, responseMimeType }) 
   );
 
   const json = await response.json().catch(() => ({}));
+
   if (!response.ok) {
     throw new Error(json?.error?.message || "Gemini request failed.");
   }
@@ -363,32 +459,44 @@ async function callGeminiGenerateContent({ model, contents, responseMimeType }) 
 }
 
 async function callOpenRouterText(prompt) {
-  if (!OPENROUTER_API_KEY) throw new Error("Missing OPENROUTER_API_KEY.");
+  if (!OPENROUTER_API_KEY) {
+    throw new Error("Missing OPENROUTER_API_KEY.");
+  }
 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENROUTER_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: OPENROUTER_MODEL,
-      messages: [{ role: "user", content: prompt }]
-    })
-  });
+  const response = await fetch(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENROUTER_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: OPENROUTER_MODEL,
+        messages: [{ role: "user", content: prompt }]
+      })
+    }
+  );
 
   const json = await response.json().catch(() => ({}));
+
   if (!response.ok) {
     throw new Error(json?.error?.message || "OpenRouter request failed.");
   }
 
   const text = extractOpenRouterText(json);
-  if (!text) throw new Error("OpenRouter returned empty text.");
+
+  if (!text) {
+    throw new Error("OpenRouter returned empty text.");
+  }
+
   return text;
 }
 
 async function callCustomFallbackApi(payload) {
-  if (!CUSTOM_FALLBACK_API_URL) throw new Error("Missing CUSTOM_FALLBACK_API_URL.");
+  if (!CUSTOM_FALLBACK_API_URL) {
+    throw new Error("Missing CUSTOM_FALLBACK_API_URL.");
+  }
 
   const response = await fetch(CUSTOM_FALLBACK_API_URL, {
     method: "POST",
@@ -398,6 +506,7 @@ async function callCustomFallbackApi(payload) {
 
   const raw = await response.text();
   let json = {};
+
   try {
     json = raw ? JSON.parse(raw) : {};
   } catch {
@@ -405,7 +514,9 @@ async function callCustomFallbackApi(payload) {
   }
 
   if (!response.ok) {
-    throw new Error(json?.error || json?.message || "Custom fallback API failed.");
+    throw new Error(
+      json?.error || json?.message || "Custom fallback API failed."
+    );
   }
 
   return json;
@@ -413,12 +524,24 @@ async function callCustomFallbackApi(payload) {
 
 async function fetchPollinationsImageUrl(prompt, aspect = "1:1") {
   const url = buildPollinationsUrl(prompt, aspect);
-  const response = await fetch(url, { method: "GET", cache: "no-store" });
-  if (!response.ok) throw new Error("Pollinations image request failed.");
+  const response = await fetch(url, {
+    method: "GET",
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    throw new Error("Pollinations image request failed.");
+  }
+
   return url;
 }
 
-async function uploadBase64ToStorage({ bucket, path, base64Data, contentType }) {
+async function uploadBase64ToStorage({
+  bucket,
+  path,
+  base64Data,
+  contentType
+}) {
   const buffer = Buffer.from(base64Data, "base64");
 
   const { error: uploadError } = await supabase.storage
@@ -434,8 +557,15 @@ async function uploadBase64ToStorage({ bucket, path, base64Data, contentType }) 
   return data.publicUrl;
 }
 
-async function fetchAndUploadRemoteFile({ userId, remoteUrl, prefix, extension, contentType }) {
+async function fetchAndUploadRemoteFile({
+  userId,
+  remoteUrl,
+  prefix,
+  extension,
+  contentType
+}) {
   const response = await fetch(remoteUrl, { cache: "no-store" });
+
   if (!response.ok) {
     throw new Error(`Unable to download remote file for ${prefix}.`);
   }
@@ -453,7 +583,10 @@ async function fetchAndUploadRemoteFile({ userId, remoteUrl, prefix, extension, 
 
   if (error) throw error;
 
-  const { data } = supabase.storage.from(POST_MEDIA_BUCKET).getPublicUrl(filePath);
+  const { data } = supabase.storage
+    .from(POST_MEDIA_BUCKET)
+    .getPublicUrl(filePath);
+
   return data.publicUrl;
 }
 
@@ -478,12 +611,20 @@ Rules:
   try {
     const raw = await callGeminiGenerateContent({
       model: GEMINI_TEXT_MODEL,
-      contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: finalPrompt }]
+        }
+      ],
       responseMimeType: "application/json"
     });
 
     rawText = extractTextFromGemini(raw);
-    if (!rawText) throw new Error("Gemini returned empty text.");
+
+    if (!rawText) {
+      throw new Error("Gemini returned empty text.");
+    }
   } catch (error) {
     providerError = sanitizeErrorMessage(error);
 
@@ -492,7 +633,9 @@ Rules:
       provider = "openrouter";
       providerModel = OPENROUTER_MODEL;
     } catch (openRouterError) {
-      providerError = `${providerError} | OpenRouter: ${sanitizeErrorMessage(openRouterError)}`;
+      providerError = `${providerError} | OpenRouter: ${sanitizeErrorMessage(
+        openRouterError
+      )}`;
 
       try {
         const workerJson = await callCustomFallbackApi({
@@ -511,13 +654,19 @@ Rules:
           12000
         );
 
-        if (!rawText) throw new Error("Worker API returned empty text.");
+        if (!rawText) {
+          throw new Error("Worker API returned empty text.");
+        }
+
         provider = "custom_fallback_api";
         providerModel = "workers-dev";
       } catch (customError) {
-        providerError = `${providerError} | Worker: ${sanitizeErrorMessage(customError)}`;
+        providerError = `${providerError} | Worker: ${sanitizeErrorMessage(
+          customError
+        )}`;
 
         const fallback = buildLocalFallbackText(rule);
+
         return {
           provider: "local_fallback",
           provider_model: "local-safe-fallback",
@@ -542,8 +691,14 @@ Rules:
     provider,
     provider_model: providerModel,
     title: trimText(parsed.title || rule.title || "", 120),
-    text_content: trimText(parsed.text_content || parsed.caption || rawText, 5000),
-    caption: trimText(parsed.caption || parsed.text_content || rawText, 2200),
+    text_content: trimText(
+      parsed.text_content || parsed.caption || rawText,
+      5000
+    ),
+    caption: trimText(
+      parsed.caption || parsed.text_content || rawText,
+      2200
+    ),
     media_url: null,
     media_type: "text",
     status: "generated",
@@ -592,6 +747,7 @@ Rules:
 
     const captionText = extractTextFromGemini(captionRaw);
     const parsed = safeJsonParse(captionText, {}) || {};
+
     title = trimText(parsed.title || rule.title || "", 120);
     caption = needsCaption ? trimText(parsed.caption || "", 2200) : "";
     imagePrompt = trimText(parsed.image_prompt || prompt, 4000);
@@ -604,15 +760,24 @@ Rules:
     try {
       const imageRaw = await callGeminiGenerateContent({
         model: GEMINI_IMAGE_MODEL,
-        contents: [{ role: "user", parts: [{ text: imagePrompt }] }]
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: imagePrompt }]
+          }
+        ]
       });
 
       const imagePart = extractInlineImagePart(imageRaw);
+
       if (!imagePart?.data) {
-        throw new Error("Gemini image generation did not return image data.");
+        throw new Error(
+          "Gemini image generation did not return image data."
+        );
       }
 
       const filePath = buildStoragePath(rule.user_id, "image", "png");
+
       const mediaUrl = await uploadBase64ToStorage({
         bucket: POST_MEDIA_BUCKET,
         path: filePath,
@@ -678,7 +843,10 @@ Rules:
 
         throw new Error("Worker API returned no image URL.");
       } catch (workerImageError) {
-        const mediaUrl = await fetchPollinationsImageUrl(imagePrompt, aspect);
+        const mediaUrl = await fetchPollinationsImageUrl(
+          imagePrompt,
+          aspect
+        );
 
         return {
           provider: "pollinations",
@@ -739,8 +907,8 @@ Rules:
         }
       };
     }
-  } catch (error) {
-    // continue to pollinations
+  } catch {
+    // continue to pollinations fallback
   }
 
   const mediaUrl = await fetchPollinationsImageUrl(imagePrompt, aspect);
@@ -765,7 +933,9 @@ Rules:
 }
 
 async function generateVideoWithKling({ rule, prompt }) {
-  if (!KLING_API_KEY) throw new Error("Missing KLING_API_KEY.");
+  if (!KLING_API_KEY) {
+    throw new Error("Missing KLING_API_KEY.");
+  }
 
   const needsCaption = contentNeedsCaption(rule.content_type);
 
@@ -802,7 +972,7 @@ Rules:
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${KLING_API_KEY}`
+      Authorization: `Bearer ${KLING_API_KEY}`
     },
     body: JSON.stringify({
       model: KLING_VIDEO_MODEL,
@@ -816,14 +986,18 @@ Rules:
   const json = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const message = json?.message || json?.error || "Kling video request failed.";
+    const message =
+      json?.message || json?.error || "Kling video request failed.";
     const error = new Error(message);
     error.isTemporary = isTemporaryProviderError(message);
     throw error;
   }
 
   const taskId = json?.task_id || json?.data?.task_id || json?.id;
-  if (!taskId) throw new Error("Kling did not return a task ID.");
+
+  if (!taskId) {
+    throw new Error("Kling did not return a task ID.");
+  }
 
   return {
     provider: "kling",
@@ -891,7 +1065,10 @@ function normalizeScheduleTimes(rule) {
 
   if (Array.isArray(rule.schedule_times) && rule.schedule_times.length) {
     times = rule.schedule_times;
-  } else if (typeof rule.schedule_times === "string" && rule.schedule_times.trim()) {
+  } else if (
+    typeof rule.schedule_times === "string" &&
+    rule.schedule_times.trim()
+  ) {
     const parsed = safeJsonParse(rule.schedule_times, []);
     if (Array.isArray(parsed)) times = parsed;
   }
@@ -917,7 +1094,11 @@ function pickNextScheduledDate(now, frequency, scheduleTimes, rule) {
     candidate.setSeconds(0, 0);
     candidate.setHours(hh, mm, 0, 0);
 
-    if (frequency === "three_times_daily" || frequency === "twice_daily" || frequency === "daily") {
+    if (
+      frequency === "three_times_daily" ||
+      frequency === "twice_daily" ||
+      frequency === "daily"
+    ) {
       if (candidate <= now) candidate.setDate(candidate.getDate() + 1);
       candidates.push(candidate);
       continue;
@@ -939,10 +1120,19 @@ function pickNextScheduledDate(now, frequency, scheduleTimes, rule) {
         friday: 5,
         saturday: 6
       };
-      const target = weekdayMap[String(rule.schedule_day_of_week || "monday").toLowerCase()] ?? 1;
+
+      const target =
+        weekdayMap[
+          String(rule.schedule_day_of_week || "monday").toLowerCase()
+        ] ?? 1;
+
       const diff = (target - candidate.getDay() + 7) % 7;
       candidate.setDate(candidate.getDate() + diff);
-      if (candidate <= now) candidate.setDate(candidate.getDate() + 7);
+
+      if (candidate <= now) {
+        candidate.setDate(candidate.getDate() + 7);
+      }
+
       candidates.push(candidate);
       continue;
     }
@@ -960,21 +1150,31 @@ function pickNextScheduledDate(now, frequency, scheduleTimes, rule) {
     }
 
     if (frequency === "monthly") {
-      const day = Math.max(1, Math.min(31, Number(rule.schedule_day_of_month || 1)));
+      const day = Math.max(
+        1,
+        Math.min(31, Number(rule.schedule_day_of_month || 1))
+      );
+
       candidate.setDate(day);
+
       if (candidate <= now) {
         candidate.setMonth(candidate.getMonth() + 1);
         candidate.setDate(day);
       }
+
       candidates.push(candidate);
       continue;
     }
 
-    if (candidate <= now) candidate.setDate(candidate.getDate() + 1);
+    if (candidate <= now) {
+      candidate.setDate(candidate.getDate() + 1);
+    }
+
     candidates.push(candidate);
   }
 
   candidates.sort((a, b) => a.getTime() - b.getTime());
+
   return candidates[0] || new Date(now.getTime() + 24 * 60 * 60 * 1000);
 }
 
@@ -1022,6 +1222,7 @@ async function createViewPost({
   const normalizedType = normalizeContentType(content_type);
 
   let content = "";
+
   if (contentNeedsTextBody(normalizedType)) {
     content = text_content || caption || title || "";
   } else if (contentNeedsCaption(normalizedType)) {
@@ -1054,7 +1255,11 @@ async function createViewPost({
   return data.id;
 }
 
-async function queueJobsLikeCreatePost({ postId, userId, selectedPlatforms }) {
+async function queueJobsLikeCreatePost({
+  postId,
+  userId,
+  selectedPlatforms
+}) {
   const platforms = (selectedPlatforms || [])
     .map(normalizePlatformKey)
     .filter(Boolean);
@@ -1079,7 +1284,10 @@ async function queueJobsLikeCreatePost({ postId, userId, selectedPlatforms }) {
   return { queued: jobs.length };
 }
 
-async function triggerWorkerLikeCreatePost({ postId = null, userId = null } = {}) {
+async function triggerWorkerLikeCreatePost({
+  postId = null,
+  userId = null
+} = {}) {
   const payload = {
     limit: 20,
     concurrency: 4
@@ -1092,7 +1300,8 @@ async function triggerWorkerLikeCreatePost({ postId = null, userId = null } = {}
     process.env.PROCESS_WORKER_URL ||
     `${VIEW_BASE_URL}/api/process-publish-jobs`;
 
-  const fallbackUrl = "https://view-psi-lac.vercel.app/api/process-publish-jobs";
+  const fallbackUrl =
+    "https://view-psi-lac.vercel.app/api/process-publish-jobs";
 
   const urls = [...new Set([primaryUrl, fallbackUrl].filter(Boolean))];
   const errors = [];
@@ -1110,6 +1319,7 @@ async function triggerWorkerLikeCreatePost({ postId = null, userId = null } = {}
 
       const postRaw = await postResponse.text();
       let postJson = {};
+
       try {
         postJson = postRaw ? JSON.parse(postRaw) : {};
       } catch {
@@ -1125,7 +1335,11 @@ async function triggerWorkerLikeCreatePost({ postId = null, userId = null } = {}
         };
       }
 
-      errors.push(`POST ${url} -> ${postResponse.status}: ${postJson?.error || postRaw || "Worker failed"}`);
+      errors.push(
+        `POST ${url} -> ${postResponse.status}: ${
+          postJson?.error || postRaw || "Worker failed"
+        }`
+      );
     } catch (error) {
       errors.push(`POST ${url} failed: ${sanitizeErrorMessage(error)}`);
     }
@@ -1138,6 +1352,7 @@ async function triggerWorkerLikeCreatePost({ postId = null, userId = null } = {}
 
       const getRaw = await getResponse.text();
       let getJson = {};
+
       try {
         getJson = getRaw ? JSON.parse(getRaw) : {};
       } catch {
@@ -1153,7 +1368,11 @@ async function triggerWorkerLikeCreatePost({ postId = null, userId = null } = {}
         };
       }
 
-      errors.push(`GET ${url} -> ${getResponse.status}: ${getJson?.error || getRaw || "Worker failed"}`);
+      errors.push(
+        `GET ${url} -> ${getResponse.status}: ${
+          getJson?.error || getRaw || "Worker failed"
+        }`
+      );
     } catch (error) {
       errors.push(`GET ${url} failed: ${sanitizeErrorMessage(error)}`);
     }
@@ -1168,11 +1387,20 @@ async function triggerWorkerLikeCreatePost({ postId = null, userId = null } = {}
 function mergeGenerationMeta(existing, extra) {
   let base = {};
 
-  if (existing && typeof existing === "object" && !Array.isArray(existing)) {
+  if (
+    existing &&
+    typeof existing === "object" &&
+    !Array.isArray(existing)
+  ) {
     base = existing;
   } else if (typeof existing === "string" && existing.trim()) {
     const parsed = safeJsonParse(existing, null);
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      !Array.isArray(parsed)
+    ) {
       base = parsed;
     }
   }
@@ -1182,6 +1410,7 @@ function mergeGenerationMeta(existing, extra) {
 
 function normalizeKlingStatus(payload) {
   const root = payload?.data || payload || {};
+
   const status = String(
     root.status ||
       root.task_status ||
@@ -1191,10 +1420,23 @@ function normalizeKlingStatus(payload) {
   ).toLowerCase();
 
   let state = "processing";
-  if (["succeed", "succeeded", "success", "completed", "done"].includes(status)) state = "success";
-  else if (["fail", "failed", "error", "cancelled", "canceled"].includes(status)) state = "failed";
+
+  if (
+    ["succeed", "succeeded", "success", "completed", "done"].includes(
+      status
+    )
+  ) {
+    state = "success";
+  } else if (
+    ["fail", "failed", "error", "cancelled", "canceled"].includes(
+      status
+    )
+  ) {
+    state = "failed";
+  }
 
   const outputs = root.outputs || root.output || root.result || {};
+
   const videoUrl =
     outputs.video_url ||
     outputs.videoUrl ||
@@ -1227,8 +1469,12 @@ function normalizeKlingStatus(payload) {
 
 function buildRunMessage(baseMessage, publishQueueResult) {
   if (!publishQueueResult) return baseMessage;
+
   const queued = Number(publishQueueResult.queued || 0);
-  return `${baseMessage} Queued ${queued} publish job${queued === 1 ? "" : "s"}.`;
+
+  return `${baseMessage} Queued ${queued} publish job${
+    queued === 1 ? "" : "s"
+  }.`;
 }
 
 async function processRule(rule, options = {}) {
@@ -1242,7 +1488,9 @@ async function processRule(rule, options = {}) {
       rule_id: rule.id,
       title: rule.title,
       status: "processing",
-      message: options.forced ? "Started manual rule processing" : "Started rule processing",
+      message: options.forced
+        ? "Started manual rule processing"
+        : "Started rule processing",
       started_at: startedAt
     });
 
@@ -1252,11 +1500,16 @@ async function processRule(rule, options = {}) {
       last_run_at: startedAt
     });
 
-    const normalizedPlatforms = normalizePlatforms(rule.selected_platforms, rule.platforms_label);
+    const normalizedPlatforms = normalizePlatforms(
+      rule.selected_platforms,
+      rule.platforms_label
+    );
+
     const prompt = buildPromptFromRule(rule);
     const normalizedType = normalizeContentType(rule.content_type);
 
     let generated;
+
     if (contentNeedsTextBody(normalizedType)) {
       generated = await generateTextWithFallbacks({ rule, prompt });
     } else if (contentNeedsImage(normalizedType)) {
@@ -1332,37 +1585,40 @@ async function processRule(rule, options = {}) {
     });
 
     let workerTriggerResult = await triggerWorkerLikeCreatePost({
-  postId,
-  userId: rule.user_id
-});
+      postId,
+      userId: rule.user_id
+    });
 
-if (!workerTriggerResult.triggered) {
-  await new Promise(resolve => setTimeout(resolve, 1500));
+    if (!workerTriggerResult.triggered) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-  const retryResult = await triggerWorkerLikeCreatePost({
-    postId,
-    userId: rule.user_id
-  });
+      const retryResult = await triggerWorkerLikeCreatePost({
+        postId,
+        userId: rule.user_id
+      });
 
-  workerTriggerResult = {
-    ...workerTriggerResult,
-    retry: retryResult
-  };
-}
+      workerTriggerResult = {
+        ...workerTriggerResult,
+        retry: retryResult
+      };
+    }
 
-const retryTriggered = !!workerTriggerResult?.retry?.triggered;
+    const retryTriggered = !!workerTriggerResult?.retry?.triggered;
 
-if (!workerTriggerResult.triggered && !retryTriggered) {
-  throw new Error(
-    workerTriggerResult?.retry?.error ||
-    workerTriggerResult?.error ||
-    "Publish worker trigger failed"
-  );
-}
+    if (!workerTriggerResult.triggered && !retryTriggered) {
+      throw new Error(
+        workerTriggerResult?.retry?.error ||
+          workerTriggerResult?.error ||
+          "Publish worker trigger failed"
+      );
+    }
 
     await finalizeRunLog(runId, {
       status: "success",
-      message: buildRunMessage("Rule processed successfully.", publishQueueResult),
+      message: buildRunMessage(
+        "Rule processed successfully.",
+        publishQueueResult
+      ),
       completed_at: nowIso(),
       generated_content_id: generatedContentId
     });
@@ -1385,7 +1641,9 @@ if (!workerTriggerResult.triggered && !retryTriggered) {
     if (runId) {
       await finalizeRunLog(runId, {
         status: temporary ? "processing" : "failed",
-        message: temporary ? "Temporary provider overload. Retry later." : "Rule processing failed",
+        message: temporary
+          ? "Temporary provider overload. Retry later."
+          : "Rule processing failed",
         error_message: sanitizeErrorMessage(error),
         completed_at: nowIso(),
         generated_content_id: generatedContentId
@@ -1432,11 +1690,13 @@ async function findLatestRunIdForItem(item) {
 async function checkOneKlingTask(item) {
   try {
     const statusResponse = await fetch(
-      `${KLING_BASE_URL}/v1/videos/${encodeURIComponent(item.provider_task_id)}`,
+      `${KLING_BASE_URL}/v1/videos/${encodeURIComponent(
+        item.provider_task_id
+      )}`,
       {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${KLING_API_KEY}`
+          Authorization: `Bearer ${KLING_API_KEY}`
         }
       }
     );
@@ -1444,7 +1704,11 @@ async function checkOneKlingTask(item) {
     const statusJson = await statusResponse.json().catch(() => ({}));
 
     if (!statusResponse.ok) {
-      throw new Error(statusJson?.message || statusJson?.error || "Kling status request failed.");
+      throw new Error(
+        statusJson?.message ||
+          statusJson?.error ||
+          "Kling status request failed."
+      );
     }
 
     const normalized = normalizeKlingStatus(statusJson);
@@ -1468,7 +1732,8 @@ async function checkOneKlingTask(item) {
     if (normalized.state === "failed") {
       await updateGeneratedContent(item.id, {
         status: "failed",
-        error_message: normalized.error || "Kling video generation failed.",
+        error_message:
+          normalized.error || "Kling video generation failed.",
         generation_meta: mergeGenerationMeta(item.generation_meta, {
           last_poll_response: statusJson,
           failed_at: nowIso()
@@ -1516,6 +1781,7 @@ async function checkOneKlingTask(item) {
     });
 
     let thumbnailUrl = null;
+
     if (normalized.thumbnail_url) {
       try {
         thumbnailUrl = await fetchAndUploadRemoteFile({
@@ -1530,7 +1796,10 @@ async function checkOneKlingTask(item) {
       }
     }
 
-    const selectedPlatforms = normalizePlatforms(item.selected_platforms, item.platforms_label);
+    const selectedPlatforms = normalizePlatforms(
+      item.selected_platforms,
+      item.platforms_label
+    );
 
     const postId = await createViewPost({
       user_id: item.user_id,
@@ -1564,38 +1833,41 @@ async function checkOneKlingTask(item) {
     });
 
     let workerTriggerResult = await triggerWorkerLikeCreatePost({
-  postId,
-  userId: item.user_id
-});
+      postId,
+      userId: item.user_id
+    });
 
-if (!workerTriggerResult.triggered) {
-  await new Promise(resolve => setTimeout(resolve, 1500));
+    if (!workerTriggerResult.triggered) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-  const retryResult = await triggerWorkerLikeCreatePost({
-    postId,
-    userId: item.user_id
-  });
+      const retryResult = await triggerWorkerLikeCreatePost({
+        postId,
+        userId: item.user_id
+      });
 
-  workerTriggerResult = {
-    ...workerTriggerResult,
-    retry: retryResult
-  };
-}
+      workerTriggerResult = {
+        ...workerTriggerResult,
+        retry: retryResult
+      };
+    }
 
-const retryTriggered = !!workerTriggerResult?.retry?.triggered;
+    const retryTriggered = !!workerTriggerResult?.retry?.triggered;
 
-if (!workerTriggerResult.triggered && !retryTriggered) {
-  throw new Error(
-    workerTriggerResult?.retry?.error ||
-    workerTriggerResult?.error ||
-    "Publish worker trigger failed"
-  );
-}
+    if (!workerTriggerResult.triggered && !retryTriggered) {
+      throw new Error(
+        workerTriggerResult?.retry?.error ||
+          workerTriggerResult?.error ||
+          "Publish worker trigger failed"
+      );
+    }
 
     if (runId) {
       await finalizeRunLog(runId, {
         status: "success",
-        message: buildRunMessage("Kling video completed and post created.", publishQueueResult),
+        message: buildRunMessage(
+          "Kling video completed and post created.",
+          publishQueueResult
+        ),
         completed_at: nowIso(),
         generated_content_id: item.id
       });
@@ -1643,6 +1915,7 @@ if (!workerTriggerResult.triggered && !retryTriggered) {
 
 async function lockRule(ruleId) {
   const lockId = crypto.randomUUID();
+
   const { data, error } = await supabase
     .from("auto_post_rules")
     .update({
@@ -1657,6 +1930,7 @@ async function lockRule(ruleId) {
     .maybeSingle();
 
   if (error) throw error;
+
   return data?.id ? lockId : null;
 }
 
@@ -1684,7 +1958,10 @@ async function handleTestRun(req, res, body) {
     body?.id;
 
   if (!ruleId) {
-    return res.status(400).json({ ok: false, error: "Missing rule_id" });
+    return res.status(400).json({
+      ok: false,
+      error: "Missing rule_id"
+    });
   }
 
   const { data: rule, error: ruleError } = await supabase
@@ -1694,7 +1971,10 @@ async function handleTestRun(req, res, body) {
     .single();
 
   if (ruleError || !rule) {
-    return res.status(404).json({ ok: false, error: "Rule not found" });
+    return res.status(404).json({
+      ok: false,
+      error: "Rule not found"
+    });
   }
 
   const result = await processRule(rule, { forced: true });
@@ -1724,7 +2004,10 @@ async function handleRunDueRules(req, res, body) {
       .single();
 
     if (forcedRuleError || !forcedRule) {
-      return res.status(404).json({ ok: false, error: "Forced rule not found" });
+      return res.status(404).json({
+        ok: false,
+        error: "Forced rule not found"
+      });
     }
 
     rules = [forcedRule];
@@ -1738,6 +2021,7 @@ async function handleRunDueRules(req, res, body) {
       .limit(AUTO_POST_BATCH_LIMIT);
 
     if (error) throw error;
+
     rules = data || [];
   }
 
@@ -1751,6 +2035,7 @@ async function handleRunDueRules(req, res, body) {
   }
 
   const results = [];
+
   for (const rule of rules) {
     let lockId = null;
 
@@ -1766,7 +2051,10 @@ async function handleRunDueRules(req, res, body) {
         continue;
       }
 
-      const result = await processRule(rule, { forced: !!forcedRuleId });
+      const result = await processRule(rule, {
+        forced: !!forcedRuleId
+      });
+
       results.push(result);
     } finally {
       if (lockId) {
@@ -1806,6 +2094,7 @@ async function handleCheckKlingTasks(req, res) {
   }
 
   const results = [];
+
   for (const item of pendingItems) {
     results.push(await checkOneKlingTask(item));
   }
