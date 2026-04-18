@@ -94,12 +94,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    if (!isAuthorized(req)) {
-      return res.status(401).json({
-        ok: false,
-        error: "Unauthorized"
-      });
-    }
+    
 
     const body =
       req.method === "POST" && req.body
