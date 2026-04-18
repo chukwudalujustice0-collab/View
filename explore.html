@@ -1348,7 +1348,7 @@
 
           <div class="side-card">
             <div class="side-list">
-              <a href="News.html" class="side-row">
+              <a href="news.html" class="side-row">
                 <span class="side-row-left"><span class="mini-ico">🌐</span><span>News</span></span>
                 <span class="arrow">›</span>
               </a>
@@ -1373,7 +1373,7 @@
 
           <div class="side-card">
             <div class="side-list">
-              <a href="News.html" class="side-row">
+              <a href="news.html" class="side-row">
                 <span class="side-row-left"><span class="mini-ico">📰</span><span>News</span></span>
                 <span class="arrow">›</span>
               </a>
@@ -1417,7 +1417,7 @@
               <input id="searchInput" type="text" placeholder="Search..." autocomplete="off" />
             </div>
 
-            <a href="messages.html" class="icon-btn" aria-label="Messages">
+            <a href="chats.html" class="icon-btn" aria-label="Messages">
               ✉️
               <span id="messageBadge" class="badge">0</span>
             </a>
@@ -1492,7 +1492,7 @@
           <section class="section-block">
             <div class="block-head">
               <h3>News</h3>
-              <a href="News.html" class="see-all">›</a>
+              <a href="news.html" class="see-all">›</a>
             </div>
             <div id="newsChipRow" class="chip-row"></div>
           </section>
@@ -1545,7 +1545,7 @@
       <a href="trendings.html" class="drawer-link"><span class="drawer-left"><span>🔥</span><span>Trendings</span></span><span>›</span></a>
       <a href="Popular-posts.html" class="drawer-link"><span class="drawer-left"><span>⭐</span><span>Popular Posts</span></span><span>›</span></a>
       <a href="connected-accounts.html" class="drawer-link"><span class="drawer-left"><span>🔗</span><span>Connected Accounts</span></span><span>›</span></a>
-      <a href="News.html" class="drawer-link"><span class="drawer-left"><span>📰</span><span>News</span></span><span>›</span></a>
+      <a href="news.html" class="drawer-link"><span class="drawer-left"><span>📰</span><span>News</span></span><span>›</span></a>
       <a href="live-score.html" class="drawer-link"><span class="drawer-left"><span>⚽</span><span>Live Score</span></span><span>›</span></a>
       <a href="jobs.html" class="drawer-link"><span class="drawer-left"><span>💼</span><span>Jobs</span></span><span>›</span></a>
       <a href="marketplace.html" class="drawer-link"><span class="drawer-left"><span>🛍️</span><span>Marketplace</span></span><span>›</span></a>
@@ -1561,7 +1561,7 @@
     <a href="home.html" class="nav-link"><span class="nav-icon">⌂</span><span>Home</span></a>
     <a href="explore.html" class="nav-link active"><span class="nav-icon">➤</span><span>Explore</span></a>
     <button id="createBtn" class="nav-link nav-center" type="button"><span class="nav-icon">▶</span></button>
-    <a href="messages.html" class="nav-link"><span class="nav-icon">✉</span><span>Inbox</span></a>
+    <a href="chats.html" class="nav-link"><span class="nav-icon">✉</span><span>Inbox</span></a>
     <a href="profile.html" class="nav-link"><span class="nav-icon">○</span><span>Profile</span></a>
   </nav>
 
@@ -1947,12 +1947,12 @@
         let items = !force ? cacheGet("view_explore_news_exact_v1") : null;
 
         if(!items){
-          const doc = await fetchHtmlDoc("News.html");
+          const doc = await fetchHtmlDoc("news.html");
           const cards = [...doc.querySelectorAll("a, article, .news-card, .headline, .card")];
           items = cards.map((card, index) => {
             const title = extractText(card, ["h1","h2","h3",".title",".headline",".news-title"]);
             const time = extractText(card, [".time",".date",".meta","small"]);
-            const href = card.getAttribute("href") || "News.html";
+            const href = card.getAttribute("href") || "news.html";
             if(!title) return null;
             return {
               id:`news-${index}`,
@@ -2267,7 +2267,7 @@
       ];
 
       const items = rows.length
-        ? rows.map((row, i) => ({ title: row.title, href: row.href || "News.html", icon: i === 0 ? "📰" : i === 1 ? "📡" : i === 2 ? "💼" : "📰" }))
+        ? rows.map((row, i) => ({ title: row.title, href: row.href || "news.html", icon: i === 0 ? "📰" : i === 1 ? "📡" : i === 2 ? "💼" : "📰" }))
         : fallback;
 
       newsChipRow.innerHTML = items.map(item => `
