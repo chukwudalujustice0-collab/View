@@ -23,6 +23,17 @@ function safeJsonParse(value, fallback = null) {
   }
 }
 
+function trimText(value, max = 5000) {
+  return String(value || "").trim().slice(0, max);
+}
+
+function normalizePlatform(value = "") {
+  const key = String(value || "").trim().toLowerCase();
+  if (key === "twitter") return "x";
+  if (key === "whatsappbusiness" || key === "whatsapp_business") return "whatsapp";
+  return key;
+}
+
 function normalizeStoragePath(rawPath = "") {
   let path = String(rawPath || "").trim();
   if (!path) return "";
@@ -41,12 +52,6 @@ function normalizeStoragePath(rawPath = "") {
   return path;
 }
 
-function normalizePlatform(value = "") {
-  const key = String(value || "").trim().toLowerCase();
-  if (key === "twitter") return "x";
-  return key;
-}
-
 function isVideoType(mediaType = "") {
   const type = String(mediaType || "").toLowerCase();
   return type === "video" || type.startsWith("video/");
@@ -55,6 +60,188 @@ function isVideoType(mediaType = "") {
 function isImageType(mediaType = "") {
   const type = String(mediaType || "").toLowerCase();
   return type === "image" || type.startsWith("image/");
+}
+
+function isGalleryType(mediaType = "") {
+  return String(mediaType || "").toLowerCase() === "gallery";
+}
+
+function normalizeJobStatus(status = "") {
+  const value = String(status || "").trim().toLowerCase();
+  if (value === "success") return "completed";
+  return value;
+}
+
+function compactErrorMessage(message = "") {
+  return trimText(String(message || "").replace(/\s+/g, " "), 500);
+}
+
+function pickFirst(...values) {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return "";
+}
+
+function parseJsonObject(value) {
+  if (!value) return {};
+  if (typeof value === "object" && !Array.isArray(value)) return value;
+  if (typeof value !== "string") return {};
+  const parsed = safeJsonParse(value, {});
+  return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+}
+
+function parseScopes(account) {
+  const set = new Set();
+
+  if (Array.isArray(account?.scopes)) {
+    for (const s of account.scopes) {
+      const val = String(s || "").trim();
+      if (val) set.add(val);
+    }
+  }
+
+  if (typeof account?.scope === "string" && account.scope.trim()) {
+    account.scope
+      .split(/[,\s]+/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .forEach((s) => set.add(s));
+  }
+
+  return [...set];
+}
+
+function getBestAccessToken(account) {
+  return pickFirst(
+    account?.long_lived_token,
+    account?.access_token
+  );
+}
+
+function getBestExpiry(account) {
+  return pickFirst(
+    account?.token_expires_at,
+    account?.expires_at
+  );
+}
+
+function getMetadata(account) {
+  return parseJsonObject(account?.metadata);
+}
+
+function getTokenMeta(account) {
+  return parseJsonObject(account?.token_meta);
+}
+
+function isAccountUsable(account) {
+  if (!account) return false;
+
+  const status = String(account.status || "").toLowerCase();
+  const connected =
+    status === "connected" ||
+    account.connected === true ||
+    account.is_connected === true;
+
+  return connected && account.needs_reconnect !== true;
+}
+
+function resolveFacebookPageId(account) {
+  const metadata = getMetadata(account);
+  const tokenMeta = getTokenMeta(account);
+
+  return pickFirst(
+    account.external_page_id,
+    metadata.page_id,
+    metadata.facebook_page_id,
+    tokenMeta.page_id
+  );
+}
+
+function resolveInstagramUserId(account) {
+  const metadata = getMetadata(account);
+  const tokenMeta = getTokenMeta(account);
+
+  return pickFirst(
+    account.platform_user_id,
+    account.external_user_id,
+    account.external_id,
+    account.account_id,
+    metadata.instagram_user_id,
+    metadata.ig_user_id,
+    metadata.user_id,
+    tokenMeta.instagram_user_id,
+    tokenMeta.ig_user_id
+  );
+}
+
+function resolveLinkedInAuthor(account) {
+  const metadata = getMetadata(account);
+  const tokenMeta = getTokenMeta(account);
+
+  const direct = pickFirst(
+    metadata.organization_urn,
+    metadata.person_urn,
+    tokenMeta.organization_urn,
+    tokenMeta.person_urn,
+    account.external_user_id,
+    account.platform_user_id,
+    account.account_id,
+    account.external_id
+  );
+
+  if (!direct) return "";
+
+  if (direct.startsWith("urn:li:")) return direct;
+
+  const accountType = String(metadata.account_type || metadata.type || "").toLowerCase();
+  if (accountType === "organization" || accountType === "company" || accountType === "page") {
+    return `urn:li:organization:${direct}`;
+  }
+
+  return `urn:li:person:${direct}`;
+}
+
+function resolveTelegramChatId(account) {
+  const metadata = getMetadata(account);
+  const tokenMeta = getTokenMeta(account);
+
+  return pickFirst(
+    account.telegram_chat_id,
+    metadata.telegram_chat_id,
+    metadata.chat_id,
+    metadata.channel_id,
+    tokenMeta.telegram_chat_id,
+    tokenMeta.chat_id,
+    account.external_user_id,
+    account.external_id
+  );
+}
+
+function choosePrimaryMedia(post) {
+  const rawMediaUrl = post?.media_url;
+
+  if (isGalleryType(post?.media_type)) {
+    const parsed = safeJsonParse(rawMediaUrl, []);
+    if (Array.isArray(parsed) && parsed.length) {
+      const first = parsed[0] || {};
+      const url = typeof first === "string" ? first : first.url || "";
+      const type = typeof first === "object" ? first.type || "" : "";
+      return {
+        mediaUrl: url || "",
+        mediaType: type || "image",
+        mediaName: post?.media_name || null,
+        isGallery: true
+      };
+    }
+  }
+
+  return {
+    mediaUrl: rawMediaUrl || "",
+    mediaType: post?.media_type || "",
+    mediaName: post?.media_name || null,
+    isGallery: false
+  };
 }
 
 async function updatePostSummary(supabase, postId) {
@@ -69,16 +256,13 @@ async function updatePostSummary(supabase, postId) {
 
   if (!jobs || !jobs.length) return;
 
-  const statuses = jobs.map((j) => String(j.status || "").toLowerCase());
+  const statuses = jobs.map((j) => normalizeJobStatus(j.status));
 
   let publishStatus = "queued";
 
-  if (statuses.every((s) => s === "success" || s === "completed")) {
+  if (statuses.every((s) => s === "completed")) {
     publishStatus = "published";
-  } else if (
-    statuses.some((s) => s === "failed") &&
-    statuses.some((s) => s === "success" || s === "completed")
-  ) {
+  } else if (statuses.some((s) => s === "failed") && statuses.some((s) => s === "completed")) {
     publishStatus = "partial";
   } else if (statuses.every((s) => s === "failed")) {
     publishStatus = "failed";
@@ -113,17 +297,26 @@ async function updatePostSummary(supabase, postId) {
 async function getConnectedAccount(supabase, userId, platform) {
   const normalizedPlatform = normalizePlatform(platform);
 
+  const platformValues = normalizedPlatform === "x"
+    ? ["x", "twitter"]
+    : [normalizedPlatform];
+
   const { data, error } = await supabase
     .from("connected_accounts")
     .select("*")
     .eq("user_id", userId)
-    .in("platform", normalizedPlatform === "x" ? ["x", "twitter"] : [normalizedPlatform])
-    .eq("status", "connected")
-    .maybeSingle();
+    .in("platform", platformValues)
+    .order("connected_at", { ascending: false })
+    .order("updated_at", { ascending: false });
 
   if (error) throw new Error(error.message);
-  if (!data) throw new Error(`${normalizedPlatform} account not connected`);
-  return data;
+
+  const usable = (data || []).find(isAccountUsable);
+  if (!usable) {
+    throw new Error(`${normalizedPlatform} account not connected`);
+  }
+
+  return usable;
 }
 
 async function refreshGoogleToken(supabase, account) {
@@ -166,14 +359,22 @@ async function refreshGoogleToken(supabase, account) {
     Date.now() + Number(data.expires_in || 3600) * 1000
   ).toISOString();
 
+  const nextAccessToken = pickFirst(data.access_token, account.access_token);
+
   const { error } = await supabase
     .from("connected_accounts")
     .update({
-      access_token: data.access_token,
-      token_type: data.token_type || "Bearer",
+      access_token: nextAccessToken,
+      token_type: data.token_type || account.token_type || "Bearer",
       token_expires_at: tokenExpiresAt,
+      expires_at: tokenExpiresAt,
       last_synced_at: nowIso(),
-      last_error: null
+      last_refreshed_at: nowIso(),
+      last_refresh_attempt_at: nowIso(),
+      refresh_retry_count: 0,
+      last_error: null,
+      needs_reconnect: false,
+      updated_at: nowIso()
     })
     .eq("id", account.id);
 
@@ -181,32 +382,53 @@ async function refreshGoogleToken(supabase, account) {
 
   return {
     ...account,
-    access_token: data.access_token,
-    token_type: data.token_type || "Bearer",
-    token_expires_at: tokenExpiresAt
+    access_token: nextAccessToken,
+    token_type: data.token_type || account.token_type || "Bearer",
+    token_expires_at: tokenExpiresAt,
+    expires_at: tokenExpiresAt
   };
 }
 
 async function ensureValidToken(supabase, account) {
-  if (!account.access_token) {
+  const accessToken = getBestAccessToken(account);
+  if (!accessToken) {
     throw new Error(`No access token found for ${account.platform}. Reconnect the account.`);
   }
 
-  if (!account.token_expires_at) return account;
-
-  const expiresAt = new Date(account.token_expires_at).getTime();
-  const soon = Date.now() + 60 * 1000;
-
-  if (expiresAt > soon) return account;
-
-  if (normalizePlatform(account.platform) === "youtube") {
-    return await refreshGoogleToken(supabase, account);
+  const expiry = getBestExpiry(account);
+  if (!expiry) {
+    return {
+      ...account,
+      access_token: accessToken
+    };
   }
 
-  return account;
+  const expiresAt = new Date(expiry).getTime();
+  const soon = Date.now() + 60 * 1000;
+
+  if (expiresAt > soon) {
+    return {
+      ...account,
+      access_token: accessToken
+    };
+  }
+
+  if (normalizePlatform(account.platform) === "youtube") {
+    return await refreshGoogleToken(supabase, {
+      ...account,
+      access_token: accessToken
+    });
+  }
+
+  return {
+    ...account,
+    access_token: accessToken
+  };
 }
 
 async function getMediaFromPost(supabase, post) {
+  const primaryMedia = choosePrimaryMedia(post);
+
   if (post.media_path) {
     const bucket = process.env.POST_MEDIA_BUCKET || "post-media";
     const path = normalizeStoragePath(post.media_path);
@@ -227,13 +449,14 @@ async function getMediaFromPost(supabase, post) {
 
     return {
       buffer: Buffer.from(arrayBuffer),
-      contentType: post.media_type || data.type || "application/octet-stream",
-      source: "storage"
+      contentType: primaryMedia.mediaType || post.media_type || data.type || "application/octet-stream",
+      source: "storage",
+      mediaUrl: primaryMedia.mediaUrl || null
     };
   }
 
-  if (post.media_url) {
-    const fileRes = await fetch(post.media_url);
+  if (primaryMedia.mediaUrl) {
+    const fileRes = await fetch(primaryMedia.mediaUrl);
 
     if (!fileRes.ok) {
       throw new Error(`Failed to fetch media_url. HTTP ${fileRes.status}`);
@@ -243,12 +466,13 @@ async function getMediaFromPost(supabase, post) {
 
     return {
       buffer: Buffer.from(arrayBuffer),
-      contentType: post.media_type || fileRes.headers.get("content-type") || "application/octet-stream",
-      source: "url"
+      contentType: primaryMedia.mediaType || post.media_type || fileRes.headers.get("content-type") || "application/octet-stream",
+      source: "url",
+      mediaUrl: primaryMedia.mediaUrl
     };
   }
 
-  throw new Error("This post has no media_path and no media_url.");
+  throw new Error("This post has no media_path and no usable media_url.");
 }
 
 async function getYouTubeChannel(accessToken) {
@@ -286,7 +510,8 @@ async function uploadToYouTube(supabase, post, account) {
     throw new Error("No media file found for YouTube upload.");
   }
 
-  if (!isVideoType(post.media_type)) {
+  const chosenMedia = choosePrimaryMedia(post);
+  if (!isVideoType(chosenMedia.mediaType || post.media_type)) {
     throw new Error(`YouTube requires a video file. Current media_type: ${post.media_type || "unknown"}`);
   }
 
@@ -309,7 +534,7 @@ async function uploadToYouTube(supabase, post, account) {
       },
       body: JSON.stringify({
         snippet: {
-          title: post.media_name || post.content || "View Upload",
+          title: post.media_name || post.title || post.content || "View Upload",
           description: post.content || "",
           categoryId: "22"
         },
@@ -371,30 +596,41 @@ async function uploadToYouTube(supabase, post, account) {
 
 async function publishToFacebook(post, account) {
   if (!account?.access_token) throw new Error("Missing Facebook access token.");
-  if (!account.page_id) throw new Error("Missing Facebook page_id.");
 
-  const hasMedia = !!(post.media_url || post.media_path);
+  const pageId = resolveFacebookPageId(account);
+  if (!pageId) throw new Error("Missing Facebook page ID.");
+
+  const chosenMedia = choosePrimaryMedia(post);
+  const hasMedia = !!(chosenMedia.mediaUrl || post.media_path);
 
   let endpoint = "";
   let body = null;
 
-  if (isVideoType(post.media_type) && hasMedia) {
-    endpoint = `https://graph.facebook.com/v20.0/${account.page_id}/videos`;
+  if (isVideoType(chosenMedia.mediaType || post.media_type) && hasMedia) {
+    if (!chosenMedia.mediaUrl) {
+      throw new Error("Facebook video publishing requires a public media_url.");
+    }
+
+    endpoint = `https://graph.facebook.com/v20.0/${pageId}/videos`;
     body = new URLSearchParams({
       access_token: account.access_token,
-      file_url: post.media_url || "",
+      file_url: chosenMedia.mediaUrl,
       description: post.content || ""
     });
   } else if (hasMedia) {
-    endpoint = `https://graph.facebook.com/v20.0/${account.page_id}/photos`;
+    if (!chosenMedia.mediaUrl) {
+      throw new Error("Facebook image publishing requires a public media_url.");
+    }
+
+    endpoint = `https://graph.facebook.com/v20.0/${pageId}/photos`;
     body = new URLSearchParams({
       access_token: account.access_token,
-      url: post.media_url || "",
+      url: chosenMedia.mediaUrl,
       caption: post.content || "",
       published: "true"
     });
   } else {
-    endpoint = `https://graph.facebook.com/v20.0/${account.page_id}/feed`;
+    endpoint = `https://graph.facebook.com/v20.0/${pageId}/feed`;
     body = new URLSearchParams({
       access_token: account.access_token,
       message: post.content || ""
@@ -428,13 +664,13 @@ async function publishToFacebook(post, account) {
 async function publishToInstagram(post, account) {
   if (!account?.access_token) throw new Error("Missing Instagram access token.");
 
-  const igUserId =
-    account.instagram_user_id ||
-    account.ig_user_id ||
-    account.external_user_id;
-
+  const igUserId = resolveInstagramUserId(account);
   if (!igUserId) throw new Error("Missing Instagram user ID.");
-  if (!post.media_url) throw new Error("Instagram publishing requires media_url.");
+
+  const chosenMedia = choosePrimaryMedia(post);
+  if (!chosenMedia.mediaUrl) {
+    throw new Error("Instagram publishing requires a public media_url.");
+  }
 
   const createContainerEndpoint = `https://graph.facebook.com/v20.0/${igUserId}/media`;
   const createBody = new URLSearchParams({
@@ -442,11 +678,11 @@ async function publishToInstagram(post, account) {
     caption: post.content || ""
   });
 
-  if (isVideoType(post.media_type)) {
+  if (isVideoType(chosenMedia.mediaType || post.media_type)) {
     createBody.set("media_type", "REELS");
-    createBody.set("video_url", post.media_url);
+    createBody.set("video_url", chosenMedia.mediaUrl);
   } else {
-    createBody.set("image_url", post.media_url);
+    createBody.set("image_url", chosenMedia.mediaUrl);
   }
 
   const createRes = await fetch(createContainerEndpoint, {
@@ -498,11 +734,13 @@ async function publishToInstagram(post, account) {
 }
 
 async function publishToTelegram(post, account) {
-  const botToken = account.bot_token || process.env.TELEGRAM_BOT_TOKEN || "";
-  const chatId = account.chat_id || account.channel_id || account.external_user_id || "";
+  const botToken = pickFirst(account.access_token, process.env.TELEGRAM_BOT_TOKEN);
+  const chatId = resolveTelegramChatId(account);
 
   if (!botToken) throw new Error("Missing Telegram bot token.");
   if (!chatId) throw new Error("Missing Telegram chat/channel ID.");
+
+  const chosenMedia = choosePrimaryMedia(post);
 
   let method = "sendMessage";
   let payload = {
@@ -510,18 +748,18 @@ async function publishToTelegram(post, account) {
     text: post.content || ""
   };
 
-  if (post.media_url && isImageType(post.media_type)) {
+  if (chosenMedia.mediaUrl && isImageType(chosenMedia.mediaType || post.media_type)) {
     method = "sendPhoto";
     payload = {
       chat_id: chatId,
-      photo: post.media_url,
+      photo: chosenMedia.mediaUrl,
       caption: post.content || ""
     };
-  } else if (post.media_url && isVideoType(post.media_type)) {
+  } else if (chosenMedia.mediaUrl && isVideoType(chosenMedia.mediaType || post.media_type)) {
     method = "sendVideo";
     payload = {
       chat_id: chatId,
-      video: post.media_url,
+      video: chosenMedia.mediaUrl,
       caption: post.content || ""
     };
   }
@@ -547,11 +785,7 @@ async function publishToTelegram(post, account) {
 async function publishToLinkedIn(post, account) {
   if (!account?.access_token) throw new Error("Missing LinkedIn access token.");
 
-  const author =
-    account.organization_urn ||
-    account.person_urn ||
-    account.external_user_id;
-
+  const author = resolveLinkedInAuthor(account);
   if (!author) throw new Error("Missing LinkedIn author URN.");
 
   const body = {
@@ -602,12 +836,17 @@ async function publishToLinkedIn(post, account) {
 
 async function publishToX(post, account) {
   if (!account?.access_token) throw new Error("Missing X access token.");
-  throw new Error("X publish flow needs your exact OAuth/media posting setup.");
+  throw new Error("X publishing is not fully configured yet. It needs your exact OAuth/media posting setup.");
 }
 
 async function publishToTikTok(post, account) {
   if (!account?.access_token) throw new Error("Missing TikTok access token.");
-  throw new Error("TikTok direct publish needs your exact TikTok content posting setup.");
+  throw new Error("TikTok publishing is not fully configured yet. It needs your approved TikTok content posting setup.");
+}
+
+async function publishToWhatsApp(post, account) {
+  if (!account?.access_token) throw new Error("Missing WhatsApp access token.");
+  throw new Error("WhatsApp publishing is not configured in this worker.");
 }
 
 async function publishToPlatform(supabase, post, job) {
@@ -644,7 +883,8 @@ async function publishToPlatform(supabase, post, job) {
 
   if (platform === "telegram") {
     const account = await getConnectedAccount(supabase, job.user_id, "telegram");
-    return await publishToTelegram(post, account);
+    const validAccount = await ensureValidToken(supabase, account);
+    return await publishToTelegram(post, validAccount);
   }
 
   if (platform === "linkedin") {
@@ -666,10 +906,22 @@ async function publishToPlatform(supabase, post, job) {
   }
 
   if (platform === "whatsapp") {
-    throw new Error("WhatsApp publishing is not configured in this worker.");
+    const account = await getConnectedAccount(supabase, job.user_id, "whatsapp");
+    const validAccount = await ensureValidToken(supabase, account);
+    return await publishToWhatsApp(post, validAccount);
   }
 
   throw new Error(`Unsupported platform: ${platform}`);
+}
+
+async function writeLog(supabase, payload) {
+  const { error } = await supabase
+    .from("post_publish_logs")
+    .insert(payload);
+
+  if (error) {
+    throw new Error(`Publish log insert failed: ${error.message}`);
+  }
 }
 
 module.exports = async function handler(req, res) {
@@ -710,7 +962,12 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    });
 
     const body =
       req.method === "POST" && req.body
@@ -746,7 +1003,7 @@ module.exports = async function handler(req, res) {
 
     const now = nowIso();
     const runnableJobs = (jobs || []).filter((job) => {
-      if (job.status !== "retrying") return true;
+      if (normalizeJobStatus(job.status) !== "retrying") return true;
       if (!job.next_retry_at) return true;
       return job.next_retry_at <= now;
     });
@@ -791,12 +1048,13 @@ module.exports = async function handler(req, res) {
 
         const result = await publishToPlatform(supabase, post, job);
         const deliveredAt = nowIso();
+        const attempts = Number(job.attempts || 0) + 1;
 
         const { error: updateJobError } = await supabase
           .from("post_publish_jobs")
           .update({
             status: "completed",
-            attempts: Number(job.attempts || 0) + 1,
+            attempts,
             delivered_at: deliveredAt,
             finished_at: deliveredAt,
             platform_post_id: result.platform_post_id || null,
@@ -809,18 +1067,16 @@ module.exports = async function handler(req, res) {
 
         if (updateJobError) throw updateJobError;
 
-        await supabase
-          .from("post_publish_logs")
-          .insert({
-            post_id: job.post_id,
-            job_id: job.id,
-            user_id: job.user_id,
-            platform: normalizePlatform(job.platform),
-            status: "completed",
-            platform_post_id: result.platform_post_id || null,
-            response_payload: result.response_payload || null,
-            attempts: Number(job.attempts || 0) + 1
-          });
+        await writeLog(supabase, {
+          post_id: job.post_id,
+          job_id: job.id,
+          user_id: job.user_id,
+          platform: normalizePlatform(job.platform),
+          status: "completed",
+          platform_post_id: result.platform_post_id || null,
+          response_payload: result.response_payload || null,
+          attempts
+        });
 
         await updatePostSummary(supabase, job.post_id);
 
@@ -832,7 +1088,7 @@ module.exports = async function handler(req, res) {
         });
       } catch (err) {
         const failedAt = nowIso();
-        const message = err.message || "Unknown error";
+        const message = compactErrorMessage(err?.message || "Unknown error");
         const attempts = Number(job.attempts || 0) + 1;
         const retryable = attempts < 3;
         const nextRetryAt = retryable
@@ -851,17 +1107,15 @@ module.exports = async function handler(req, res) {
           })
           .eq("id", job.id);
 
-        await supabase
-          .from("post_publish_logs")
-          .insert({
-            post_id: job.post_id,
-            job_id: job.id,
-            user_id: job.user_id,
-            platform: normalizePlatform(job.platform),
-            status: retryable ? "retrying" : "failed",
-            error_message: message,
-            attempts
-          });
+        await writeLog(supabase, {
+          post_id: job.post_id,
+          job_id: job.id,
+          user_id: job.user_id,
+          platform: normalizePlatform(job.platform),
+          status: retryable ? "retrying" : "failed",
+          error_message: message,
+          attempts
+        });
 
         try {
           await updatePostSummary(supabase, job.post_id);
@@ -890,7 +1144,7 @@ module.exports = async function handler(req, res) {
   } catch (err) {
     return res.status(500).json({
       success: false,
-      error: err.message || "Unknown server error"
+      error: compactErrorMessage(err?.message || "Unknown server error")
     });
   }
 };
